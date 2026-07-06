@@ -1,0 +1,426 @@
+<div class="courses-page" data-lang="en">
+
+    <div class="page-head">
+      <div>
+        <div class="crumb">
+          <a href="/">Home</a> <span class="sep">/</span>
+          <a (click)="cancel()" style="cursor: pointer;">Programs</a> <span class="sep">/</span>
+          {{ isEditMode ? 'Edit Program' : 'New Program' }}
+        </div>
+        <h1 class="page-title">{{ isEditMode ? 'Edit Program' : 'Create New Program' }}</h1>
+        <div class="page-sub">Fill in program details · semesters · cost items · courses — then submit to the DA Committee for accreditation.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn-faculties-outline" id="btn-add-course" (click)="cancel()">Cancel</button>
+      </div>
+    </div>
+
+    <div class="approval-banner">
+        <div class="approval-banner-icon">
+            <svg viewBox="0 0 24 24">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+        </div>
+        <div class="approval-banner-content">
+            <div class="approval-banner-title">
+                New programs require DA Committee accreditation before becoming visible to applicants.
+            </div>
+            <div class="approval-banner-subtitle">
+                You can save as draft and return later, or submit for review once all fields are complete.
+            </div>
+        </div>
+    </div>
+
+    <!-- ═════ Section 1 — Program Info ═════ -->
+    <section class="form-section" (click)="$event.stopPropagation(); closeAllDropdowns()">
+      <div class="form-section-head">
+        <div class="form-section-num">1</div>
+        <div>
+          <div class="form-section-title">Program Information</div>
+          <div class="form-section-sub">Core identity of the program and graduation requirements.</div>
+        </div>
+      </div>
+      <div class="form-section-body">
+        <div class="form-grid form-grid-2">
+          
+          <!-- Faculty Dropdown -->
+          <div class="field" (click)="$event.stopPropagation()">
+            <label class="field-label">Faculty</label>
+            <div class="multi-select" [class.open]="isFacultyDropdownOpen" id="fac-multi-select" (click)="toggleFacultyDropdown($event)" tabindex="0">
+              <div class="ms-display" [class.has-selection]="program.facultyId > 0">
+                <span *ngIf="program.facultyId === 0">Select faculty...</span>
+                <span *ngIf="program.facultyId > 0" class="ms-chip">
+                  {{ getSelectedFacultyName() }}
+                  <span class="ms-chip-x" (click)="clearFaculty($event)">×</span>
+                </span>
+              </div>
+              <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              <div class="ms-panel" *ngIf="isFacultyDropdownOpen" style="display: block; max-height: 200px; overflow-y: auto;">
+                <div class="ms-option" *ngFor="let fac of faculties" [class.checked]="program.facultyId === fac.facultyId" (click)="selectFaculty(fac.facultyId || 0)">
+                  <span>{{ fac.facultyName }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field-label">Program name</label>
+            <input type="text" class="field-input" placeholder="e.g. Bachelor of General Medicine" [(ngModel)]="program.programName">
+          </div>
+
+          <div class="field">
+            <label class="field-label">Program code</label>
+            <input type="text" class="field-input" placeholder="MED001" [(ngModel)]="program.programCode">
+            <div class="form-hint">A short unique code — appears on student files and application forms.</div>
+          </div>
+
+          <div class="field">
+            <label class="field-label">Number of semesters</label>
+            <div class="input-suffix">
+              <input type="number" id="f-sem-count" class="field-input" min="0" max="16" [(ngModel)]="program.numberOfSemesters" (ngModelChange)="validateAndClampCourseSemesters()">
+              <span class="suffix">sem.</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field-label">Credits required for graduation</label>
+            <div class="input-suffix">
+              <input type="number" class="field-input" min="0" placeholder="160" [(ngModel)]="program.creditsRequired">
+              <span class="suffix">cr</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field-label">Allowed student seats</label>
+            <div class="input-suffix">
+              <input type="number" class="field-input" min="0" placeholder="50" [(ngModel)]="program.allowedStudentSeats">
+              <span class="suffix">seats</span>
+            </div>
+            <div class="form-hint">Maximum number of sponsored students accepted per cohort.</div>
+          </div>
+
+          <div class="field">
+            <label class="field-label">Min. acceptance high school rate</label>
+            <div class="input-suffix">
+              <input type="number" class="field-input" min="0" max="100" step="0.1" placeholder="85" [(ngModel)]="program.minAcceptanceRate">
+              <span class="suffix">%</span>
+            </div>
+            <div class="form-hint">Lowest HS GPA (as a percentage) eligible for this program.</div>
+          </div>
+
+          <!-- Degree Dropdown -->
+          <div class="field" (click)="$event.stopPropagation()">
+            <label class="field-label">Degree</label>
+            <div class="multi-select" [class.open]="isDegreeDropdownOpen" id="deg-multi-select" (click)="toggleDegreeDropdown($event)" tabindex="0">
+              <div class="ms-display" [class.has-selection]="program.degree > 0">
+                <span *ngIf="program.degree === 0">Select degree...</span>
+                <span *ngIf="program.degree > 0">{{ getDegreeFriendlyName(program.degree) }}</span>
+              </div>
+              <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              <div class="ms-panel" *ngIf="isDegreeDropdownOpen" style="display: block; max-height: 200px; overflow-y: auto;">
+                <div class="ms-option" *ngFor="let val of getDegreeValues()" [class.checked]="program.degree === val" (click)="selectDegree(val)">
+                  <span>{{ getDegreeFriendlyName(val) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tanzanian Students Combination Dropdown -->
+          <div class="field" (click)="$event.stopPropagation()">
+            <label class="field-label">Tanzanian Students Combination <span style="text-transform: none; font-weight: 500; color: var(--da-muted); letter-spacing: 0;">(multi-select)</span></label>
+            <div class="multi-select" [class.open]="isTzDropdownOpen" id="tz-multi-select" (click)="toggleTzDropdown($event)" tabindex="0">
+              <div class="ms-display" [class.has-selection]="getSelectedTanzanianCombinations().length > 0">
+                <span *ngIf="getSelectedTanzanianCombinations().length === 0">Select combinations...</span>
+                <ng-container *ngIf="getSelectedTanzanianCombinations().length > 0">
+                  <span class="ms-chip" *ngFor="let item of getSelectedTanzanianCombinations()">
+                    {{ item.displayText }}
+                    <span class="ms-chip-x" (click)="$event.stopPropagation(); removeTzCombination(item)">×</span>
+                  </span>
+                </ng-container>
+              </div>
+              <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              <div class="ms-panel" *ngIf="isTzDropdownOpen" style="display: block; max-height: 200px; overflow-y: auto;">
+                <div class="ms-option" *ngFor="let item of tanzanianStudentsCombination" [class.checked]="isTzSelected(item)" (click)="toggleTzCombination(item); $event.stopPropagation()">
+                  <input type="checkbox" [checked]="isTzSelected(item)" style="pointer-events: none;" />
+                  <span>{{ item.displayText }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="form-hint">Accepted Tanzanian student combinations for this program.</div>
+          </div>
+
+          <!-- High School Division Dropdown -->
+          <div class="field" (click)="$event.stopPropagation()">
+            <label class="field-label">High school division <span style="text-transform: none; font-weight: 500; color: var(--da-muted); letter-spacing: 0;">(multi-select)</span></label>
+            <div class="multi-select" [class.open]="isHsDropdownOpen" id="hs-multi-select" (click)="toggleHsDropdown($event)" tabindex="0">
+              <div class="ms-display" [class.has-selection]="getSelectedHsDivisions().length > 0">
+                <span *ngIf="getSelectedHsDivisions().length === 0">Select divisions...</span>
+                <ng-container *ngIf="getSelectedHsDivisions().length > 0">
+                  <span class="ms-chip" *ngFor="let item of getSelectedHsDivisions()">
+                    {{ item.displayText }}
+                    <span class="ms-chip-x" (click)="$event.stopPropagation(); removeHsDivision(item)">×</span>
+                  </span>
+                </ng-container>
+              </div>
+              <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              <div class="ms-panel" *ngIf="isHsDropdownOpen" style="display: block; max-height: 200px; overflow-y: auto;">
+                <div class="ms-option" *ngFor="let item of highSchoolDivision" [class.checked]="isHsSelected(item)" (click)="toggleHsDivision(item); $event.stopPropagation()">
+                  <input type="checkbox" [checked]="isHsSelected(item)" style="pointer-events: none;" />
+                  <span>{{ item.displayText }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="form-hint">Accepted high school specializations for this program.</div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════ Section 2 — Required Documents ═════ -->
+    <section class="form-section" (click)="$event.stopPropagation(); closeAllDropdowns()">
+      <div class="form-section-head" style="justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="form-section-num">2</div>
+          <div>
+            <div class="form-section-title">Required Documents</div>
+            <div class="form-section-sub">Documents applicants must upload when applying to this program.</div>
+          </div>
+        </div>
+        <div class="sem-sub-count" style="margin: 0; font-size: 13px; font-weight: 600; color: var(--da-muted);">
+          {{ program.documents?.length || 0 }} {{ (program.documents?.length === 1) ? 'document' : 'documents' }}
+        </div>
+      </div>
+      <div class="form-section-body" style="padding-top: 10px; padding-bottom: 12px;">
+        <div class="dyn-list">
+          
+          <ng-container *ngIf="program.documents && program.documents.length > 0">
+            <div class="dyn-row doc-dyn" style="padding: 6px 0; grid-template-columns: 1fr auto auto; gap: 10px;" *ngFor="let doc of program.documents">
+              <div class="fixed-name" style="font-size: 13px; font-weight: 600; color: var(--da-black);">{{ doc.documentTypeName }}</div>
+              <div style="display: flex; align-items: center;">
+                <div class="seg">
+                  <button type="button" class="seg-opt" [class.on]="doc.isRequired" (click)="setDocumentRequired(doc, true)">Required</button>
+                  <button type="button" class="seg-opt" [class.on]="!doc.isRequired" (click)="setDocumentRequired(doc, false)">Optional</button>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center;">
+                <button type="button" class="dyn-del" (click)="removeDocument(doc)" title="Remove document" style="width: 28px; height: 28px; border-radius: var(--da-radius-sm); border: 1px solid var(--da-border); background: var(--da-white); display: grid; place-items: center; cursor: pointer; color: var(--da-muted);">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width: 12px; height: 12px;">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </ng-container>
+
+          <div class="empty-state" style="padding: 24px 20px;" *ngIf="!program.documents || program.documents.length === 0">
+            <div class="em-icon" style="margin-bottom: 8px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+            </div>
+            <p style="margin: 0; font-size: 13px;">No documents required yet. Click below to add documents for this program.</p>
+          </div>
+          
+          <div class="field" (click)="$event.stopPropagation()" style="margin-top: 10px; position: relative;">
+            <div class="multi-select" [class.open]="isAddDocDropdownOpen" id="add-doc-select" (click)="toggleAddDocDropdown($event)" tabindex="0" style="border-style: dashed; border-color: var(--da-green); background: transparent; justify-content: center; height: 32px; min-height: 32px; padding: 4px 12px;">
+              <div class="ms-display" style="flex: none; font-weight: 700; color: var(--da-green); font-size: 12px; min-height: auto;">
+                + Add Document
+              </div>
+              <div class="ms-panel" *ngIf="isAddDocDropdownOpen" style="display: block; max-height: 200px; overflow-y: auto; text-align: start;">
+                <ng-container *ngIf="getAvailableDocumentTypes().length > 0; else allDocsAdded">
+                  <div class="ms-option" *ngFor="let docType of getAvailableDocumentTypes()" (click)="addDocument(docType)">
+                    <span>{{ docType.documentName }}</span>
+                  </div>
+                </ng-container>
+                <ng-template #allDocsAdded>
+                  <div style="padding: 8px 10px; font-size: 12px; color: var(--da-muted); text-align: center;">All documents added</div>
+                </ng-template>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════ Section 3 — Cost Items ═════ -->
+    <section class="form-section">
+      <div class="form-section-head" style="justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="form-section-num">3</div>
+          <div>
+            <div class="form-section-title">Cost Items</div>
+            <div class="form-section-sub">Configure university fee structures and sponsorship rates.</div>
+          </div>
+        </div>
+        <div class="sem-sub-count" style="margin: 0; font-size: 13px; font-weight: 600; color: var(--da-muted);">
+          {{ sponsorshipTypes.length }} {{ sponsorshipTypes.length === 1 ? 'item' : 'items' }}
+        </div>
+      </div>
+      <div class="form-section-body" style="padding-top: 6px; padding-bottom: 12px;">
+        <div class="dyn-list">
+          
+          <ng-container *ngIf="sponsorshipTypes && sponsorshipTypes.length > 0; else noCosts">
+            <div class="dyn-row cost-fixed" *ngFor="let st of sponsorshipTypes" style="padding: 4px 0; border-bottom: 1px dashed var(--da-border); grid-template-columns: 1fr auto; gap: 14px; align-items: center; min-height: 44px; height: 44px; box-sizing: border-box;">
+              <div class="fixed-name" style="font-size: 13px; font-weight: 600; color: var(--da-black);">{{ st.sponsorshipName }}</div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div class="input-suffix" style="width: 140px;">
+                  <input type="number" step="0.01" min="0" class="field-input amt-input" [(ngModel)]="getProgramCost(st.sponsorshipTypeId || 0).amount" />
+                  <span class="suffix">SOS</span>
+                </div>
+                <div style="width: 70px; display: flex; align-items: center; justify-content: flex-start;">
+                  <span class="chip" *ngIf="st.frequencyType === 1" style="background: var(--da-gold-50); color: var(--da-gold-700); font-size: 10px; font-weight: 600; padding: 2px 8px; border: 1px solid rgba(212,168,67,0.2); border-radius: 100px; display: inline-block; text-align: center; width: 100%; box-sizing: border-box; line-height: 1.25;">One-time</span>
+                  <span class="chip" *ngIf="st.frequencyType !== 1" style="background: var(--da-info-50); color: var(--da-info); font-size: 10px; font-weight: 600; padding: 2px 8px; border: 1px solid rgba(37,99,235,0.15); border-radius: 100px; display: inline-block; text-align: center; width: 100%; box-sizing: border-box; line-height: 1.25;">Recurring</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Summary calculations panel -->
+            <div style="margin-top: 14px; background: var(--da-green-50); border: 1px solid rgba(44, 153, 66, 0.15); border-radius: var(--da-radius-sm); padding: 12px 16px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 40px;">
+              <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--da-text-2);">
+                <span>Recurring per semester:</span>
+                <span style="font-weight: 600; font-family: 'Courier New', monospace;">{{ getRecurringTotal() | number:'1.2-2' }} SOS</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--da-text-2);">
+                <span>Total course credits:</span>
+                <span style="font-weight: 600; font-family: 'Courier New', monospace;">{{ getTotalCredits() }} cr</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--da-text-2);">
+                <span>One-time items:</span>
+                <span style="font-weight: 600; font-family: 'Courier New', monospace;">{{ getOneTimeTotal() | number:'1.2-2' }} SOS</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--da-text-2);">
+                <span>Cost per credit:</span>
+                <span style="font-weight: 600; font-family: 'Courier New', monospace;">{{ getCostPerCredit() | number:'1.2-2' }} SOS</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--da-text-2); grid-column: 1 / -1; border-top: 1px solid rgba(44, 153, 66, 0.1); padding-top: 8px; margin-top: 2px;">
+                <span style="font-weight: 700; color: var(--da-green);">Grand total program cost:</span>
+                <span style="font-weight: 700; color: var(--da-green); font-size: 14px; font-family: 'Courier New', monospace;">{{ getGrandTotal() | number:'1.2-2' }} SOS</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--da-text-2); grid-column: 1 / -1; border-top: 1px dashed rgba(44, 153, 66, 0.1); padding-top: 6px;">
+                <span>Cost per semester (average):</span>
+                <span style="font-weight: 600; font-family: 'Courier New', monospace;">{{ getAveragePerSemester() | number:'1.2-2' }} SOS</span>
+              </div>
+            </div>
+          </ng-container>
+
+          <ng-template #noCosts>
+            <div class="empty-state" style="padding: 24px 20px;">
+              <p style="margin: 0; font-size: 13px; color: var(--da-muted);">No cost items available.</p>
+            </div>
+          </ng-template>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════ Section 4 — Courses ═════ -->
+    <section class="form-section" (click)="$event.stopPropagation(); closeAllDropdowns()">
+      <div class="form-section-head" style="justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="form-section-num">4</div>
+          <div>
+            <div class="form-section-title">Program Courses</div>
+            <div class="form-section-sub">Configure required academic courses for program accreditation.</div>
+          </div>
+        </div>
+        <div class="sem-sub-count" style="margin: 0; font-size: 13px; font-weight: 600; color: var(--da-muted);">
+          {{ program.courses?.length || 0 }} {{ program.courses?.length === 1 ? 'course' : 'courses' }} • {{ getTotalCredits() }} credits
+        </div>
+      </div>
+      <div class="form-section-body" style="padding-top: 10px; padding-bottom: 14px;">
+        
+        <div class="dyn-list">
+          <ng-container *ngIf="program.courses && program.courses.length > 0">
+            <div class="dyn-row course-dyn" style="padding: 6px 0; border-bottom: 1px dashed var(--da-border); grid-template-columns: 1fr 140px auto 80px auto; gap: 14px; align-items: center; min-height: 44px; height: 44px; box-sizing: border-box;" *ngFor="let c of program.courses">
+              <div class="fixed-name" style="font-size: 13px; font-weight: 600; color: var(--da-black);">
+                {{ c.courseNameEn }} 
+                <span class="program-code" style="color: var(--da-green); font-size: 12px; font-weight: 600; margin-inline-start: 6px; letter-spacing: 0.02em;">{{ c.courseCode }}</span>
+              </div>
+              <div style="position: relative;" (click)="$event.stopPropagation()">
+                <div class="multi-select" [class.open]="openSemesterDropdownCourseId === c.courseId" (click)="toggleSemesterDropdown(c.courseId || 0, $event)" tabindex="0" style="height: 28px; padding: 2px 8px; background: var(--da-white); min-height: 28px;">
+                  <div class="ms-display" style="font-size: 12px; color: var(--da-black);">
+                    Semester {{ c.semesterNo }}
+                  </div>
+                  <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                  <div class="ms-panel" *ngIf="openSemesterDropdownCourseId === c.courseId" style="display: block; max-height: 150px; overflow-y: auto; text-align: start; bottom: calc(100% + 4px) !important; top: auto !important; box-shadow: 0 -4px 12px rgba(0,0,0,0.1);">
+                    <div class="ms-option" *ngFor="let semIndex of getSemestersArray()" [class.checked]="c.semesterNo === semIndex" (click)="selectSemesterForCourse(c, semIndex)" (click)="$event.stopPropagation()" style="padding: 6px 10px; font-size: 12px;">
+                      <span>Semester {{ semIndex }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div class="seg">
+                  <button type="button" class="seg-opt" [class.on]="c.courseType === 1" (click)="setCourseType(c, 1)">Core</button>
+                  <button type="button" class="seg-opt" [class.on]="c.courseType === 2" (click)="setCourseType(c, 2)">Elective</button>
+                </div>
+              </div>
+              <div class="input-suffix cr-input-suffix">
+                <input type="number" min="0" class="field-input amt-input" [(ngModel)]="c.credits" />
+                <span class="suffix">cr</span>
+              </div>
+              <div>
+                <button type="button" class="dyn-del" (click)="removeCourse(c)" title="Remove course" style="width: 28px; height: 28px; border-radius: var(--da-radius-sm); border: 1px solid var(--da-border); background: var(--da-white); display: grid; place-items: center; cursor: pointer; color: var(--da-muted);">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width: 12px; height: 12px;">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </ng-container>
+          
+          <div class="empty-state" style="padding: 24px 20px;" *ngIf="!program.courses || program.courses.length === 0">
+            <p style="margin: 0; font-size: 13px; color: var(--da-muted);">No courses configured yet. Use the dropdown below to add program courses.</p>
+          </div>
+          
+          <div style="display: flex; gap: 10px; margin-top: 14px; align-items: center;">
+            <div class="field" (click)="$event.stopPropagation()" style="flex: 1; margin: 0; position: relative;">
+              <div class="multi-select" [class.open]="isAddCourseDropdownOpen" id="add-course-select" (click)="toggleAddCourseDropdown($event)" tabindex="0" style="height: 34px; padding: 4px 12px; background: var(--da-white);">
+                <div class="ms-display" style="color: var(--da-muted); font-size: 13px;">
+                  {{ getSelectedCourseToAddName() }}
+                </div>
+                <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                <div class="ms-panel" *ngIf="isAddCourseDropdownOpen" style="display: block; max-height: 200px; overflow-y: auto; text-align: start; bottom: calc(100% + 4px) !important; top: auto !important; box-shadow: 0 -4px 12px rgba(0,0,0,0.1);">
+                  <ng-container *ngIf="courses.length > 0; else noCoursesAvailable">
+                    <div class="ms-option" *ngFor="let c of courses" (click)="selectCourseToAdd(c.courseId || 0)">
+                      <span>{{ c.courseNameEn }} ({{ c.courseCode }})</span>
+                    </div>
+                  </ng-container>
+                  <ng-template #noCoursesAvailable>
+                    <div style="padding: 8px 10px; font-size: 12px; color: var(--da-muted); text-align: center;">No courses available</div>
+                  </ng-template>
+                </div>
+              </div>
+            </div>
+            <button type="button" class="btn btn-faculties-outline" (click)="addCourseToProgram()" style="flex-shrink: 0; height: 34px;">+ Add Course</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Spacer to prevent content overlapping by sticky footer -->
+    <div style="height: 30px;"></div>
+
+    <!-- Form Actions (Sticky Footer) -->
+    <div class="sticky-footer">
+      <div style="display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--da-muted); font-weight: 500;">
+        <span style="color: #22c55e; font-size: 8px; display: inline-flex; align-items: center;">●</span> Unsaved changes &bull; save is manual at this stage.
+      </div>
+      <div style="display: flex; gap: 12px; align-items: center;">
+        <button type="button" class="btn btn-g" (click)="cancel()" style="height: 34px; padding: 0 16px; font-size: 12px;">Cancel</button>
+        <button type="button" class="btn btn-faculties-outline" (click)="saveDraft()" style="height: 34px; padding: 0 16px; font-size: 12px;">Save as Draft</button>
+        <button type="button" class="btn btn-p" (click)="submitForAccreditation()" style="height: 34px; padding: 0 16px; font-size: 12px;">Submit for Accreditation</button>
+      </div>
+    </div>
+
+</div>

@@ -63,7 +63,7 @@
         <div class="faculty-card-divider"></div>
         
         <div class="programs-container">
-            <div class="program-pill" *ngFor="let program of faculty.programs" (click)="goToProgramDetail(program.programId)">
+            <div class="program-pill" *ngFor="let program of faculty.programs" (click)="editProgram(program.programId, program.isDraft)">
                 <span class="program-name">{{ program.programName }}</span>
                 <span class="program-code">{{ program.programCode }}</span>
                 <span class="accreditation-badge" 

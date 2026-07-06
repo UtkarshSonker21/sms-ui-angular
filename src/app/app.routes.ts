@@ -20,6 +20,8 @@ import { SchoolDashboard } from './features/common/school-dashboard/school-dashb
 import { MarketingDashboard } from './features/common/marketing-dashboard/marketing-dashboard';
 import { Courses } from './features/university/courses/courses';
 import { Faculties } from './features/university/faculties/faculties';
+import { Program } from './features/university/program/program';
+import { ProgramDetail } from './features/university/program-detail/program-detail';
 
 export const routes: Routes = [
 
@@ -104,8 +106,20 @@ export const routes: Routes = [
                 path: 'faculties',
                 component: Faculties
             },
+            {
+                path: 'programs',
+                component: Program
+            },
+            {
+                path: 'programs/:programId',
+                component: Program
+            },
+            {
+                path: 'programs-detail/:programId',
+                component: ProgramDetail
+            },
 
-            
+
 
 
             // LAST CHILD

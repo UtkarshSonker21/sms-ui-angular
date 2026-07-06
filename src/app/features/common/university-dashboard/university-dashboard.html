@@ -1,1 +1,97 @@
-<p>university-dashboard works!</p>
+<div class="dashboard-page">
+  
+  <!-- 1. Page Header -->
+  <div class="page-head">
+    <div>
+      <h1 class="page-title">{{ welcomeMessage }}</h1>
+      <div class="page-sub">{{ subtitleMessage }}</div>
+    </div>
+  </div>
+
+  <!-- 2. Statistics Cards Grid (Using Kafaat Design System KPI classes) -->
+  <div class="kpi-grid">
+    <div class="kpi" *ngFor="let stat of dashboardStats">
+      <div class="kpi-l">{{ stat.title }}</div>
+      <div class="kpi-v">{{ stat.value }}</div>
+      <div class="kpi-d" [ngClass]="stat.subtextClass">{{ stat.subtext }}</div>
+    </div>
+  </div>
+
+  <!-- 3. Split Layout: Recent Applications & Upcoming Deadlines -->
+  <div class="dashboard-content">
+    
+    <!-- Left Column: Recent Applications Card -->
+    <div class="card recent-applications-card">
+      <div class="card-head">
+        <div>
+          <h2 class="card-title">Recent Applications</h2>
+          <div class="card-sub">Updated just now</div>
+        </div>
+        <a [routerLink]="['/university-applications']" class="view-all-link">View all &rarr;</a>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Program</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let app of recentApplications">
+                <td>
+                  <div class="student-info">
+                    <div class="avatar" [attr.data-name]="app.avatar">{{ app.avatar }}</div>
+                    <div>
+                      <div class="student-name">{{ app.studentName }}</div>
+                      <div class="student-id">{{ app.studentId }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="program-name">{{ app.programName }}</div>
+                  <div class="faculty-name">{{ app.faculty }}</div>
+                </td>
+                <td>
+                  <span class="chip" [ngClass]="app.statusClass">
+                    {{ app.status }}
+                  </span>
+                </td>
+                <td class="time-col">{{ app.time }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Upcoming Deadlines Card -->
+    <div class="card upcoming-deadlines-card">
+      <div class="card-head">
+        <div>
+          <h2 class="card-title">Upcoming Deadlines</h2>
+          <div class="card-sub">Accreditation & grades timeline</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="deadline-list">
+          <div class="deadline-item" *ngFor="let item of upcomingDeadlines">
+            <div class="deadline-calendar" [ngClass]="item.type">
+              <span class="cal-month">{{ item.month }}</span>
+              <span class="cal-date">{{ item.date }}</span>
+            </div>
+            <div class="deadline-details">
+              <div class="deadline-title">{{ item.title }}</div>
+              <div class="deadline-subtitle">{{ item.subtitle }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
