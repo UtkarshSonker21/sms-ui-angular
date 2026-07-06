@@ -1,0 +1,334 @@
+<div class="courses-page" data-lang="en">
+
+  <!-- Page Header -->
+  <div class="page-head">
+    <div>
+      <div class="crumb">
+        <a href="/">Dashboard</a> <span class="sep">/</span>
+        <a (click)="goBack()" style="cursor: pointer;">Programs</a> <span class="sep">/</span>
+        Detail
+      </div>
+      <h1 class="page-title" style="display: inline-flex; align-items: center; gap: 8px;">
+        <span>{{ program.programName }}</span>
+        <span style="font-size: 13px; font-weight: 500; color: var(--da-muted); border: 1px solid #dfe5ec; border-radius: 4px; padding: 2px 6px; background: #fafbfc;">{{ program.programCode }}</span>
+      </h1>
+      <div class="page-sub">
+        {{ program.numberOfSemesters }} semesters &middot; {{ program.allowedStudentSeats }} seats &middot; min. acceptance rate {{ program.minAcceptanceRate || 0 }}% &middot; <span [innerHTML]="statusText"></span>
+      </div>
+    </div>
+    <div class="page-actions" *ngIf="canAdd">
+      <button class="btn-faculties-outline" id="btn-request-edit" (click)="requestEditWindow()">Request Edit Window</button>
+      <button class="btn-faculties-primary" id="btn-open-reg" (click)="openRegistration()">Open Registration</button>
+    </div>
+  </div>
+
+  <!-- Tab Navigation -->
+  <div class="faculty-tabs" style="display: flex; gap: 24px; border-bottom: 1px solid #E2E8F0; margin-bottom: 20px; overflow-x: auto; padding-bottom: 2px; margin-top: 20px;">
+    <div class="faculty-tab" [class.active]="selectedTab === 'Overview'" (click)="selectedTab = 'Overview'" style="cursor: pointer; padding-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+      <span>Overview</span>
+    </div>
+    <div class="faculty-tab" [class.active]="selectedTab === 'RequiredDocuments'" (click)="selectedTab = 'RequiredDocuments'" style="cursor: pointer; padding-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+      <span>Required Documents</span>
+      <span class="tab-count">{{ program.documents?.length || 0 }}</span>
+    </div>
+    <div class="faculty-tab" [class.active]="selectedTab === 'AdmissionCriteria'" (click)="selectedTab = 'AdmissionCriteria'" style="cursor: pointer; padding-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+      <span>Admission Criteria</span>
+    </div>
+    <div class="faculty-tab" [class.active]="selectedTab === 'Courses'" (click)="selectedTab = 'Courses'" style="cursor: pointer; padding-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+      <span>Courses</span>
+      <span class="tab-count">{{ program.courses?.length || 0 }}</span>
+    </div>
+  </div>
+
+  <!-- Tab Contents -->
+  <div *ngIf="selectedTab === 'Overview'">
+    <!-- ═════ Section 1 — Program Info (Form Layout, Read-Only) ═════ -->
+    <section class="form-section" style="margin-bottom: 20px;">
+      <div class="form-section-head">
+        <div class="form-section-num">1</div>
+        <div>
+          <div class="form-section-title">Program Information</div>
+          <div class="form-section-sub">Read-only snapshot of this program's accredited details.</div>
+        </div>
+      </div>
+      <div class="form-section-body">
+        <div class="form-grid form-grid-2">
+          <div class="field">
+            <label class="field-label">Faculty</label>
+            <input type="text" class="field-input" readonly [value]="program.facultyName" style="background-color: #fafbfc; color: #2f3a4a; pointer-events: none;" />
+          </div>
+          <div class="field">
+            <label class="field-label">Program name</label>
+            <input type="text" class="field-input" readonly [value]="program.programName" style="background-color: #fafbfc; color: #2f3a4a; pointer-events: none;" />
+          </div>
+          <div class="field">
+            <label class="field-label">Program code</label>
+            <input type="text" class="field-input" readonly [value]="program.programCode" style="font-family: 'Courier New', monospace; background-color: #fafbfc; color: #2f3a4a; pointer-events: none;" />
+          </div>
+          <div class="field">
+            <label class="field-label">Number of semesters</label>
+            <div class="input-suffix">
+              <input type="text" class="field-input" readonly [value]="program.numberOfSemesters" style="background-color: #fafbfc; color: #2f3a4a; pointer-events: none;" />
+              <span class="suffix">sem.</span>
+            </div>
+          </div>
+          <div class="field">
+            <label class="field-label">Credits required for graduation</label>
+            <div class="input-suffix">
+              <input type="text" class="field-input" readonly [value]="program.creditsRequired" style="background-color: #fafbfc; color: #2f3a4a; pointer-events: none;" />
+              <span class="suffix">cr</span>
+            </div>
+          </div>
+          <div class="field">
+            <label class="field-label">Allowed student seats</label>
+            <div class="input-suffix">
+              <input type="text" class="field-input" readonly [value]="program.allowedStudentSeats" style="background-color: #fafbfc; color: #2f3a4a; pointer-events: none;" />
+              <span class="suffix">seats</span>
+            </div>
+          </div>
+          <div class="field">
+            <label class="field-label">Min. acceptance high school rate</label>
+            <div class="input-suffix">
+              <input type="text" class="field-input" readonly [value]="program.minAcceptanceRate" style="background-color: #fafbfc; color: #2f3a4a; pointer-events: none;" />
+              <span class="suffix">%</span>
+            </div>
+          </div>
+          <div class="field">
+            <label class="field-label">Degree</label>
+            <input type="text" class="field-input" readonly [value]="getDegreeName(program.degree)" style="background-color: #fafbfc; color: #2f3a4a; pointer-events: none;" />
+          </div>
+          
+          <div class="field" style="grid-column: span 2;">
+            <label class="field-label">Tanzanian Students Combinations</label>
+            <div style="min-height: 34px; padding: 6px 12px; border: 1px solid var(--da-border); border-radius: var(--da-radius-sm); background: #fafbfc; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; pointer-events: none;">
+              <ng-container *ngIf="getTanzanianCombinationsList().length === 0">
+                <span style="font-size: 13px; color: var(--da-muted);">None Selected</span>
+              </ng-container>
+              <ng-container *ngIf="getTanzanianCombinationsList().length > 0">
+                <span class="ms-chip" *ngFor="let comb of getTanzanianCombinationsList()" style="pointer-events: none;">{{ comb }}</span>
+              </ng-container>
+            </div>
+          </div>
+
+          <div class="field" style="grid-column: span 2;">
+            <label class="field-label">High school division</label>
+            <div style="min-height: 34px; padding: 6px 12px; border: 1px solid var(--da-border); border-radius: var(--da-radius-sm); background: #fafbfc; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; pointer-events: none;">
+              <ng-container *ngIf="getHighSchoolDivisionsList().length === 0">
+                <span style="font-size: 13px; color: var(--da-muted);">None Selected</span>
+              </ng-container>
+              <ng-container *ngIf="getHighSchoolDivisionsList().length > 0">
+                <span class="ms-chip" *ngFor="let div of getHighSchoolDivisionsList()" style="pointer-events: none;">{{ div }}</span>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════ Section 2 — Cost Items (Form Layout, Read-Only) ═════ -->
+    <section class="form-section">
+      <div class="form-section-head" style="justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="form-section-num">2</div>
+          <div>
+            <div class="form-section-title">Cost Items</div>
+            <div class="form-section-sub">Configure university fee structures and sponsorship rates.</div>
+          </div>
+        </div>
+        <div class="sem-sub-count" style="margin: 0; font-size: 13px; font-weight: 600; color: var(--da-muted);">
+          {{ program.costs?.length || 0 }} {{ program.costs?.length === 1 ? 'item' : 'items' }}
+        </div>
+      </div>
+      <div class="form-section-body" style="padding-top: 6px; padding-bottom: 12px;">
+        <div class="dyn-list">
+          <ng-container *ngIf="program.costs && program.costs.length > 0; else emptyCosts">
+            <div class="dyn-row cost-fixed" *ngFor="let cost of program.costs" style="padding: 4px 0; border-bottom: 1px dashed var(--da-border); grid-template-columns: 1fr auto; gap: 14px; align-items: center; min-height: 44px; height: 44px; box-sizing: border-box;">
+              <div class="fixed-name" style="font-size: 13px; font-weight: 600; color: var(--da-black);">{{ cost.sponsorshipTypeName }}</div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div class="input-suffix" style="width: 140px;">
+                  <input type="text" class="field-input amt-input" readonly [value]="cost.amount | number:'1.2-2'" style="height: 28px; padding: 4px 34px 4px 8px; font-size: 12px; font-weight: 700; width: 100%; box-sizing: border-box; background-color: var(--da-white); border-color: var(--da-border-strong); color: var(--da-black); pointer-events: none;" />
+                  <span class="suffix" style="inset-inline-end: 8px; font-size: 10px; font-weight: 700; color: var(--da-muted);">SOS</span>
+                </div>
+                <div style="width: 70px; display: flex; align-items: center; justify-content: flex-start;">
+                  <span *ngIf="cost.frequencyTypeId === 1" class="chip" style="background: var(--da-gold-50); color: var(--da-gold-700); font-size: 10px; font-weight: 600; padding: 2px 8px; border: 1px solid rgba(212,168,67,0.2); border-radius: 100px; display: inline-block; text-align: center; width: 100%; box-sizing: border-box; line-height: 1.25;">One-time</span>
+                  <span *ngIf="cost.frequencyTypeId !== 1" class="chip" style="background: var(--da-info-50); color: var(--da-info); font-size: 10px; font-weight: 600; padding: 2px 8px; border: 1px solid rgba(37,99,235,0.15); border-radius: 100px; display: inline-block; text-align: center; width: 100%; box-sizing: border-box; line-height: 1.25;">Recurring</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Cost Summary Details Panel -->
+            <div style="margin-top: 14px; background: var(--da-green-50); border: 1px solid rgba(44, 153, 66, 0.15); border-radius: var(--da-radius-sm); padding: 12px 16px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 40px;">
+              <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--da-text-2);">
+                <span>Recurring per semester:</span>
+                <span style="font-weight: 600; font-family: 'Courier New', monospace;">{{ semCosts | number:'1.2-2' }} SOS</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--da-text-2);">
+                <span>Total course credits:</span>
+                <span style="font-weight: 600; font-family: 'Courier New', monospace;">{{ program.creditsRequired }} cr</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--da-text-2);">
+                <span>One-time items:</span>
+                <span style="font-weight: 600; font-family: 'Courier New', monospace;">{{ oneTimeCosts | number:'1.2-2' }} SOS</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--da-text-2);">
+                <span>Cost per credit:</span>
+                <span style="font-weight: 600; font-family: 'Courier New', monospace;">{{ costPerCredit | number:'1.2-2' }} SOS</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--da-text-2); grid-column: 1 / -1; border-top: 1px solid rgba(44, 153, 66, 0.1); padding-top: 8px; margin-top: 2px;">
+                <span style="font-weight: 700; color: var(--da-green);">Grand total program cost:</span>
+                <span style="font-weight: 700; color: var(--da-green); font-size: 14px; font-family: 'Courier New', monospace;">{{ grandTotal | number:'1.2-2' }} SOS</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--da-text-2); grid-column: 1 / -1; border-top: 1px dashed rgba(44, 153, 66, 0.1); padding-top: 6px;">
+                <span>Cost per semester (average):</span>
+                <span style="font-weight: 600; font-family: 'Courier New', monospace;">{{ avgPerSemester | number:'1.2-2' }} SOS</span>
+              </div>
+            </div>
+          </ng-container>
+          <ng-template #emptyCosts>
+            <div class="empty-state" style="padding: 24px 20px;">
+              <p style="margin: 0; font-size: 13px; color: var(--da-muted);">No cost items defined.</p>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div *ngIf="selectedTab === 'RequiredDocuments'">
+    <!-- ═════ Section 2 — Required Documents (Form Layout, Read-Only) ═════ -->
+    <section class="form-section">
+      <div class="form-section-head" style="justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="form-section-num">1</div>
+          <div>
+            <div class="form-section-title">Required Documents</div>
+            <div class="form-section-sub">Documents applicants must upload when applying to this program.</div>
+          </div>
+        </div>
+        <div class="sem-sub-count" style="margin: 0; font-size: 13px; font-weight: 600; color: var(--da-muted);">
+          {{ program.documents?.length || 0 }} {{ program.documents?.length === 1 ? 'document' : 'documents' }}
+        </div>
+      </div>
+      <div class="form-section-body" style="padding-top: 10px; padding-bottom: 12px;">
+        <div class="dyn-list">
+          <ng-container *ngIf="program.documents && program.documents.length > 0; else emptyDocs">
+            <div class="dyn-row doc-dyn" *ngFor="let doc of getSortedDocuments()" style="padding: 6px 0; grid-template-columns: 1fr auto; gap: 10px; align-items: center; border-bottom: 1px dashed var(--da-border); min-height: 44px;">
+              <div class="fixed-name" style="font-size: 13px; font-weight: 600; color: var(--da-black);">{{ doc.documentTypeName }}</div>
+              <div style="display: flex; align-items: center;">
+                <div class="seg" style="pointer-events: none;">
+                  <button type="button" class="seg-opt" [class.on]="doc.isRequired">Required</button>
+                  <button type="button" class="seg-opt" [class.on]="!doc.isRequired">Optional</button>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+          <ng-template #emptyDocs>
+            <div class="empty-state" style="padding: 24px 20px;">
+              <p style="margin: 0; font-size: 13px; color: var(--da-muted);">No documents required for this program.</p>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div *ngIf="selectedTab === 'AdmissionCriteria'">
+    <!-- ═════ Section Admission Criteria (Form Layout, Read-Only) ═════ -->
+    <section class="form-section">
+      <div class="form-section-head">
+        <div class="form-section-num">1</div>
+        <div>
+          <div class="form-section-title">Admission Criteria</div>
+          <div class="form-section-sub">Read-only high school criteria snapshot.</div>
+        </div>
+      </div>
+      <div class="form-section-body">
+        <div class="form-grid form-grid-2">
+          <div class="field" style="grid-column: span 2;">
+            <label class="field-label">Minimum Acceptance Rate</label>
+            <div class="input-suffix">
+              <input type="text" class="field-input" readonly [value]="program.minAcceptanceRate" style="background-color: #fafbfc; color: #2f3a4a; pointer-events: none;" />
+              <span class="suffix">%</span>
+            </div>
+          </div>
+          
+          <div class="field" style="grid-column: span 2;">
+            <label class="field-label">Tanzanian Student Combinations</label>
+            <div style="min-height: 34px; padding: 6px 12px; border: 1px solid var(--da-border); border-radius: var(--da-radius-sm); background: #fafbfc; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; pointer-events: none;">
+              <ng-container *ngIf="getTanzanianCombinationsList().length === 0">
+                <span style="font-size: 13px; color: var(--da-muted);">None Selected</span>
+              </ng-container>
+              <ng-container *ngIf="getTanzanianCombinationsList().length > 0">
+                <span class="ms-chip" *ngFor="let comb of getTanzanianCombinationsList()" style="pointer-events: none;">{{ comb }}</span>
+              </ng-container>
+            </div>
+          </div>
+
+          <div class="field" style="grid-column: span 2;">
+            <label class="field-label">Allowed High School Divisions</label>
+            <div style="min-height: 34px; padding: 6px 12px; border: 1px solid var(--da-border); border-radius: var(--da-radius-sm); background: #fafbfc; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; pointer-events: none;">
+              <ng-container *ngIf="getHighSchoolDivisionsList().length === 0">
+                <span style="font-size: 13px; color: var(--da-muted);">None Selected</span>
+              </ng-container>
+              <ng-container *ngIf="getHighSchoolDivisionsList().length > 0">
+                <span class="ms-chip" *ngFor="let div of getHighSchoolDivisionsList()" style="pointer-events: none;">{{ div }}</span>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div *ngIf="selectedTab === 'Courses'">
+    <!-- ═════ Section 4 — Courses (Form Layout, Read-Only) ═════ -->
+    <section class="form-section">
+      <div class="form-section-head" style="justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="form-section-num">1</div>
+          <div>
+            <div class="form-section-title">Program Courses</div>
+            <div class="form-section-sub">Required academic courses for program graduation.</div>
+          </div>
+        </div>
+        <div class="sem-sub-count" style="margin: 0; font-size: 13px; font-weight: 600; color: var(--da-muted);">
+          {{ program.courses?.length || 0 }} {{ program.courses?.length === 1 ? 'course' : 'courses' }} &bull; {{ totalCoursesCredits }} credits
+        </div>
+      </div>
+      <div class="form-section-body" style="padding-top: 10px; padding-bottom: 14px;">
+        <div class="dyn-list">
+          <ng-container *ngIf="program.courses && program.courses.length > 0; else emptyCourses">
+            <div class="dyn-row course-dyn" *ngFor="let c of getSortedCourses()" style="padding: 6px 0; border-bottom: 1px dashed var(--da-border); grid-template-columns: 1fr 140px auto 100px; gap: 14px; align-items: center; min-height: 44px; height: 44px; box-sizing: border-box;">
+              <div class="fixed-name" style="font-size: 13px; font-weight: 600; color: var(--da-black);">
+                {{ c.courseNameEn }} <span class="program-code" style="color: var(--da-green); font-size: 12px; font-weight: 600; margin-inline-start: 6px;">{{ c.courseCode }}</span>
+              </div>
+              <div>
+                <div class="multi-select" style="height: 28px; padding: 2px 8px; background: #fafbfc; min-height: 28px; pointer-events: none; border-color: var(--da-border-strong);">
+                  <div class="ms-display" style="font-size: 12px; color: var(--da-black);">
+                    Semester {{ c.semesterNo }}
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div class="seg" style="pointer-events: none;">
+                  <button type="button" class="seg-opt" [class.on]="c.courseType === 1">Core</button>
+                  <button type="button" class="seg-opt" [class.on]="c.courseType === 2">Elective</button>
+                </div>
+              </div>
+              <div class="input-suffix">
+                <input type="text" class="field-input amt-input" readonly [value]="c.credits" style="height: 28px; padding: 4px 24px 4px 8px; font-size: 12px; width: 100%; box-sizing: border-box; background: #fafbfc; pointer-events: none;" />
+                <span class="suffix" style="inset-inline-end: 8px; font-size: 10px; font-weight: 700;">cr</span>
+              </div>
+            </div>
+          </ng-container>
+          <ng-template #emptyCourses>
+            <div class="empty-state" style="padding: 24px 20px;">
+              <p style="margin: 0; font-size: 13px; color: var(--da-muted);">No courses configured for this program.</p>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+    </section>
+  </div>
+
+</div>

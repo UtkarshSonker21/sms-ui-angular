@@ -26,6 +26,30 @@ export const ApiEndpoints = {
   },
 
 
+  SuperAdmin: {
+
+    MasterDropDown: {
+      Search: 'superadmin/master-dropdown/search',
+      GetById: 'superadmin/master-dropdown/getById',
+      Create: 'superadmin/master-dropdown/create',
+      Update: 'superadmin/master-dropdown/update',
+      Delete: 'superadmin/master-dropdown/delete',
+      GetByParentId: 'superadmin/master-dropdown/getByParentId',
+    }
+
+  },
+
+  Ngo: {
+
+    SponsorshipTypes: {
+      Search: 'ngo/sponsorship-types/search',
+      GetById: 'ngo/sponsorship-types/getById',
+      Create: 'ngo/sponsorship-types/create',
+      Update: 'ngo/sponsorship-types/update',
+      Delete: 'ngo/sponsorship-types/delete'
+    },
+
+  },
 
   University: {
 
@@ -52,6 +76,14 @@ export const ApiEndpoints = {
       Create: 'university/programs/create',
       Update: 'university/programs/update',
       Delete: 'university/programs/delete'
+    },
+
+    DocumentTypes: {
+      Search: 'university/document-types/search',
+      GetById: 'university/document-types/getById',
+      Create: 'university/document-types/create',
+      Update: 'university/document-types/update',
+      Delete: 'university/document-types/delete'
     }
 
   }

@@ -17,6 +17,7 @@ import { StaffType } from '../../../core/enums/staff-type.enum';
 
 
 import { FacultyRequest } from '../../../core/models/university/faculties/faculty-request.model';
+import { FacultyProgramItem } from '../../../core/models/university/faculties/faculty-program-item.model';
 
 @Component({
   selector: 'app-faculties',
@@ -151,13 +152,23 @@ export class Faculties implements OnInit {
     });
   }
 
+  editProgram(programId: number, isDraft: boolean): void {
 
-  goToProgramDetail(programId: number): void {
     this.router.navigate([
-      AppRoutes.University.ProgramDetail,
+      isDraft
+        ? AppRoutes.University.Programs
+        : AppRoutes.University.ProgramDetail,
       programId
     ]);
+
   }
+
+  // goToProgramDetail(programId: number): void {
+  //   this.router.navigate([
+  //     AppRoutes.University.ProgramDetail,
+  //     programId
+  //   ]);
+  // }
 
 
   getFacultyIconPath(name: string): string {

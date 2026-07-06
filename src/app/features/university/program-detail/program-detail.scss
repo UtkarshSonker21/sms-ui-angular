@@ -1,0 +1,188 @@
+/* Faculty Tabs styling */
+.faculty-tab {
+  color: #64748B;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.15s ease;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
+  background: transparent;
+  border: none;
+  padding: 10px 0;
+  cursor: pointer;
+}
+
+.faculty-tab.active {
+  color: #10B981;
+  font-weight: 650;
+}
+
+.faculty-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 1.5px;
+  background: #10B981;
+}
+
+.faculty-tab .tab-count {
+  background: #F1F5F9;
+  color: #64748B;
+  border-radius: 999px;
+  font-size: 10px;
+  padding: 1px 5px;
+  font-weight: 500;
+}
+
+.faculty-tab.active .tab-count {
+  background: #ECFDF5;
+  color: #10B981;
+}
+
+/* Core/Elective and Required/Optional Toggles centered and sized equally */
+.seg {
+  display: flex !important;
+  width: 150px !important;
+  height: 28px !important;
+  padding: 2px !important;
+  box-sizing: border-box !important;
+  align-items: center !important;
+  background: var(--da-white, #ffffff) !important;
+  border: 1px solid var(--da-border, #d8dde6) !important;
+  border-radius: var(--da-radius-sm, 6px) !important;
+}
+
+.seg-opt {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 1 !important;
+  height: 100% !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: var(--da-muted, #64748b) !important;
+  border-radius: 4px !important;
+  border: none !important;
+  background: transparent !important;
+  cursor: pointer !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  text-align: center !important;
+  transition: background 0.12s, color 0.12s !important;
+  white-space: nowrap !important;
+
+  &.on {
+    background: var(--da-green, #2c9942) !important;
+    color: #ffffff !important;
+  }
+}
+
+.field-input {
+  box-sizing: border-box !important;
+  height: 38px !important;
+  padding: 9px 12px !important;
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+  border: 1px solid var(--da-border, #d8dde6) !important;
+  border-radius: var(--da-radius-sm, 6px) !important;
+}
+
+/* Shared Input-with-Suffix unified styling */
+.input-suffix {
+  position: relative;
+  display: flex !important;
+  align-items: stretch !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  border-radius: var(--da-radius-sm, 6px) !important;
+  transition: box-shadow 0.15s ease !important;
+
+  &:focus-within {
+    box-shadow: 0 0 0 3px rgba(44, 153, 66, 0.12) !important;
+  }
+}
+
+.input-suffix .field-input {
+  flex: 1 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 38px !important;
+  box-sizing: border-box !important;
+  border: 1px solid var(--da-border, #d8dde6) !important;
+  border-inline-end: none !important;
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  padding: 9px 12px !important;
+  padding-inline-end: 12px !important;
+  text-align: left !important; /* left align numerical inputs to match Blazor design */
+  background: var(--da-surface, #ffffff) !important;
+
+  &:focus {
+    outline: none !important;
+    border-color: var(--da-green, #2c9942) !important;
+    box-shadow: none !important;
+  }
+}
+
+.input-suffix .suffix {
+  position: static !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 44px !important;
+  height: 38px !important;
+  background: var(--da-surface-muted, #fafbfc) !important;
+  border: 1px solid var(--da-border, #d8dde6) !important;
+  border-inline-start: 1px solid var(--da-border, #d8dde6) !important; /* vertical separator line */
+  border-top-right-radius: var(--da-radius-sm, 6px) !important;
+  border-bottom-right-radius: var(--da-radius-sm, 6px) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: var(--da-muted, #64748b) !important;
+  box-sizing: border-box !important;
+  pointer-events: none !important;
+  margin: 0 !important;
+  padding: 0 4px !important;
+}
+
+.input-suffix:focus-within .field-input,
+.input-suffix:focus-within .suffix {
+  border-color: var(--da-green, #2c9942) !important;
+}
+
+/* Responsive sizes inside row tables (like cost amounts or credits) */
+.dyn-row .input-suffix .field-input {
+  height: 28px !important;
+  padding: 4px 8px !important;
+}
+
+.dyn-row .input-suffix .suffix {
+  height: 28px !important;
+  width: 36px !important; /* slightly smaller for tables */
+}
+
+/* Specific fixed compact size for Credits input in Courses row table */
+.course-dyn .cr-input-suffix {
+  width: 80px !important;
+  max-width: 80px !important;
+  flex: none !important;
+}
+
+.course-dyn .cr-input-suffix .field-input {
+  height: 28px !important;
+  padding: 4px 6px !important;
+  padding-inline-end: 6px !important;
+  font-size: 12px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+.course-dyn .cr-input-suffix .suffix {
+  height: 28px !important;
+  width: 26px !important;
+}
