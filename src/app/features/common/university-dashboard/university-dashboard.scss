@@ -1,0 +1,261 @@
+.dashboard-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Page Header positioning */
+.page-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Statistics Grid - using global .kpi-grid but specifying columns */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  width: 100%;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Split Layout with equal heights stretching */
+.dashboard-content {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  align-items: stretch; /* stretches cards to match tallest card */
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+
+  .card-body {
+    padding: 16px;
+    flex: 1 !important; /* allows body to stretch to fill card height */
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/* View All Link alignment and style */
+.view-all-link {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--da-green, #2c9942);
+  text-decoration: none;
+  transition: color 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+
+  &:hover {
+    color: var(--da-green-800, #1e6d2e);
+    text-decoration: underline;
+  }
+}
+
+/* Table layout adjustments */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  td {
+    padding: 10px 14px !important;
+  }
+
+  /* Student Column */
+  .student-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 9999px;
+      background: #f1f5f9;
+      color: #475569;
+      font-weight: 700;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      border: 1px solid #e2e8f0;
+
+      &[data-name="A1"] {
+        background: #ecfdf5;
+        color: #065f46;
+        border-color: #a7f3d0;
+      }
+      &[data-name="B2"] {
+        background: #eff6ff;
+        color: #1e40af;
+        border-color: #bfdbfe;
+      }
+      &[data-name="C3"] {
+        background: #f5f3ff;
+        color: #5b21b6;
+        border-color: #ddd6fe;
+      }
+      &[data-name="D4"] {
+        background: #fef2f2;
+        color: #991b1b;
+        border-color: #fca5a5;
+      }
+    }
+
+    .student-name {
+      font-weight: 600;
+      color: var(--da-black);
+    }
+
+    .student-id {
+      font-size: 11px;
+      color: var(--da-muted);
+      margin-top: 1px;
+    }
+  }
+
+  /* Program Column */
+  .program-name {
+    font-weight: 600;
+    color: var(--da-black);
+  }
+
+  .faculty-name {
+    font-size: 11px;
+    color: var(--da-muted);
+    margin-top: 1px;
+  }
+
+  .time-col {
+    color: var(--da-muted);
+    font-size: 12px;
+    text-align: end;
+  }
+}
+
+/* Upcoming Deadlines */
+.deadline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  height: 100%;
+}
+
+.deadline-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  &:not(:last-child) {
+    border-bottom: 1px dashed var(--da-border);
+    padding-bottom: 14px;
+  }
+
+  .deadline-calendar {
+    width: 44px;
+    height: 48px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid var(--da-border);
+    box-sizing: border-box;
+
+    &.danger {
+      background: #fef2f2;
+      border-color: #fca5a5;
+      .cal-month {
+        background: #ef4444;
+        color: #ffffff;
+      }
+      .cal-date {
+        color: #991b1b;
+      }
+    }
+
+    &.warning {
+      background: #fffbeb;
+      border-color: #fcd34d;
+      .cal-month {
+        background: #f59e0b;
+        color: #ffffff;
+      }
+      .cal-date {
+        color: #92400e;
+      }
+    }
+
+    &.info {
+      background: #f0f9ff;
+      border-color: #7dd3fc;
+      .cal-month {
+        background: #0284c7;
+        color: #ffffff;
+      }
+      .cal-date {
+        color: #075985;
+      }
+    }
+
+    .cal-month {
+      font-size: 8px;
+      font-weight: 800;
+      width: 100%;
+      text-align: center;
+      padding: 2px 0;
+      border-top-left-radius: 7px;
+      border-top-right-radius: 7px;
+      letter-spacing: 0.05em;
+    }
+
+    .cal-date {
+      font-size: 15px;
+      font-weight: 700;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+  }
+
+  .deadline-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    .deadline-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--da-black);
+    }
+
+    .deadline-subtitle {
+      font-size: 11px;
+      color: var(--da-muted);
+    }
+  }
+}
