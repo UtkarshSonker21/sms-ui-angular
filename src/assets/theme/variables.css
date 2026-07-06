@@ -1,0 +1,39 @@
+/* ══════════════════════════════════════════════════════════════
+   Kafaat University Dashboard — DA Brand ID25 Design System
+   variables.css - Root Variables & Core Design Tokens
+   ══════════════════════════════════════════════════════════════ */
+
+:root {
+  --da-green:   #2C9942;
+  --da-green-50: #F0FDF4;
+  --da-green-100: #DCFCE7;
+  --da-green-700: #166534;
+  --da-green-800: #065F46;
+  --da-gold:    #D4A843;
+  --da-gold-50: #FFFBEB;
+  --da-gold-700: #92400E;
+  --da-black:   #050505;
+  --da-white:   #F9F9F9;
+  --da-surface: #FFFFFF;
+  --da-border:  #E5E7EB;
+  --da-border-strong: #D1D5DB;
+  --da-muted:   #6B7280;
+  --da-muted-2: #9CA3AF;
+  --da-text-2:  #374151;
+  --da-danger:  #DC2626;
+  --da-danger-50: #FEF2F2;
+  --da-info:    #2563EB;
+  --da-info-50: #EFF6FF;
+  --da-purple-50: #F5F3FF;
+  --da-purple-700: #5B21B6;
+  --da-radius:  8px;
+  --da-radius-sm: 6px;
+  --da-radius-lg: 12px;
+  --da-shadow:  0 1px 4px rgba(0,0,0,0.06);
+  --da-shadow-lg: 0 4px 16px rgba(0,0,0,0.08);
+  --da-control-height: 34px;
+  --da-input-padding: 7px 12px;
+  --da-multi-select-min-height: var(--da-control-height);
+  --da-multi-select-padding: 5px 12px;
+}
+

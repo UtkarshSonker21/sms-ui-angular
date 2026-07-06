@@ -1,0 +1,35 @@
+/* ══════════════════════════════════════════════════════════════
+   Kafaat University Dashboard — DA Brand ID25 Design System
+   rtl.css - Bidirectional (RTL / LTR) Layout Orchestrator
+   ══════════════════════════════════════════════════════════════ */
+
+/* 1. Language-Specific Typography Overrides */
+
+/* Arabic (RTL): Cairo is primary */
+html[dir="rtl"] body {
+  font-family: 'Cairo', 'Segoe UI', Tahoma, Arial, sans-serif;
+}
+
+/* English (LTR): Calibri is primary (Direct Aid Brand Standard) */
+html[dir="ltr"] body {
+  font-family: 'Calibri', 'Segoe UI', 'Cairo', Tahoma, Arial, sans-serif;
+}
+
+/* 2. Explicit Text Direction Utilities */
+[dir="rtl"] .text-start { text-align: right; }
+[dir="rtl"] .text-end { text-align: left; }
+
+[dir="ltr"] .text-start { text-align: left; }
+[dir="ltr"] .text-end { text-align: right; }
+
+/* 3. Bidirectional Number & Monospace Elements Formatting */
+.num-ltr, .table .num, .amt-input {
+  direction: ltr;
+  text-align: right;
+  display: inline-block;
+}
+
+/* Preserve table display for direct cell numbers to prevent layout collapse */
+td.num-ltr, th.num-ltr {
+  display: table-cell;
+}

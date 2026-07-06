@@ -1,0 +1,110 @@
+.loader-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(255, 255, 255, .70);
+    backdrop-filter: blur(6px);
+    z-index: 99999;
+    animation: fadeIn .25s ease;
+}
+
+/* Card */
+
+.loader-container {
+    width: 240px;
+    padding: 30px;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Spinner */
+
+.loader-icon {
+    font-size: 54px;
+    color: #16a34a;
+    animation: spinnerRotate .9s linear infinite;
+}
+
+/* Loading text */
+
+.loader-text {
+    margin-top: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #16a34a;
+    letter-spacing: .4px;
+}
+
+/* Progress Bar */
+
+.loader-progress {
+    margin-top: 18px;
+    width: 170px;
+    height: 7px;
+    background: #e8ecef;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+/* Animated Green Bar */
+
+.loader-progress-bar {
+    width: 45%;
+    height: 100%;
+    background: linear-gradient(90deg, #22c55e, #16a34a);
+    border-radius: 20px;
+    animation: loadingBar 1.3s ease-in-out infinite;
+}
+
+/* Spinner Animation */
+
+@keyframes spinnerRotate {
+
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+
+}
+
+/* Progress Animation */
+
+@keyframes loadingBar {
+
+    0% {
+        width: 20%;
+        transform: translateX(-100%);
+    }
+
+    50% {
+        width: 70%;
+    }
+
+    100% {
+        width: 20%;
+        transform: translateX(400%);
+
+    }
+
+}
+
+/* Fade */
+
+@keyframes fadeIn {
+
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+
+}

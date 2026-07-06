@@ -1,0 +1,26 @@
+<!-- <div
+    class="loader-backdrop"
+    *ngIf="loadingService.loading$ | async">
+
+    <div class="loader-content">
+
+        <div class="loader-spinner"></div>
+
+        <p>Loading...</p>
+
+    </div>
+
+</div> -->
+<div class="loader-overlay" *ngIf="loadingService.loading$ | async">
+
+    <div class="loader-container">
+
+        <i class="fa-solid fa-spinner loader-icon"></i>
+
+        <div class="loader-text">
+            Loading...
+        </div>
+
+    </div>
+
+</div>

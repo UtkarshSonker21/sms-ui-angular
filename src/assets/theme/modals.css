@@ -1,0 +1,195 @@
+/* ══════════════════════════════════════════════════════════════
+   Kafaat University Dashboard — DA Brand ID25 Design System
+   modals.css - Modal backdrops, Pop Dialogs, close actions & dialog footers
+   ══════════════════════════════════════════════════════════════ */
+
+.modal-backdrop,
+.mud-overlay-scrim {
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(15, 23, 42, 0.22) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+  z-index: 9990 !important;
+}
+
+.modal-backdrop {
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  animation: modalFade 0.2s ease-out;
+}
+.modal-backdrop[hidden] { display: none; }
+@keyframes modalFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-card,
+.mud-dialog {
+  position: relative !important;
+  z-index: 9991 !important;
+  background: var(--da-surface) !important;
+  border-radius: 16px !important;
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.05),
+    0 12px 30px rgba(0,0,0,0.08),
+    0 32px 64px rgba(0,0,0,0.18) !important;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 700px;
+  overflow: hidden;
+  animation: modalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes modalPop {
+  from { opacity: 0; transform: translateY(16px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--da-border);
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+}
+.modal-head > div:first-child { flex: 1; }
+.modal-title { font-size: 16px; font-weight: 700; color: var(--da-black); }
+.modal-sub { font-size: 12px; color: var(--da-muted); margin-top: 6px; line-height: 1.5; }
+
+.modal-close {
+  width: 30px; height: 30px;
+  border-radius: var(--da-radius-sm);
+  border: 1px solid var(--da-border);
+  background: var(--da-white);
+  color: var(--da-muted);
+  display: grid; place-items: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.modal-close:hover {
+  border-color: var(--da-danger);
+  color: var(--da-danger);
+  background: var(--da-danger-50);
+}
+.modal-close svg { width: 14px; height: 14px; }
+
+.modal-body { padding: 24px; }
+
+.modal-foot {
+  padding: 16px 24px;
+  border-top: 1px solid var(--da-border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  background: var(--da-white);
+  border-bottom-left-radius: inherit;
+  border-bottom-right-radius: inherit;
+}
+
+
+/* Modal Form Row */
+.modal-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    align-items: start;
+
+    padding: 12px 14px;
+    border-radius: 8px;
+
+    transition: background 0.15s;
+}
+
+.modal-form-row:hover {
+    background: var(--da-green-50);
+}
+
+.course-code-group,
+.course-name-group {
+    min-width: 0;
+}
+
+@media (max-width: 768px) {
+    .modal-form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Open faculty multiselect panel based on dynamic position class */
+.modal-body .multi-select .ms-panel.upward {
+    position: absolute;
+    bottom: calc(100% + 8px) !important;
+    top: auto !important;
+    left: 0 !important;
+    right: 0 !important;
+    max-height: 240px !important;
+    overflow-y: auto !important;
+    z-index: 99999 !important;
+    animation: msPanelRevealUp 0.15s ease-out !important;
+}
+
+.modal-body .multi-select .ms-panel.downward {
+    position: absolute;
+    top: calc(100% + 8px) !important;
+    bottom: auto !important;
+    left: 0 !important;
+    right: 0 !important;
+    max-height: 240px !important;
+    overflow-y: auto !important;
+    z-index: 99999 !important;
+    animation: msPanelRevealDown 0.15s ease-out !important;
+}
+
+@keyframes msPanelRevealUp {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes msPanelRevealDown {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* MODAL FIX: Parent containers must not clip dropdown */
+.modal-card,
+.modal-content,
+.modal-body,
+.field-wrapper,
+.multiselect-wrapper {
+    overflow: visible !important;
+}
+
+.btn-danger-custom {
+    background: #dc2626 !important;
+    color: white !important;
+    border: 1px solid #dc2626 !important;
+    border-radius: var(--da-radius-sm) !important;
+    padding: 9px 16px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    transition: background 0.15s !important;
+}
+.btn-danger-custom:hover {
+    background: #b91c1c !important;
+    border-color: #b91c1c !important;
+}
+
+
+
+.modal-error {
+  margin-top: 5px;
+  margin-bottom: 15px;
+  padding: 8px 12px;
+  background: var(--da-danger-50);
+  border: 1px solid var(--da-danger);
+  color: #991B1B;
+  font-size: 12px;
+  border-radius: 6px;
+}

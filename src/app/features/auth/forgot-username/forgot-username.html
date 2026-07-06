@@ -1,0 +1,93 @@
+<div class="login-wrapper">
+
+    <div class="login-shell">
+
+        <!-- Hero Section -->
+
+        <div class="login-hero">
+
+            <div class="hero-content">
+
+                <img src="assets/images/kafat-logo.jpg" alt="Logo" class="login-avatar">
+
+                <div class="hero-text">
+
+                    <h2>Kafa’at</h2>
+
+                    <p>
+                        Program Platform for Higher Education
+                    </p>
+
+                </div>
+
+                <img src="assets/images/profile-img.png" alt="Hero" class="login-hero-img">
+
+            </div>
+
+        </div>
+
+        <!-- Form Section -->
+
+        <div class="login-content">
+
+            <form #sendUsernameForm="ngForm" (ngSubmit)="sendUsername(sendUsernameForm)">
+
+                <!-- Email Address -->
+                <div class="form-group">
+                    <label class="field-label required-label">
+                        Email Address
+                    </label>
+
+                    <div class="input-group">
+
+                        <i class="fas fa-envelope"></i>
+
+                        <input type="text" name="emailOrUsername" [(ngModel)]="userIdentifier.emailOrUsername" #userIdentifierName="ngModel"
+                            required placeholder="Enter registered email" autocomplete="off">
+
+                    </div>
+
+                    <div class="validation-error" *ngIf="userIdentifierName.invalid && (userIdentifierName.touched || submitted)">
+                        Email is required.
+                    </div>
+                </div>
+
+                
+
+                <button type="submit" class="btn btn-p mt-4" [disabled]="sendUsernameForm.invalid || isBusy">
+
+                    <span *ngIf="!isBusy">
+                        SEND USERNAME 
+                    </span>
+
+                    <span *ngIf="isBusy">
+                        SENDING...
+                    </span>
+
+                </button>
+
+
+                <div class="row mt-3 g-2">
+
+                    <div class="col-12 col-md-12">
+                        <button type="button" class="btn btn-g w-100" (click)="goBackToLogin()">
+
+                            <i class="fas fa-sign-in  me-2"></i>
+                            BACK TO LOGIN
+                        </button>
+                    </div>
+
+                </div>
+
+                <p class="browser-note">
+
+                    Note: We’ll send your username to your registered email address.
+                </p>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>

@@ -1,0 +1,48 @@
+<aside class="sidebar">
+
+    <!-- Top Logo Area -->
+    <div class="sidebar__brand">
+        <div class="sidebar__logo">
+            <!-- <img src="assets/images/kafat-logo.jpg" alt="Kafa'at Logo"> -->
+            <i class="fa-solid fa-graduation-cap"></i>
+        </div>
+        <div class="sidebar__brand-text">
+            <span class="sidebar__brand-title">Kafa'at</span>
+            <span class="sidebar__brand-subtitle">COMMITTEE</span>
+        </div>
+    </div>
+
+    <!-- Main Navigation Area -->
+    <nav class="sidebar__nav" aria-label="Main Navigation">
+        @for (section of loadMenus; track section.menuLinkId || section.pageHeading) {
+        <div class="sidebar__section">
+            <h3 class="sidebar__section-title">{{ section.pageHeading }}</h3>
+            <ul class="sidebar__menu-list" role="menu">
+                @for (item of section.subMenus; track item.menuLinkId || item.pagePath) {
+                <li class="sidebar__menu-item" role="none">
+                    <a [routerLink]="item.pagePath" routerLinkActive="active"
+                        [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page" role="menuitem"
+                        class="sidebar__menu-link">
+                        <i class="sidebar__menu-icon" [ngClass]="mapIcon(item.icon)" aria-hidden="true"></i>
+                        <span class="sidebar__menu-text">{{ item.pageHeading }}</span>
+                        <!-- @if (getBadgeValue(item); as badge) {
+                        <span class="sidebar__menu-badge">{{ badge }}</span>
+                        } -->
+                    </a>
+                </li>
+                }
+            </ul>
+        </div>
+        }
+    </nav>
+
+    <!-- Bottom Status Area (Always Fixed to Bottom) -->
+    <div class="sidebar__status">
+        <div class="sidebar__status-dot-container" aria-hidden="true">
+            <div class="sidebar__status-dot"></div>
+            <div class="sidebar__status-dot-pulse"></div>
+        </div>
+        <span class="sidebar__status-text">Online · Fall 2025 term</span>
+    </div>
+
+</aside>

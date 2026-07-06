@@ -1,0 +1,128 @@
+<div class="page-head">
+    <div>
+        <div class="crumb">
+            <a href="#">Dashboard</a>
+            <span class="sep">/</span>
+            <span class="text-muted">Faculties & Programs</span>
+        </div>
+        <h2 class="page-title">Faculties & Programs</h2>
+        <p class="page-sub">
+            {{ dashboardData.totalFaculties || 0 }} faculties &middot; {{ dashboardData.accreditedPrograms || 0 }} programs accredited &middot; {{ dashboardData.underReviewPrograms || 0 }} programs under Direct Aid committee review
+        </p>
+    </div>
+    <div class="page-actions" style="display: flex; gap: 10px;">
+        <button type="button" class="btn btn-g" (click)="addFaculty()">
+            <i class="fas fa-plus btn-icon"></i> Add Faculty
+        </button>
+        <button type="button" class="btn btn-p" (click)="addProgram()">
+            <i class="fas fa-plus btn-icon"></i> Add Program
+        </button>
+    </div>
+</div>
+
+<!-- Warning Banner -->
+<div class="alert-banner">
+    <div class="alert-icon">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <path d="M12 2L1 21h22L12 2zm1 14h-2v2h2v-2zm0-6h-2v4h2v-4z"/>
+        </svg>
+    </div>
+    <div class="alert-content">
+        <div class="alert-title">Any new program must be approved by the Direct Aid committee before becoming visible to applicants.</div>
+        <div class="alert-sub">Complete the accreditation form and submit it through the system admin panel.</div>
+    </div>
+</div>
+
+<!-- Filter Tabs -->
+<div class="faculties-tabs" style="display: flex; gap: 20px; border-bottom: 1px solid #EAECF0; margin-bottom: 20px; padding-bottom: 1px;">
+    <button class="faculty-tab" [class.active]="selectedFacultyFilter === 0" (click)="selectFacultyFilter(0)">
+        All Faculties <span class="tab-count">{{ dashboardData.faculties.length || 0 }}</span>
+    </button>
+    <button class="faculty-tab" *ngFor="let faculty of dashboardData.faculties" 
+            [class.active]="selectedFacultyFilter === faculty.facultyId" 
+            (click)="selectFacultyFilter(faculty.facultyId)">
+        {{ getTabLabel(faculty.facultyName) }} <span class="tab-count">{{ faculty.totalPrograms || 0 }}</span>
+    </button>
+</div>
+
+<!-- Faculty Cards Grid -->
+<div class="faculties-list">
+    <div class="faculty-card" *ngFor="let faculty of getFilteredFaculties()">
+        <div class="faculty-card-header">
+            <div class="faculty-card-header-left">
+                <span class="faculty-icon-square">
+                    <i [class]="getFacultyIconClass(faculty.facultyName)" class="faculty-icon"></i>
+                </span>
+                <h3 class="faculty-card-title" (click)="openEditFacultyModal(faculty)" style="cursor: pointer;">{{ faculty.facultyName }}</h3>
+            </div>
+            <div class="faculty-card-header-right">
+                {{ faculty.totalPrograms || 0 }} programs &middot; average {{ faculty.averageSemesters || 0 }} semesters
+            </div>
+        </div>
+        
+        <div class="faculty-card-divider"></div>
+        
+        <div class="programs-container">
+            <div class="program-pill" *ngFor="let program of faculty.programs" (click)="goToProgramDetail(program.programId)">
+                <span class="program-name">{{ program.programName }}</span>
+                <span class="program-code">{{ program.programCode }}</span>
+                <span class="accreditation-badge" 
+                      [class.under-review]="program.accreditationStatus === 1 || program.statusName === 'UNDER REVIEW'" 
+                      [class.accredited]="program.accreditationStatus === 2 || program.statusName === 'ACCREDITED'">
+                    {{ program.statusName || 'DRAFT' }}
+                </span>
+            </div>
+        </div>
+    </div>
+    
+    <div *ngIf="getFilteredFaculties().length === 0" class="faculties-empty">
+        No Faculties Found
+    </div>
+</div>
+
+<!-- Add Faculty Modal -->
+<div class="modal-backdrop" *ngIf="showFacultyModal">
+    <div class="modal-card">
+        <div class="modal-head">
+            <div>
+                <div class="modal-title">{{ tempFacultyModel.facultyId ? 'Edit Faculty' : 'Add New Faculty' }}</div>
+                <div class="modal-sub">Create a faculty to host academic programs. Programs added under it will require DA Committee accreditation before becoming visible.</div>
+            </div>
+            <button type="button" class="modal-close" (click)="showFacultyModal = false">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <form #facultyForm="ngForm" (ngSubmit)="saveFaculty(facultyForm)" novalidate>
+            <div class="modal-body">
+                <div class="modal-error" *ngIf="modalErrorMessage">{{ modalErrorMessage }}</div>
+                
+                <div class="modal-form-row" style="margin-bottom: 16px;">
+                    <div class="field">
+                        <label class="field-label required-label">FACULTY NAME</label>
+                        <input type="text" name="facultyName" class="field-input" placeholder="e.g. Faculty of Medicine" required
+                               [(ngModel)]="tempFacultyModel.facultyName" #nameModel="ngModel" appDisableAutocomplete>
+                        <div class="validation-error" *ngIf="nameModel.touched && nameModel.errors?.['required']">
+                            Faculty Name is required.
+                        </div>
+                    </div>
+                    
+                    <div class="field">
+                        <label class="field-label required-label">FACULTY CODE</label>
+                        <input type="text" name="facultyCode" class="field-input" placeholder="e.g. MED" required
+                               [(ngModel)]="tempFacultyModel.facultyCode" #codeModel="ngModel" appDisableAutocomplete>
+                        <div class="form-hint">2–4 uppercase letters. Used as prefix for program codes.</div>
+                        <div class="validation-error" *ngIf="codeModel.touched && codeModel.errors?.['required']">
+                            Faculty Code is required.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-foot">
+                <button type="button" class="btn btn-g" (click)="showFacultyModal = false">Cancel</button>
+                <button type="submit" class="btn btn-p">{{ tempFacultyModel.facultyId ? 'Update Faculty' : 'Create Faculty' }}</button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,109 @@
+.page-not-found {
+  background: linear-gradient(180deg, #f7fcf8 0%, #f2faf5 100%);
+  border: 1px solid var(--da-border, #e5E7EB);
+  border-radius: var(--da-radius-lg, 16px);
+  box-shadow: var(--da-shadow-lg, 0 4px 16px rgba(0, 0, 0, 0.08));
+  max-width: 520px;
+  width: 100%;
+  padding: 40px 32px;
+  text-align: center;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 60px auto; // centered horizontally with spacing inside content area
+}
+
+.page-not-found__illustration-container {
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.page-not-found__illustration {
+  width: 80px;
+  height: 80px;
+  color: var(--da-green, #2C9942);
+
+  .svg-cap-top {
+    fill: var(--da-green-50, #F0FDF4);
+    stroke: var(--da-green, #2C9942);
+    stroke-width: 1.5;
+  }
+
+  .svg-cap-base {
+    stroke: var(--da-green, #2C9942);
+    stroke-width: 1.5;
+    fill: none;
+  }
+
+  .svg-tassel {
+    stroke: var(--da-green, #2C9942);
+    stroke-width: 1.5;
+  }
+
+  .svg-tassel-end {
+    fill: var(--da-green, #2C9942);
+    stroke: var(--da-green, #2C9942);
+  }
+}
+
+.page-not-found__code {
+  font-size: 80px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--da-green, #2C9942);
+  margin: 0 0 12px;
+  letter-spacing: -2px;
+}
+
+.page-not-found__title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--da-black, #050505);
+  margin: 0 0 12px;
+}
+
+.page-not-found__description {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--da-muted, #6B7280);
+  margin: 0 0 32px;
+  max-width: 400px;
+}
+
+.page-not-found__actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+// Media queries for responsiveness
+@media (max-width: 576px) {
+  .page-not-found {
+    padding: 32px 20px;
+    border-radius: var(--da-radius, 8px);
+    margin: 24px auto;
+  }
+
+  .page-not-found__code {
+    font-size: 64px;
+  }
+
+  .page-not-found__title {
+    font-size: 20px;
+  }
+
+  .page-not-found__actions {
+    flex-direction: column;
+    align-items: stretch;
+    
+    .btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+}

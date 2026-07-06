@@ -1,0 +1,47 @@
+/* ══════════════════════════════════════════════════════════════
+   Kafaat University Dashboard — DA Brand ID25 Design System
+   theme.css - Semantic Color Skins & Dynamic Theme Mapping
+   ══════════════════════════════════════════════════════════════ */
+
+/* Standard Theme Skin for Direct Aid Brand ID25 */
+:root {
+  --theme-primary:        var(--da-green);
+  --theme-primary-hover:  var(--da-green-700);
+  --theme-primary-light:  var(--da-green-50);
+  --theme-primary-dark:   var(--da-green-800);
+  
+  --theme-accent:         var(--da-gold);
+  --theme-accent-hover:   var(--da-gold-700);
+  --theme-accent-light:   var(--da-gold-50);
+  
+  --theme-bg-body:        var(--da-white);
+  --theme-bg-surface:     var(--da-surface);
+  
+  --theme-border:         var(--da-border);
+  --theme-border-strong:  var(--da-border-strong);
+  
+  --theme-text-primary:   var(--da-black);
+  --theme-text-secondary: var(--da-text-2);
+  --theme-text-muted:     var(--da-muted);
+}
+
+/* Component Theming Hooks (Translating component styles to theme properties) */
+.btn-p {
+  background: var(--theme-primary);
+}
+.btn-p:hover {
+  background: var(--theme-primary-hover);
+}
+.rail-nav.active {
+  background: var(--theme-primary-light);
+  color: var(--theme-primary-dark);
+  border-inline-start-color: var(--theme-primary);
+}
+.tab.active {
+  color: var(--theme-primary);
+  border-bottom-color: var(--theme-primary);
+}
+.tab.active .tab-count {
+  background: var(--theme-primary-light);
+  color: var(--theme-primary-dark);
+}

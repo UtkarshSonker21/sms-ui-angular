@@ -1,0 +1,145 @@
+<div class="login-wrapper">
+
+    <div class="login-shell">
+
+        <!-- Hero Section -->
+
+        <div class="login-hero">
+
+            <div class="hero-content">
+
+                <img src="assets/images/kafat-logo.jpg" alt="Logo" class="login-avatar">
+
+                <div class="hero-text">
+
+                    <h2>Kafa’at</h2>
+
+                    <p>
+                        Program Platform for Higher Education
+                    </p>
+
+                </div>
+
+                <img src="assets/images/profile-img.png" alt="Hero" class="login-hero-img">
+
+            </div>
+
+        </div>
+
+        <!-- Form Section -->
+
+        <div class="login-content">
+
+            <form #sendCodeForm="ngForm" (ngSubmit)="showOtp ? verifyOtp(sendCodeForm) : sendCode(sendCodeForm)">
+
+                <!-- ===========================
+                 STEP 1 : SEND OTP
+                 ============================ -->
+                <ng-container *ngIf="!showOtp; else otpSection">
+
+                    <div class="form-group">
+                        <label class="field-label required-label">
+                            Email Address
+                        </label>
+
+                        <div class="input-group">
+
+                            <i class="fas fa-envelope"></i>
+
+                            <input type="text" name="emailOrUsername" [(ngModel)]="userIdentifier.emailOrUsername"
+                                #emailOrUsername="ngModel" required autocomplete="off"
+                                placeholder="Enter registered email">
+
+                        </div>
+
+                        <div class="validation-error"
+                            *ngIf="emailOrUsername.invalid && (emailOrUsername.touched || submitted)">
+                            Email is required.
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-p mt-4" [disabled]="sendCodeForm.invalid || isBusy">
+
+                        <span *ngIf="!isBusy">
+                            SEND CODE
+                        </span>
+
+                        <span *ngIf="isBusy">
+                            <i class="fas fa-spinner fa-spin me-2"></i>
+                            SENDING...
+                        </span>
+
+                    </button>
+
+                </ng-container>
+                
+                <!-- ===========================
+                 STEP 2 : VERIFY OTP
+                 ============================ -->
+                <ng-template #otpSection>
+
+                    <div class="form-group">
+
+                        <label class="field-label required-label">
+                            Verification Code
+                        </label>
+
+                        <div class="input-group">
+
+                            <i class="fas fa-key"></i>
+
+                            <input type="text" name="otpCode" [(ngModel)]="otpCode" #otp="ngModel" required
+                                maxlength="6" autocomplete="one-time-code" placeholder="Enter 6-digit code">
+
+                        </div>
+
+                        <div class="validation-error" *ngIf="otp.invalid && (otp.touched || submitted)">
+                            Verification code is required.
+                        </div>
+
+                    </div>
+
+                    <button type="submit" class="btn btn-p mt-4" [disabled]="sendCodeForm.invalid || isBusy">
+
+                        <span *ngIf="!isBusy">
+                            VERIFY & LOGIN
+                        </span>
+
+                        <span *ngIf="isBusy">
+                            <i class="fas fa-spinner fa-spin me-2"></i>
+                            VERIFYING...
+                        </span>
+
+                    </button>
+
+                </ng-template>
+
+                <!-- Back Button -->
+
+                <div class="row mt-3 g-2">
+
+                    <div class="col-12">
+
+                        <button type="button" class="btn btn-g w-100" (click)="goBackToLogin()">
+
+                            <i class="fas fa-arrow-left me-2"></i>
+
+                            BACK TO LOGIN
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <p class="browser-note">
+                    Check your email for the verification code and enter it here to continue.
+                </p>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>

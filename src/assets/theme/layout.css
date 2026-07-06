@@ -1,0 +1,2080 @@
+/* ══════════════════════════════════════════════════════════════
+   Kafaat University Dashboard — DA Brand ID25 Design System
+   layout.css - App Shell, Navigation Rail, Grids & Responsive Layouts
+   ══════════════════════════════════════════════════════════════ */
+
+/* App Shell Layout */
+.app {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  grid-template-rows: 56px 1fr;
+  height: 100vh;
+  grid-template-areas:
+    "rail bar"
+    "rail main";
+}
+
+/* App Bar */
+.bar {
+  grid-area: bar;
+  background: var(--da-surface);
+  border-bottom: 1px solid var(--da-border);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 14px;
+  z-index: 10;
+}
+.bar-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--da-black);
+}
+.bar-title-en {
+  font-size: 11px;
+  color: var(--da-muted);
+  font-weight: 400;
+  margin-top: 2px;
+}
+.bar-sep {
+  width: 1px;
+  height: 22px;
+  background: var(--da-border);
+}
+.bar-spacer {
+  flex: 1;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--da-white);
+  border: 1px solid var(--da-border);
+  border-radius: var(--da-radius);
+  font-size: 13px;
+  color: var(--da-muted);
+  min-width: 280px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.search-box:hover {
+  border-color: var(--da-green);
+}
+.search-box .kbd {
+  margin-inline-start: auto;
+  background: var(--da-surface);
+  border: 1px solid var(--da-border);
+  border-radius: 3px;
+  padding: 1px 6px;
+  font-size: 11px;
+  color: var(--da-muted);
+}
+
+.bar-icon-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  color: var(--da-muted);
+  border-radius: var(--da-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: background 0.15s;
+}
+.bar-icon-btn:hover {
+  background: var(--da-white);
+  color: var(--da-black);
+}
+.bar-icon-btn .dot {
+  position: absolute;
+  top: 8px;
+  inset-inline-end: 8px;
+  width: 7px;
+  height: 7px;
+  background: var(--da-danger);
+  border-radius: 50%;
+  border: 2px solid var(--da-surface);
+}
+
+/* Language toggle */
+.lang-toggle {
+  padding: 7px 12px;
+  border: 1px solid var(--da-border);
+  border-radius: var(--da-radius-sm);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--da-text-2);
+  background: var(--da-white);
+  transition: all 0.15s;
+  letter-spacing: 0.04em;
+}
+.lang-toggle:hover {
+  border-color: var(--da-green);
+  color: var(--da-green);
+  background: var(--da-green-50);
+}
+
+/* Side Rail */
+.rail {
+  grid-area: rail;
+  background: var(--da-surface);
+  border-inline-end: 1px solid var(--da-border);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.rail-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--da-border);
+  height: 56px;
+}
+.rail-logo {
+  width: 32px;
+  height: 32px;
+  background: var(--da-green);
+  color: #fff;
+  border-radius: var(--da-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.rail-brand-text {
+  line-height: 1.2;
+}
+.rail-brand-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--da-black);
+}
+.rail-brand-sub {
+  font-size: 10px;
+  color: var(--da-muted);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.rail-section {
+  padding: 14px 18px 6px;
+  font-size: 10px;
+  color: var(--da-muted-2);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.rail-nav {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  padding: 0 14px;
+  margin: 2px 8px;
+  border-radius: 12px;
+  color: #667085;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.18s ease;
+}
+.rail-nav:hover {
+  background: rgba(22,163,74,0.05);
+}
+.rail-nav.active {
+  background: #edf8f1;
+  color: #16a34a;
+}
+.rail-nav.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 2px;
+  background: #16a34a;
+}
+.rail-nav svg {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+  color: var(--da-muted);
+}
+.rail-nav.active svg {
+  color: #16a34a;
+}
+    .rail-nav .count {
+        margin-inline-start: auto;
+        font-size: 11px;
+        padding: 1px 8px;
+        background: rgba(0,0,0,0.05);
+        color: var(--da-green);
+        border-radius: 100px;
+        font-weight: 600;
+    }
+.rail-nav.active .count {
+  background: var(--da-surface);
+  color: var(--da-green);
+}
+
+.rail-footer {
+  margin-top: auto;
+  padding: 14px 18px;
+  border-top: 1px solid var(--da-border);
+  font-size: 11px;
+  color: var(--da-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.rail-footer .status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--da-green);
+  box-shadow: 0 0 0 3px var(--da-green-50);
+}
+
+/* Main Content Area */
+.main {
+  grid-area: main;
+  padding: 22px 26px;
+  background: var(--da-white);
+  overflow-y: auto;
+}
+
+.page-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.crumb {
+  font-size: 11px;
+  color: var(--da-muted);
+  margin-bottom: 6px;
+}
+.crumb a:hover {
+  color: var(--da-green);
+}
+.crumb .sep {
+  margin: 0 6px;
+}
+.page-title {
+  font-size: 18px;
+  font-weight: 650;
+  color: var(--da-black);
+  letter-spacing: -0.01em;
+}
+.page-sub {
+  font-size: 11.5px;
+  color: var(--da-muted);
+  margin-top: 4px;
+}
+.page-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+/* Grid Layouts */
+.two-col {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 14px;
+}
+.three-col {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+.row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Sticky form footer */
+.form-foot {
+  position: fixed;
+  bottom: 0;
+  inset-inline-start: 240px;
+  inset-inline-end: 0;
+  background: rgba(249,249,249,0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-top: 1px solid var(--da-border);
+  padding: 12px 26px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 50;
+}
+.form-foot-status {
+  font-size: 12px;
+  color: var(--da-muted);
+  margin-inline-end: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.form-foot-status .dot-on {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--da-green);
+  box-shadow: 0 0 0 3px rgba(44,153,66,0.18);
+}
+
+/* Responsive handling */
+@media (max-width: 1100px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .two-col {
+    grid-template-columns: 1fr;
+  }
+  .three-col {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}@media (max-width: 768px) {
+  .app {
+    grid-template-columns: 56px 1fr;
+  }
+  .rail-brand-text, .rail-section, .rail-nav span, .rail-nav .count {
+    display: none;
+  }
+  .rail-nav {
+    justify-content: center;
+    padding: 10px 0;
+  }
+  .rail-brand {
+    justify-content: center;
+    padding: 12px 0;
+  }
+  .rail-footer {
+    display: none;
+  }
+  .search-box {
+    min-width: auto;
+  }
+  .search-box > span:first-of-type ~ span:not(.kbd) {
+    display: none;
+  }
+  .form-foot {
+    inset-inline-start: 56px;
+    padding: 10px 14px;
+  }
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme {
+  --client-header-primary-height: 56px;
+  --client-header-secondary-height: 60px;
+  --client-header-total-height: calc(var(--client-header-primary-height) + var(--client-header-secondary-height));
+  min-height: 100vh;
+  background: var(--da-white);
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .client-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .client-sidebar {
+  width: var(--client-sidebar-width);
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inset-block-end: 0;
+  overflow-y: auto;
+  z-index: 1000;
+  background: var(--da-surface);
+  border-inline-end: 1px solid var(--da-border);
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .client-sidebar .rail {
+  height: 100%;
+  border-inline-end: none;
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .client-sidebar .client-drawer,
+.kafaat-theme .client-sidebar .client-drawer .mud-drawer {
+  width: var(--client-sidebar-width) !important;
+  max-width: var(--client-sidebar-width) !important;
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .client-sidebar .mud-drawer-content {
+  overflow-y: auto;
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .client-main-area {
+  margin-inline-start: var(--client-sidebar-width);
+  width: calc(100% - var(--client-sidebar-width));
+  min-height: 100vh;
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .client-header {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline-start: var(--client-sidebar-width);
+  inset-inline-end: 0;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .client-primary-header.mud-appbar {
+  min-height: var(--client-header-primary-height);
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .client-secondary-header.mud-appbar {
+  min-height: var(--client-header-secondary-height);
+  border-bottom: 1px solid var(--da-border);
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .client-content {
+  min-height: 100vh;
+  padding-top: calc(var(--client-header-total-height) + 12px);
+  padding-inline: 24px;
+  padding-bottom: 24px;
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .client-content .main {
+  padding: 0;
+  background: transparent;
+  overflow: visible;
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+@media (max-width: 992px) {
+  .kafaat-theme .client-sidebar {
+    width: 0;
+    border-inline-end: none;
+    pointer-events: none;
+  }
+
+  .kafaat-theme .client-sidebar .mud-drawer,
+  .kafaat-theme .client-sidebar .mud-drawer-content {
+    pointer-events: auto;
+  }
+
+  .kafaat-theme .client-main-area {
+    margin-inline-start: 0;
+    width: 100%;
+  }
+
+  .kafaat-theme .client-header {
+    inset-inline-start: 0;
+  }
+
+  .kafaat-theme .client-content {
+    padding-top: calc(var(--client-header-total-height) + 10px);
+    padding-inline: 14px;
+    padding-bottom: 14px;
+  }
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .app-shell {
+  display: flex;
+  min-height: 100vh;
+  background: var(--da-white);
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .app-shell > .rail {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  width: 240px;
+  height: 100vh;
+  overflow-y: auto;
+  z-index: 1000;
+  border-inline-end: 1px solid var(--da-border);
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .shell-body {
+  margin-inline-start: 240px;
+  width: calc(100% - 240px);
+  height: 100vh !important;
+  min-height: 100vh !important;
+  max-height: 100vh !important;
+  background: var(--da-white);
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .client-dark-bar {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline-start: 240px;
+  inset-inline-end: 0;
+  height: 56px !important;
+  min-height: 56px !important;
+  background: #ffffff;
+  color: var(--da-black);
+  border-bottom: 1px solid #eef0f3;
+  padding: 0 18px !important;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 990;
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .client-dark-bar .bar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .client-dark-bar .bar-brand-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #edf8f1;
+  color: var(--da-green-700);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid #dcfce7;
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .client-dark-bar .bar-title-wrap {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  line-height: 1.15;
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .client-dark-bar .bar-title,
+.kafaat-theme .client-dark-bar .main-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.1;
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .client-dark-bar .bar-subtitle,
+.kafaat-theme .client-dark-bar .main-subtitle {
+  font-size: 12px;
+  font-weight: 500;
+  color: #98a2b3;
+  margin-top: 2px;
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .client-dark-bar .bar-tools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .client-dark-bar .search-box {
+  height: 34px !important;
+  width: 290px !important;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  color: #667085;
+  font-size: 13px;
+  min-width: 290px !important;
+  padding: 0 10px !important;
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .client-dark-bar .search-box .kbd {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: #ffffff !important;
+  border: 1px solid var(--da-border);
+  color: var(--da-muted);
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .client-dark-bar .lang-toggle {
+  height: 34px !important;
+  min-width: 36px !important;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: var(--da-text-2);
+  font-size: 12px !important;
+  font-weight: 600;
+  padding: 0 12px;
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .client-dark-bar .bar-icon-btn {
+  width: 34px !important;
+  height: 34px !important;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fff;
+  color: var(--da-text-2);
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .client-dark-bar .appbar-user {
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .client-dark-bar .hover-user {
+  border-radius: 10px;
+  padding: 0 8px;
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .client-dark-bar .hover-user:hover {
+  background: rgba(22, 163, 74, 0.05);
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .client-dark-bar .user-material-icon,
+.kafaat-theme .client-dark-bar .username,
+.kafaat-theme .client-dark-bar .dropdown-material-icon {
+  color: var(--da-text-2);
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .client-dark-bar .search-box .material-icons {
+  opacity: 0.55;
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .client-dark-bar .user-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .client-dark-bar .user-icon,
+.kafaat-theme .client-dark-bar .user-avatar {
+  width: 32px !important;
+  height: 32px !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .client-secondary-menu {
+  position: fixed;
+  inset-block-start: 56px !important;
+  inset-inline-start: 240px;
+  inset-inline-end: 0;
+  min-height: 60px;
+  background: var(--da-surface);
+  border-bottom: 1px solid var(--da-border);
+  z-index: 980;
+  display: flex;
+  align-items: center;
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .shell-body > .main {
+  margin-top: 56px !important;
+  flex: 1 !important;
+  height: calc(100vh - 56px) !important;
+  min-height: calc(100vh - 56px) !important;
+  max-height: calc(100vh - 56px) !important;
+  padding: 22px 26px;
+  overflow-y: auto !important;
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .nav-mobile {
+  display: none;
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .rail-nav-wrap {
+  padding-block: 8px 16px;
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .rail-group {
+  margin: 0;
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .rail-group > summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .rail-group > summary::-webkit-details-marker {
+  display: none;
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .rail-sub .rail-nav {
+  padding-inline-start: 36px;
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .rail-nav .material-icons {
+  font-size: 18px;
+  line-height: 1;
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+@media (max-width: 992px) {
+  .kafaat-theme .app-shell > .rail {
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+  }
+
+  .kafaat-theme .app-shell > .rail.rail-open {
+    transform: translateX(0);
+  }
+
+  .kafaat-theme .shell-body {
+    margin-inline-start: 0;
+    width: 100%;
+  }
+
+  .kafaat-theme .client-dark-bar,
+  .kafaat-theme .client-secondary-menu {
+    inset-inline-start: 0;
+  }
+
+  .kafaat-theme .client-dark-bar .search-box {
+    display: none;
+  }
+
+  .kafaat-theme .nav-mobile {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .kafaat-theme .shell-body > .main {
+    padding: 16px 14px;
+  }
+}
+
+/* NEW CLIENT UI ENHANCEMENT */
+.kafaat-theme .app-shell > .rail {
+  background: #ffffff;
+}
+
+/* SIDEBAR BRAND SECTION */
+.rail-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 20px !important;
+  border-bottom: 1px solid #E2E8F0;
+  height: 56px !important;
+  min-height: 56px !important;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+.rail-logo {
+  width: 32px;
+  height: 32px;
+  background: #2C9942;
+  color: #fff;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.rail-brand-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1px;
+  line-height: 1.15;
+}
+
+.rail-brand-name {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  color: #111827 !important;
+}
+
+.rail-brand-sub {
+  font-size: 10px !important;
+  color: #98A2B3 !important;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* SECTION HEADERS */
+.kafaat-theme .rail-section {
+  padding: 0 20px;
+  margin-top: 24px;
+  margin-bottom: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #7A8190;
+  text-transform: uppercase;
+}
+
+/* MENU ITEMS */
+.kafaat-theme .rail-nav,
+.kafaat-theme .rail-subnav {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  padding: 0 20px;
+  margin: 1px 0;
+  border-radius: 0;
+  color: #2F3A4A;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+  border-left: 3px solid transparent;
+}
+
+.kafaat-theme .rail-nav:hover,
+.kafaat-theme .rail-subnav:hover {
+  background: rgba(16, 185, 129, 0.04);
+  color: #0F172A;
+}
+
+/* ACTIVE MENU STATE */
+.kafaat-theme .rail-nav.active,
+.kafaat-theme .rail-nav[aria-current='page'],
+.kafaat-theme .rail-subnav.active,
+.kafaat-theme .rail-subnav[aria-current='page'] {
+  background: #EAFDF5 !important;
+  color: #166534 !important;
+  font-weight: 500;
+  border-left: 3px solid #22C55E;
+}
+
+.kafaat-theme .rail-nav.active::before,
+.kafaat-theme .rail-nav[aria-current='page']::before,
+.kafaat-theme .rail-subnav.active::before,
+.kafaat-theme .rail-subnav[aria-current='page']::before {
+  display: none !important;
+}
+
+.kafaat-theme .rail-nav .material-icons,
+.kafaat-theme .rail-subnav .material-icons {
+  width: 16px;
+  min-width: 16px;
+  height: 16px;
+  font-size: 16px;
+  line-height: 16px;
+  color: #7b8190;
+  opacity: 1;
+  flex-shrink: 0;
+}
+
+.kafaat-theme .rail-nav.active .material-icons,
+.kafaat-theme .rail-nav[aria-current='page'] .material-icons,
+.kafaat-theme .rail-subnav.active .material-icons,
+.kafaat-theme .rail-subnav[aria-current='page'] .material-icons {
+  color: #22C55E !important;
+}
+
+/* BADGES */
+.kafaat-theme .rail-nav .count,
+.kafaat-theme .rail-parent-right .count {
+  margin-inline-start: auto;
+  width: 22px;
+  min-width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #EAF2F9 !important;
+  color: #64748B !important;
+  border: none !important;
+  font-size: 11px;
+  font-weight: 500 !important;
+}
+
+.kafaat-theme .rail-nav.active .count,
+.kafaat-theme .rail-nav[aria-current='page'] .count {
+  background: #EAFDF5 !important;
+  color: #166534 !important;
+}
+
+/* CHEVRONS & DETAILS EXPANDER */
+.kafaat-theme .rail-parent {
+  margin: 0;
+}
+
+.kafaat-theme .rail-parent-row {
+  height: 40px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #64748B;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.kafaat-theme .rail-parent-row:hover {
+  background: rgba(16, 185, 129, 0.04);
+}
+
+.kafaat-theme .rail-parent-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.kafaat-theme .rail-parent-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0.85;
+}
+
+.kafaat-theme .rail-parent-left .material-icons {
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
+  line-height: 16px;
+  color: #94A3B8;
+  flex-shrink: 0;
+}
+
+.kafaat-theme .rail-chevron {
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
+  line-height: 16px;
+  color: #94A3B8;
+  opacity: 0.6;
+  transition: transform 0.15s ease;
+}
+
+.kafaat-theme .rail-parent[open] .rail-chevron {
+  transform: rotate(90deg);
+}
+
+/* NESTED SUBMENU */
+.kafaat-theme .rail-submenu-nested {
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-inline-start: 12px;
+  border-inline-start: none;
+  margin-inline-start: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.kafaat-theme .rail-submenu-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 8px;
+}
+
+.kafaat-theme .rail-sub .rail-nav,
+.kafaat-theme .rail-subnav {
+  padding-inline-start: 20px;
+  height: 38px;
+  font-size: 13.5px;
+}
+
+/* FOOTER SECTION */
+.kafaat-theme .rail-footer {
+  position: absolute;
+  bottom: 0;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
+  height: 54px;
+  border-top: 1px solid #E2E8F0;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  font-size: 12px;
+  color: #64748B;
+  background: #ffffff !important;
+}
+
+.kafaat-theme .status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #22C55E;
+  margin-inline-end: 8px;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+}
+
+.mud-drawer,
+.mud-paper {
+  background: #ffffff !important;
+}
+
+/* FINAL HEADER HEIGHT MATCH FIX */
+.kafaat-theme .topbar,
+.kafaat-theme .client-header,
+.kafaat-theme .bar,
+.kafaat-theme .client-dark-bar {
+  height: 56px !important;
+  min-height: 56px !important;
+  background: #ffffff !important;
+  border-bottom: 1px solid #eef0f3 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0 18px !important;
+  box-sizing: border-box !important;
+}
+
+/* LEFT TITLE SECTION */
+.kafaat-theme .topbar-left,
+.kafaat-theme .header-brand-area,
+.kafaat-theme .bar-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 100%;
+}
+
+/* TITLE BLOCK */
+.kafaat-theme .header-brand-text,
+.kafaat-theme .bar-title-wrap,
+.kafaat-theme .header-title-group {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1px;
+  line-height: 1;
+}
+
+/* Main title */
+.kafaat-theme .header-brand-title,
+.kafaat-theme .main-title,
+.kafaat-theme .bar-title {
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  color: #111827 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1.15 !important;
+}
+
+/* Subtitle */
+.kafaat-theme .header-brand-subtitle,
+.kafaat-theme .main-subtitle,
+.kafaat-theme .bar-subtitle {
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  color: #98a2b3 !important;
+  margin-top: 2px !important;
+  line-height: 1 !important;
+}
+
+/* RIGHT ACTIONS */
+.kafaat-theme .topbar-actions,
+.kafaat-theme .bar-tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 100%;
+}
+
+/* SEARCH */
+.kafaat-theme .search-box,
+.kafaat-theme .header-search {
+  height: 34px !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 10px !important;
+  background: var(--theme-bg-body) !important;
+  padding: 0 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px;
+  min-width: 260px;
+}
+
+/* search text */
+.kafaat-theme .search-box input,
+.kafaat-theme .search-placeholder {
+  font-size: 13px !important;
+  color: #667085 !important;
+}
+
+/* SMALL TOOLBAR BUTTONS */
+.kafaat-theme .header-btn,
+.kafaat-theme .lang-btn,
+.kafaat-theme .icon-btn,
+.kafaat-theme .lang-toggle,
+.kafaat-theme .bar-icon-btn,
+.kafaat-theme .notification-btn {
+  height: 34px !important;
+  min-width: 34px !important;
+  border-radius: 10px !important;
+  border: 1px solid #e5e7eb !important;
+  background: var(--theme-bg-body) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.kafaat-theme .lang-toggle {
+  min-width: 38px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+}
+
+/* PROFILE AREA */
+.kafaat-theme .profile-area,
+.kafaat-theme .appbar-user,
+.kafaat-theme .hover-user {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  height: 34px !important;
+}
+
+/* avatar */
+.kafaat-theme .profile-avatar,
+.kafaat-theme .user-avatar {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 999px !important;
+}
+
+/* name */
+.kafaat-theme .profile-name,
+.kafaat-theme .user-name {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: #4b5563 !important;
+}
+
+/* REMOVE EXTRA MARGINS */
+.kafaat-theme .topbar *,
+.kafaat-theme .client-dark-bar * {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* FORCE SAME CLIENT DENSITY */
+.kafaat-theme .topbar,
+.kafaat-theme .topbar *,
+.kafaat-theme .client-dark-bar,
+.kafaat-theme .client-dark-bar * {
+  letter-spacing: 0 !important;
+}
+
+/* SIDEBAR HEADER MUST MATCH */
+.kafaat-theme .sidebar-header,
+.kafaat-theme .rail-brand,
+.kafaat-theme .client-brand {
+  height: 56px !important;
+  min-height: 56px !important;
+  border-bottom: 1px solid #E2E8F0 !important;
+}
+
+.kafaat-theme .mud-toolbar-gutters {
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+}
+
+.kafaat-theme .mud-toolbar > * {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.sidebar-header,
+.topbar,
+.bar,
+.client-header,
+.rail-brand {
+  margin: 0 !important;
+}
+
+/* ================================================= */
+/* INLINE HEADER TITLE BLOCK FIX */
+/* ================================================= */
+
+.topbar-title-group {
+    display: flex;
+    align-items: center;
+    height: 56px;
+    gap: 16px;
+}
+
+/* Main title */
+.topbar-main-title {
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    color: #111827 !important;
+    line-height: 1 !important;
+    white-space: nowrap;
+}
+
+/* Divider */
+.topbar-divider {
+    width: 1px;
+    height: 22px;
+    background: #e5e7eb;
+}
+
+/* Sub title */
+.topbar-sub-title {
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    color: #667085 !important;
+    line-height: 1 !important;
+    white-space: nowrap;
+}
+
+/* remove old stacked styling */
+.header-brand-text,
+.header-brand-subtitle,
+.header-brand-title {
+    display: unset !important;
+    flex-direction: unset !important;
+}
+
+/* remove extra spacing */
+.topbar-title-group * {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* align vertically */
+.topbar-left {
+    display: flex;
+    align-items: center;
+    height: 56px;
+}
+
+/* ================================================= */
+/* PROFILE DROPDOWN CONTAINER */
+/* ================================================= */
+
+.profile-dropdown,
+.user-dropdown,
+.account-dropdown,
+.mud-popover {
+    width: 175px !important;
+    background: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 10px !important;
+    box-shadow:
+        0 4px 12px rgba(16, 24, 40, 0.10),
+        0 1px 2px rgba(16, 24, 40, 0.06) !important;
+    padding: 6px 0 !important;
+    overflow: hidden !important;
+}
+
+/* ================================================= */
+/* MENU ITEMS */
+/* ================================================= */
+
+.profile-dropdown .menu-item,
+.user-dropdown .menu-item,
+.mud-menu-item {
+    height: 42px !important;
+    padding: 0 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: #374151 !important;
+    background: transparent !important;
+    transition: background 0.15s ease !important;
+}
+
+/* ================================================= */
+/* HOVER */
+/* ================================================= */
+
+.profile-dropdown .menu-item:hover,
+.user-dropdown .menu-item:hover,
+.mud-menu-item:hover {
+    background: #f8fafc !important;
+}
+
+/* ================================================= */
+/* ICONS */
+/* ================================================= */
+
+.profile-dropdown .menu-item svg,
+.user-dropdown .menu-item svg,
+.mud-menu-item svg {
+    width: 16px !important;
+    height: 16px !important;
+    color: #6b7280 !important;
+}
+
+/* ================================================= */
+/* EXPAND ICON */
+/* ================================================= */
+
+.menu-expand-icon {
+    margin-left: auto !important;
+    width: 14px !important;
+    height: 14px !important;
+    opacity: 0.7;
+}
+
+/* ================================================= */
+/* DIVIDER ABOVE LOGOUT */
+/* ================================================= */
+
+.logout-divider {
+    border-top: 1px solid #ef4444 !important;
+    margin-top: 4px !important;
+}
+
+/* ================================================= */
+/* LOGOUT ITEM */
+/* ================================================= */
+
+.logout-item,
+.logout-item *,
+.logout-btn {
+    color: #ef4444 !important;
+}
+
+/* ================================================= */
+/* LOGOUT HOVER */
+/* ================================================= */
+
+.logout-item:hover {
+    background: #fef2f2 !important;
+}
+
+/* ================================================= */
+/* REMOVE MUD DEFAULT STYLES */
+/* ================================================= */
+
+/* =========================================================
+   PROFILE CARD ROOT
+========================================================= */
+
+.profile-menu-clean {
+    width: 240px !important;
+    padding: 0 !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    background: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    box-shadow:
+        0 4px 12px rgba(15,23,42,.05),
+        0 1px 2px rgba(15,23,42,.03) !important;
+    margin-top: 8px !important;
+    font-family:
+        Inter,
+        "Segoe UI",
+        system-ui,
+        sans-serif !important;
+}
+
+/* Ensure MudBlazor elements in popover respect 8px radius */
+.profile-menu-clean.mud-popover,
+.profile-menu-clean .mud-paper {
+    border-radius: 8px !important;
+}
+
+/* =========================================================
+   REMOVE ALL FAKE ARROWS / SPINNERS / CONTROLS
+========================================================= */
+
+.profile-menu-clean * {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    background-image: none !important;
+}
+
+/* REMOVE GENERATED TYPOGRAPHY ICONS */
+
+.profile-menu-clean span::before,
+.profile-menu-clean span::after,
+.profile-menu-clean div::before,
+.profile-menu-clean div::after,
+.profile-menu-clean p::before,
+.profile-menu-clean p::after,
+.profile-menu-clean .mud-typography::before,
+.profile-menu-clean .mud-typography::after {
+    content: none !important;
+    display: none !important;
+}
+
+/* REMOVE BROWSER MARKERS */
+
+.profile-menu-clean li::marker,
+.profile-menu-clean summary::-webkit-details-marker {
+    display: none !important;
+    content: none !important;
+}
+
+/* =========================================================
+   KEEP ONLY REAL MUD ICONS
+========================================================= */
+
+.profile-menu-clean .mud-icon-root {
+    appearance: auto !important;
+    -webkit-appearance: auto !important;
+    -moz-appearance: auto !important;
+    background-image: initial !important;
+}
+
+/* =========================================================
+   MAIN DROPDOWN CARD — MUD PAPER
+========================================================= */
+
+.profile-menu-clean .mud-paper {
+    width: 240px !important;
+    background: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    box-shadow:
+        0 10px 30px rgba(15,23,42,.10),
+        0 2px 6px rgba(15,23,42,.05) !important;
+    padding: 0 !important;
+}
+
+/* =========================================================
+   REMOVE MUD DEFAULT LOOK
+========================================================= */
+
+.profile-menu-clean .mud-list,
+.profile-menu-clean .mud-menu,
+.profile-menu-clean .mud-collapse-container,
+.profile-menu-clean .mud-collapse-wrapper {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+/* =========================================================
+   HEADER AREA
+========================================================= */
+
+.profile-menu-clean .profile-header {
+    padding: 16px 16px 12px 16px !important;
+    border-bottom: none !important;
+}
+
+.profile-menu-clean .profile-title {
+    font-family: Inter, sans-serif !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    line-height: 20px !important;
+    letter-spacing: 0 !important;
+    color: #1f2937 !important;
+    margin: 0 !important;
+    margin-bottom: 6px !important;
+}
+
+.profile-menu-clean .profile-subtitle {
+    font-family: Inter, sans-serif !important;
+    font-size: 12px !important;
+    font-weight: 400 !important;
+    line-height: 18px !important;
+    letter-spacing: 0 !important;
+    color: #6b7280 !important;
+    margin: 0 !important;
+    margin-top: 4px !important;
+    margin-bottom: 8px !important;
+}
+
+/* =========================================================
+   DEMO BADGE
+========================================================= */
+
+.profile-menu-clean .demo-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    height: 24px !important;
+    padding: 0 10px !important;
+    border-radius: 999px !important;
+    background: #fff4e5 !important;
+    color: #b45309 !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+}
+
+/* =========================================================
+   PROFILE ROW
+========================================================= */
+
+.profile-menu-clean .profile-item {
+    height: 40px !important;
+    min-height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0 16px !important;
+    border-bottom: none !important;
+    background: #ffffff !important;
+    cursor: pointer;
+    transition: background 0.15s ease !important;
+}
+
+.profile-menu-clean .profile-item:hover {
+    background: #f8fafc !important;
+}
+
+/* =========================================================
+   LEFT SIDE
+========================================================= */
+
+.profile-menu-clean .profile-item-left {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    min-width: 0 !important;
+}
+
+/* =========================================================
+   LABELS
+========================================================= */
+
+.profile-menu-clean .profile-item-left span {
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    line-height: 1 !important;
+    color: #374151 !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+/* =========================================================
+   LEFT ICONS (material-icons span)
+========================================================= */
+
+.profile-menu-clean .profile-item-left .material-icons {
+    width: 18px !important;
+    height: 18px !important;
+    font-size: 18px !important;
+    line-height: 18px !important;
+    color: #6b7280 !important;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* mud-icon-root inside profile-item-left */
+.profile-menu-clean .profile-item-left .mud-icon-root {
+    width: 18px !important;
+    height: 18px !important;
+    font-size: 18px !important;
+    color: #6b7280 !important;
+    flex-shrink: 0 !important;
+}
+
+/* =========================================================
+   RIGHT CHEVRON
+========================================================= */
+
+.profile-menu-clean .profile-chevron {
+    width: 18px !important;
+    height: 18px !important;
+    font-size: 18px !important;
+    color: #9ca3af !important;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* =========================================================
+   REMOVE BROKEN ALIGNMENT
+========================================================= */
+
+.profile-menu-clean .profile-item * {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+/* =========================================================
+   CHECK UPDATE ROW FIX
+========================================================= */
+
+.profile-menu-clean .profile-update-row {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    height: 40px !important;
+    padding: 0 42px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #ef4444 !important;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.profile-menu-clean .profile-update-row:hover {
+    background: #fef2f2 !important;
+}
+
+/* =========================================================
+   LOGOUT ROW
+========================================================= */
+
+.profile-menu-clean .logout-item {
+    height: 44px !important;
+    min-height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 8px !important;
+    padding: 0 18px !important;
+    border-bottom: none !important;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.profile-menu-clean .logout-item:hover {
+    background: #fef2f2 !important;
+}
+
+.profile-menu-clean .logout-item .profile-item-left span {
+    color: #ef4444 !important;
+}
+
+.profile-menu-clean .logout-item .profile-item-left .material-icons {
+    color: #ef4444 !important;
+}
+
+/* =========================================================
+   SUBMENU AREA
+========================================================= */
+
+.profile-menu-clean .submenu {
+    padding: 4px 0 8px 0 !important;
+    background: transparent !important;
+}
+
+/* =========================================================
+   SUBMENU ITEMS
+========================================================= */
+
+.profile-menu-clean .submenu-item {
+    height: 34px !important;
+    padding-left: 42px !important;
+    display: flex;
+    align-items: center;
+    font-size: 13px !important;
+    color: #6b7280 !important;
+    border-radius: 6px;
+    margin: 2px 8px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.profile-menu-clean .submenu-item:hover {
+    background: #f8fafc;
+}
+
+.profile-menu-clean .submenu-item.active {
+    color: #179c41 !important;
+}
+
+.profile-menu-clean .default-role-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    height: 16px !important;
+    padding: 1px 5px !important;
+    border-radius: 999px !important;
+    background: var(--da-gold-50) !important;
+    color: var(--da-gold-700) !important;
+    font-size: 9px !important;
+    font-weight: 500 !important;
+    line-height: 1 !important;
+    text-transform: capitalize !important;
+    letter-spacing: 0 !important;
+    flex-shrink: 0 !important;
+    margin-left: 2px !important;
+    white-space: nowrap !important;
+}
+
+/* =========================================================
+   SECTION DIVIDERS
+========================================================= */
+
+.profile-menu-clean .section-divider {
+    border-top: 1px solid #eef2f7 !important;
+    margin: 5px 10px!important;
+}
+
+/* =========================================================
+   LOGOUT SECTION
+========================================================= */
+
+.profile-menu-clean .logout-item {
+    height: 44px !important;
+    min-height: 44px !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 18px;
+    border-bottom: none !important;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.profile-menu-clean .logout-item:hover {
+    background: #f8fafc !important;
+}
+
+.profile-menu-clean .logout-item .mud-icon-root {
+    color: #6b7280 !important;
+}
+
+/* =========================================================
+   REMOVE MUD DEFAULT EXTRA SPACING
+========================================================= */
+
+.profile-menu-clean .mud-list,
+.profile-menu-clean .mud-list-item,
+.profile-menu-clean .mud-menu-item {
+    padding: 0 !important;
+    margin: 0 !important;
+    min-height: unset !important;
+}
+
+/* =========================================================
+   REMOVE SCROLLBAR
+========================================================= */
+
+.profile-menu-clean {
+    overflow: hidden !important;
+    max-height: unset !important;
+    scrollbar-width: none !important;
+}
+
+.profile-menu-clean::-webkit-scrollbar,
+.profile-menu-clean *::-webkit-scrollbar {
+    display: none !important;
+}
+
+.profile-menu-clean,
+.profile-menu-clean * {
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+}
+
+.profile-menu-clean .mud-popover,
+.profile-menu-clean .mud-popover-paper {
+    overflow: hidden !important;
+    overflow-x: hidden !important;
+    overflow-y: hidden !important;
+    max-height: unset !important;
+    height: auto !important;
+}
+
+/* =========================================================
+   REMOVE ACCIDENTAL TYPOGRAPHY DECORATORS
+========================================================= */
+
+.profile-menu-clean span,
+.profile-menu-clean p,
+.profile-menu-clean div,
+.profile-menu-clean .mud-typography {
+    background-image: none !important;
+    text-decoration: none !important;
+    box-shadow: none !important;
+}
+
+/* =========================================================
+   KEEP REAL DROPDOWN ICONS VISIBLE
+========================================================= */
+
+.profile-menu-clean .mud-icon-root,
+.profile-menu-clean .mud-collapse-icon,
+.profile-menu-clean .menu-chevron {
+    display: inline-flex !important;
+}
+
+.profile-menu-clean .mud-icon-root svg {
+    display: inline-block !important;
+}
+
+/* =========================================================
+   REMOVE ONLY SVGs INSIDE LABEL TEXT
+========================================================= */
+
+.profile-menu-clean .profile-item-left span svg,
+.profile-menu-clean .profile-item-left .mud-typography svg,
+.profile-menu-clean .profile-item-left p svg,
+.profile-menu-clean .profile-item-left div svg {
+    width: 0 !important;
+    height: 0 !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* =========================================================
+   REMOVE INLINE MUD ICONS INSIDE LABELS
+========================================================= */
+
+.profile-menu-clean .profile-item-left span .mud-icon-root,
+.profile-menu-clean .profile-item-left .mud-typography .mud-icon-root,
+.profile-menu-clean .profile-item-left p .mud-icon-root,
+.profile-menu-clean .profile-item-left div .mud-icon-root {
+    width: 0 !important;
+    height: 0 !important;
+    opacity: 0 !important;
+    overflow: hidden !important;
+    visibility: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* =========================================================
+   KEEP LEFT MAIN ICONS (direct children only)
+========================================================= */
+
+.profile-menu-clean .profile-item-left > .mud-icon-root,
+.profile-menu-clean .profile-item-left > svg {
+    width: 18px !important;
+    height: 18px !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* =========================================================
+   KEEP RIGHT CHEVRONS (direct children of row)
+========================================================= */
+
+.profile-menu-clean .profile-item > .profile-chevron,
+.profile-menu-clean .profile-item > .mud-icon-root:last-child,
+.profile-menu-clean .profile-item-right .mud-icon-root,
+.profile-menu-clean .profile-item-right svg {
+    width: 18px !important;
+    height: 18px !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* =========================================================
+   KEEP HEADER ICONS
+========================================================= */
+
+.profile-menu-clean .profile-header .mud-icon-root {
+    display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* =========================================================
+   CLIENT TYPOGRAPHY MATCH
+========================================================= */
+
+.profile-menu-clean {
+    font-family: Inter, "Segoe UI", sans-serif !important;
+}
+
+/* HEADER TITLE */
+.profile-menu-clean .profile-title {
+    font-family: Inter, sans-serif !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    line-height: 18px !important;
+    letter-spacing: 0 !important;
+    color: #1f2937 !important;
+    margin: 0 !important;
+    margin-bottom: 2px !important;
+}
+
+/* SUBTITLE */
+.profile-menu-clean .profile-subtitle {
+    font-family: inherit !important;
+    font-size: 12px !important;
+    font-weight: 400 !important;
+    line-height: 18px !important;
+    letter-spacing: 0 !important;
+    color: #6b7280 !important;
+    margin: 0 !important;
+    margin-top: 2px !important;
+    margin-bottom: 8px !important;
+}
+
+/* MENU LABELS */
+.profile-menu-clean .profile-item-left span,
+.profile-menu-clean .profile-item-left .mud-typography {
+    font-size: 13px !important;
+    font-weight: 400 !important;
+    line-height: 1.25 !important;
+    color: #4b5563 !important;
+}
+
+/* LOGOUT */
+.profile-menu-clean .logout-item span {
+    font-size: 13px !important;
+    font-weight: 400 !important;
+}
+
+/* =========================================================
+   COMPACT CLIENT ROW HEIGHT & GAP
+========================================================= */
+
+.profile-menu-clean .profile-item {
+    height: 40px !important;
+    min-height: 40px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+.profile-menu-clean .profile-item-left {
+    gap: 8px !important;
+}
+
+/* =========================================================
+   REMOVE ONLY THE FAKE INLINE ARROWS
+   (SVGs/MudIcons nested INSIDE label spans — not direct children)
+========================================================= */
+
+.profile-item-left span svg,
+.profile-item-left .mud-typography svg,
+.profile-item-left span .mud-icon-root,
+.profile-item-left .mud-typography .mud-icon-root {
+    display: none !important;
+}
+
+/* =========================================================
+   KEEP REAL LEFT ICONS (direct children of profile-item-left)
+========================================================= */
+
+.profile-item-left > svg,
+.profile-item-left > .mud-icon-root {
+    display: flex !important;
+    width: 16px !important;
+    height: 16px !important;
+    min-width: 16px !important;
+    opacity: 1 !important;
+}
+
+/* =========================================================
+   KEEP REAL RIGHT CHEVRONS (direct children of profile-item)
+========================================================= */
+
+.profile-item > .profile-chevron,
+.profile-item > .mud-icon-root:last-child,
+.profile-item-right .mud-icon-root,
+.profile-item-right svg {
+    display: flex !important;
+    width: 16px !important;
+    height: 16px !important;
+    opacity: 1 !important;
+}
+
+/* =========================================================
+   BADGE MATCH
+========================================================= */
+
+.profile-menu-clean .demo-badge {
+    height: 22px !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    padding: 0 8px !important;
+}
+
+/* =========================================================
+   CLIENT CARD PADDING
+========================================================= */
+
+.profile-menu-clean .profile-header {
+    padding: 16px 16px 12px 16px !important;
+}
+
+/* =========================================================
+   GREEN ACTIONS AREA BACKGROUND & TRANSPARENCY
+========================================================= */
+
+.profile-menu-clean .profile-menu,
+.profile-menu-clean .profile-footer {
+    background-color: #ffffff !important;
+}
+
+.profile-menu-clean .profile-item,
+.profile-menu-clean .logout-item {
+    background: #ffffff !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+.profile-menu-clean .profile-item:hover,
+.profile-menu-clean .logout-item:hover {
+    background: var(--da-green-50) !important;
+}
+
+/* =========================================================
+   FORCE 16PX ICON SIZE FOR MATERIAL ICONS AND CHEVRONS
+========================================================= */
+
+.profile-menu-clean .profile-item-left .material-icons,
+.profile-menu-clean .logout-item .profile-item-left .material-icons,
+.profile-menu-clean .profile-update-row .material-icons,
+.profile-menu-clean .profile-chevron {
+    width: 16px !important;
+    height: 16px !important;
+    font-size: 16px !important;
+    line-height: 16px !important;
+}

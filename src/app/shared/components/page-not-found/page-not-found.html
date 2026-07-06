@@ -1,0 +1,33 @@
+<div class="page-not-found">
+  <!-- Illustration Section -->
+  <div class="page-not-found__illustration-container">
+    <svg class="page-not-found__illustration" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Graduation Cap Top -->
+      <polygon points="12 2 22 8.5 12 15 2 8.5 12 2" class="svg-cap-top" />
+      <!-- Cap Bottom/Base -->
+      <path d="M6 12.5v4c0 1.5 2.7 2.5 6 2.5s6-1 6-2.5v-4" class="svg-cap-base" />
+      <!-- Tassel -->
+      <path d="M21.5 9v5" class="svg-tassel" />
+      <circle cx="21.5" cy="14.5" r="0.8" class="svg-tassel-end" />
+    </svg>
+  </div>
+
+  <!-- Details Section -->
+  <h1 class="page-not-found__code">404</h1>
+  <h2 class="page-not-found__title">Page Not Found</h2>
+  <p class="page-not-found__description">
+    The page you are looking for doesn't exist, may have been moved, or you don't have permission to access it.
+  </p>
+
+  <!-- Navigation Buttons -->
+  <div class="page-not-found__actions">
+    <button class="btn btn-p" (click)="goToDashboard()">
+      <i class="fa fa-home"></i>
+      <span>Go to Dashboard</span>
+    </button>
+    <button class="btn btn-g" (click)="goBack()">
+      <i class="fa fa-arrow-left"></i>
+      <span>Go Back</span>
+    </button>
+  </div>
+</div>

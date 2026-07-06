@@ -1,1 +1,303 @@
-/* You can add global styles to this file, and also import other style files */
+/* Import Client DA Brand ID25 Design System */
+@import 'assets/theme/variables';
+@import 'assets/theme/theme';
+@import 'assets/theme/typography';
+@import 'assets/theme/layout';
+@import 'assets/theme/forms';
+@import 'assets/theme/tables';
+@import 'assets/theme/components';
+@import 'assets/theme/utilities';
+@import 'assets/theme/modals';
+
+/* Angular Material SnackBar Global Customizations (MDC) */
+.mat-mdc-snack-bar-container {
+  /* Remove default MDC surface colors, shadow and border radius */
+  .mdc-snackbar__surface {
+    background-color: transparent !important;
+    box-shadow: 0 8px 20px rgba(0,0,0,.10) !important;
+    border-radius: 12px !important;
+    padding: 8px 16px !important;
+    min-width: 320px !important;
+    max-width: 380px !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  /* Label text styles */
+  .mdc-snackbar__label {
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    line-height: 1.4 !important;
+    padding: 8px 0 !important;
+  }
+
+  /* Success theme overrides */
+  &.snackbar-success {
+    .mdc-snackbar__surface {
+      background-color: #ECFDF3 !important;
+      border: 1px solid #86EFAC !important;
+    }
+    .mdc-snackbar__label {
+      color: #166534 !important;
+    }
+    .mat-mdc-snack-bar-action {
+      color: #166534 !important;
+    }
+  }
+
+  /* Error theme overrides */
+  &.snackbar-error {
+    .mdc-snackbar__surface {
+      background-color: #FEF2F2 !important;
+      border: 1px solid #d33e3e !important;
+    }
+    .mdc-snackbar__label {
+      color: #991B1B !important;
+    }
+    .mat-mdc-snack-bar-action {
+      color: #991B1B !important;
+    }
+  }
+
+  /* Warning theme overrides */
+  &.snackbar-warning {
+    .mdc-snackbar__surface {
+      background-color: #FFF8E1 !important;
+      border: 1px solid #FCD34D !important;
+    }
+    .mdc-snackbar__label {
+      color: #92400E !important;
+    }
+    .mat-mdc-snack-bar-action {
+      color: #92400E !important;
+    }
+  }
+
+  /* Info theme overrides */
+  &.snackbar-info {
+    .mdc-snackbar__surface {
+      background-color: #EFF6FF !important;
+      border: 1px solid #93C5FD !important;
+    }
+    .mdc-snackbar__label {
+      color: #1D4ED8 !important;
+    }
+    .mat-mdc-snack-bar-action {
+      color: #1D4ED8 !important;
+    }
+  }
+
+  /* Action button styling */
+  .mdc-snackbar__actions {
+    margin-left: 12px !important;
+  }
+
+  .mat-mdc-snack-bar-action {
+    background-color: transparent !important;
+    border-radius: 8px !important;
+    padding: 0 12px !important;
+    height: 32px !important;
+    line-height: 32px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    border: none !important;
+    cursor: pointer !important;
+    transition: opacity 0.2s ease !important;
+
+    /* Override default ripple overlay elements */
+    .mat-mdc-button-persistent-ripple,
+    .mat-mdc-button-state-indicator,
+    .mat-ripple {
+      display: none !important;
+    }
+
+    &:hover,
+    &:focus,
+    &:active,
+    &.cdk-program-focused,
+    &.cdk-keyboard-focused {
+      background-color: transparent !important;
+      opacity: 0.8 !important;
+      box-shadow: none !important;
+      border: none !important;
+    }
+  }
+}
+
+.cdk-overlay-container {
+  z-index: 99999 !important;
+}
+
+.cdk-overlay-pane {
+  z-index: 99999 !important;
+}
+
+/* ==========================================================================
+   DA Custom Design Dropdown System (Enterprise Select replacement)
+   ========================================================================== */
+
+.da-select {
+  position: relative;
+  display: inline-block;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--da-black);
+  user-select: none;
+  outline: none;
+  vertical-align: middle;
+  min-width: 240px; /* aligns with standard input fields */
+  box-sizing: border-box;
+}
+
+.da-select-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 34px; /* matches .filters select/input height */
+  padding: 0 12px;
+  border: 1px solid var(--da-border) !important;
+  border-radius: var(--da-radius-sm) !important;
+  background-color: var(--da-white) !important;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &:hover {
+    border-color: var(--da-muted) !important;
+  }
+}
+
+.da-select.da-select-open .da-select-control {
+  border-color: var(--da-green) !important;
+  box-shadow: 0 0 0 1px var(--da-green) !important;
+}
+
+.da-select-value {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+  color: var(--da-black);
+}
+
+.da-select-arrow {
+  font-size: 10px;
+  color: var(--da-muted-2);
+  margin-inline-start: 10px;
+  transition: transform 0.15s ease;
+}
+
+.da-select-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  margin-top: 4px;
+  background-color: var(--da-white) !important;
+  border: 1px solid var(--da-border) !important;
+  border-radius: var(--da-radius-sm) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08) !important;
+  z-index: 1000;
+  box-sizing: border-box;
+  overflow: hidden;
+  max-height: 240px;
+  overflow-y: auto;
+  padding: 4px;
+  
+  /* Custom scrollbar matching design requirements */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+    &:hover {
+      background: #a8a8a8;
+    }
+  }
+  
+  /* Open transition animation */
+  animation: daSelectFadeIn 0.18s ease-out forwards;
+}
+
+@keyframes daSelectFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.da-select-option {
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--da-text-2);
+  border-radius: var(--da-radius-sm);
+  cursor: pointer;
+  text-align: start;
+  transition: background-color 0.15s, color 0.15s;
+  margin-bottom: 2px;
+  box-sizing: border-box;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &:hover {
+    background-color: var(--da-green-50) !important;
+    color: var(--da-green-800) !important;
+  }
+
+  &.selected {
+    background-color: #D1FADF !important;
+    color: #027A48 !important;
+    font-weight: 600 !important;
+  }
+}
+
+.da-select-clear {
+  font-size: 14px;
+  color: var(--da-muted);
+  cursor: pointer;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  margin-right: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s, color 0.15s;
+
+  &:hover {
+    color: var(--da-danger) !important;
+    background-color: rgba(220, 53, 69, 0.08);
+  }
+}
+
+.multi-select {
+  height: auto !important;
+  min-height: 34px !important;
+  padding: 6px 36px 6px 12px !important;
+  line-height: 1.5 !important;
+}
+
+.ms-chevron {
+  position: absolute !important;
+  right: 12px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+}
+
+.multi-select.open .ms-chevron {
+  transform: translateY(-50%) rotate(180deg) !important;
+}

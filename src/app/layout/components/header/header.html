@@ -1,0 +1,101 @@
+<header class="header">
+  <!-- Left Section: System Name, Divider, Breadcrumb -->
+  <div class="header__left">
+    <span class="header__system-name">Kafa'at Committee</span>
+    <span class="header__divider"></span>
+    <span class="header__breadcrumb">Oversight Dashboard</span>
+  </div>
+
+  <!-- Center Section: Search Input -->
+  <div class="header__center">
+    <div class="header__search-container">
+      <i class="fa fa-search header__search-icon"></i>
+      <input type="text" class="header__search-input" placeholder="Search..." aria-label="Search" />
+      <span class="header__search-badge">Ctrl + K</span>
+    </div>
+  </div>
+
+  <!-- Right Section: Language, Notification, User Profile -->
+  <div class="header__right">
+
+    <!-- Language Selector Dropdown -->
+    <div class="header__dropdown-container">
+      <button class="header__dropdown-btn" (click)="toggleLanguageDropdown($event)" aria-label="Select Language">
+        <span class="header__language-text">{{ selectedLanguage }}</span>
+        <i class="fa fa-chevron-down header__chevron-icon" [class.open]="isLanguageDropdownOpen"></i>
+      </button>
+
+      <div class="header__dropdown-menu header__dropdown-menu--lang" *ngIf="isLanguageDropdownOpen">
+        <button *ngFor="let language of languages" class="header__dropdown-item"
+          [class.active]="selectedLanguage === language.code"
+          (click)="selectedLanguage = language.code; changeLanguage(language.code); isLanguageDropdownOpen = false">
+
+          <span class="header__dropdown-item-name">
+            {{ language.name }}
+          </span>
+
+          <span class="header__dropdown-item-code">
+            {{ language.code }}
+          </span>
+
+        </button>
+      </div>
+    </div>
+
+    <!-- Notification Button -->
+    <button class="header__icon-btn" (click)="openNotifications()" aria-label="Notifications">
+      <i class="fa fa-bell header__bell-icon"></i>
+    </button>
+
+    <!-- User Avatar & Dropdown -->
+    <div class="header__dropdown-container">
+      <button class="header__avatar-btn" (click)="toggleProfileDropdown($event)" aria-label="User Profile Menu">
+        <span class="header__avatar-initials">{{ userInitials }}</span>
+      </button>
+
+      <div class="header__dropdown-menu header__dropdown-menu--profile" *ngIf="isProfileDropdownOpen">
+        <!-- Profile Header -->
+        <div class="header__profile-info">
+          <div class="header__profile-name">{{ currentUser.fullName || 'User Full Name' }}</div>
+          <div class="header__profile-role-row">
+            <span class="header__profile-role">{{ currentUser.currentRoleName || 'Role Name' }}</span>
+            <span class="header__badge header__badge--current-role">Current Role</span>
+          </div>
+        </div>
+
+        <div class="header__menu-divider"></div>
+
+        <!-- Switch Role Expandable Section -->
+        <div class="header__role-section">
+          
+          <button class="header__role-toggle" (click)="toggleRolesSection($event)" aria-label="Expand Switch Role">
+            <span class="header__role-toggle-left">
+              <i class="fa fa-repeat header__role-icon"></i>
+              <span>Switch Role</span>
+            </span>
+            <i class="fa fa-chevron-down header__role-chevron" [class.open]="isRolesSectionExpanded"></i>
+          </button>
+
+          <div class="header__role-list" *ngIf="isRolesSectionExpanded">
+            <button *ngFor="let role of availableRoles" class="header__role-item"
+              [class.active]="role.roleId === currentUser.currentRoleId" (click)="switchRole(role.roleId)">
+              <span class="header__role-item-name">{{ role.roleName }}</span>
+              <span *ngIf="role.isDefault"
+                class="header__badge header__badge--current">Default</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- <div class="header__menu-divider"></div> -->
+
+        <!-- Sign Out -->
+        <button class="header__dropdown-item header__dropdown-item--signout" (click)="logout()">
+          <i class="fa fa-right-from-bracket header__signout-icon"></i>
+          <span>Sign Out</span>
+        </button>
+
+      </div>
+    </div>
+
+  </div>
+</header>

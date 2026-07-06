@@ -1,0 +1,184 @@
+<div class="login-wrapper">
+
+    <div class="login-shell">
+
+        <!-- Hero Section -->
+
+        <div class="login-hero">
+
+            <div class="hero-content">
+
+                <img src="assets/images/kafat-logo.jpg" alt="Logo" class="login-avatar">
+
+                <div class="hero-text">
+
+                    <h2>Kafa’at</h2>
+
+                    <p>
+                        Program Platform for Higher Education
+                    </p>
+
+                </div>
+
+                <img src="assets/images/profile-img.png" alt="Hero" class="login-hero-img">
+
+            </div>
+
+        </div>
+
+        <!-- Form Section -->
+
+        <div class="login-content">
+
+            <form #loginForm="ngForm" (ngSubmit)="onLogin(loginForm)">
+
+                <!-- Username -->
+                <div class="form-group">
+                    <label class="field-label required-label">
+                        Username
+                    </label>
+
+                    <div class="input-group">
+
+                        <i class="fas fa-user"></i>
+
+                        <input type="text" name="loginName" [(ngModel)]="loginRequest.loginName" #loginName="ngModel"
+                            required placeholder="Enter username" autocomplete="off">
+
+                    </div>
+
+                    <div class="validation-error" *ngIf="loginName.invalid && (loginName.touched || submitted)">
+                        Username is required.
+                    </div>
+                </div>
+
+
+                <!-- Password -->
+                <div class="form-group">
+                    <label class="field-label required-label mt-5">
+                        Password
+                    </label>
+
+                    <div class="password-field input-group">
+
+                        <i class="fas fa-lock"></i>
+
+                        <input [type]="showPassword ? 'text' : 'password'" name="password"
+                            [(ngModel)]="loginRequest.password" #password="ngModel" required
+                            placeholder="Enter password">
+
+                        <button type="button" class="password-toggle" (click)="togglePassword()">
+                            <i class="fas" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+                        </button>
+
+                    </div>
+
+                    <div class="validation-error" *ngIf="password.invalid && (password.touched || submitted)">
+                        Password is required.
+                    </div>
+                </div>
+
+
+
+                <!-- Remember Me -->
+
+                <div class="options-row">
+
+                    <label class="remember-me">
+
+                        <input type="checkbox" name="rememberMe" [(ngModel)]="loginRequest.rememberMe">
+
+                        <span>
+                            Remember me
+                        </span>
+
+                    </label>
+
+                    <div class="links">
+
+                        <a href="/forgot-username">
+                            Forgot username?
+                        </a>
+
+                        <span>•</span>
+
+                        <a href="/forgot-password">
+                            Forgot password?
+                        </a>
+
+                    </div>
+
+                </div>
+
+                <!-- Login Button -->
+
+                <button type="submit" class="btn btn-p mt-4" [disabled]="loginForm.invalid || isBusy">
+
+                    <span *ngIf="!isBusy">
+                        LOG IN
+                    </span>
+
+                    <span *ngIf="isBusy">
+                        Signing in...
+                    </span>
+
+                </button>
+
+                <!-- School Signup -->
+                <div class="row mt-3 g-2">
+
+                    <div class="col-12 col-md-6">
+                        <button type="button" class="btn btn-g w-100" (click)="goToSchoolSignup()">
+
+                            <i class="fas fa-school me-2"></i>
+                            Schools Registration
+
+                        </button>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <button type="button" class="btn btn-g w-100" (click)="goToUniversitySignup()">
+
+                            <i class="fas fa-university me-2"></i>
+                            University Registration
+
+                        </button>
+                    </div>
+
+                </div>
+
+                <!-- Divider -->
+
+                <div class="divider">
+                    <span>Or Sign Up With</span>
+                </div>
+
+                <!-- Social -->
+
+                <div class="social-login">
+
+                    <button type="button" class="social-login-btn" (click)="loginWithCode()"
+                        matTooltip="Login with code" matTooltipPosition="right">
+                        <i class="fas fa-key"></i>
+                    </button>
+
+                    <!-- <button type="button" class="social-login-btn" (click)="googleLogin()">
+                        <i class="fa-brands fa-google"></i>
+                    </button> -->
+
+                </div>
+
+                <!-- <p class="browser-note">
+
+                    Note: Internet Explorer is an unsupported browser.
+                    Open in Chrome, Mozilla or Safari.
+
+                </p> -->
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>

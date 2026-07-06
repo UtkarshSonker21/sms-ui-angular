@@ -1,0 +1,329 @@
+/* ══════════════════════════════════════════════════════════════
+   Kafaat University Dashboard — DA Brand ID25 Design System
+   tables.css - Standard Data Tables, Semesters list, Costs breakdown & Action Bars
+   ══════════════════════════════════════════════════════════════ */
+
+/* 1. Standard Data Tables */
+.table { width: 100%; font-size: 13px; border-collapse: collapse; border-top: none !important; margin-bottom: 0 !important; }
+.table > thead,
+.table > thead > tr,
+.table > tbody,
+.table > tbody > tr {
+  border-top: none !important;
+  border-bottom: none !important;
+}
+.table > thead,
+.table > thead > tr,
+.table thead th {
+  background: #EAF6EF !important;
+  background-color: #EAF6EF !important;
+}
+.table > thead {
+  box-shadow:
+    inset 0 -1px 0 #CDE5D9,
+    inset 0 1px 0 #F4FAF7 !important;
+}
+.table > thead > tr > th,
+.table thead th {
+  padding: 12px 14px !important;
+  box-shadow: none !important;
+  font-size: 12px !important;
+  color: #064E3B !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  text-align: start !important;
+  border-top: none !important;
+  border-bottom: 1px solid #CDE5D9 !important;
+  line-height: normal !important;
+  font-family: inherit !important;
+  vertical-align: middle !important;
+}
+.table > tbody > tr > td,
+.table tbody td {
+  padding: 8px 14px !important;
+  background-color: #FFFFFF !important;
+  background: #FFFFFF !important;
+  box-shadow: none !important;
+  border-top: none !important;
+  border-bottom: 1px solid var(--da-border) !important;
+  color: var(--da-black) !important;
+  vertical-align: middle !important;
+}
+.table > tbody > tr:hover > td {
+  background-color: var(--da-green-50) !important;
+}
+.table .num { font-family: 'Courier New', monospace; direction: ltr; text-align: right; font-weight: 600; }
+.table .muted-cell { color: var(--da-muted); font-size: 11px; margin-top: 2px; }
+
+/* 2. Structured Semester List Rows */
+.sem-list { display: flex; flex-direction: column; }
+.sem-row {
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  gap: 14px;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--da-border);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.sem-row:last-child { border-bottom: none; }
+.sem-row:hover { background: var(--da-green-50); }
+.sem-num {
+  width: 36px; height: 36px;
+  border-radius: var(--da-radius);
+  background: var(--da-green-50);
+  color: var(--da-green);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 14px;
+  direction: ltr;
+}
+.sem-name { font-size: 13px; font-weight: 700; color: var(--da-black); }
+.sem-meta { font-size: 11px; color: var(--da-muted); margin-top: 3px; display: flex; gap: 14px; flex-wrap: wrap; }
+.sem-meta .ok { color: var(--da-green); font-weight: 700; }
+.sem-cost { font-size: 14px; font-weight: 700; color: var(--da-black); text-align: start; direction: ltr; }
+.sem-cost .unit { font-size: 11px; font-weight: 600; color: var(--da-muted); margin-inline-start: 4px; }
+
+/* 3. Cost Breakdown / Financial Rows */
+.cost-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 7px 0;
+  font-size: 13px;
+  align-items: center;
+}
+.cost-row .tag {
+  font-size: 10px;
+  padding: 1px 7px;
+  border-radius: 100px;
+  font-weight: 600;
+  margin-inline-start: 6px;
+}
+.cost-row .tag.once { background: var(--da-gold-50); color: var(--da-gold-700); }
+.cost-row .tag.recur { background: var(--da-green-50); color: var(--da-green-800); }
+.cost-row .val { font-weight: 700; direction: ltr; font-family: 'Courier New', monospace; }
+.cost-total {
+  border-top: 1px dashed var(--da-border-strong);
+  padding-top: 10px;
+  margin-top: 4px;
+  font-weight: 700;
+}
+.cost-total .val { color: var(--da-green); font-size: 15px; }
+
+/* 4. CRUD Tables actions, buttons, and empty guides */
+.course-code-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px !important;
+  border-radius: 6px !important;
+  background-color: #ECFDF3 !important;
+  color: #027A48 !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  letter-spacing: 0.2px !important;
+  white-space: nowrap !important;
+}
+.courses-page .course-code-cell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px !important;
+  border-radius: 6px !important;
+  background-color: #ECFDF3 !important;
+  color: #027A48 !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  letter-spacing: 0.2px !important;
+  white-space: nowrap !important;
+}
+
+.courses-page .course-name-primary {
+  font-weight: 600 !important;
+  color: #000000 !important;
+  font-size: 14.5px !important;
+}
+.courses-page .course-name-alt {
+  font-size: 11.5px !important;
+  color: var(--da-muted) !important;
+  margin-top: 4px !important;
+}
+
+.courses-page .row-actions {
+  width: 1px;
+  white-space: nowrap;
+  text-align: end;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid var(--da-border);
+  background: var(--da-surface);
+  border-radius: 6px;
+  color: var(--da-text-2);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.icon-btn + .icon-btn { margin-inline-start: 6px; }
+.icon-btn svg { width: 14px; height: 14px; }
+.icon-btn:hover {
+  background: var(--da-green) !important;
+  border-color: var(--da-green) !important;
+  color: #ffffff !important;
+}
+.icon-btn-danger:hover {
+  background: var(--da-danger) !important;
+  border-color: var(--da-danger) !important;
+  color: #ffffff !important;
+}
+
+.courses-empty {
+  padding: 56px 22px;
+  text-align: center;
+  color: var(--da-muted);
+  font-size: 13px;
+  background: var(--da-surface);
+  border: none !important;
+}
+
+
+
+/* Pagination Footer styling to match client design exactly */
+.pagination-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px !important;
+  background-color: var(--da-white) !important;
+  background: var(--da-white) !important;
+  border-top: 1px solid var(--da-border) !important;
+  min-height: 54px;
+}
+
+/* Remove bottom border on the last table row to avoid duplicate divider above pagination */
+.table > tbody > tr:last-child > td,
+.table tbody tr:last-child td {
+  border-bottom: none !important;
+}
+
+/* Clean up button focus states - remove all duplicate focus rings and outlines */
+.btn-pagination,
+.btn-pagination:focus,
+.btn-pagination:active,
+.btn-pagination:active:focus,
+.btn-pagination:focus-visible,
+.btn-pagination:hover:focus,
+.btn:focus,
+.btn:active,
+.btn:active:focus,
+.btn:focus-visible,
+.btn-g:focus,
+.btn-g:active,
+.btn-g:active:focus,
+.btn-g:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  border: 1px solid var(--da-green) !important;
+  -webkit-box-shadow: none !important;
+}
+
+/* Styling for pagination rows-per-page select dropdown to match Prev/Next buttons exactly */
+.select-pagination {
+  height: 30px !important;
+  min-height: 30px !important;
+  padding: 0 24px 0 10px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: var(--da-text-2) !important;
+  border: 1px solid var(--da-border-strong) !important;
+  border-radius: var(--da-radius-sm) !important;
+  background-color: var(--da-surface) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23374151' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 8px center !important;
+  background-size: 10px !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  cursor: pointer !important;
+  box-sizing: border-box !important;
+  vertical-align: middle !important;
+  line-height: normal !important;
+  transition: all 0.15s !important;
+  font-family: inherit !important;
+}
+
+[dir="rtl"] .select-pagination {
+  padding: 0 10px 0 24px !important;
+  background-position: left 8px center !important;
+}
+
+.select-pagination:hover {
+  background-color: var(--da-white) !important;
+  border-color: var(--da-muted) !important;
+}
+
+.select-pagination:focus,
+.select-pagination:focus-visible,
+.select-pagination:active {
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+  border-color: var(--da-border-strong) !important;
+}
+
+.table > tbody > tr:hover .course-code-cell,
+.table > tbody > tr:hover .course-code-badge {
+  background: #D1FADF !important;
+  color: #027A48 !important;
+}
+
+.table > tbody > tr:hover .course-name-primary {
+  font-weight: 600 !important;
+  color: var(--da-black) !important;
+}
+
+.table > tbody > tr:hover .course-name-alt {
+  color: var(--da-text-2) !important;
+}
+
+.table > tbody > tr:hover .scope-fac {
+  background: var(--da-green-100) !important;
+  border-color: #86EFAC !important;
+}
+
+.table > tbody > tr:hover .scope-prog {
+  background: #FEF08A !important;
+  border-color: #FDE047 !important;
+}
+
+/* Assigned To Column layout and chip overrides */
+.scope-cell {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 6px !important;
+    align-items: center !important;
+    overflow: hidden !important;
+}
+
+.scope-chip {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+}
+
+.table tbody tr {
+    height: auto !important;
+    min-height: 56px !important;
+}
+
+.more-chip {
+    background: var(--da-surface) !important;
+    color: var(--da-muted) !important;
+    border: 1px solid var(--da-border) !important;
+}
