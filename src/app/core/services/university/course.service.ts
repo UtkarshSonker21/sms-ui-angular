@@ -26,7 +26,7 @@ export class CourseService {
 
     getCourseById(id: number) {
         return this.api.get<ApiResponse<CourseRequest>>(
-            `${ApiEndpoints.University.Courses.GetById}/${id}`
+            ApiEndpoints.University.Courses.GetById(id)
         );
     }
 
@@ -39,14 +39,14 @@ export class CourseService {
 
     updateCourse(model: CourseRequest) {
         return this.api.put<ApiResponse<void>>(
-            `${ApiEndpoints.University.Courses.Update}/${model.courseId}`,
+            ApiEndpoints.University.Courses.Update(model.courseId!),
             model
         );
     }
 
     deleteCourse(id: number) {
         return this.api.delete<ApiResponse<void>>(
-            `${ApiEndpoints.University.Courses.Delete}/${id}`
+            ApiEndpoints.University.Courses.Delete(id)
         );
     }
 

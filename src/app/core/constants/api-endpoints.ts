@@ -25,16 +25,32 @@ export const ApiEndpoints = {
     UpdateMyProfile: 'auth/update/my-profile'
   },
 
-
   SuperAdmin: {
 
     MasterDropDown: {
       Search: 'superadmin/master-dropdown/search',
-      GetById: 'superadmin/master-dropdown/getById',
+      GetById: (id: number) => `superadmin/master-dropdown/getById/${id}`,
+      GetByParentId: (parentId: number) => `superadmin/master-dropdown/getByParentId/${parentId}`,
       Create: 'superadmin/master-dropdown/create',
-      Update: 'superadmin/master-dropdown/update',
-      Delete: 'superadmin/master-dropdown/delete',
-      GetByParentId: 'superadmin/master-dropdown/getByParentId',
+      Update: (id: number) => `superadmin/master-dropdown/update/${id}`,
+      Delete: (id: number) => `superadmin/master-dropdown/delete/${id}`
+    },
+
+    MasterCountry: {
+      Search: 'superadmin/master-country/search',
+      GetById: (id: number) => `superadmin/master-country/getById/${id}`,
+      Create: 'superadmin/master-country/create',
+      Update: (id: number) => `superadmin/master-country/update/${id}`,
+      Delete: (id: number) => `superadmin/master-country/delete/${id}`,
+      CountrySchoolCount: 'superadmin/master-country/country-schools'
+    },
+
+    MasterCurrency: {
+      Search: 'superadmin/master-currency/search',
+      GetById: (id: number) => `superadmin/master-currency/getById/${id}`,
+      Create: 'superadmin/master-currency/create',
+      Update: (id: number) => `superadmin/master-currency/update/${id}`,
+      Delete: (id: number) => `superadmin/master-currency/delete/${id}`
     }
 
   },
@@ -43,11 +59,11 @@ export const ApiEndpoints = {
 
     SponsorshipTypes: {
       Search: 'ngo/sponsorship-types/search',
-      GetById: 'ngo/sponsorship-types/getById',
+      GetById: (id: number) => `ngo/sponsorship-types/getById/${id}`,
       Create: 'ngo/sponsorship-types/create',
-      Update: 'ngo/sponsorship-types/update',
-      Delete: 'ngo/sponsorship-types/delete'
-    },
+      Update: (id: number) => `ngo/sponsorship-types/update/${id}`,
+      Delete: (id: number) => `ngo/sponsorship-types/delete/${id}`
+    }
 
   },
 
@@ -55,35 +71,47 @@ export const ApiEndpoints = {
 
     Courses: {
       Search: 'university/courses/search',
-      GetById: 'university/courses/getById',
+      GetById: (id: number) => `university/courses/getById/${id}`,
       Create: 'university/courses/create',
-      Update: 'university/courses/update',
-      Delete: 'university/courses/delete'
+      Update: (id: number) => `university/courses/update/${id}`,
+      Delete: (id: number) => `university/courses/delete/${id}`
     },
 
     Faculties: {
-      FacultyPrograms: 'university/faculties/faculty-programs',
+      FacultyPrograms: (universityId: number) => `university/faculties/faculty-programs/${universityId}`,
       Search: 'university/faculties/search',
-      GetById: 'university/faculties/getById',
+      GetById: (id: number) => `university/faculties/getById/${id}`,
       Create: 'university/faculties/create',
-      Update: 'university/faculties/update',
-      Delete: 'university/faculties/delete'
+      Update: (id: number) => `university/faculties/update/${id}`,
+      Delete: (id: number) => `university/faculties/delete/${id}`
     },
 
     Programs: {
       Search: 'university/programs/search',
-      GetById: 'university/programs/getById',
+      GetById: (id: number) => `university/programs/getById/${id}`,
       Create: 'university/programs/create',
-      Update: 'university/programs/update',
-      Delete: 'university/programs/delete'
+      Update: (id: number) => `university/programs/update/${id}`,
+      Delete: (id: number) => `university/programs/delete/${id}`
     },
 
     DocumentTypes: {
       Search: 'university/document-types/search',
-      GetById: 'university/document-types/getById',
+      GetById: (id: number) => `university/document-types/getById/${id}`,
       Create: 'university/document-types/create',
-      Update: 'university/document-types/update',
-      Delete: 'university/document-types/delete'
+      Update: (id: number) => `university/document-types/update/${id}`,
+      Delete: (id: number) => `university/document-types/delete/${id}`
+    }
+
+  },
+
+  School: {
+
+    MasterSchool: {
+      Search: 'school/master-school/search',
+      GetById: (id: number) => `school/master-school/getById/${id}`,
+      Create: 'school/master-school/create',
+      Update: (id: number) => `school/master-school/update/${id}`,
+      Delete: (id: number) => `school/master-school/delete/${id}`
     }
 
   }

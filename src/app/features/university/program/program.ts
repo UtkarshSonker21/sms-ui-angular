@@ -9,7 +9,7 @@ import { NotificationService } from '../../../core/services/common/notification.
 import { CurrentUserProfileService } from '../../../core/services/common/current-user-profile.service';
 import { FacultyService } from '../../../core/services/university/faculty.service';
 import { SponsorshipTypeRequest } from '../../../core/models/ngo/sponsorship-type/sponsorship-type-request.model';
-import { SponsorshipTypeService } from '../../../core/services/university/sponsorship-type.service';
+import { SponsorshipTypeService } from '../../../core/services/ngo/sponsorship-type.service';
 import { SponsorshipTypeFilter } from '../../../core/models/ngo/sponsorship-type/sponsorship-type-filter.model';
 import { DocumentTypeRequest } from '../../../core/models/ngo/document-type/document-type-request.model';
 import { DocumentTypeFilter } from '../../../core/models/ngo/document-type/document-type-filter.model';

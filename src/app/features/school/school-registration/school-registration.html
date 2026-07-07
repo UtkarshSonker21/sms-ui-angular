@@ -1,0 +1,690 @@
+<div class="school-reg-card">
+  <!-- Header -->
+  <div class="card-header-client">
+    <div class="header-left">
+      <div class="avatar-square">DA</div>
+      <div class="header-info">
+        <span class="brand-label">KAFAAT • ONBOARDING</span>
+        <h1 class="page-title-client">School Registration</h1>
+      </div>
+    </div>
+    <button type="button" class="btn-back-login" (click)="goToLogin()">
+      <span class="material-icons" style="font-size: 16px; vertical-align: middle;">arrow_back</span>
+      Back to login
+    </button>
+  </div>
+
+  <!-- Green divider -->
+  <div class="green-divider"></div>
+
+  <div class="card-body-client">
+    <!-- Required fields note -->
+    <div class="required-note">
+      Fields marked with <span class="required-star">*</span> are required.
+    </div>
+
+    <!-- Stepper -->
+    <div class="stepper-container">
+      <div class="stepper-line"></div>
+      
+      <div class="step-item" [class.active]="activeSection === 1" (click)="setActiveSection(1)">
+        <div class="step-circle">1</div>
+        <div class="step-label">Identity</div>
+      </div>
+      
+      <div class="step-item" [class.active]="activeSection === 2" (click)="setActiveSection(2)">
+        <div class="step-circle">2</div>
+        <div class="step-label">Location</div>
+      </div>
+      
+      <div class="step-item" [class.active]="activeSection === 3" (click)="setActiveSection(3)">
+        <div class="step-circle">3</div>
+        <div class="step-label">Academic</div>
+      </div>
+      
+      <div class="step-item" [class.active]="activeSection === 4" (click)="setActiveSection(4)">
+        <div class="step-circle">4</div>
+        <div class="step-label">Capacity</div>
+      </div>
+      
+      <div class="step-item" [class.active]="activeSection === 6" (click)="setActiveSection(6)">
+        <div class="step-circle">6</div>
+        <div class="step-label">Contact</div>
+      </div>
+      
+      <div class="step-item" [class.active]="activeSection === 7" (click)="setActiveSection(7)">
+        <div class="step-circle">7</div>
+        <div class="step-label">Principal</div>
+      </div>
+      
+      <div class="step-item" [class.active]="activeSection === 8" (click)="setActiveSection(8)">
+        <div class="step-circle">8</div>
+        <div class="step-label">Coordinator</div>
+      </div>
+      
+      <div class="step-item" [class.active]="activeSection === 9" (click)="setActiveSection(9)">
+        <div class="step-circle">9</div>
+        <div class="step-label">System</div>
+      </div>
+    </div>
+
+    <!-- Form and Accordion sections -->
+    <form #regForm="ngForm" (ngSubmit)="submitRegistration(regForm)" novalidate autocomplete="off">
+      <div class="accordion-container">
+        
+        <!-- Section 1: School Identity -->
+        <div class="accordion-section" [class.active]="activeSection === 1">
+          <div class="accordion-header" (click)="toggleSection(1)">
+            <div class="accordion-header-left">
+              <div class="accordion-header-num">1</div>
+              <div class="accordion-header-content">
+                <span class="accordion-header-title">School Identity</span>
+                <span class="accordion-header-desc">Name, code, type and ownership.</span>
+              </div>
+            </div>
+            <span class="material-icons accordion-header-chevron">expand_more</span>
+          </div>
+          
+          <div class="accordion-body" *ngIf="activeSection === 1">
+            <div class="form-grid-client">
+              <div class="field field-span-2">
+                <label class="field-label required-label">School name</label>
+                <input type="text" name="schoolName" class="field-input" placeholder="e.g. Al-Furqan Secondary"
+                       [(ngModel)]="school.schoolName" required #schoolNameModel="ngModel">
+                <div class="validation-error" *ngIf="schoolNameModel.touched && schoolNameModel.invalid">
+                  School Name is required.
+                </div>
+              </div>
+              
+              <div class="field">
+                <label class="field-label required-label">Short name / code</label>
+                <input type="text" name="shortName" class="field-input" placeholder="e.g. ALFURQAN"
+                       [(ngModel)]="school.shortName" required pattern="[A-Z0-9]{2,10}" #shortNameModel="ngModel">
+                <div class="form-hint">2-10 uppercase characters.</div>
+                <div class="validation-error" *ngIf="shortNameModel.touched && shortNameModel.invalid">
+                  Short name is required (2-10 uppercase characters).
+                </div>
+              </div>
+              
+              <div class="field" (click)="$event.stopPropagation()">
+                <label class="field-label required-label">School type (license)</label>
+                <div class="multi-select" [class.open]="isSchoolTypeDropdownOpen" (click)="toggleSchoolTypeDropdown($event)" tabindex="0">
+                  <div class="ms-display" [class.has-selection]="school.schoolType > 0">
+                    <span *ngIf="school.schoolType === 0">Select type...</span>
+                    <span *ngIf="school.schoolType > 0" class="ms-chip">
+                      {{ getSchoolTypeName() }}
+                      <span class="ms-chip-x" (click)="clearSchoolType($event); schoolTypeModel.control.markAsTouched()">×</span>
+                    </span>
+                  </div>
+                  <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                  <div class="ms-panel" *ngIf="isSchoolTypeDropdownOpen" (click)="$event.stopPropagation()" style="display: block; max-height: 200px; overflow-y: auto;">
+                    <div *ngFor="let type of schoolType" class="ms-option" [class.checked]="school.schoolType === type.uniqueId" (click)="selectSchoolType(type.uniqueId!); $event.stopPropagation()">
+                      <span>{{ type.displayText }}</span>
+                    </div>
+                  </div>
+                </div>
+                <input type="hidden" name="schoolType" [ngModel]="school.schoolType > 0 ? school.schoolType : ''" required #schoolTypeModel="ngModel">
+                <div class="validation-error" *ngIf="(schoolTypeModel.touched || regForm.submitted) && !schoolTypeModel.valid">
+                  School type is required.
+                </div>
+              </div>
+              
+              <div class="field">
+                <label class="field-label">Owning institution</label>
+                <input type="text" name="owningInstitution" class="field-input" placeholder="Foundation, NGO, government body..."
+                       [(ngModel)]="school.owningInstitution">
+              </div>
+              
+              <div class="field">
+                <label class="field-label">Year of establishment</label>
+                <input type="number" name="schoolYearOfEstablish" class="field-input" placeholder="1998"
+                       [(ngModel)]="school.schoolYearOfEstablish">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Location -->
+        <div class="accordion-section" [class.active]="activeSection === 2">
+          <div class="accordion-header" (click)="toggleSection(2)">
+            <div class="accordion-header-left">
+              <div class="accordion-header-num">2</div>
+              <div class="accordion-header-content">
+                <span class="accordion-header-title">Location</span>
+                <span class="accordion-header-desc">Country and city/area.</span>
+              </div>
+            </div>
+            <span class="material-icons accordion-header-chevron">expand_more</span>
+          </div>
+          
+          <div class="accordion-body" *ngIf="activeSection === 2">
+            <div class="form-grid-client">
+              <div class="field" (click)="$event.stopPropagation()">
+                <label class="field-label required-label">Country</label>
+                <div class="multi-select" [class.open]="isCountryDropdownOpen" (click)="toggleCountryDropdown($event)" tabindex="0">
+                  <div class="ms-display" [class.has-selection]="school.countryId > 0">
+                    <span *ngIf="school.countryId === 0">Select country...</span>
+                    <span *ngIf="school.countryId > 0" class="ms-chip">
+                      {{ getSelectedCountryName() }}
+                      <span class="ms-chip-x" (click)="clearCountry($event); countryModel.control.markAsTouched()">×</span>
+                    </span>
+                  </div>
+                  <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                  <div class="ms-panel" *ngIf="isCountryDropdownOpen" (click)="$event.stopPropagation()" style="display: block; max-height: 200px; overflow-y: auto;">
+                    <div *ngFor="let c of countries" class="ms-option" [class.checked]="school.countryId === c.countryId" (click)="selectCountry(c.countryId!); $event.stopPropagation()">
+                      <span>{{ c.countryName }}</span>
+                    </div>
+                  </div>
+                </div>
+                <input type="hidden" name="countryId" [ngModel]="school.countryId > 0 ? school.countryId : ''" required #countryModel="ngModel">
+                <div class="validation-error" *ngIf="(countryModel.touched || regForm.submitted) && !countryModel.valid">
+                  Country is required.
+                </div>
+              </div>
+              
+              <div class="field">
+                <label class="field-label">Area / City</label>
+                <input type="text" name="area" class="field-input" placeholder="e.g. Al-Rawda"
+                       [(ngModel)]="school.area">
+              </div>
+              
+              <div class="field">
+                <label class="field-label">Center Name</label>
+                <input type="text" name="centerName" class="field-input" placeholder="e.g. Central Office"
+                       [(ngModel)]="school.centerName">
+              </div>
+              
+              <div class="field">
+                <label class="field-label">School Number</label>
+                <input type="text" name="schoolNumber" class="field-input" placeholder="e.g. SCH-9082"
+                       [(ngModel)]="school.schoolNumber">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: Academic Setup -->
+        <div class="accordion-section" [class.active]="activeSection === 3">
+          <div class="accordion-header" (click)="toggleSection(3)">
+            <div class="accordion-header-left">
+              <div class="accordion-header-num">3</div>
+              <div class="accordion-header-content">
+                <span class="accordion-header-title">Academic Setup</span>
+                <span class="accordion-header-desc">Accreditations, curriculum and language.</span>
+              </div>
+            </div>
+            <span class="material-icons accordion-header-chevron">expand_more</span>
+          </div>
+          
+          <div class="accordion-body" *ngIf="activeSection === 3">
+            <div class="form-grid-client">
+              <div class="field">
+                <label class="field-label required-label">Academic year start</label>
+                <input type="date" name="academicYearStartDate" class="field-input"
+                       [(ngModel)]="school.academicYearStartDate" required #startDateModel="ngModel">
+                <div class="validation-error" *ngIf="startDateModel.touched && startDateModel.invalid">
+                  Start Date is required.
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="field-label required-label">Academic year end</label>
+                <input type="date" name="academicYearEndDate" class="field-input"
+                       [(ngModel)]="school.academicYearEndDate" required #endDateModel="ngModel">
+                <div class="form-hint">Must be after start date.</div>
+                <div class="validation-error" *ngIf="endDateModel.touched && endDateModel.invalid">
+                  End Date is required.
+                </div>
+              </div>
+
+              <!-- Teaching Languages Multi-select -->
+              <div class="field field-span-2" (click)="$event.stopPropagation()">
+                <label class="field-label">Teaching languages <span style="text-transform: none; font-weight: 500; color: var(--da-muted); letter-spacing: 0;">(multi-select)</span></label>
+                <div class="multi-select has-multiple-chips" [class.open]="isLanguageDropdownOpen" (click)="toggleLanguageDropdown($event)" tabindex="0">
+                  <div class="ms-display" [class.has-selection]="selectedLanguages.length > 0">
+                    <span *ngIf="selectedLanguages.length === 0">Select languages...</span>
+                    <ng-container *ngIf="selectedLanguages.length > 0">
+                      <span class="ms-chip" *ngFor="let lang of selectedLanguages">
+                        {{ lang }}
+                        <span class="ms-chip-x" (click)="$event.stopPropagation(); removeLanguage(lang); langModel.control.markAsTouched()">×</span>
+                      </span>
+                    </ng-container>
+                  </div>
+                  <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                  <div class="ms-panel" *ngIf="isLanguageDropdownOpen" (click)="$event.stopPropagation()" style="display: block; max-height: 200px; overflow-y: auto;">
+                    <div class="ms-option" *ngFor="let lang of schoolTeachingLanguages" [class.checked]="selectedLanguages.includes(lang.displayText)" (click)="toggleLanguage(lang.displayText); langModel.control.markAsTouched(); $event.stopPropagation()">
+                      <input type="checkbox" [checked]="selectedLanguages.includes(lang.displayText)" style="pointer-events: none;" />
+                      <span>{{ lang.displayText }}</span>
+                    </div>
+                    <!-- <div class="ms-option" (click)="$event.stopPropagation()" style="padding: 6px 12px; border-top: 1px solid var(--da-border);">
+                      <div class="flex-select-row" style="width: 100%;">
+                        <input type="text" class="field-input" placeholder="Custom language..." [(ngModel)]="customLanguage" name="customLanguageInput" (keydown.enter)="addCustomLanguage(); $event.preventDefault();" style="height: 28px; padding: 2px 8px; font-size: 12px; margin-right: 6px;" />
+                        <button type="button" class="btn-add-tag" (click)="addCustomLanguage()" style="height: 28px; padding: 0 10px; font-size: 11px;">+ Add</button>
+                      </div>
+                    </div> -->
+                  </div>
+                </div>
+                <input type="hidden" name="teachingLanguages" [ngModel]="selectedLanguages.length > 0 ? selectedLanguages.join(',') : ''" required #langModel="ngModel">
+                <div class="validation-error" *ngIf="(langModel.touched || regForm.submitted) && !langModel.valid">
+                  Teaching languages is required.
+                </div>
+                <div class="form-hint">Select one or multiple languages. Add custom tags inline if needed.</div>
+              </div>
+
+              <!-- Islamic Curriculum Offered -->
+              <div class="field" (click)="$event.stopPropagation()">
+                <label class="field-label required-label">Islamic Curriculum offered</label>
+                <div class="multi-select" [class.open]="isIslamicDropdownOpen" (click)="isIslamicDropdownOpen = !isIslamicDropdownOpen" tabindex="0">
+                  <div class="ms-display" [class.has-selection]="islamicCurriculumOffered !== ''">
+                    <span *ngIf="islamicCurriculumOffered === ''">Select...</span>
+                    <span *ngIf="islamicCurriculumOffered !== ''" class="ms-chip">
+                      {{ islamicCurriculumOffered }}
+                      <span class="ms-chip-x" (click)="clearIslamicCurriculum($event); islamicModel.control.markAsTouched()">×</span>
+                    </span>
+                  </div>
+                  <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                  <div class="ms-panel" *ngIf="isIslamicDropdownOpen" (click)="$event.stopPropagation()" style="display: block; max-height: 200px; overflow-y: auto;">
+                    <div class="ms-option" [class.checked]="islamicCurriculumOffered === 'Yes'" (click)="onIslamicCurriculumChange('Yes'); isIslamicDropdownOpen = false; $event.stopPropagation()">
+                      <span>Yes</span>
+                    </div>
+                    <div class="ms-option" [class.checked]="islamicCurriculumOffered === 'No'" (click)="onIslamicCurriculumChange('No'); isIslamicDropdownOpen = false; $event.stopPropagation()">
+                      <span>No</span>
+                    </div>
+                  </div>
+                </div>
+                <input type="hidden" name="islamicCurriculumOffered" [(ngModel)]="islamicCurriculumOffered" required #islamicModel="ngModel">
+                <div class="validation-error" *ngIf="(islamicModel.touched || regForm.submitted) && !islamicModel.valid">
+                  Islamic Curriculum Offered is required.
+                </div>
+              </div>
+
+              <!-- Religion Subject Curriculum -->
+              <div class="field">
+                <label class="field-label">Religion subject curriculum</label>
+                <input type="text" name="religionSubjectCurriculum" class="field-input" placeholder="e.g. Standard Islamic, Catholic"
+                       [ngModel]="religionSubjectCurriculum" (ngModelChange)="onReligionCurriculumChange($event)">
+              </div>
+
+              <!-- School Accreditations Multi-select -->
+              <div class="field field-span-2" (click)="$event.stopPropagation()">
+                <label class="field-label required-label">School accreditations (Ministry of Education) <span style="text-transform: none; font-weight: 500; color: var(--da-muted); letter-spacing: 0;">(multi-select)</span></label>
+                <div class="multi-select has-multiple-chips" [class.open]="isAccreditationDropdownOpen" (click)="toggleAccreditationDropdown($event)" tabindex="0">
+                  <div class="ms-display" [class.has-selection]="selectedAccreditations.length > 0">
+                    <span *ngIf="selectedAccreditations.length === 0">Select accreditations...</span>
+                    <ng-container *ngIf="selectedAccreditations.length > 0">
+                      <span class="ms-chip" *ngFor="let acc of selectedAccreditations">
+                        {{ acc }}
+                        <span class="ms-chip-x" (click)="$event.stopPropagation(); removeAccreditation(acc); accModel.control.markAsTouched()">×</span>
+                      </span>
+                    </ng-container>
+                  </div>
+                  <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                  <div class="ms-panel" *ngIf="isAccreditationDropdownOpen" (click)="$event.stopPropagation()" style="display: block; max-height: 200px; overflow-y: auto;">
+                    <div class="ms-option" *ngFor="let acc of schoolAccreditations" [class.checked]="selectedAccreditations.includes(acc.displayText)" (click)="toggleAccreditation(acc.displayText); accModel.control.markAsTouched(); $event.stopPropagation()">
+                      <input type="checkbox" [checked]="selectedAccreditations.includes(acc.displayText)" style="pointer-events: none;" />
+                      <span>{{ acc.displayText }}</span>
+                    </div>
+                    <!-- <div class="ms-option" (click)="$event.stopPropagation()" style="padding: 6px 12px; border-top: 1px solid var(--da-border);">
+                      <div class="flex-select-row" style="width: 100%;">
+                        <input type="text" class="field-input" placeholder="Custom accreditation..." [(ngModel)]="customAccreditation" name="customAccreditationInput" (keydown.enter)="addCustomAccreditation(); $event.preventDefault();" style="height: 28px; padding: 2px 8px; font-size: 12px; margin-right: 6px;" />
+                        <button type="button" class="btn-add-tag" (click)="addCustomAccreditation()" style="height: 28px; padding: 0 10px; font-size: 11px;">+ Add</button>
+                      </div>
+                    </div> -->
+                  </div>
+                </div>
+                <input type="hidden" name="schoolAccreditations" [ngModel]="selectedAccreditations.length > 0 ? selectedAccreditations.join(',') : ''" required #accModel="ngModel">
+                <div class="validation-error" *ngIf="(accModel.touched || regForm.submitted) && !accModel.valid">
+                  School accreditations is required.
+                </div>
+                <div class="form-hint">Pick one or more accreditation types. Use tag search/add for specific ones.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 4: Capacity & Performance -->
+        <div class="accordion-section" [class.active]="activeSection === 4">
+          <div class="accordion-header" (click)="toggleSection(4)">
+            <div class="accordion-header-left">
+              <div class="accordion-header-num">4</div>
+              <div class="accordion-header-content">
+                <span class="accordion-header-title">Capacity & Performance</span>
+                <span class="accordion-header-desc">Enrollment numbers, ranking, and quality indicators.</span>
+              </div>
+            </div>
+            <span class="material-icons accordion-header-chevron">expand_more</span>
+          </div>
+          
+          <div class="accordion-body" *ngIf="activeSection === 4">
+            <div class="form-grid-3-col">
+              <div class="field">
+                <label class="field-label">Total Students (High School)</label>
+                <input type="number" name="totalStudentsHighSchool" class="field-input" placeholder="e.g. 500"
+                       [(ngModel)]="school.totalStudentsHighSchool">
+              </div>
+              <div class="field">
+                <label class="field-label">Average Students Per Class</label>
+                <input type="number" name="averageStudentsPerClass" class="field-input" placeholder="e.g. 30"
+                       [(ngModel)]="school.averageStudentsPerClass">
+              </div>
+              <div class="field">
+                <label class="field-label">Local Rank</label>
+                <input type="number" name="schoolLocalRank" class="field-input" placeholder="e.g. 15"
+                       [(ngModel)]="school.schoolLocalRank">
+                <div class="form-hint">Optional - only if a local ranking list exists.</div>
+              </div>
+            </div>
+
+            <!-- Quality Indicators Card -->
+            <div class="quality-card">
+              <div class="quality-card-title">QUALITY INDICATORS</div>
+              
+              <div class="quality-row">
+                <span class="quality-label">3-year student success average is above 80%</span>
+                <label class="switch-control">
+                  <input type="checkbox" name="successAbove80" [ngModel]="successAbove80" (ngModelChange)="onSuccessToggle($event)" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+              
+              <div class="quality-row">
+                <span class="quality-label">Graduates eligible to enter universities &ge; 80%</span>
+                <label class="switch-control">
+                  <input type="checkbox" name="eligibleAbove80" [ngModel]="eligibleAbove80" (ngModelChange)="onEligibleToggle($event)" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+              
+              <div class="quality-row">
+                <span class="quality-label">Graduates' English language skills &ge; 80%</span>
+                <label class="switch-control">
+                  <input type="checkbox" name="englishAbove80" [ngModel]="englishAbove80" (ngModelChange)="onEnglishToggle($event)" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 5: Contact -->
+        <div class="accordion-section" [class.active]="activeSection === 6">
+          <div class="accordion-header" (click)="toggleSection(6)">
+            <div class="accordion-header-left">
+              <div class="accordion-header-num">6</div>
+              <div class="accordion-header-content">
+                <span class="accordion-header-title">Contact Information</span>
+                <span class="accordion-header-desc">Public facing channels for schools.</span>
+              </div>
+            </div>
+            <span class="material-icons accordion-header-chevron">expand_more</span>
+          </div>
+          
+          <div class="accordion-body" *ngIf="activeSection === 6">
+            <div class="form-grid-client">
+              <div class="field field-span-2">
+                <label class="field-label">Website</label>
+                <input type="text" name="schoolWebsite" class="field-input" placeholder="e.g. www.school.edu"
+                       [(ngModel)]="school.schoolWebsite">
+              </div>
+
+              <!-- Country Code + Phone Number -->
+              <div class="field" (click)="$event.stopPropagation()">
+                <label class="field-label required-label">Phone Number</label>
+                <div class="phone-input-group">
+                  <div class="multi-select" [class.open]="isPhoneCountryDropdownOpen" (click)="togglePhoneCountryDropdown($event)" (blur)="phoneCodeModel.control.markAsTouched()" tabindex="0">
+                    <div class="ms-display" [class.has-selection]="selectedIsdCode !== ''">
+                      <span>{{ selectedIsdCode ? getPhoneCountryName(selectedIsdCode) : 'Select Code...' }}</span>
+                    </div>
+                    <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                    <div class="ms-panel" *ngIf="isPhoneCountryDropdownOpen" (click)="$event.stopPropagation()">
+                      <div *ngFor="let c of countries" class="ms-option" [class.checked]="selectedIsdCode === c.countryIsdCode?.toString()" (click)="selectPhoneCountry(c.countryIsdCode!.toString()); phoneCodeModel.control.markAsTouched(); $event.stopPropagation()">
+                        <span>{{ c.countryName }} (+{{ c.countryIsdCode }})</span>
+                      </div>
+                    </div>
+                  </div>
+                  <input type="text" name="localPhoneNumber" class="field-input phone-number-input" placeholder="22448888" [(ngModel)]="localPhoneNumber" required #localPhoneModel="ngModel">
+                </div>
+                <input type="hidden" name="phoneCountryCode" [ngModel]="selectedIsdCode ? selectedIsdCode : ''" required #phoneCodeModel="ngModel">
+                <div class="validation-error" *ngIf="(phoneCodeModel.touched || regForm.submitted) && !phoneCodeModel.valid">
+                  Phone Code is required.
+                </div>
+                <div class="validation-error" *ngIf="(localPhoneModel.touched || regForm.submitted) && !localPhoneModel.valid">
+                  Phone number is required.
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="field-label">Email Address</label>
+                <input type="email" name="emailId" class="field-input" placeholder="e.g. info@school.edu"
+                       [(ngModel)]="school.emailId">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 6: Principal -->
+        <div class="accordion-section" [class.active]="activeSection === 7">
+          <div class="accordion-header" (click)="toggleSection(7)">
+            <div class="accordion-header-left">
+              <div class="accordion-header-num">7</div>
+              <div class="accordion-header-content">
+                <span class="accordion-header-title">Principal</span>
+                <span class="accordion-header-desc">Principal contact details.</span>
+              </div>
+            </div>
+            <span class="material-icons accordion-header-chevron">expand_more</span>
+          </div>
+          
+          <div class="accordion-body" *ngIf="activeSection === 7">
+            <div class="form-grid-client">
+              <div class="field field-span-2">
+                <label class="field-label">Principal Name</label>
+                <input type="text" name="principalName" class="field-input" placeholder="e.g. Dr. Ahmed Mahmoud"
+                       [(ngModel)]="school.principalName">
+              </div>
+
+              <!-- Principal Phone -->
+              <div class="field" (click)="$event.stopPropagation()">
+                <label class="field-label required-label">Principal Phone</label>
+                <div class="phone-input-group">
+                  <div class="multi-select" [class.open]="isPrincipalPhoneDropdownOpen" (click)="togglePrincipalPhoneDropdown($event)" (blur)="principalCodeModel.control.markAsTouched()" tabindex="0">
+                    <div class="ms-display" [class.has-selection]="PrincipalCountryId !== null">
+                      <span>{{ PrincipalCountryId ? getPrincipalPhoneCountryName() : 'Select Code...' }}</span>
+                    </div>
+                    <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                    <div class="ms-panel" *ngIf="isPrincipalPhoneDropdownOpen" (click)="$event.stopPropagation()">
+                      <div *ngFor="let c of countries" class="ms-option" [class.checked]="PrincipalCountryCode === c.countryIsdCode?.toString()" (click)="selectPrincipalPhoneCountry(c); principalCodeModel.control.markAsTouched(); $event.stopPropagation()">
+                        <span>{{ c.countryName }} (+{{ c.countryIsdCode }})</span>
+                      </div>
+                    </div>
+                  </div>
+                  <input type="text" name="principalPhoneNumber" class="field-input phone-number-input" placeholder="99998888" [(ngModel)]="PrincipalPhoneNumber" required #principalPhoneModel="ngModel">
+                </div>
+                <input type="hidden" name="principalCountryCode" [ngModel]="PrincipalCountryCode ? PrincipalCountryCode : ''" required #principalCodeModel="ngModel">
+                <div class="validation-error" *ngIf="(principalCodeModel.touched || regForm.submitted) && !principalCodeModel.valid">
+                  Phone Code is required.
+                </div>
+                <div class="validation-error" *ngIf="(principalPhoneModel.touched || regForm.submitted) && !principalPhoneModel.valid">
+                  Phone number is required.
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="field-label">Principal Email</label>
+                <input type="email" name="principalEmail" class="field-input" placeholder="e.g. principal@school.edu"
+                       [(ngModel)]="school.principalEmail">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 7: Coordinator -->
+        <div class="accordion-section" [class.active]="activeSection === 8">
+          <div class="accordion-header" (click)="toggleSection(8)">
+            <div class="accordion-header-left">
+              <div class="accordion-header-num">8</div>
+              <div class="accordion-header-content">
+                <span class="accordion-header-title">Coordinator</span>
+                <span class="accordion-header-desc">School coordinator contact details.</span>
+              </div>
+            </div>
+            <span class="material-icons accordion-header-chevron">expand_more</span>
+          </div>
+          
+          <div class="accordion-body" *ngIf="activeSection === 8">
+            <div class="form-grid-client">
+              <div class="field field-span-2">
+                <label class="field-label">Coordinator Name</label>
+                <input type="text" name="schoolCoordinatorName" class="field-input" placeholder="e.g. Mr. Bilal Salem"
+                       [(ngModel)]="school.schoolCoordinatorName">
+              </div>
+
+              <!-- Coordinator Phone -->
+              <div class="field" (click)="$event.stopPropagation()">
+                <label class="field-label required-label">Coordinator Phone</label>
+                <div class="phone-input-group">
+                  <div class="multi-select" [class.open]="isCoordinatorPhoneDropdownOpen" (click)="toggleCoordinatorPhoneDropdown($event)" (blur)="coordinatorCodeModel.control.markAsTouched()" tabindex="0">
+                    <div class="ms-display" [class.has-selection]="CoordinatorCountryId !== null">
+                      <span>{{ CoordinatorCountryId ? getCoordinatorPhoneCountryName() : 'Select Code...' }}</span>
+                    </div>
+                    <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                    <div class="ms-panel" *ngIf="isCoordinatorPhoneDropdownOpen" (click)="$event.stopPropagation()">
+                      <div *ngFor="let c of countries" class="ms-option" [class.checked]="CoordinatorCountryCode === c.countryIsdCode?.toString()" (click)="selectCoordinatorPhoneCountry(c); coordinatorCodeModel.control.markAsTouched(); $event.stopPropagation()">
+                        <span>{{ c.countryName }} (+{{ c.countryIsdCode }})</span>
+                      </div>
+                    </div>
+                  </div>
+                  <input type="text" name="coordinatorPhoneNumber" class="field-input phone-number-input" placeholder="55554444" [(ngModel)]="CoordinatorPhoneNumber" required #coordinatorPhoneModel="ngModel">
+                </div>
+                <input type="hidden" name="coordinatorCountryCode" [ngModel]="CoordinatorCountryCode ? CoordinatorCountryCode : ''" required #coordinatorCodeModel="ngModel">
+                <div class="validation-error" *ngIf="(coordinatorCodeModel.touched || regForm.submitted) && !coordinatorCodeModel.valid">
+                  Phone Code is required.
+                </div>
+                <div class="validation-error" *ngIf="(coordinatorPhoneModel.touched || regForm.submitted) && !coordinatorPhoneModel.valid">
+                  Phone number is required.
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="field-label">Coordinator Email</label>
+                <input type="email" name="schoolCoordinatorEmail" class="field-input" placeholder="e.g. coordinator@school.edu"
+                       [(ngModel)]="school.schoolCoordinatorEmail">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 8: System Settings -->
+        <div class="accordion-section" [class.active]="activeSection === 9">
+          <div class="accordion-header" (click)="toggleSection(9)">
+            <div class="accordion-header-left">
+              <div class="accordion-header-num">9</div>
+              <div class="accordion-header-content">
+                <span class="accordion-header-title">System Settings</span>
+                <span class="accordion-header-desc">Currency, status, student code format, and approval.</span>
+              </div>
+            </div>
+            <span class="material-icons accordion-header-chevron">expand_more</span>
+          </div>
+          
+          <div class="accordion-body" *ngIf="activeSection === 9">
+            <div class="form-grid-client">
+              <!-- Default Currency -->
+              <div class="field" (click)="$event.stopPropagation()">
+                <label class="field-label required-label">Default currency</label>
+                <div class="multi-select" [class.open]="isCurrencyDropdownOpen" (click)="toggleCurrencyDropdown($event)" tabindex="0">
+                  <div class="ms-display" [class.has-selection]="school.defaultCurrencyId !== undefined">
+                    <span *ngIf="school.defaultCurrencyId === undefined">Select currency...</span>
+                    <span *ngIf="school.defaultCurrencyId !== undefined" class="ms-chip">
+                      {{ getSelectedCurrencyName() }}
+                      <span class="ms-chip-x" (click)="clearCurrency($event); currencyModel.control.markAsTouched()">×</span>
+                    </span>
+                  </div>
+                  <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                  <div class="ms-panel" *ngIf="isCurrencyDropdownOpen" (click)="$event.stopPropagation()" style="display: block; max-height: 200px; overflow-y: auto;">
+                    <div *ngFor="let cur of currencies" class="ms-option" [class.checked]="school.defaultCurrencyId === cur.currencyId" (click)="selectCurrency(cur.currencyId!); $event.stopPropagation()">
+                      <span>{{ cur.currencySymbol }} {{ cur.currencyName }} ({{ cur.currencyCode }})</span>
+                    </div>
+                  </div>
+                </div>
+                <input type="hidden" name="defaultCurrencyId" [ngModel]="school.defaultCurrencyId ? school.defaultCurrencyId : ''" required #currencyModel="ngModel">
+                <div class="validation-error" *ngIf="(currencyModel.touched || regForm.submitted) && !currencyModel.valid">
+                  Default currency is required.
+                </div>
+              </div>
+
+              <!-- School Status -->
+              <div class="field" (click)="$event.stopPropagation()">
+                <label class="field-label">School Status</label>
+                <div class="multi-select" [class.open]="isStatusDropdownOpen" (click)="toggleStatusDropdown($event)" tabindex="0">
+                  <div class="ms-display" [class.has-selection]="school.schoolStatus > 0">
+                    <span *ngIf="school.schoolStatus === 0">Select status...</span>
+                    <span *ngIf="school.schoolStatus > 0" class="ms-chip">
+                      {{ getSchoolStatusName() }}
+                      <span class="ms-chip-x" (click)="clearSchoolStatus($event)">×</span>
+                    </span>
+                  </div>
+                  <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                  <div class="ms-panel" *ngIf="isStatusDropdownOpen" (click)="$event.stopPropagation()" style="display: block; max-height: 200px; overflow-y: auto;">
+                    <div *ngFor="let st of schoolStatus" class="ms-option" [class.checked]="school.schoolStatus === st.uniqueId" (click)="selectSchoolStatus(st.uniqueId!); $event.stopPropagation()">
+                      <span>{{ st.displayText }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Student Code Format Card -->
+              <div class="field field-span-2">
+                <div class="student-code-card">
+                  <div class="student-code-card-title">STUDENT CODE FORMAT (OPTIONAL)</div>
+                  
+                  <div class="student-code-grid">
+                    <div class="field">
+                      <label class="field-label">Prefix</label>
+                      <input type="text" name="studentCodeFormatPrefix" class="field-input" placeholder="e.g. SCH" [(ngModel)]="school.studentCodeFormatPrefix" />
+                    </div>
+                    <div class="field">
+                      <label class="field-label">Suffix</label>
+                      <input type="text" name="studentCodeFormatSuffix" class="field-input" placeholder="e.g. A" [(ngModel)]="school.studentCodeFormatSuffix" />
+                    </div>
+                    <div class="field">
+                      <label class="field-label">Starting No.</label>
+                      <input type="number" name="studentSequenceNumber" class="field-input" placeholder="e.g. 1" [(ngModel)]="school.studentSequenceNumber" />
+                    </div>
+                  </div>
+
+                  <div class="live-preview-box">
+                    Live Preview: <span class="preview-value">{{ getStudentCodePreview() }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Approval Status -->
+              <div class="field field-span-2">
+                <div class="approval-status-section">
+                  <span class="approval-label">Approval Status</span>
+                  <span class="badge-pending">Pending</span>
+                  <span class="approval-text">Approval is managed by the NGO</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer Buttons -->
+      <div class="form-actions-client">
+        <div class="autosave-indicator">
+          <span class="dot-indicator"></span>
+          <span>Draft auto-saves every 30 s.</span>
+        </div>
+        <div class="action-buttons-right">
+          <button type="button" class="btn-client-secondary" (click)="goToLogin()">Cancel</button>
+          <button type="button" class="btn-client-draft" (click)="saveDraft()">Save Draft</button>
+          <button type="submit" class="btn-client-primary">Submit registration</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

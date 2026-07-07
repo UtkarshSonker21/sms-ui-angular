@@ -26,7 +26,7 @@ export class DocumentTypeService {
 
     getDocumentTypeById(id: number) {
         return this.api.get<ApiResponse<DocumentTypeRequest>>(
-            `${ApiEndpoints.University.DocumentTypes.GetById}/${id}`
+            ApiEndpoints.University.DocumentTypes.GetById(id)
         );
     }
 
@@ -39,14 +39,14 @@ export class DocumentTypeService {
 
     updateDocumentType(model: DocumentTypeRequest) {
         return this.api.put<ApiResponse<void>>(
-            `${ApiEndpoints.University.DocumentTypes.Update}/${model.documentTypeId}`,
+            ApiEndpoints.University.DocumentTypes.Update(model.documentTypeId!),
             model
         );
     }
 
     deleteDocumentType(id: number) {
         return this.api.delete<ApiResponse<void>>(
-            `${ApiEndpoints.University.DocumentTypes.Delete}/${id}`
+            ApiEndpoints.University.DocumentTypes.Delete(id)
         );
     }
 

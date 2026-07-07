@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 
 import { ApiService } from '../common/api.service';
-import { ApiEndpoints } from '../../../core/constants/api-endpoints';
+import { ApiEndpoints } from '../../constants/api-endpoints';
 
 import { ApiResponse } from '../../models/common/response/api-response.model';
 import { PagedResult } from '../../models/common/response/paged-result.model';
@@ -24,7 +24,7 @@ export class SponsorshipTypeService {
 
     getSponsorshipTypeById(id: number) {
         return this.api.get<ApiResponse<SponsorshipTypeRequest>>(
-            `${ApiEndpoints.Ngo.SponsorshipTypes.GetById}/${id}`
+            ApiEndpoints.Ngo.SponsorshipTypes.GetById(id)
         );
     }
 
@@ -37,14 +37,14 @@ export class SponsorshipTypeService {
 
     updateSponsorshipType(model: SponsorshipTypeRequest) {
         return this.api.put<ApiResponse<void>>(
-            `${ApiEndpoints.Ngo.SponsorshipTypes.Update}/${model.sponsorshipTypeId}`,
+            ApiEndpoints.Ngo.SponsorshipTypes.Update(model.sponsorshipTypeId!),
             model
         );
     }
 
     deleteSponsorshipType(id: number) {
         return this.api.delete<ApiResponse<void>>(
-            `${ApiEndpoints.Ngo.SponsorshipTypes.Delete}/${id}`
+            ApiEndpoints.Ngo.SponsorshipTypes.Delete(id)
         );
     }
 

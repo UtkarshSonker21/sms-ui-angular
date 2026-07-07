@@ -22,6 +22,8 @@ import { Courses } from './features/university/courses/courses';
 import { Faculties } from './features/university/faculties/faculties';
 import { Program } from './features/university/program/program';
 import { ProgramDetail } from './features/university/program-detail/program-detail';
+import { SchoolRegistration } from './features/school/school-registration/school-registration';
+import { UniversityRegistration } from './features/university/university-registration/university-registration';
 
 export const routes: Routes = [
 
@@ -60,7 +62,17 @@ export const routes: Routes = [
             {
                 path: 'login-with-code',
                 component: LoginWithCode
-            }
+            },
+
+            {
+                path: 'school-registration',
+                component: SchoolRegistration
+            },
+
+            {
+                path: 'university-registration',
+                component: UniversityRegistration
+            },
 
         ]
     },
