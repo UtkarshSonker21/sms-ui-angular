@@ -18,7 +18,7 @@ export class FacultyService {
 
   getFacultyPrograms(universityId: number) {
     return this.api.get<ApiResponse<FacultyProgramsDashboard>>(
-      `${ApiEndpoints.University.Faculties.FacultyPrograms}/${universityId}`
+      ApiEndpoints.University.Faculties.FacultyPrograms(universityId)
     );
   }
 
@@ -31,7 +31,7 @@ export class FacultyService {
 
   getFacultyById(id: number) {
     return this.api.get<ApiResponse<FacultyRequest>>(
-      `${ApiEndpoints.University.Faculties.GetById}/${id}`
+      ApiEndpoints.University.Faculties.GetById(id)
     );
   }
 
@@ -44,14 +44,14 @@ export class FacultyService {
 
   updateFaculty(model: FacultyRequest) {
     return this.api.put<ApiResponse<void>>(
-      `${ApiEndpoints.University.Faculties.Update}/${model.facultyId}`,
+      ApiEndpoints.University.Faculties.Update(model.facultyId!),
       model
     );
   }
 
   deleteFaculty(id: number) {
     return this.api.delete<ApiResponse<void>>(
-      `${ApiEndpoints.University.Faculties.Delete}/${id}`
+      ApiEndpoints.University.Faculties.Delete(id)
     );
   }
 

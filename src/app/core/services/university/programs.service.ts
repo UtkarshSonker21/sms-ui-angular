@@ -25,7 +25,7 @@ export class ProgramService {
 
     getProgramById(id: number) {
         return this.api.get<ApiResponse<ProgramRequest>>(
-            `${ApiEndpoints.University.Programs.GetById}/${id}`
+            ApiEndpoints.University.Programs.GetById(id)
         );
     }
 
@@ -38,14 +38,14 @@ export class ProgramService {
 
     updateProgram(model: ProgramRequest) {
         return this.api.put<ApiResponse<void>>(
-            `${ApiEndpoints.University.Programs.Update}/${model.programId}`,
+            ApiEndpoints.University.Programs.Update(model.programId!),
             model
         );
     }
 
     deleteProgram(id: number) {
         return this.api.delete<ApiResponse<void>>(
-            `${ApiEndpoints.University.Programs.Delete}/${id}`
+            ApiEndpoints.University.Programs.Delete(id)
         );
     }
 
