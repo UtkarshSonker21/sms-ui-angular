@@ -1,1 +1,537 @@
-<p>university-registration works!</p>
+<div class="school-reg-card">
+  <!-- Header -->
+  <div class="card-header-client">
+    <div class="header-left">
+      <div class="avatar-square">DA</div>
+      <div class="header-info">
+        <span class="brand-label">KAFAAT • PRE-REGISTRATION</span>
+        <h1 class="page-title-client">New University Registration</h1>
+      </div>
+    </div>
+    <button type="button" class="btn-back-login" (click)="goToLogin()">
+      <span class="material-icons" style="font-size: 16px; vertical-align: middle;">arrow_back</span>
+      Back to login
+    </button>
+  </div>
+
+  <!-- Green divider -->
+  <div class="green-divider"></div>
+
+  <div class="card-body-client">
+    <!-- Required fields note -->
+    <div class="required-note" style="margin-bottom: 12px; line-height: 1.5;">
+      Tell us about your university. The Direct Aid Society committee will review the request and start the accreditation process for your faculties and programs.
+      <br>
+      <span style="font-size: 11.5px; color: var(--da-muted);">Fields marked with <span class="required-star">*</span> are required.</span>
+    </div>
+
+    <!-- Form and Accordion sections -->
+    <form #regForm="ngForm" (ngSubmit)="submitRegistration(regForm)" novalidate autocomplete="off">
+      <div class="accordion-container">
+        
+        <!-- Section 1: University Information -->
+        <div class="accordion-section" [class.active]="activeSection === 1">
+          <div class="accordion-header" (click)="toggleSection(1)">
+            <div class="accordion-header-left">
+              <div class="accordion-header-num">1</div>
+              <div class="accordion-header-content">
+                <span class="accordion-header-title">University Information</span>
+                <span class="accordion-header-desc">University identity, legal status and basic information.</span>
+              </div>
+            </div>
+            <span class="material-icons accordion-header-chevron">expand_more</span>
+          </div>
+          
+          <div class="accordion-body" *ngIf="activeSection === 1">
+            <div class="form-grid-2-col">
+              <div class="field field-span-2">
+                <label class="field-label required-label">University Name</label>
+                <input type="text" name="universityName" class="field-input" placeholder="e.g. Al-Sumait University"
+                       [(ngModel)]="university.universityName" required #universityNameModel="ngModel">
+                <div class="validation-error" *ngIf="(universityNameModel.touched || regForm.submitted) && universityNameModel.invalid">
+                  University Name is required.
+                </div>
+              </div>
+              
+              <div class="field" (click)="$event.stopPropagation()">
+                <label class="field-label required-label">University Type (License)</label>
+                <div class="multi-select" [class.open]="isUniversityTypeDropdownOpen" [class.invalid]="(typeModel.touched || regForm.submitted) && !typeModel.valid" (click)="toggleUniversityTypeDropdown($event)" tabindex="0">
+                  <div class="ms-display" [class.has-selection]="university.universityType !== ''">
+                    <span *ngIf="university.universityType === ''">Select type...</span>
+                    <span *ngIf="university.universityType !== ''" class="ms-chip">
+                      {{ getSelectedUniversityTypeName() }}
+                      <span class="ms-chip-x" (click)="clearUniversityType($event); typeModel.control.markAsTouched()">×</span>
+                    </span>
+                  </div>
+                  <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                  <div class="ms-panel" *ngIf="isUniversityTypeDropdownOpen" (click)="$event.stopPropagation()" style="display: block; max-height: 200px; overflow-y: auto;">
+                    <div *ngFor="let type of universityType" class="ms-option" [class.checked]="university.universityType === type.displayText" (click)="selectUniversityType(type.displayText!); typeModel.control.markAsTouched(); $event.stopPropagation()">
+                      <span>{{ type.displayText }}</span>
+                    </div>
+                  </div>
+                </div>
+                <input type="hidden" name="universityType" [ngModel]="university.universityType !== '' ? university.universityType : ''" required #typeModel="ngModel">
+                <div class="validation-error" *ngIf="(typeModel.touched || regForm.submitted) && !typeModel.valid">
+                  University type is required.
+                </div>
+              </div>
+              
+              <div class="field">
+                <label class="field-label">Local Accreditation (Charter)</label>
+                <input type="text" name="charterAccreditation" class="field-input" placeholder="e.g. Ministry of Higher Education"
+                       [(ngModel)]="university.charterAccreditation">
+              </div>
+
+              <div class="field">
+                <label class="field-label">Year of Establishment</label>
+                <input type="number" name="establishedYear" class="field-input" placeholder="1990"
+                       [(ngModel)]="university.establishedYear">
+              </div>
+
+              <div class="field" (click)="$event.stopPropagation()">
+                <label class="field-label required-label">Country</label>
+                <div class="multi-select" [class.open]="isCountryDropdownOpen" [class.invalid]="(countryModel.touched || regForm.submitted) && !countryModel.valid" (click)="toggleCountryDropdown($event)" tabindex="0">
+                  <div class="ms-display" [class.has-selection]="university.countryId > 0">
+                    <span *ngIf="university.countryId === 0">Select country...</span>
+                    <span *ngIf="university.countryId > 0" class="ms-chip">
+                      {{ getSelectedCountryName() }}
+                      <span class="ms-chip-x" (click)="clearCountry($event); countryModel.control.markAsTouched()">×</span>
+                    </span>
+                  </div>
+                  <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                  <div class="ms-panel" *ngIf="isCountryDropdownOpen" (click)="$event.stopPropagation()" style="display: block; max-height: 200px; overflow-y: auto;">
+                    <div *ngFor="let c of countries" class="ms-option" [class.checked]="university.countryId === c.countryId" (click)="selectCountry(c.countryId!); countryModel.control.markAsTouched(); $event.stopPropagation()">
+                      <span>{{ c.countryName }}</span>
+                    </div>
+                  </div>
+                </div>
+                <input type="hidden" name="countryId" [ngModel]="university.countryId > 0 ? university.countryId : ''" required #countryModel="ngModel">
+                <div class="validation-error" *ngIf="(countryModel.touched || regForm.submitted) && !countryModel.valid">
+                  Country is required.
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="field-label required-label">City</label>
+                <input type="text" name="city" class="field-input" placeholder="City"
+                       [(ngModel)]="university.city" required #cityModel="ngModel">
+                <div class="validation-error" *ngIf="(cityModel.touched || regForm.submitted) && cityModel.invalid">
+                  City is required.
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="field-label">National Ranking</label>
+                <input type="text" name="nationalRanking" class="field-input" placeholder="e.g. Ranked 5th / Unranked"
+                       [(ngModel)]="university.fteRatio">
+              </div>
+
+              <div class="field field-span-2">
+                <label class="field-label">Address</label>
+                <input type="text" name="address" class="field-input" placeholder="Street, area, building"
+                       [(ngModel)]="university.address">
+              </div>
+
+              <div class="field field-span-2">
+                <label class="field-label">Website (Optional)</label>
+                <input type="url" name="website" class="field-input" placeholder="https://..."
+                       [(ngModel)]="university.website">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Vice Chancellor -->
+        <div class="accordion-section" [class.active]="activeSection === 2">
+          <div class="accordion-header" (click)="toggleSection(2)">
+            <div class="accordion-header-left">
+              <div class="accordion-header-num">2</div>
+              <div class="accordion-header-content">
+                <span class="accordion-header-title">Vice Chancellor</span>
+                <span class="accordion-header-desc">Head of the academic institution — for official correspondence.</span>
+              </div>
+            </div>
+            <span class="material-icons accordion-header-chevron">expand_more</span>
+          </div>
+          
+          <div class="accordion-body" *ngIf="activeSection === 2">
+            <div class="form-grid-2-col">
+              <div class="field field-span-2">
+                <label class="field-label">Vice Chancellor Name</label>
+                <input type="text" name="vcName" class="field-input" placeholder="Full Name"
+                       [(ngModel)]="university.vcName">
+              </div>
+
+              <div class="field">
+                <label class="field-label">Vice Chancellor Email</label>
+                <input type="email" name="vcEmail" class="field-input" placeholder="vc@university.edu"
+                       [(ngModel)]="university.vcEmail">
+              </div>
+
+              <!-- Vice Chancellor Phone -->
+              <div class="field" (click)="$event.stopPropagation()">
+                <label class="field-label">Vice Chancellor Mobile</label>
+                <div class="phone-input-group">
+                  <div class="multi-select" [class.open]="isVcPhoneDropdownOpen" (click)="toggleVcPhoneDropdown($event)" (blur)="vcPhoneCodeModel.control.markAsTouched()" tabindex="0">
+                    <div class="ms-display" [class.has-selection]="VcCountryId !== null">
+                      <span>{{ VcCountryId ? getVcPhoneCountryName() : 'Select Code...' }}</span>
+                    </div>
+                    <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                    <div class="ms-panel" *ngIf="isVcPhoneDropdownOpen" (click)="$event.stopPropagation()">
+                      <div *ngFor="let c of countries" class="ms-option" [class.checked]="VcCountryCode === c.countryIsdCode?.toString()" (click)="selectVcPhoneCountry(c); vcPhoneCodeModel.control.markAsTouched(); $event.stopPropagation()">
+                        <span>{{ c.countryName }} (+{{ c.countryIsdCode }})</span>
+                      </div>
+                    </div>
+                  </div>
+                  <input type="text" name="vcPhoneNumber" class="field-input phone-number-input" placeholder="99998888" [(ngModel)]="VcPhoneNumber" #vcPhoneModel="ngModel">
+                </div>
+                <input type="hidden" name="vcPhoneCountryCode" [ngModel]="VcCountryCode ? VcCountryCode : ''" #vcPhoneCodeModel="ngModel">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: Coordinator -->
+        <div class="accordion-section" [class.active]="activeSection === 3">
+          <div class="accordion-header" (click)="toggleSection(3)">
+            <div class="accordion-header-left">
+              <div class="accordion-header-num">3</div>
+              <div class="accordion-header-content">
+                <span class="accordion-header-title">Kafaat Coordinator</span>
+                <span class="accordion-header-desc">Daily contact person between the university and Direct Aid Society.</span>
+              </div>
+            </div>
+            <span class="material-icons accordion-header-chevron">expand_more</span>
+          </div>
+          
+          <div class="accordion-body" *ngIf="activeSection === 3">
+            <div class="form-grid-2-col">
+              <div class="field">
+                <label class="field-label required-label">Coordinator Name</label>
+                <input type="text" name="coordName" class="field-input" placeholder="Full Name"
+                       [(ngModel)]="university.coordName" required #coordNameModel="ngModel">
+                <div class="validation-error" *ngIf="(coordNameModel.touched || regForm.submitted) && coordNameModel.invalid">
+                  Coordinator Name is required.
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="field-label">Position / Job Title</label>
+                <input type="text" name="coordPosition" class="field-input" placeholder="e.g. Registrar, Academic Director"
+                       [(ngModel)]="university.coordPosition">
+              </div>
+
+              <div class="field">
+                <label class="field-label required-label">Coordinator Email</label>
+                <input type="email" name="coordEmail" class="field-input" placeholder="coordinator@university.edu"
+                       [(ngModel)]="university.coordEmail" required #coordEmailModel="ngModel">
+                <div class="validation-error" *ngIf="(coordEmailModel.touched || regForm.submitted) && coordEmailModel.invalid">
+                  Coordinator Email is required.
+                </div>
+              </div>
+
+              <!-- Coordinator Phone -->
+              <div class="field" (click)="$event.stopPropagation()">
+                <label class="field-label required-label">Coordinator Phone</label>
+                <div class="phone-input-group">
+                  <div class="multi-select" [class.open]="isCoordPhoneDropdownOpen" (click)="toggleCoordPhoneDropdown($event)" (blur)="coordPhoneCodeModel.control.markAsTouched()" tabindex="0">
+                    <div class="ms-display" [class.has-selection]="CoordCountryId !== null">
+                      <span>{{ CoordCountryId ? getCoordPhoneCountryName() : 'Select Code...' }}</span>
+                    </div>
+                    <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                    <div class="ms-panel" *ngIf="isCoordPhoneDropdownOpen" (click)="$event.stopPropagation()">
+                      <div *ngFor="let c of countries" class="ms-option" [class.checked]="CoordCountryCode === c.countryIsdCode?.toString()" (click)="selectCoordPhoneCountry(c); coordPhoneCodeModel.control.markAsTouched(); $event.stopPropagation()">
+                        <span>{{ c.countryName }} (+{{ c.countryIsdCode }})</span>
+                      </div>
+                    </div>
+                  </div>
+                  <input type="text" name="coordPhoneNumber" class="field-input phone-number-input" placeholder="55554444" [(ngModel)]="CoordPhoneNumber" required #coordPhoneModel="ngModel">
+                </div>
+                <input type="hidden" name="coordPhoneCountryCode" [ngModel]="CoordCountryCode ? CoordCountryCode : ''" required #coordPhoneCodeModel="ngModel">
+                <div class="validation-error" *ngIf="(coordPhoneCodeModel.touched || regForm.submitted) && !coordPhoneCodeModel.valid">
+                  Phone Code is required.
+                </div>
+                <div class="validation-error" *ngIf="(coordPhoneModel.touched || regForm.submitted) && !coordPhoneModel.valid">
+                  Phone number is required.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 4: Institution Scale -->
+        <div class="accordion-section" [class.active]="activeSection === 4">
+          <div class="accordion-header" (click)="toggleSection(4)">
+            <div class="accordion-header-left">
+              <div class="accordion-header-num">4</div>
+              <div class="accordion-header-content">
+                <span class="accordion-header-title">Institution Scale</span>
+                <span class="accordion-header-desc">Number of faculties, programs and students.</span>
+              </div>
+            </div>
+            <span class="material-icons accordion-header-chevron">expand_more</span>
+          </div>
+          
+          <div class="accordion-body" *ngIf="activeSection === 4">
+            <!-- Group A: Structure & Staff -->
+            <div class="sem-sub-title-client">Structure & Staff</div>
+            <div class="form-grid-3-col">
+              <div class="field">
+                <label class="field-label">Faculties / Schools</label>
+                <input type="number" name="facultiesCount" class="field-input" placeholder="0"
+                       [(ngModel)]="university.facultiesCount">
+              </div>
+              <div class="field">
+                <label class="field-label">Full-time Faculty members</label>
+                <input type="number" name="facultyFulltimeCount" class="field-input" placeholder="0"
+                       [(ngModel)]="university.facultyFulltimeCount">
+              </div>
+              <div class="field">
+                <label class="field-label">Administrative Staff</label>
+                <input type="number" name="adminStaffCount" class="field-input" placeholder="0"
+                       [(ngModel)]="university.adminStaffCount">
+              </div>
+            </div>
+
+            <!-- Group B: Programs Offered -->
+            <div class="sem-sub-title-client" style="margin-top: 20px;">Programs Offered</div>
+            <div class="form-grid-4-col">
+              <div class="field">
+                <label class="field-label">Bachelor Programs</label>
+                <input type="number" name="progDegreeCount" class="field-input" placeholder="0"
+                       [(ngModel)]="university.progDegreeCount">
+              </div>
+              <div class="field">
+                <label class="field-label">Diploma Programs</label>
+                <input type="number" name="progDiplomaCount" class="field-input" placeholder="0"
+                       [(ngModel)]="university.progDiplomaCount">
+              </div>
+              <div class="field">
+                <label class="field-label">Certificate Programs</label>
+                <input type="number" name="progCertificateCount" class="field-input" placeholder="0"
+                       [(ngModel)]="university.progCertificateCount">
+              </div>
+              <div class="field">
+                <label class="field-label">Postgraduate Programs</label>
+                <input type="number" name="progPostgradCount" class="field-input" placeholder="0"
+                       [(ngModel)]="university.progPostgradCount">
+              </div>
+            </div>
+
+            <!-- Group C: Students -->
+            <div class="sem-sub-title-client" style="margin-top: 20px;">Students</div>
+            <div class="form-grid-4-col">
+              <div class="field">
+                <label class="field-label">Total Students</label>
+                <input type="number" name="studentsTotal" class="field-input" placeholder="0"
+                       [(ngModel)]="university.studentsTotal">
+              </div>
+              <div class="field">
+                <label class="field-label">Currently Enrolled</label>
+                <input type="number" name="studentsEnrolled" class="field-input" placeholder="0"
+                       [(ngModel)]="university.studentsEnrolled">
+              </div>
+              <div class="field">
+                <label class="field-label">International Students Pct</label>
+                <div class="field-suffix-wrapper">
+                  <input type="number" name="intlStudentsPct" class="field-input input-with-suffix" placeholder="0"
+                         [(ngModel)]="university.intlStudentsPct">
+                  <span class="suffix-tag-client">%</span>
+                </div>
+              </div>
+              <div class="field" (click)="$event.stopPropagation()">
+                <label class="field-label required-label">Students Gender</label>
+                <div class="multi-select" [class.open]="isGenderDropdownOpen" [class.invalid]="(genderModel.touched || regForm.submitted) && !genderModel.valid" (click)="toggleGenderDropdown($event)" tabindex="0">
+                  <div class="ms-display" [class.has-selection]="university.studentsGender !== '' && university.studentsGender !== null && university.studentsGender !== undefined">
+                    <span *ngIf="university.studentsGender === '' || university.studentsGender === null || university.studentsGender === undefined">Select Gender...</span>
+                    <span *ngIf="university.studentsGender !== '' && university.studentsGender !== null && university.studentsGender !== undefined" class="ms-chip">
+                      {{ getSelectedGenderName() }}
+                      <span class="ms-chip-x" (click)="clearGender($event); genderModel.control.markAsTouched()">×</span>
+                    </span>
+                  </div>
+                  <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                  <div class="ms-panel" *ngIf="isGenderDropdownOpen" (click)="$event.stopPropagation()" style="display: block; max-height: 200px; overflow-y: auto;">
+                    <div *ngFor="let g of studentGenders" class="ms-option" [class.checked]="university.studentsGender === g.displayText" (click)="selectGender(g.displayText!); genderModel.control.markAsTouched(); $event.stopPropagation()">
+                      <span>{{ g.displayText }}</span>
+                    </div>
+                  </div>
+                </div>
+                <input type="hidden" name="studentsGender" [ngModel]="(university.studentsGender !== '' && university.studentsGender !== null && university.studentsGender !== undefined) ? university.studentsGender : ''" required #genderModel="ngModel">
+                <div class="validation-error" *ngIf="(genderModel.touched || regForm.submitted) && !genderModel.valid">
+                  Student Gender is required.
+                </div>
+              </div>
+            </div>
+
+            <div class="form-grid-4-col" style="margin-top: 14px;">
+              <div class="field">
+                <label class="field-label">Bachelor Students</label>
+                <input type="number" name="studDegreeCount" class="field-input" placeholder="0"
+                       [(ngModel)]="university.studDegreeCount">
+              </div>
+              <div class="field">
+                <label class="field-label">Diploma Students</label>
+                <input type="number" name="studDiplomaCount" class="field-input" placeholder="0"
+                       [(ngModel)]="university.studDiplomaCount">
+              </div>
+              <div class="field">
+                <label class="field-label">Certificate Students</label>
+                <input type="number" name="studCertificateCount" class="field-input" placeholder="0"
+                       [(ngModel)]="university.studCertificateCount">
+              </div>
+              <div class="field">
+                <label class="field-label">Postgraduate Students</label>
+                <input type="number" name="studPostgradCount" class="field-input" placeholder="0"
+                       [(ngModel)]="university.studPostgradCount">
+              </div>
+            </div>
+
+            <!-- Group D: Alumni -->
+            <div class="sem-sub-title-client" style="margin-top: 20px;">Alumni</div>
+            <div class="form-grid-2-col">
+              <div class="field">
+                <label class="field-label">Total Graduates since Establishment</label>
+                <input type="number" name="graduatesTotal" class="field-input" placeholder="0"
+                       [(ngModel)]="university.graduatesTotal">
+              </div>
+              <div class="field">
+                <label class="field-label">Alumni Count</label>
+                <input type="number" name="alumniCount" class="field-input" placeholder="0"
+                       [(ngModel)]="university.alumniCount">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 5: Quality & Research -->
+        <div class="accordion-section" [class.active]="activeSection === 5">
+          <div class="accordion-header" (click)="toggleSection(5)">
+            <div class="accordion-header-left">
+              <div class="accordion-header-num">5</div>
+              <div class="accordion-header-content">
+                <span class="accordion-header-title">Quality Indicators & Research</span>
+                <span class="accordion-header-desc">Helps the committee evaluate accreditation readiness.</span>
+              </div>
+            </div>
+            <span class="material-icons accordion-header-chevron">expand_more</span>
+          </div>
+          
+          <div class="accordion-body" *ngIf="activeSection === 5">
+            <div class="form-grid-3-col">
+              <div class="field">
+                <label class="field-label">Operational Sustainability</label>
+                <div class="field-suffix-wrapper">
+                  <input type="number" name="opSustainabilityPct" class="field-input input-with-suffix" placeholder="0"
+                         [(ngModel)]="university.opSustainabilityPct">
+                  <span class="suffix-tag-client">%</span>
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="field-label">Graduate Employability Index</label>
+                <div class="field-suffix-wrapper">
+                  <input type="number" name="employabilityPct" class="field-input input-with-suffix" placeholder="0"
+                         [(ngModel)]="university.employabilityPct">
+                  <span class="suffix-tag-client">%</span>
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="field-label">PhD Academic Staff percentage</label>
+                <div class="field-suffix-wrapper">
+                  <input type="number" name="phdStaffPct" class="field-input input-with-suffix" placeholder="0"
+                         [(ngModel)]="university.phdStaffPct">
+                  <span class="suffix-tag-client">%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-grid-3-col" style="margin-top: 14px;">
+              <div class="field">
+                <label class="field-label">Student to Faculty Ratio (FTE)</label>
+                <input type="text" name="fteRatio" class="field-input" placeholder="e.g. 18 : 1"
+                       [(ngModel)]="university.fteRatio">
+              </div>
+
+              <div class="field">
+                <label class="field-label">Average Teaching Load</label>
+                <div class="field-suffix-wrapper">
+                  <input type="number" name="teachingLoadHours" class="field-input input-with-suffix" placeholder="0"
+                         [(ngModel)]="university.teachingLoadHours">
+                  <span class="suffix-tag-client">hrs</span>
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="field-label">Annual Publications</label>
+                <input type="number" name="annualPublications" class="field-input" placeholder="0"
+                       [(ngModel)]="university.annualPublications">
+              </div>
+            </div>
+
+            <div class="form-grid-3-col" style="margin-top: 14px;">
+              <div class="field">
+                <label class="field-label">Online Programs Offered</label>
+                <input type="number" name="onlineProgramsCount" class="field-input" placeholder="0"
+                       [(ngModel)]="university.onlineProgramsCount">
+              </div>
+
+              <div class="field">
+                <label class="field-label">Internationally Accredited Programs</label>
+                <input type="number" name="intlAccreditedProgramsCount" class="field-input" placeholder="0"
+                       [(ngModel)]="university.intlAccreditedProgramsCount">
+              </div>
+
+              <div class="field">
+                <label class="field-label">External Research Grants</label>
+                <input type="text" name="externalGrants" class="field-input" placeholder="e.g. 3 Active / None"
+                       [(ngModel)]="university.externalGrants">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 6: Notes -->
+        <div class="accordion-section" [class.active]="activeSection === 6">
+          <div class="accordion-header" (click)="toggleSection(6)">
+            <div class="accordion-header-left">
+              <div class="accordion-header-num">6</div>
+              <div class="accordion-header-content">
+                <span class="accordion-header-title">Notes & Attachments</span>
+                <span class="accordion-header-desc">Any additional information you want the committee to know.</span>
+              </div>
+            </div>
+            <span class="material-icons accordion-header-chevron">expand_more</span>
+          </div>
+          
+          <div class="accordion-body" *ngIf="activeSection === 6">
+            <div class="form-grid-2-col">
+              <div class="field field-span-2">
+                <label class="field-label">Notes (Optional)</label>
+                <textarea name="notes" class="field-input" rows="3" placeholder="Enter notes here..." style="height: auto; padding: 10px 12px; resize: vertical;" [(ngModel)]="university.notes"></textarea>
+              </div>
+            </div>
+            
+            <div class="reg-note-client">
+              <b>Next Step — Programs and Costs.</b> After the registration request is accepted, the university will be invited to submit the programs of each faculty (degree, accrediting body, required documents, high school grade/department, and full breakdown of annual costs: registration, tuition, books, housing, transport, visa, etc.) through the program accreditation path.
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer Buttons -->
+      <div class="form-actions-client">
+        <div class="autosave-indicator">
+          <span class="dot-indicator"></span>
+          <span>By submitting this form, you confirm the accuracy of the provided information.</span>
+        </div>
+        <div class="action-buttons-right">
+          <button type="button" class="btn-client-secondary" (click)="goToLogin()">Cancel</button>
+          <button type="button" class="btn-client-draft" (click)="saveDraft()">Save Draft</button>
+          <button type="submit" class="btn-client-primary">Submit registration</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

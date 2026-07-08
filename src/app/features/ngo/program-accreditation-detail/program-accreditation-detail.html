@@ -1,0 +1,284 @@
+<!-- Direct Angular conversion of ProgramAccreditationDetailPage.razor -->
+
+<div class="program-accreditation-page" data-lang="en">
+
+  <!-- ── Header Section ─────────────────────────────────────── -->
+  <div class="page-head">
+    <div>
+      <div class="crumb">
+        <a href="#">Dashboard</a>
+        <span class="sep">/</span>
+        <span>Program Accreditation</span>
+        <span class="sep">/</span>
+        <span>Detail</span>
+      </div>
+
+      <h1 class="page-title">
+        {{ program.programName }}
+        <span class="client-status-badge" [ngClass]="getBadgeClass(program.accreditationStatus)">
+          {{ getStatusLabel(program.accreditationStatus) }}
+        </span>
+      </h1>
+
+      <div class="page-sub">
+        Submitted on {{ (program.submittedDate | date:'yyyy/MM/dd') || '-' }}
+        · The fields below are read-only — record the decision at the bottom of the page.
+      </div>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-g btn-back" type="button" (click)="backToList()">
+        <i class="fas fa-arrow-left btn-icon"></i> Back To List
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       Single Main Information Card
+       ══════════════════════════════════════════════════════ -->
+  <div class="client-card">
+    <div class="client-section-title">Program Information</div>
+
+    <div class="client-grid">
+
+      <!-- Left Column -->
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="client-item">
+          <span class="client-label">Program Code</span>
+          <span class="client-value">{{ program.programCode || '—' }}</span>
+        </div>
+        <div class="client-item">
+          <span class="client-label">Faculty / School</span>
+          <span class="client-value">{{ program.facultyName || '—' }}</span>
+        </div>
+        <div class="client-item">
+          <span class="client-label">Duration</span>
+          <span class="client-value">
+            {{ program.numberOfSemesters }} semesters ({{ program.numberOfSemesters / 2 | number:'1.0-0' }} years)
+          </span>
+        </div>
+        <div class="client-item">
+          <span class="client-label">Min. Acceptance Rate</span>
+          <span class="client-value">
+            {{ program.minAcceptanceRate != null ? program.minAcceptanceRate + '%' : '—' }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Right Column -->
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="client-item">
+          <span class="client-label">University</span>
+          <span class="client-value">{{ program.universityName || '—' }}</span>
+        </div>
+        <div class="client-item">
+          <span class="client-label">Degree</span>
+          <span class="client-value">{{ getDegreeFriendlyName(program.degree) }}</span>
+        </div>
+        <div class="client-item">
+          <span class="client-label">Seats Offered</span>
+          <span class="client-value">{{ program.allowedStudentSeats || '—' }}</span>
+        </div>
+        <div class="client-item">
+          <span class="client-label">Program Accreditation Body</span>
+          <span class="client-value">National Higher Education Commission</span>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <hr class="client-divider" />
+
+      <!-- Left Under Divider -->
+      <div class="client-item">
+        <span class="client-label">Required H.S. Division</span>
+        <span class="client-value">
+          {{ program.allowedHighSchoolDivisions?.trim() ? program.allowedHighSchoolDivisions : 'None Required' }}
+        </span>
+      </div>
+
+      <!-- Right Under Divider -->
+      <div class="client-item">
+        <span class="client-label">Required H.S. Score</span>
+        <span class="client-value">
+          {{ program.minAcceptanceRate != null ? program.minAcceptanceRate + '%' : '—' }}
+        </span>
+      </div>
+
+      <!-- Required Documents Section — full width -->
+      <div class="client-item" style="grid-column: span 2; margin-top: 2px;">
+        <span class="client-label" style="margin-bottom: 4px;">Required Documents</span>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+          <ng-container *ngIf="program.documents && program.documents.length > 0; else noDocsTpl">
+            <span class="client-doc-chip" *ngFor="let doc of program.documents">
+              {{ doc.documentTypeName }}
+            </span>
+          </ng-container>
+          <ng-template #noDocsTpl>
+            <span class="client-value" style="font-style: italic; color: #94a3b8;">No documents required</span>
+          </ng-template>
+        </div>
+      </div>
+
+      <!-- Annual Cost Breakdown Section — full width -->
+      <div class="client-item" style="grid-column: span 2; margin-top: 2px;">
+        <span class="client-section-title" style="margin: 4px 0;">Annual Cost Breakdown</span>
+        <table class="cost-table">
+          <tbody>
+            <ng-container *ngIf="program.costs && program.costs.length > 0; else noCostsTpl">
+              <tr class="cost-row" *ngFor="let cost of program.costs">
+                <td class="cost-label">{{ cost.sponsorshipTypeName }}</td>
+                <td class="cost-amount">${{ cost.amount | number:'1.0-0' }}</td>
+              </tr>
+              <tr class="cost-row total-row">
+                <td class="cost-label">Total annual scholarship cost</td>
+                <td class="cost-amount">${{ getTotalAnnualCost() | number:'1.0-0' }}</td>
+              </tr>
+            </ng-container>
+            <ng-template #noCostsTpl>
+              <tr>
+                <td colspan="2" style="font-size: 13px; color: #94a3b8; padding: 8px 0; font-style: italic;">
+                  No cost items defined.
+                </td>
+              </tr>
+            </ng-template>
+          </tbody>
+        </table>
+      </div>
+
+    </div><!-- /client-grid -->
+  </div><!-- /client-card (Program Information) -->
+
+  <!-- ══════════════════════════════════════════════════════
+       Semester Breakdown Card
+       ══════════════════════════════════════════════════════ -->
+  <div class="client-card">
+    <div class="client-section-title">Semester breakdown — credits and per-semester cost</div>
+
+    <!-- 3-column green KPI summary -->
+    <div class="pd-sem-summary">
+      <div class="item">
+        <div class="lbl">Total semesters</div>
+        <div class="val num-ltr">{{ program.numberOfSemesters }}</div>
+      </div>
+      <div class="item">
+        <div class="lbl">Total credit hours</div>
+        <div class="val num-ltr">{{ program.creditsRequired }}</div>
+      </div>
+      <div class="item">
+        <div class="lbl">Per-semester scholarship cost</div>
+        <div class="val num-ltr">${{ getAvgPerSemester() | number:'1.0-0' }}</div>
+      </div>
+    </div>
+
+    <!-- Semester Cards -->
+    <div id="pd-semesters-wrap">
+      <ng-container *ngIf="program.courses && program.courses.length > 0; else noSemsTpl">
+        <div class="pd-sem-card" *ngFor="let semNo of getSemesterNumbers()">
+          <div class="pd-sem-head">
+            <div class="pd-sem-title">
+              Semester {{ semNo }} - Year {{ (semNo + 1) / 2 | number:'1.0-0' }} - {{ semNo % 2 === 1 ? 'Fall' : 'Spring' }}
+            </div>
+            <div class="pd-sem-meta">
+              <span>
+                <span class="pd-meta-lbl">Credits:</span> {{ getSemesterCredits(semNo) }}
+              </span>
+              <span>
+                <span class="pd-meta-lbl">Semester cost:</span> ${{ getAvgPerSemester() | number:'1.0-0' }}
+              </span>
+            </div>
+          </div>
+          <table class="pd-sem-table">
+            <thead>
+              <tr>
+                <th style="width: 40px;">#</th>
+                <th style="width: 120px;">Code</th>
+                <th>Course</th>
+                <th style="width: 100px;">Type</th>
+                <th style="width: 80px; text-align: right;">Credits</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let course of getCoursesForSemester(semNo); let i = index">
+                <td>{{ i + 1 }}</td>
+                <td class="num-ltr">{{ course.courseCode }}</td>
+                <td>{{ course.courseNameEn }}</td>
+                <td>
+                  <span class="pd-tag pd-tag-core"     *ngIf="course.courseType === 1">Core</span>
+                  <span class="pd-tag pd-tag-elective"  *ngIf="course.courseType !== 1">Elective</span>
+                </td>
+                <td style="text-align: right;">{{ course.credits }}</td>
+              </tr>
+              <tr class="pd-sem-total">
+                <td colspan="4" style="font-weight: 750;">Total credits this semester</td>
+                <td style="text-align: right; font-weight: 750;">{{ getSemesterCredits(semNo) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+      <ng-template #noSemsTpl>
+        <div style="font-size: 13px; color: #94a3b8; padding: 8px 0; font-style: italic;">
+          No semester details or courses defined.
+        </div>
+      </ng-template>
+    </div><!-- /pd-semesters-wrap -->
+
+  </div><!-- /client-card (Semester Breakdown) -->
+
+  <!-- ══════════════════════════════════════════════════════
+       Decision Section
+       ══════════════════════════════════════════════════════ -->
+  <div class="pd-decision-card">
+    <div class="client-section-title">Committee decision</div>
+
+    <div class="pd-decision-grid">
+
+      <!-- Status Dropdown (reusing project .multi-select / .ms-panel pattern) -->
+      <div class="field" (click)="$event.stopPropagation()">
+        <label class="field-label">Status</label>
+        <div class="multi-select" [class.open]="isStatusDropdownOpen" id="status-dropdown-filter"
+             (click)="isStatusDropdownOpen = !isStatusDropdownOpen" tabindex="0" style="width: 100%;">
+          <div class="ms-display has-selection" style="padding: 0;">
+            <span>{{ getStatusLabel(selectedStatus) }}</span>
+          </div>
+          <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+          <div class="ms-panel" *ngIf="isStatusDropdownOpen"
+               style="display: block; max-height: 200px; overflow-y: auto; z-index: 100; top: calc(100% + 4px);"
+               (click)="$event.stopPropagation()">
+            <div class="ms-option" [class.checked]="selectedStatus === 1"
+               (click)="selectStatus(1); $event.stopPropagation()">
+              <span>Pending</span>
+            </div>
+            <div class="ms-option" [class.checked]="selectedStatus === 2"
+               (click)="selectStatus(2); $event.stopPropagation()">
+              <span>Accredited</span>
+            </div>
+            <div class="ms-option" [class.checked]="selectedStatus === 3"
+               (click)="selectStatus(3); $event.stopPropagation()">
+              <span>Rejected</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Committee Comment -->
+      <div class="field">
+        <label class="field-label">Committee comment</label>
+        <textarea class="field-input" rows="3"
+                  [(ngModel)]="comment"
+                  placeholder="Reason for the decision or internal note…"></textarea>
+      </div>
+
+    </div><!-- /pd-decision-grid -->
+
+    <div class="pd-foot">
+      <button class="btn btn-p" type="button" (click)="updateDecision()"
+              style="background: var(--da-green) !important; height: 36px; padding: 0 20px; border-radius: 4px; font-weight: 600; color: white;">
+        Update
+      </button>
+    </div>
+
+  </div><!-- /pd-decision-card -->
+
+</div><!-- /program-accreditation-page -->

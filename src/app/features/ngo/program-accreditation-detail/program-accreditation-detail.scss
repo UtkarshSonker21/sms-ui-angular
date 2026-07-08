@@ -1,0 +1,388 @@
+/* ════════════════════════════════════════════════════════════
+   program-accreditation-detail.scss
+   Direct copy of <style> block in ProgramAccreditationDetailPage.razor
+   Only CSS variable names are substituted where project equivalents exist.
+   ════════════════════════════════════════════════════════════ */
+
+/* ── Back To List button — matches Blazor ← arrow exactly ── */
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-back-arrow {
+  font-size: 15px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ── Main Information Card ─────────────────────────────── */
+.client-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 20px 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+}
+
+.client-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 12px;
+    margin-top: 0;
+}
+
+.client-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 60px;
+}
+
+.client-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.client-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.client-value {
+    font-size: 13px;
+    color: #1e293b;
+    font-weight: 570;
+}
+
+.client-divider {
+    grid-column: span 2;
+    border: 0;
+    border-top: 1px dashed #e2e8f0;
+    margin: 8px 0;
+    height: 0;
+}
+
+/* ── Document Chips ─────────────────────────────────────── */
+.client-doc-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 14px;
+    background-color: #f0f7ff;
+    border: 1px solid #0056b3;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #0056b3;
+}
+
+/* ── Annual Cost Table ──────────────────────────────────── */
+.cost-table {
+    width: 100%;
+    max-width: 480px;
+    border-collapse: collapse;
+    margin-top: 8px;
+}
+
+.cost-row {
+    height: 38px;
+    border-bottom: 1px dashed #e2e8f0;
+}
+
+.cost-row.total-row {
+    border-bottom: none;
+    font-weight: 700;
+}
+
+.cost-label {
+    font-size: 13px;
+    color: #334155;
+    text-align: left;
+    padding-left: 4px;
+}
+
+.cost-amount {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e293b;
+    text-align: right;
+    font-family: 'Inter', monospace;
+    padding-right: 4px;
+}
+
+.total-row .cost-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.total-row .cost-amount {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+/* ── Status Badge (header) ──────────────────────────────── */
+.client-status-badge {
+    // font-size: 11px;
+    // font-weight: 600;
+    // padding: 2px 10px;
+    // border-radius: 4px;
+    // border: 1px solid transparent;
+    // text-transform: capitalize;
+        display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 4px 14px;
+    border-radius: 100px;
+
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1;
+
+    border: 1px solid;
+    text-transform: capitalize;
+    white-space: nowrap;
+}
+
+.badge-pending {
+    background: #fef3c7;
+    color: #d97706;
+    border-color: #fde68a;
+}
+
+.badge-accredited {
+    background: #dcfce7;
+    color: #16a34a;
+    border-color: #bbf7d0;
+}
+
+.badge-rejected {
+    background: #fee2e2;
+    color: #dc2626;
+    border-color: #fca5a5;
+}
+
+/* ── Page Sub ───────────────────────────────────────────── */
+.detail-page-sub {
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 16px;
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .client-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    .client-divider {
+        grid-column: span 1;
+    }
+    .client-card {
+        padding: 24px;
+    }
+}
+
+/* ── Semester Summary KPI Cards ─────────────────────────── */
+.pd-sem-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+@media (max-width: 700px) {
+    .pd-sem-summary { grid-template-columns: 1fr; }
+}
+
+.pd-sem-summary .item {
+    background: var(--da-green-50);
+    border: 1px solid #BBF7D0;
+    border-radius: 8px;
+    padding: 12px 14px;
+}
+
+.pd-sem-summary .lbl {
+    font-size: 10.5px;
+    color: var(--da-green-800);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.pd-sem-summary .val {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--da-green-800);
+    margin-top: 4px;
+}
+
+/* ── Semester Card ──────────────────────────────────────── */
+.pd-sem-card {
+    border: 1px solid var(--da-border);
+    border-radius: 8px;
+    background: #fff;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.pd-sem-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 10px 14px;
+    background: #FAFAFA;
+    border-bottom: 1px solid var(--da-border);
+}
+
+.pd-sem-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--da-black);
+}
+
+.pd-sem-meta {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    font-size: 12px;
+    color: var(--da-text-2);
+}
+
+.pd-sem-meta .pd-meta-lbl {
+    color: var(--da-muted);
+    font-weight: 700;
+}
+
+/* ── Semester Table ─────────────────────────────────────── */
+.pd-sem-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+}
+
+.pd-sem-table th,
+.pd-sem-table td {
+    text-align: start;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--da-border);
+}
+
+.pd-sem-table thead th {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--da-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.pd-sem-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.pd-sem-table tr.pd-sem-total td {
+    background: #FAFAFA;
+    border-top: 2px solid var(--da-border);
+}
+
+/* ── Course Type Tags ───────────────────────────────────── */
+.pd-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 12px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 750;
+    border: 1px solid transparent;
+    line-height: 1;
+}
+
+.pd-tag-core {
+    background: #dcfce7;
+    border-color: #bbf7d0;
+    color: #15803d;
+}
+
+.pd-tag-elective {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #1e40af;
+}
+
+/* ── Committee Decision Card ────────────────────────────── */
+.pd-decision-card {
+    background: var(--da-surface);
+    border: 1px solid var(--da-border);
+    border-radius: var(--da-radius);
+    padding: 16px 18px;
+    margin-top: 14px;
+}
+
+.pd-decision-grid {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 14px;
+}
+
+.pd-foot {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--da-border);
+    justify-content: flex-end;
+}
+
+/* ── Decision Dropdown Option Styles ────────────────────── */
+.ms-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--da-text-2);
+    transition: background 0.1s;
+    line-height: 1.35;
+}
+
+.ms-option:hover {
+    background: var(--da-green-50);
+}
+
+.ms-option.checked {
+    color: var(--da-black);
+    font-weight: 600;
+    background: var(--da-green-50);
+}
+
+/* ── Field Label ────────────────────────────────────────── */
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.field-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--da-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
