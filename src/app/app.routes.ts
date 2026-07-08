@@ -24,6 +24,8 @@ import { Program } from './features/university/program/program';
 import { ProgramDetail } from './features/university/program-detail/program-detail';
 import { SchoolRegistration } from './features/school/school-registration/school-registration';
 import { UniversityRegistration } from './features/university/university-registration/university-registration';
+import { ProgramAccreditation } from './features/ngo/program-accreditation/program-accreditation';
+import { ProgramAccreditationDetail } from './features/ngo/program-accreditation-detail/program-accreditation-detail';
 
 export const routes: Routes = [
 
@@ -129,6 +131,14 @@ export const routes: Routes = [
             {
                 path: 'programs-detail/:programId',
                 component: ProgramDetail
+            },
+            {
+                path: 'program-accreditation',
+                component: ProgramAccreditation
+            },
+            {
+                path: 'program-accreditation-detail/:programId',
+                component: ProgramAccreditationDetail
             },
 
 

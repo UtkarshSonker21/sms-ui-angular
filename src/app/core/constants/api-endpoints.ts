@@ -100,7 +100,15 @@ export const ApiEndpoints = {
       Create: 'university/document-types/create',
       Update: (id: number) => `university/document-types/update/${id}`,
       Delete: (id: number) => `university/document-types/delete/${id}`
-    }
+    },
+
+    MasterUniversity: {
+      Search: 'university/master-university/search',
+      GetById: (id: number) => `university/master-university/getById/${id}`,
+      Create: 'university/master-university/create',
+      Update: (id: number) => `university/master-university/update/${id}`,
+      Delete: (id: number) => `university/master-university/delete/${id}`
+    },
 
   },
 

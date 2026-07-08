@@ -1,0 +1,547 @@
+/* Scoped Styles for University Registration Page */
+
+:host {
+    display: block;
+    background: #f9f9f9;
+    min-height: 100vh;
+    padding: 28px 20px 120px;
+}
+
+.school-reg-card {
+    max-width: 980px;
+    margin: 0 auto;
+    margin-bottom: 10px;
+    background: var(--da-surface, #ffffff);
+    border-radius: 14px;
+    border: 1px solid var(--da-border, #e0e0e0);
+    box-shadow: 0 10px 40px rgba(5,5,5,0.04);
+    overflow: visible;
+}
+
+/* Card Header */
+.card-header-client {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 22px 26px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.avatar-square {
+    background: var(--da-green, #2C9942);
+    color: white;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 16px;
+    margin-inline-end: 0;
+    flex-shrink: 0;
+}
+
+.header-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.brand-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    color: var(--da-gold-700, #b58900);
+    text-transform: uppercase;
+}
+
+.page-title-client {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--da-black, #212121);
+    margin: 2px 0 0 0;
+    line-height: 1.2;
+    letter-spacing: 0.2px;
+}
+
+.btn-back-login {
+    background: white;
+    border: 1px solid var(--da-border, #e0e0e0);
+    border-radius: 6px;
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--da-muted, #757575);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.btn-back-login:hover {
+    border-color: var(--da-green, #2C9942);
+    color: var(--da-green, #2C9942);
+    background: var(--da-green-50, #E8F5E9);
+}
+
+/* Green Divider */
+.green-divider {
+    height: 4px;
+    background: var(--da-green, #2C9942);
+    width: 100%;
+}
+
+/* Card Body */
+.card-body-client {
+    padding: 0;
+}
+
+.required-note {
+    padding: 12px 26px 0;
+    font-size: 12.5px;
+    color: var(--da-muted, #757575);
+    margin-bottom: 0;
+}
+
+.required-star {
+    color: var(--da-danger, #d32f2f);
+    font-weight: 800;
+}
+
+/* Accordion Container */
+.accordion-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-top: 24px;
+    border-bottom: 1px solid var(--da-border, #e0e0e0);
+}
+
+/* Accordion Section */
+.accordion-section {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--da-border, #e0e0e0);
+    border-radius: 0;
+    overflow: visible;
+}
+
+.accordion-header {
+    display: grid;
+    grid-template-columns: 28px 1fr 18px;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 26px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    cursor: pointer;
+    transition: background 0.12s ease;
+}
+
+.accordion-header:hover {
+    background: var(--da-green-50, #E8F5E9);
+}
+
+.accordion-section.active .accordion-header {
+    border-radius: 0;
+    border-bottom: none;
+}
+
+.accordion-header-left {
+    display: contents;
+}
+
+.accordion-header-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 12px;
+    margin-inline-end: 0;
+    background: var(--da-white, #ffffff);
+    border: 1.5px solid var(--da-border, #e0e0e0);
+    color: var(--da-muted, #757575);
+    flex-shrink: 0;
+    transition: all 0.12s ease;
+}
+
+.accordion-section.active .accordion-header-num {
+    background: var(--da-green, #2C9942);
+    border-color: var(--da-green, #2C9942);
+    color: white;
+}
+
+.accordion-header-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.accordion-header-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--da-black, #212121);
+    letter-spacing: 0.2px;
+}
+
+.accordion-header-desc {
+    font-size: 11.5px;
+    color: var(--da-muted, #757575);
+    margin-top: 2px;
+}
+
+.accordion-header-chevron {
+    width: 16px;
+    height: 16px;
+    color: var(--da-muted, #757575);
+    font-size: 16px;
+    transition: transform 0.18s ease;
+}
+
+.accordion-section.active .accordion-header-chevron {
+    transform: rotate(180deg);
+}
+
+/* Accordion Body */
+.accordion-body {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 6px 26px 22px 26px;
+    padding-inline-start: 68px;
+}
+
+/* Form Fields Grid & Helper Positioning */
+.form-grid-2-col {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+}
+
+.form-grid-3-col {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+}
+
+.form-grid-4-col {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.field-span-2 {
+    grid-column: span 2;
+}
+
+/* Subheadings inside Scale Section */
+.sem-sub-title-client {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--da-gold-700, #b58900);
+    margin-top: 22px;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    border-bottom: 1px dashed var(--da-border, #e0e0e0);
+    padding-bottom: 4px;
+}
+
+/* Field label and inputs */
+.field-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--da-black, #212121);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.required-label::after {
+    content: " *";
+    color: var(--da-danger, #d32f2f);
+    font-weight: 800;
+}
+
+.field-input {
+    width: 100%;
+    border: 1px solid var(--da-border, #e0e0e0);
+    border-radius: var(--da-radius-sm, 6px);
+    padding: 7px 12px;
+    font-size: 13.5px;
+    color: var(--da-black, #212121);
+    background: var(--da-white, #ffffff);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.field-input::placeholder {
+    color: var(--da-muted, #bdbdbd);
+}
+
+.field-input:hover {
+    border-color: var(--da-border-strong, #bdbdbd);
+}
+
+.field-input:focus {
+    border-color: var(--da-green, #2C9942);
+    box-shadow: 0 0 0 3px rgba(44,153,66,0.12);
+}
+
+/* Input groups with suffix labels */
+.field-suffix-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.input-with-suffix {
+    padding-inline-end: 42px !important;
+}
+
+.suffix-tag-client {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    inset-inline-end: 12px;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--da-muted, #757575);
+    pointer-events: none;
+}
+
+/* Alert warning next steps box */
+.reg-note-client {
+    margin-top: 22px;
+    padding: 14px 16px;
+    background: var(--da-gold-50, #FBF3DA);
+    border: 1px solid var(--da-gold, #D4A843);
+    border-radius: 8px;
+    font-size: 12.5px;
+    color: var(--da-black, #212121);
+    line-height: 1.6;
+}
+
+.reg-note-client b {
+    color: var(--da-gold-700, #A07F1F);
+}
+
+/* Country Code + Phone Number Unified Input Group */
+.phone-input-group {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+    height: 34px;
+    border: 1px solid var(--da-border, #e0e0e0);
+    border-radius: var(--da-radius-sm, 6px);
+    background: var(--da-white, #ffffff);
+    transition: border-color 0.15s, box-shadow 0.15s;
+    box-sizing: border-box;
+    overflow: visible;
+}
+
+.phone-input-group:hover {
+    border-color: var(--da-border-strong, #bdbdbd);
+}
+
+.phone-input-group:focus-within {
+    border-color: var(--da-green, #2C9942);
+    box-shadow: 0 0 0 3px rgba(44,153,66,0.12);
+}
+
+.phone-input-group .multi-select {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    width: 200px;
+    max-width: 200px;
+    flex-shrink: 0;
+    height: 100% !important;
+    border-radius: 0 !important;
+    border-right: 1px solid var(--da-border, #e0e0e0) !important;
+    padding: 0 12px !important;
+}
+
+.phone-input-group .multi-select .ms-display {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    display: block;
+    width: 100%;
+}
+
+.phone-input-group .phone-number-input {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    height: 100% !important;
+    flex: 1;
+    box-sizing: border-box;
+    padding: 7px 12px;
+}
+
+/* Card Footer Actions */
+.form-actions-client {
+    position: static;
+    background: var(--da-surface, #ffffff);
+    border-top: 1px solid var(--da-border, #e0e0e0);
+    padding: 22px 26px 52px 26px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0;
+    box-sizing: border-box;
+}
+
+.autosave-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    color: var(--da-muted, #757575);
+}
+
+.dot-indicator {
+    width: 6px;
+    height: 6px;
+    background-color: #10B981;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.action-buttons-right {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.btn-client-primary {
+    height: 34px;
+    padding: 6px 16px;
+    border-radius: var(--da-radius-sm, 6px);
+    font-size: 13px;
+    font-weight: 700;
+    background: var(--da-green, #2C9942);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: background 0.12s, transform 0.08s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-client-primary:hover {
+    background: var(--da-green-700, #1B5E20);
+}
+
+.btn-client-primary:active {
+    transform: translateY(1px);
+}
+
+.btn-client-secondary, .btn-client-draft {
+    height: 34px;
+    padding: 6px 16px;
+    border-radius: var(--da-radius-sm, 6px);
+    font-size: 13px;
+    font-weight: 700;
+    background: var(--da-surface, #ffffff);
+    color: var(--da-text-2, #424242);
+    border: 1px solid var(--da-border-strong, #bdbdbd);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-client-secondary:hover, .btn-client-draft:hover {
+    background: var(--da-white, #fafafa);
+    border-color: var(--da-muted, #757575);
+}
+
+/* Lock heights */
+.field-input {
+    height: 34px !important;
+    min-height: 34px !important;
+    box-sizing: border-box !important;
+}
+
+.multi-select {
+    width: 100%;
+    min-height: 34px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    box-sizing: border-box !important;
+}
+
+.ms-panel {
+    width: max-content;
+    min-width: 100%;
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+    &::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 3px;
+        &:hover {
+            background: #a8a8a8;
+        }
+    }
+}
+
+.multi-select.invalid {
+    border-color: var(--da-danger, #d32f2f) !important;
+}
+
+textarea.field-input {
+    height: auto !important;
+    min-height: auto !important;
+}
+
+/* Responsiveness */
+@media (max-width: 900px) {
+    .card-header-client {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+    .btn-back-login {
+        align-self: flex-end;
+    }
+}
+
+@media (max-width: 720px) {
+    .accordion-body {
+        padding: 6px 18px 22px 18px;
+    }
+    .form-grid-2-col, .form-grid-3-col, .form-grid-4-col {
+        grid-template-columns: 1fr;
+    }
+    .field-span-2 {
+        grid-column: span 1;
+    }
+}

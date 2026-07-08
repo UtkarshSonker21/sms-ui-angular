@@ -35,7 +35,7 @@ export const AppRoutes = {
   University: {
     Registration: 'university-registration',
     Dashboard: 'university-dashboard',
-    
+
     Courses: 'course-list',
     Faculties: 'faculties',
 
@@ -49,7 +49,9 @@ export const AppRoutes = {
   },
 
   Ngo: {
-    Dashboard: 'ngo-dashboard'
+    Dashboard: 'ngo-dashboard',
+    ProgramAccreditation: 'program-accreditation',
+    ProgramAccreditationDetail: 'program-accreditation-detail',
   },
 
   SuperAdmin: {

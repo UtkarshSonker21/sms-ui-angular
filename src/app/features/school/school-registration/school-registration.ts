@@ -52,20 +52,16 @@ export class SchoolRegistration implements OnInit {
   isAccreditationDropdownOpen = false;
   isIslamicDropdownOpen = false;
 
-  selectedLanguages: string[] = [];
   customLanguage = '';
-
-  selectedAccreditations: string[] = [];
   customAccreditation = '';
 
-  // Islamic curriculum fields
-  islamicCurriculumOffered = 'No';
-  religionSubjectCurriculum = '';
+  get selectedLanguagesList(): string[] {
+    return this.school.schoolTeachingLanguage ? this.school.schoolTeachingLanguage.split(', ').filter(x => x) : [];
+  }
 
-  // Quality indicator check states
-  successAbove80 = false;
-  eligibleAbove80 = false;
-  englishAbove80 = false;
+  get selectedAccreditationsList(): string[] {
+    return this.school.schoolAccreditations ? this.school.schoolAccreditations.split(', ').filter(x => x) : [];
+  }
 
   // Phone state variables
   selectedIsdCode = '';
@@ -312,25 +308,27 @@ export class SchoolRegistration implements OnInit {
   }
 
   toggleLanguage(lang: string): void {
-    if (this.selectedLanguages.includes(lang)) {
-      this.selectedLanguages = this.selectedLanguages.filter(l => l !== lang);
+    let list = this.selectedLanguagesList;
+    if (list.includes(lang)) {
+      list = list.filter(l => l !== lang);
     } else {
-      this.selectedLanguages.push(lang);
+      list.push(lang);
     }
-    this.school.schoolTeachingLanguage = this.selectedLanguages.join(', ');
+    this.school.schoolTeachingLanguage = list.join(', ');
   }
 
   removeLanguage(lang: string): void {
-    this.selectedLanguages = this.selectedLanguages.filter(l => l !== lang);
-    this.school.schoolTeachingLanguage = this.selectedLanguages.join(', ');
+    const list = this.selectedLanguagesList.filter(l => l !== lang);
+    this.school.schoolTeachingLanguage = list.join(', ');
   }
 
   addCustomLanguage(): void {
     const lang = this.customLanguage.trim();
     if (lang) {
-      if (!this.selectedLanguages.includes(lang)) {
-        this.selectedLanguages.push(lang);
-        this.school.schoolTeachingLanguage = this.selectedLanguages.join(', ');
+      const list = this.selectedLanguagesList;
+      if (!list.includes(lang)) {
+        list.push(lang);
+        this.school.schoolTeachingLanguage = list.join(', ');
       }
       this.customLanguage = '';
     }
@@ -345,25 +343,27 @@ export class SchoolRegistration implements OnInit {
   }
 
   toggleAccreditation(acc: string): void {
-    if (this.selectedAccreditations.includes(acc)) {
-      this.selectedAccreditations = this.selectedAccreditations.filter(a => a !== acc);
+    let list = this.selectedAccreditationsList;
+    if (list.includes(acc)) {
+      list = list.filter(a => a !== acc);
     } else {
-      this.selectedAccreditations.push(acc);
+      list.push(acc);
     }
-    this.school.schoolAccreditations = this.selectedAccreditations.join(', ');
+    this.school.schoolAccreditations = list.join(', ');
   }
 
   removeAccreditation(acc: string): void {
-    this.selectedAccreditations = this.selectedAccreditations.filter(a => a !== acc);
-    this.school.schoolAccreditations = this.selectedAccreditations.join(', ');
+    const list = this.selectedAccreditationsList.filter(a => a !== acc);
+    this.school.schoolAccreditations = list.join(', ');
   }
 
   addCustomAccreditation(): void {
     const acc = this.customAccreditation.trim();
     if (acc) {
-      if (!this.selectedAccreditations.includes(acc)) {
-        this.selectedAccreditations.push(acc);
-        this.school.schoolAccreditations = this.selectedAccreditations.join(', ');
+      const list = this.selectedAccreditationsList;
+      if (!list.includes(acc)) {
+        list.push(acc);
+        this.school.schoolAccreditations = list.join(', ');
       }
       this.customAccreditation = '';
     }
@@ -372,40 +372,7 @@ export class SchoolRegistration implements OnInit {
   // Islamic Curriculum Toggle
   clearIslamicCurriculum(event: Event): void {
     event.stopPropagation();
-    this.islamicCurriculumOffered = '';
-    this.school.isIslamicCurriculum = false;
-    this.updateSubjectCurriculum();
-  }
-
-  onIslamicCurriculumChange(val: string): void {
-    this.islamicCurriculumOffered = val;
-    this.school.isIslamicCurriculum = (val === 'Yes');
-    this.updateSubjectCurriculum();
-  }
-
-  onReligionCurriculumChange(val: string): void {
-    this.religionSubjectCurriculum = val;
-    this.updateSubjectCurriculum();
-  }
-
-  updateSubjectCurriculum(): void {
-    this.school.religionSubjectCurriculum = `${this.islamicCurriculumOffered} | ${this.religionSubjectCurriculum}`;
-  }
-
-  // Quality indicator checkboxes
-  onSuccessToggle(val: boolean): void {
-    this.successAbove80 = val;
-    this.school.isThreeYearStudentSuccessRateAbove80 = val;
-  }
-
-  onEligibleToggle(val: boolean): void {
-    this.eligibleAbove80 = val;
-    this.school.isUniversityEligibilityRateAbove80 = val;
-  }
-
-  onEnglishToggle(val: boolean): void {
-    this.englishAbove80 = val;
-    this.school.isGraduateEnglishProficiencyAbove80 = val;
+    this.school.isIslamicCurriculum = undefined;
   }
 
   // Live preview for Student Code Format

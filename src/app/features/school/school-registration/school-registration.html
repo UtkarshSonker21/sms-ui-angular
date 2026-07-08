@@ -241,10 +241,10 @@
               <div class="field field-span-2" (click)="$event.stopPropagation()">
                 <label class="field-label">Teaching languages <span style="text-transform: none; font-weight: 500; color: var(--da-muted); letter-spacing: 0;">(multi-select)</span></label>
                 <div class="multi-select has-multiple-chips" [class.open]="isLanguageDropdownOpen" (click)="toggleLanguageDropdown($event)" tabindex="0">
-                  <div class="ms-display" [class.has-selection]="selectedLanguages.length > 0">
-                    <span *ngIf="selectedLanguages.length === 0">Select languages...</span>
-                    <ng-container *ngIf="selectedLanguages.length > 0">
-                      <span class="ms-chip" *ngFor="let lang of selectedLanguages">
+                  <div class="ms-display" [class.has-selection]="selectedLanguagesList.length > 0">
+                    <span *ngIf="selectedLanguagesList.length === 0">Select languages...</span>
+                    <ng-container *ngIf="selectedLanguagesList.length > 0">
+                      <span class="ms-chip" *ngFor="let lang of selectedLanguagesList">
                         {{ lang }}
                         <span class="ms-chip-x" (click)="$event.stopPropagation(); removeLanguage(lang); langModel.control.markAsTouched()">×</span>
                       </span>
@@ -252,19 +252,13 @@
                   </div>
                   <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                   <div class="ms-panel" *ngIf="isLanguageDropdownOpen" (click)="$event.stopPropagation()" style="display: block; max-height: 200px; overflow-y: auto;">
-                    <div class="ms-option" *ngFor="let lang of schoolTeachingLanguages" [class.checked]="selectedLanguages.includes(lang.displayText)" (click)="toggleLanguage(lang.displayText); langModel.control.markAsTouched(); $event.stopPropagation()">
-                      <input type="checkbox" [checked]="selectedLanguages.includes(lang.displayText)" style="pointer-events: none;" />
+                    <div class="ms-option" *ngFor="let lang of schoolTeachingLanguages" [class.checked]="selectedLanguagesList.includes(lang.displayText)" (click)="toggleLanguage(lang.displayText); langModel.control.markAsTouched(); $event.stopPropagation()">
+                      <input type="checkbox" [checked]="selectedLanguagesList.includes(lang.displayText)" style="pointer-events: none;" />
                       <span>{{ lang.displayText }}</span>
                     </div>
-                    <!-- <div class="ms-option" (click)="$event.stopPropagation()" style="padding: 6px 12px; border-top: 1px solid var(--da-border);">
-                      <div class="flex-select-row" style="width: 100%;">
-                        <input type="text" class="field-input" placeholder="Custom language..." [(ngModel)]="customLanguage" name="customLanguageInput" (keydown.enter)="addCustomLanguage(); $event.preventDefault();" style="height: 28px; padding: 2px 8px; font-size: 12px; margin-right: 6px;" />
-                        <button type="button" class="btn-add-tag" (click)="addCustomLanguage()" style="height: 28px; padding: 0 10px; font-size: 11px;">+ Add</button>
-                      </div>
-                    </div> -->
                   </div>
                 </div>
-                <input type="hidden" name="teachingLanguages" [ngModel]="selectedLanguages.length > 0 ? selectedLanguages.join(',') : ''" required #langModel="ngModel">
+                <input type="hidden" name="teachingLanguages" [ngModel]="selectedLanguagesList.length > 0 ? selectedLanguagesList.join(',') : ''" required #langModel="ngModel">
                 <div class="validation-error" *ngIf="(langModel.touched || regForm.submitted) && !langModel.valid">
                   Teaching languages is required.
                 </div>
@@ -275,24 +269,24 @@
               <div class="field" (click)="$event.stopPropagation()">
                 <label class="field-label required-label">Islamic Curriculum offered</label>
                 <div class="multi-select" [class.open]="isIslamicDropdownOpen" (click)="isIslamicDropdownOpen = !isIslamicDropdownOpen" tabindex="0">
-                  <div class="ms-display" [class.has-selection]="islamicCurriculumOffered !== ''">
-                    <span *ngIf="islamicCurriculumOffered === ''">Select...</span>
-                    <span *ngIf="islamicCurriculumOffered !== ''" class="ms-chip">
-                      {{ islamicCurriculumOffered }}
+                  <div class="ms-display" [class.has-selection]="school.isIslamicCurriculum !== undefined && school.isIslamicCurriculum !== null">
+                    <span *ngIf="school.isIslamicCurriculum === undefined || school.isIslamicCurriculum === null">Select...</span>
+                    <span *ngIf="school.isIslamicCurriculum !== undefined && school.isIslamicCurriculum !== null" class="ms-chip">
+                      {{ school.isIslamicCurriculum ? 'Yes' : 'No' }}
                       <span class="ms-chip-x" (click)="clearIslamicCurriculum($event); islamicModel.control.markAsTouched()">×</span>
                     </span>
                   </div>
                   <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                   <div class="ms-panel" *ngIf="isIslamicDropdownOpen" (click)="$event.stopPropagation()" style="display: block; max-height: 200px; overflow-y: auto;">
-                    <div class="ms-option" [class.checked]="islamicCurriculumOffered === 'Yes'" (click)="onIslamicCurriculumChange('Yes'); isIslamicDropdownOpen = false; $event.stopPropagation()">
+                    <div class="ms-option" [class.checked]="school.isIslamicCurriculum === true" (click)="school.isIslamicCurriculum = true; isIslamicDropdownOpen = false; $event.stopPropagation()">
                       <span>Yes</span>
                     </div>
-                    <div class="ms-option" [class.checked]="islamicCurriculumOffered === 'No'" (click)="onIslamicCurriculumChange('No'); isIslamicDropdownOpen = false; $event.stopPropagation()">
+                    <div class="ms-option" [class.checked]="school.isIslamicCurriculum === false" (click)="school.isIslamicCurriculum = false; isIslamicDropdownOpen = false; $event.stopPropagation()">
                       <span>No</span>
                     </div>
                   </div>
                 </div>
-                <input type="hidden" name="islamicCurriculumOffered" [(ngModel)]="islamicCurriculumOffered" required #islamicModel="ngModel">
+                <input type="hidden" name="islamicCurriculumOffered" [ngModel]="school.isIslamicCurriculum !== undefined && school.isIslamicCurriculum !== null ? school.isIslamicCurriculum : ''" required #islamicModel="ngModel">
                 <div class="validation-error" *ngIf="(islamicModel.touched || regForm.submitted) && !islamicModel.valid">
                   Islamic Curriculum Offered is required.
                 </div>
@@ -302,17 +296,17 @@
               <div class="field">
                 <label class="field-label">Religion subject curriculum</label>
                 <input type="text" name="religionSubjectCurriculum" class="field-input" placeholder="e.g. Standard Islamic, Catholic"
-                       [ngModel]="religionSubjectCurriculum" (ngModelChange)="onReligionCurriculumChange($event)">
+                       [(ngModel)]="school.religionSubjectCurriculum">
               </div>
 
               <!-- School Accreditations Multi-select -->
               <div class="field field-span-2" (click)="$event.stopPropagation()">
                 <label class="field-label required-label">School accreditations (Ministry of Education) <span style="text-transform: none; font-weight: 500; color: var(--da-muted); letter-spacing: 0;">(multi-select)</span></label>
                 <div class="multi-select has-multiple-chips" [class.open]="isAccreditationDropdownOpen" (click)="toggleAccreditationDropdown($event)" tabindex="0">
-                  <div class="ms-display" [class.has-selection]="selectedAccreditations.length > 0">
-                    <span *ngIf="selectedAccreditations.length === 0">Select accreditations...</span>
-                    <ng-container *ngIf="selectedAccreditations.length > 0">
-                      <span class="ms-chip" *ngFor="let acc of selectedAccreditations">
+                  <div class="ms-display" [class.has-selection]="selectedAccreditationsList.length > 0">
+                    <span *ngIf="selectedAccreditationsList.length === 0">Select accreditations...</span>
+                    <ng-container *ngIf="selectedAccreditationsList.length > 0">
+                      <span class="ms-chip" *ngFor="let acc of selectedAccreditationsList">
                         {{ acc }}
                         <span class="ms-chip-x" (click)="$event.stopPropagation(); removeAccreditation(acc); accModel.control.markAsTouched()">×</span>
                       </span>
@@ -320,19 +314,13 @@
                   </div>
                   <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                   <div class="ms-panel" *ngIf="isAccreditationDropdownOpen" (click)="$event.stopPropagation()" style="display: block; max-height: 200px; overflow-y: auto;">
-                    <div class="ms-option" *ngFor="let acc of schoolAccreditations" [class.checked]="selectedAccreditations.includes(acc.displayText)" (click)="toggleAccreditation(acc.displayText); accModel.control.markAsTouched(); $event.stopPropagation()">
-                      <input type="checkbox" [checked]="selectedAccreditations.includes(acc.displayText)" style="pointer-events: none;" />
+                    <div class="ms-option" *ngFor="let acc of schoolAccreditations" [class.checked]="selectedAccreditationsList.includes(acc.displayText)" (click)="toggleAccreditation(acc.displayText); accModel.control.markAsTouched(); $event.stopPropagation()">
+                      <input type="checkbox" [checked]="selectedAccreditationsList.includes(acc.displayText)" style="pointer-events: none;" />
                       <span>{{ acc.displayText }}</span>
                     </div>
-                    <!-- <div class="ms-option" (click)="$event.stopPropagation()" style="padding: 6px 12px; border-top: 1px solid var(--da-border);">
-                      <div class="flex-select-row" style="width: 100%;">
-                        <input type="text" class="field-input" placeholder="Custom accreditation..." [(ngModel)]="customAccreditation" name="customAccreditationInput" (keydown.enter)="addCustomAccreditation(); $event.preventDefault();" style="height: 28px; padding: 2px 8px; font-size: 12px; margin-right: 6px;" />
-                        <button type="button" class="btn-add-tag" (click)="addCustomAccreditation()" style="height: 28px; padding: 0 10px; font-size: 11px;">+ Add</button>
-                      </div>
-                    </div> -->
                   </div>
                 </div>
-                <input type="hidden" name="schoolAccreditations" [ngModel]="selectedAccreditations.length > 0 ? selectedAccreditations.join(',') : ''" required #accModel="ngModel">
+                <input type="hidden" name="schoolAccreditations" [ngModel]="selectedAccreditationsList.length > 0 ? selectedAccreditationsList.join(',') : ''" required #accModel="ngModel">
                 <div class="validation-error" *ngIf="(accModel.touched || regForm.submitted) && !accModel.valid">
                   School accreditations is required.
                 </div>
@@ -382,7 +370,7 @@
               <div class="quality-row">
                 <span class="quality-label">3-year student success average is above 80%</span>
                 <label class="switch-control">
-                  <input type="checkbox" name="successAbove80" [ngModel]="successAbove80" (ngModelChange)="onSuccessToggle($event)" />
+                  <input type="checkbox" name="successAbove80" [(ngModel)]="school.isThreeYearStudentSuccessRateAbove80" />
                   <span class="slider"></span>
                 </label>
               </div>
@@ -390,7 +378,7 @@
               <div class="quality-row">
                 <span class="quality-label">Graduates eligible to enter universities &ge; 80%</span>
                 <label class="switch-control">
-                  <input type="checkbox" name="eligibleAbove80" [ngModel]="eligibleAbove80" (ngModelChange)="onEligibleToggle($event)" />
+                  <input type="checkbox" name="eligibleAbove80" [(ngModel)]="school.isUniversityEligibilityRateAbove80" />
                   <span class="slider"></span>
                 </label>
               </div>
@@ -398,7 +386,7 @@
               <div class="quality-row">
                 <span class="quality-label">Graduates' English language skills &ge; 80%</span>
                 <label class="switch-control">
-                  <input type="checkbox" name="englishAbove80" [ngModel]="englishAbove80" (ngModelChange)="onEnglishToggle($event)" />
+                  <input type="checkbox" name="englishAbove80" [(ngModel)]="school.isGraduateEnglishProficiencyAbove80" />
                   <span class="slider"></span>
                 </label>
               </div>
