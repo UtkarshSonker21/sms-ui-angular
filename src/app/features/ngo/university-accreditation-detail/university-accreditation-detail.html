@@ -1,0 +1,205 @@
+<div class="university-accreditation-page" data-lang="en">
+
+  <!-- ── Header Section ─────────────────────────────────────── -->
+  <div class="page-head">
+    <div>
+      <div class="crumb">
+        <a href="#">Dashboard</a>
+        <span class="sep">/</span>
+        <a (click)="backToList()" style="cursor: pointer;">Universities</a>
+        <span class="sep">/</span>
+        <span>Detail</span>
+      </div>
+
+      <h1 class="page-title">
+        {{ university.universityName || 'University' }}
+        <span class="client-status-badge" [ngClass]="getBadgeClass(university.accreditationStatus)">
+          {{ getStatusLabel(university.accreditationStatus) }}
+        </span>
+      </h1>
+
+      <div class="page-sub">
+        Submitted on {{ (university.createdDate | date:'yyyy/MM/dd') || '-' }}
+        · The fields below are read-only — record the decision at the bottom of the page.
+      </div>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-g btn-back" type="button" (click)="backToList()">
+        <i class="fas fa-arrow-left btn-icon"></i> Back To List
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Decision Banner ───────────────────────────────────── -->
+  <div *ngIf="university.accreditationStatus !== 1" class="decision-banner" [ngClass]="university.accreditationStatus === 2 ? 'accepted' : 'rejected'">
+    <div style="font-weight: 700; font-size: 14px;">
+      {{ university.accreditationStatus === 2 ? 'Accredited' : 'Rejected' }}
+      <span *ngIf="university.accreditationDate"> · {{ (university.accreditationDate | date:'yyyy/MM/dd') || '-' }}</span>
+    </div>
+    <div class="db-comment" *ngIf="university.committeeComment">
+      “{{ university.committeeComment }}”
+    </div>
+    <div class="db-comment" *ngIf="!university.committeeComment">
+      No comment on file.
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       Single Main Information Card
+       ══════════════════════════════════════════════════════ -->
+  <div class="client-card">
+    <div class="client-section-title">University Information</div>
+
+    <div class="client-grid">
+
+      <!-- Left Column -->
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="client-item">
+          <span class="client-label">Type (License)</span>
+          <span class="client-value">{{ university.universityType || '—' }}</span>
+        </div>
+        <div class="client-item">
+          <span class="client-label">Year established</span>
+          <span class="client-value">{{ university.establishedYear || '—' }}</span>
+        </div>
+        <div class="client-item">
+          <span class="client-label">National ranking</span>
+          <span class="client-value">{{ $any(university).nationalRanking || '—' }}</span>
+        </div>
+      </div>
+
+      <!-- Right Column -->
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="client-item">
+          <span class="client-label">Country</span>
+          <span class="client-value">{{ getCountryName(university.countryId) || '—' }}</span>
+        </div>
+        <div class="client-item">
+          <span class="client-label">Local accreditation (Charter)</span>
+          <span class="client-value">{{ university.charterAccreditation || '—' }}</span>
+        </div>
+        <div class="client-item">
+          <span class="client-label">Website</span>
+          <span class="client-value">
+            <a *ngIf="university.website" [href]="university.website" target="_blank" style="color: var(--da-green); text-decoration: none; font-weight: 570;">
+              {{ university.website }}
+            </a>
+            <span *ngIf="!university.website">—</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <hr class="client-divider" />
+
+      <!-- VC info -->
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="client-item">
+          <span class="client-label">Vice Chancellor</span>
+          <span class="client-value">{{ university.vcName || '—' }}</span>
+        </div>
+        <div class="client-item">
+          <span class="client-label">VC email</span>
+          <span class="client-value">{{ university.vcEmail || '—' }}</span>
+        </div>
+      </div>
+
+      <!-- Coordinator info -->
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="client-item">
+          <span class="client-label">Kafaat Coordinator</span>
+          <span class="client-value">{{ university.coordName || '—' }}</span>
+        </div>
+        <div class="client-item">
+          <span class="client-label">Coordinator email</span>
+          <span class="client-value">{{ university.coordEmail || '—' }}</span>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <hr class="client-divider" />
+
+      <!-- Scale details -->
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="client-item">
+          <span class="client-label">Faculties / Schools</span>
+          <span class="client-value">{{ university.facultiesCount || 0 }}</span>
+        </div>
+        <div class="client-item">
+          <span class="client-label">Total students</span>
+          <span class="client-value">{{ university.studentsTotal || 0 }}</span>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="client-item">
+          <span class="client-label">Degree programs</span>
+          <span class="client-value">{{ university.progDegreeCount || 0 }}</span>
+        </div>
+        <div class="client-item">
+          <span class="client-label">Graduates since opening</span>
+          <span class="client-value">{{ university.graduatesTotal || 0 }}</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       Decision Section
+       ══════════════════════════════════════════════════════ -->
+  <div class="pd-decision-card">
+    <div class="client-section-title">Committee decision</div>
+
+    <div class="pd-decision-grid">
+
+      <!-- Status Dropdown (reusing project .multi-select / .ms-panel pattern) -->
+      <div class="field" (click)="$event.stopPropagation()">
+        <label class="field-label">Status</label>
+        <div class="multi-select" [class.open]="isStatusDropdownOpen" id="status-dropdown-filter"
+             (click)="isStatusDropdownOpen = !isStatusDropdownOpen" tabindex="0" style="width: 100%;">
+          <div class="ms-display has-selection" style="padding: 0;">
+            <span>{{ getStatusLabel(selectedStatus) }}</span>
+          </div>
+          <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+          <div class="ms-panel" *ngIf="isStatusDropdownOpen"
+               style="display: block; max-height: 200px; overflow-y: auto; z-index: 100; top: calc(100% + 4px);"
+               (click)="$event.stopPropagation()">
+            <div class="ms-option" [class.checked]="selectedStatus === 1"
+               (click)="selectStatus(1); $event.stopPropagation()">
+              <span>Pending</span>
+            </div>
+            <div class="ms-option" [class.checked]="selectedStatus === 2"
+               (click)="selectStatus(2); $event.stopPropagation()">
+              <span>Accredited</span>
+            </div>
+            <div class="ms-option" [class.checked]="selectedStatus === 3"
+               (click)="selectStatus(3); $event.stopPropagation()">
+              <span>Rejected</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Committee Comment -->
+      <div class="field">
+        <label class="field-label">Committee comment</label>
+        <textarea class="field-input" rows="3"
+                  [(ngModel)]="comment"
+                  placeholder="Reason for the decision or internal note…"></textarea>
+      </div>
+
+    </div>
+
+    <div class="pd-foot">
+      <button class="btn btn-p" type="button" (click)="updateDecision()"
+              style="background: var(--da-green) !important; height: 36px; padding: 0 20px; border-radius: 4px; font-weight: 600; color: white;">
+        Update
+      </button>
+    </div>
+
+  </div>
+
+</div>

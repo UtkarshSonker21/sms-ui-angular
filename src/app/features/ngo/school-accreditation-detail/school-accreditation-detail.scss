@@ -1,0 +1,213 @@
+/* ════════════════════════════════════════════════════════════
+   school-accreditation-detail.scss
+   Copy of Program Accreditation Detail styling classes.
+   ════════════════════════════════════════════════════════════ */
+
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-back-arrow {
+  font-size: 15px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ── Main Information Card ─────────────────────────────── */
+.client-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 20px 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+}
+
+.client-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 12px;
+    margin-top: 0;
+}
+
+.client-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 60px;
+}
+
+.client-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.client-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.client-value {
+    font-size: 13px;
+    color: #1e293b;
+    font-weight: 570;
+}
+
+.client-divider {
+    grid-column: span 2;
+    border: 0;
+    border-top: 1px dashed #e2e8f0;
+    margin: 8px 0;
+    height: 0;
+}
+
+/* ── Status Badge (header) ──────────────────────────────── */
+.client-status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 14px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1;
+    border: 1px solid;
+    text-transform: capitalize;
+    white-space: nowrap;
+}
+
+.badge-pending {
+    background: #fef3c7;
+    color: #d97706;
+    border-color: #fde68a;
+}
+
+.badge-accredited {
+    background: #dcfce7;
+    color: #16a34a;
+    border-color: #bbf7d0;
+}
+
+.badge-rejected {
+    background: #fee2e2;
+    color: #dc2626;
+    border-color: #fca5a5;
+}
+
+/* ── Page Sub ───────────────────────────────────────────── */
+.detail-page-sub {
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 16px;
+}
+
+/* ── Decision Banner ────────────────────────────────────── */
+.decision-banner {
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  line-height: 1.6;
+  border: 1px solid;
+  &.accepted {
+    background: #dcfce7;
+    color: #16a34a;
+    border-color: #bbf7d0;
+  }
+  &.rejected {
+    background: #fee2e2;
+    color: #dc2626;
+    border-color: #fca5a5;
+  }
+}
+
+/* ── Committee Decision Card ────────────────────────────── */
+.pd-decision-card {
+    background: var(--da-surface);
+    border: 1px solid var(--da-border);
+    border-radius: var(--da-radius);
+    padding: 16px 18px;
+    margin-top: 14px;
+}
+
+.pd-decision-grid {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 14px;
+}
+
+.pd-foot {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--da-border);
+    justify-content: flex-end;
+}
+
+/* ── Decision Dropdown Option Styles ────────────────────── */
+.ms-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--da-text-2);
+    transition: background 0.1s;
+    line-height: 1.35;
+    text-align: start;
+}
+
+.ms-option:hover {
+    background: var(--da-green-50);
+}
+
+.ms-option.checked {
+    color: var(--da-black);
+    font-weight: 600;
+    background: var(--da-green-50);
+}
+
+/* ── Field Label ────────────────────────────────────────── */
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.field-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--da-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .client-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    .client-divider {
+        grid-column: span 1;
+    }
+    .client-card {
+        padding: 24px;
+    }
+    .pd-decision-grid {
+        grid-template-columns: 1fr;
+    }
+}
