@@ -58,7 +58,7 @@
               </div>
               <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
               <div class="ms-panel" *ngIf="isFacultyDropdownOpen" style="display: block; max-height: 200px; overflow-y: auto;">
-                <div class="ms-option" *ngFor="let fac of faculties" [class.checked]="program.facultyId === fac.facultyId" (click)="selectFaculty(fac.facultyId || 0)">
+                <div class="ms-option" *ngFor="let fac of faculties" [class.checked]="program.facultyId === fac.facultyId" (click)="selectFaculty(fac.facultyId || 0); $event.stopPropagation()">
                   <span>{{ fac.facultyName }}</span>
                 </div>
               </div>
@@ -116,12 +116,15 @@
             <div class="multi-select" [class.open]="isDegreeDropdownOpen" id="deg-multi-select" (click)="toggleDegreeDropdown($event)" tabindex="0">
               <div class="ms-display" [class.has-selection]="program.degree > 0">
                 <span *ngIf="program.degree === 0">Select degree...</span>
-                <span *ngIf="program.degree > 0">{{ getDegreeFriendlyName(program.degree) }}</span>
+                <span *ngIf="program.degree > 0" class="ms-chip">
+                  {{ getSelectedDegreeName() }}
+                  <span class="ms-chip-x" (click)="clearDegree($event)">×</span>
+                </span>
               </div>
               <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
               <div class="ms-panel" *ngIf="isDegreeDropdownOpen" style="display: block; max-height: 200px; overflow-y: auto;">
-                <div class="ms-option" *ngFor="let val of getDegreeValues()" [class.checked]="program.degree === val" (click)="selectDegree(val)">
-                  <span>{{ getDegreeFriendlyName(val) }}</span>
+                <div class="ms-option" *ngFor="let degree of degrees" [class.checked]="program.degree === degree.uniqueId" (click)="selectDegree(degree); $event.stopPropagation()">
+                  <span>{{ degree.displayText }}</span>
                 </div>
               </div>
             </div>

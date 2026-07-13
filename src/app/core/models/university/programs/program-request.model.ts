@@ -46,6 +46,8 @@ export class ProgramRequest {
   updatedBy?: number;
   updatedByName?: string;
 
+  degreeName?: string;
+
   // Child Collections
   documents: ProgramDocument[] = [];
   costs: ProgramCost[] = [];

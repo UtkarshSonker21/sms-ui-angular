@@ -52,6 +52,10 @@ export const AppRoutes = {
     Dashboard: 'ngo-dashboard',
     ProgramAccreditation: 'program-accreditation',
     ProgramAccreditationDetail: 'program-accreditation-detail',
+    UniversityAccreditation: 'university-accreditation',
+    UniversityAccreditationDetail: 'university-accreditation-detail',
+    SchoolAccreditation: 'school-accreditation',
+    SchoolAccreditationDetail: 'school-accreditation-detail',
   },
 
   SuperAdmin: {

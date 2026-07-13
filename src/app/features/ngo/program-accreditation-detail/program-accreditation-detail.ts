@@ -8,6 +8,7 @@ import { ProgramService } from '../../../core/services/university/programs.servi
 import { ProgramRequest } from '../../../core/models/university/programs/program-request.model';
 import { ProgramCourse } from '../../../core/models/university/programs/program-course.model';
 import { AppRoutes } from '../../../core/constants/app-routes';
+import { AccreditationStatus } from '../../../core/enums/accreditation-status.enum';
 
 @Component({
   selector: 'app-program-accreditation-detail',
@@ -79,25 +80,20 @@ export class ProgramAccreditationDetail implements OnInit {
     return this.getCoursesForSemester(semNo).reduce((sum, c) => sum + (c.credits || 0), 0);
   }
 
-  getDegreeFriendlyName(degree: number): string {
-    switch (degree) {
-      case 1: return 'Certificate';
-      case 2: return 'Diploma';
-      case 3: return 'Associate Degree';
-      case 4: return 'Bachelor Degree';
-      case 5: return 'Postgraduate Diploma';
-      case 6: return 'Masters Degree';
-      case 7: return 'Doctorate';
-      default: return 'Unknown';
-    }
-  }
 
   getStatusLabel(status?: number): string {
     switch (status) {
-      case 1: return 'Pending';
-      case 2: return 'Accredited';
-      case 3: return 'Rejected';
-      default: return 'Pending';
+      case AccreditationStatus.Pending:
+        return 'Pending';
+
+      case AccreditationStatus.Accredited:
+        return 'Accepted';
+
+      case AccreditationStatus.Rejected:
+        return 'Rejected';
+
+      default:
+        return 'Pending';
     }
   }
 

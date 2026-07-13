@@ -12,6 +12,7 @@ import { ProgramDocument } from '../../../core/models/university/programs/progra
 import { StaffType } from '../../../core/enums/staff-type.enum';
 import { AppRoutes } from '../../../core/constants/app-routes';
 
+
 @Component({
   selector: 'app-program-detail',
   standalone: true,
@@ -30,6 +31,7 @@ export class ProgramDetail implements OnInit {
   program: ProgramRequest = new ProgramRequest();
   selectedTab = 'Overview';
   statusText = 'Not submitted';
+
 
   canAdd = true; // In Blazor: canAdd => PermissionService.CanInsert("programs") || true;
 
@@ -80,17 +82,6 @@ export class ProgramDetail implements OnInit {
     }
   }
 
-  getDegreeName(degreeValue: number | undefined): string {
-    if (degreeValue === undefined) return 'Unknown Degree';
-    switch (degreeValue) {
-      case 1: return 'Bachelor Degree';
-      case 2: return 'Diploma';
-      case 3: return 'Certificate';
-      case 4: return 'Master Degree';
-      case 5: return 'PhD';
-      default: return 'Unknown Degree';
-    }
-  }
 
   getTanzanianCombinationsList(): string[] {
     if (!this.program.allowedTanzanianCombinations) return [];
@@ -102,6 +93,7 @@ export class ProgramDetail implements OnInit {
     return this.program.allowedHighSchoolDivisions.split(',').map(s => s.trim()).filter(s => s.length > 0);
   }
 
+  
   getSortedCourses(): ProgramCourse[] {
     if (!this.program.courses) return [];
     return [...this.program.courses].sort((a, b) => {

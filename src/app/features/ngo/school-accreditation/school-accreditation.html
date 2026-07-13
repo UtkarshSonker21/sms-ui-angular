@@ -3,11 +3,11 @@
     <div class="crumb">
       <a href="#">Dashboard</a>
       <span class="sep">/</span>
-      <span class="text-muted">Program Accreditation</span>
+      <span class="text-muted">School Accreditation</span>
     </div>
-    <h2 class="page-title">Program Accreditation</h2>
+    <h2 class="page-title">School Accreditation</h2>
     <p class="page-sub">
-      University programs submitted for accreditation. Click "View" on a row to open the program’s full record — required documents, annual cost breakdown, and the decision form — on its own page.
+      Schools submitted for accreditation by Kafaat coordinators. Open any request to review the school’s information and record the committee’s decision with a comment.
     </p>
   </div>
   <div class="page-actions">
@@ -19,24 +19,24 @@
 
 <div class="kpi-grid">
   <div class="kpi">
-    <div class="kpi-l">TOTAL PROGRAMS</div>
+    <div class="kpi-l">Total requests</div>
     <div class="kpi-v">{{ kpiTotal }}</div>
-    <div class="kpi-d muted">Submitted by universities</div>
+    <div class="kpi-d muted">Schools submitted for review</div>
   </div>
   <div class="kpi">
-    <div class="kpi-l">PENDING REVIEW</div>
+    <div class="kpi-l">Pending</div>
     <div class="kpi-v">{{ kpiPending }}</div>
-    <div class="kpi-d muted">Awaiting committee decision</div>
+    <div class="kpi-d muted">Awaiting the committee’s decision</div>
   </div>
   <div class="kpi">
-    <div class="kpi-l">ACCREDITED</div>
-    <div class="kpi-v">{{ kpiAccredited }}</div>
-    <div class="kpi-d">Visible to applicants</div>
+    <div class="kpi-l">Accepted</div>
+    <div class="kpi-v">{{ kpiAccepted }}</div>
+    <div class="kpi-d muted">Accredited schools, open for nominations</div>
   </div>
   <div class="kpi">
-    <div class="kpi-l">REJECTED</div>
+    <div class="kpi-l">Rejected</div>
     <div class="kpi-v">{{ kpiRejected }}</div>
-    <div class="kpi-d muted">Returned to the university</div>
+    <div class="kpi-d muted">Must resubmit before any nominations</div>
   </div>
 </div>
 
@@ -49,7 +49,7 @@
     Pending <span class="tab-count">{{ kpiPending }}</span>
   </div>
   <div class="tab" [class.active]="activeTab === 'accepted'" (click)="setTab('accepted')">
-    Accredited <span class="tab-count">{{ kpiAccredited }}</span>
+    Accepted <span class="tab-count">{{ kpiAccepted }}</span>
   </div>
   <div class="tab" [class.active]="activeTab === 'rejected'" (click)="setTab('rejected')">
     Rejected <span class="tab-count">{{ kpiRejected }}</span>
@@ -60,59 +60,59 @@
 <div class="filters" style="display: flex; gap: 10px; align-items: center; padding: 12px 14px; background: var(--da-surface, #ffffff); border: 1px solid var(--da-border, #e0e0e0); border-radius: var(--da-radius, 8px); margin-bottom: 16px; flex-wrap: wrap; overflow: visible; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
   <div class="search-container" style="flex: 1; max-width: 320px;">
     <i class="fas fa-search search-icon"></i>
-    <input type="text" class="search-input" placeholder="Search by program, faculty, or university…"
+    <input type="text" class="search-input" placeholder="Search by school or country…"
            [(ngModel)]="searchText" (keydown)="handleKeyDown($event)">
     <i class="fas fa-times clear-icon" *ngIf="searchText" (click)="clearSearch()"></i>
   </div>
 
-  <!-- University Dropdown -->
-  <div class="da-select" [class.da-select-open]="isUniversityDropdownOpen" tabindex="0" (click)="$event.stopPropagation()">
-    <div class="da-select-control" (click)="toggleUniversityDropdown($event)">
-      <div class="ms-display" [class.has-selection]="selectedUniversityId !== 0" style="display: flex; align-items: center; flex: 1;">
-        <ng-container *ngIf="selectedUniversityId !== 0; else noUniSelected">
+  <!-- Country Dropdown -->
+  <div class="da-select" [class.da-select-open]="isCountryDropdownOpen" tabindex="0" (click)="$event.stopPropagation()">
+    <div class="da-select-control" (click)="toggleCountryDropdown($event)">
+      <div class="ms-display" [class.has-selection]="selectedCountryId !== 0" style="display: flex; align-items: center; flex: 1;">
+        <ng-container *ngIf="selectedCountryId !== 0; else noCountrySelected">
           <span class="ms-chip" style="margin: 0;">
-            {{ getSelectedUniversityName() }}
-            <span class="ms-chip-x" (click)="clearUniversitySelection($event)">×</span>
+            {{ getSelectedCountryName() }}
+            <span class="ms-chip-x" (click)="clearCountrySelection($event)">×</span>
           </span>
         </ng-container>
-        <ng-template #noUniSelected>
-          <span class="da-select-value" style="font-size: 13px;">All Universities</span>
+        <ng-template #noCountrySelected>
+          <span class="da-select-value" style="font-size: 13px;">All Countries</span>
         </ng-template>
       </div>
-      <i class="fas da-select-arrow" [ngClass]="isUniversityDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+      <i class="fas da-select-arrow" [ngClass]="isCountryDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
     </div>
-    <div class="da-select-menu" *ngIf="isUniversityDropdownOpen">
-      <div class="da-select-option" [class.selected]="selectedUniversityId === 0" (click)="selectUniversity(0)">
-        All Universities
+    <div class="da-select-menu" *ngIf="isCountryDropdownOpen">
+      <div class="da-select-option" [class.selected]="selectedCountryId === 0" (click)="selectCountry(0)">
+        All Countries
       </div>
-      <div class="da-select-option" *ngFor="let uni of universities" [class.selected]="selectedUniversityId === uni.registrationId" (click)="selectUniversity(uni.registrationId!)">
-        {{ uni.universityName }}
+      <div class="da-select-option" *ngFor="let ctry of countries" [class.selected]="selectedCountryId === ctry.countryId" (click)="selectCountry(ctry.countryId!)">
+        {{ ctry.countryName }}
       </div>
     </div>
   </div>
 
-  <!-- Degree Dropdown -->
-  <div class="da-select" [class.da-select-open]="isDegreeDropdownOpen" tabindex="0" (click)="$event.stopPropagation()">
-    <div class="da-select-control" (click)="toggleDegreeDropdown($event)">
-      <div class="ms-display" [class.has-selection]="selectedDegree !== 0" style="display: flex; align-items: center; flex: 1;">
-        <ng-container *ngIf="selectedDegree !== 0; else noDegreeSelected">
+  <!-- School Type Dropdown -->
+  <div class="da-select" [class.da-select-open]="isSchoolTypeDropdownOpen" tabindex="0" (click)="$event.stopPropagation()">
+    <div class="da-select-control" (click)="toggleSchoolTypeDropdown($event)">
+      <div class="ms-display" [class.has-selection]="selectedSchoolTypeId !== 0" style="display: flex; align-items: center; flex: 1;">
+        <ng-container *ngIf="selectedSchoolTypeId !== 0; else noTypeSelected">
           <span class="ms-chip" style="margin: 0;">
-            {{ getSelectedDegreeName() }}
-            <span class="ms-chip-x" (click)="clearDegreeSelection($event)">×</span>
+            {{ getSelectedSchoolTypeName() }}
+            <span class="ms-chip-x" (click)="clearSchoolTypeSelection($event)">×</span>
           </span>
         </ng-container>
-        <ng-template #noDegreeSelected>
-          <span class="da-select-value" style="font-size: 13px;">All Degrees</span>
+        <ng-template #noTypeSelected>
+          <span class="da-select-value" style="font-size: 13px;">All School Types</span>
         </ng-template>
       </div>
-      <i class="fas da-select-arrow" [ngClass]="isDegreeDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+      <i class="fas da-select-arrow" [ngClass]="isSchoolTypeDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
     </div>
-    <div class="da-select-menu" *ngIf="isDegreeDropdownOpen">
-      <div class="da-select-option" [class.selected]="selectedDegree === 0" (click)="selectDegree(0)">
-        All Degrees
+    <div class="da-select-menu" *ngIf="isSchoolTypeDropdownOpen">
+      <div class="da-select-option" [class.selected]="selectedSchoolTypeId === 0" (click)="selectSchoolType(0)">
+        All School Types
       </div>
-      <div class="da-select-option" *ngFor="let degree of degrees" [class.selected]="selectedDegree === degree.uniqueId" (click)="selectDegree(degree.uniqueId??0)">
-        {{ degree.displayText }}
+      <div class="da-select-option" *ngFor="let type of schoolTypes" [class.selected]="selectedSchoolTypeId === type.uniqueId" (click)="selectSchoolType(type.uniqueId!)">
+        {{ type.displayText }}
       </div>
     </div>
   </div>
@@ -127,67 +127,59 @@
   <table class="table">
     <thead>
       <tr>
-        <th style="width: 25%;">Program</th>
-        <th style="width: 20%;">University</th>
-        <th style="width: 15%;">Degree</th>
-        <th style="width: 10%;">Seats</th>
-        <th style="width: 10%;">Min. rate</th>
-        <th style="width: 10%;">Submitted</th>
+        <th style="width: 30%;">School</th>
+        <th style="width: 20%;">Country</th>
+        <th style="width: 20%;">Type</th>
+        <th style="width: 12%;">Submitted</th>
         <th style="width: 10%;">Status</th>
-        <th style="width: 10%;">Action</th>
+        <th style="width: 8%;"></th>
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let prog of programs">
+      <tr *ngFor="let s of schools">
         <td>
           <div style="font-weight: 700;">
-            {{ prog.programName }} <span class="muted-cell num-ltr" style="font-family: inherit; font-size: 11px; margin-left: 4px; color: var(--da-muted);">{{ prog.programCode }}</span>
+            {{ s.schoolName }}
           </div>
-          <div class="muted-cell" style="color: var(--da-green); font-size: 11px; font-weight: 500; margin-top: 2px;">
-            {{ prog.facultyCode || prog.facultyName }} · {{ prog.numberOfSemesters }} semesters
+          <div class="muted-cell" style="color: var(--da-muted); font-size: 11px; margin-top: 2px;">
+            Est. {{ s.schoolYearOfEstablish }} <span *ngIf="s.schoolAccreditations && s.schoolAccreditations !== '—'"> · {{ s.schoolAccreditations }}</span>
           </div>
         </td>
         <td>
           <span style="font-size: 13px; font-weight: 500; color: var(--da-text-1);">
-            {{ prog.universityName }}
+            {{ getCountryName(s.countryId) }}
           </span>
         </td>
         <td>
           <span style="font-size: 13px; color: var(--da-text-2);">
-            {{ prog.degreeName || '-' }}
+            {{ getSchoolTypeName(s.schoolType) }}
           </span>
         </td>
-        <td class="num">
-          {{ prog.allowedStudentSeats }}
-        </td>
-        <td class="num">
-          {{ isNumber(prog.minAcceptanceRate) ? prog.minAcceptanceRate + '%' : '-' }}
-        </td>
-        <td class="num">
-          {{ prog.submittedDate | date:'yyyy/MM/dd' }}
+        <td>
+          {{ s.createdDate | date:'yyyy/MM/dd' }}
         </td>
         <td>
           <span class="chip" [ngClass]="{
-            'chip-pending': prog.accreditationStatus === 1,
-            'chip-sponsored': prog.accreditationStatus === 2,
-            'chip-rejected': prog.accreditationStatus === 3
+            'chip-pending': s.accreditationStatus === 1,
+            'chip-sponsored': s.accreditationStatus === 2,
+            'chip-rejected': s.accreditationStatus === 3
           }">
             <span class="dot-icon" [ngStyle]="{
-              'background-color': prog.accreditationStatus === 1 ? 'var(--da-gold)' : prog.accreditationStatus === 2 ? 'var(--da-green)' : 'var(--da-danger)'
+              'background-color': s.accreditationStatus === 1 ? 'var(--da-gold)' : s.accreditationStatus === 2 ? 'var(--da-green)' : 'var(--da-danger)'
             }"></span>
-            {{ prog.accreditationStatus === 1 ? 'Pending' : prog.accreditationStatus === 2 ? 'Accredited' : 'Rejected' }}
+            {{ s.accreditationStatus === 1 ? 'Pending' : s.accreditationStatus === 2 ? 'Accepted' : 'Rejected' }}
           </span>
         </td>
         <td style="text-align: center !important;">
-          <a class="btn btn-t" (click)="viewProgram(prog.programId!)">
-            View &rarr;
+          <a class="btn btn-t" (click)="viewSchool(s.schoolId!)">
+            Review &rarr;
           </a>
         </td>
       </tr>
 
-      <tr *ngIf="programs.length === 0">
-        <td colspan="8" class="prog-acc-empty" style="padding: 30px 16px; text-align: center; color: var(--da-muted); font-size: 13px;">
-          No programs match this view.
+      <tr *ngIf="schools.length === 0">
+        <td colspan="6" class="school-acc-empty">
+          No schools match this view.
         </td>
       </tr>
     </tbody>

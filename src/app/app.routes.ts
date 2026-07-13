@@ -26,6 +26,10 @@ import { SchoolRegistration } from './features/school/school-registration/school
 import { UniversityRegistration } from './features/university/university-registration/university-registration';
 import { ProgramAccreditation } from './features/ngo/program-accreditation/program-accreditation';
 import { ProgramAccreditationDetail } from './features/ngo/program-accreditation-detail/program-accreditation-detail';
+import { UniversityAccreditation } from './features/ngo/university-accreditation/university-accreditation';
+import { UniversityAccreditationDetail } from './features/ngo/university-accreditation-detail/university-accreditation-detail';
+import { SchoolAccreditation } from './features/ngo/school-accreditation/school-accreditation';
+import { SchoolAccreditationDetail } from './features/ngo/school-accreditation-detail/school-accreditation-detail';
 
 export const routes: Routes = [
 
@@ -139,6 +143,22 @@ export const routes: Routes = [
             {
                 path: 'program-accreditation-detail/:programId',
                 component: ProgramAccreditationDetail
+            },
+            {
+                path: 'university-accreditation',
+                component: UniversityAccreditation
+            },
+            {
+                path: 'university-accreditation-detail/:registrationId',
+                component: UniversityAccreditationDetail
+            },
+            {
+                path: 'school-accreditation',
+                component: SchoolAccreditation
+            },
+            {
+                path: 'school-accreditation-detail/:schoolId',
+                component: SchoolAccreditationDetail
             },
 
 

@@ -29,15 +29,7 @@ import { MasterDropDownService } from '../../../core/services/superadmin/master-
 import { MasterDropDownRequest } from '../../../core/models/super-admin/master-dropdown/master-dropdown-request.model';
 import { MainDropdown } from '../../../core/enums/main-dropdown.enum';
 
-export enum DegreeEnum {
-  Certificate = 1,
-  Diploma = 2,
-  AssociateDegree = 3,
-  BachelorDegree = 4,
-  PostgraduateDiploma = 5,
-  MastersDegree = 6,
-  Doctorate = 7
-}
+
 
 @Component({
   selector: 'app-program',
@@ -69,6 +61,7 @@ export class Program implements OnInit {
 
   highSchoolDivision: MasterDropDownRequest[] = [];
   tanzanianStudentsCombination: MasterDropDownRequest[] = [];
+  degrees: MasterDropDownRequest[] = [];
 
   isFacultyDropdownOpen = false;
   isHsDropdownOpen = false;
@@ -94,6 +87,7 @@ export class Program implements OnInit {
     this.getDocumentTypes();
     this.getHighSchoolDivision();
     this.getTanzanianStudentsCombination();
+    this.getDegrees();
 
     if (this.isEditMode) {
       this.getProgramById(this.programId);
@@ -189,26 +183,20 @@ export class Program implements OnInit {
     this.isDegreeDropdownOpen = !isOpen;
   }
 
-  selectDegree(value: number): void {
-    this.program.degree = value;
+  selectDegree(degree: MasterDropDownRequest): void {
+    this.program.degree = degree.uniqueId ?? 0;
     this.isDegreeDropdownOpen = false;
   }
 
-  getDegreeFriendlyName(degree: number): string {
-    switch (degree) {
-      case DegreeEnum.Certificate: return 'Certificate';
-      case DegreeEnum.Diploma: return 'Diploma';
-      case DegreeEnum.AssociateDegree: return 'Associate Degree';
-      case DegreeEnum.BachelorDegree: return 'Bachelor Degree';
-      case DegreeEnum.PostgraduateDiploma: return 'Postgraduate Diploma';
-      case DegreeEnum.MastersDegree: return 'Masters Degree';
-      case DegreeEnum.Doctorate: return 'Doctorate';
-      default: return degree ? degree.toString() : 'Select degree...';
-    }
+  clearDegree(event: Event): void {
+    event.stopPropagation();
+    this.program.degree = 0;
+    this.isDegreeDropdownOpen = false;
   }
 
-  getDegreeValues(): number[] {
-    return [1, 2, 3, 4, 5, 6, 7];
+  getSelectedDegreeName(): string {
+    const match = this.degrees.find(d => d.uniqueId === this.program.degree);
+    return match ? match.displayText : 'Select degree...';
   }
 
   // Master Dropdown API calls
@@ -233,6 +221,20 @@ export class Program implements OnInit {
         next: (response) => {
           if (response.success && response.result) {
             this.tanzanianStudentsCombination = response.result;
+          } else {
+            this.notification.warning(response.message);
+          }
+        }
+      });
+  }
+
+  getDegrees(): void {
+    this.masterDropDownService
+      .getByParentId(MainDropdown.Degrees)
+      .subscribe({
+        next: (response) => {
+          if (response.success && response.result) {
+            this.degrees = response.result;
           } else {
             this.notification.warning(response.message);
           }
