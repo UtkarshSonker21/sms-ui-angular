@@ -146,14 +146,14 @@
         </td>
         <td>
           <span class="chip" [ngClass]="{
-            'chip-pending': uni.accreditationStatus === 1,
-            'chip-sponsored': uni.accreditationStatus === 2,
-            'chip-rejected': uni.accreditationStatus === 3
+            'chip-pending': uni.accreditationStatus === AccreditationStatus.Pending,
+            'chip-sponsored': uni.accreditationStatus === AccreditationStatus.Accredited,
+            'chip-rejected': uni.accreditationStatus === AccreditationStatus.Rejected
           }">
             <span class="dot-icon" [ngStyle]="{
-              'background-color': uni.accreditationStatus === 1 ? 'var(--da-gold)' : uni.accreditationStatus === 2 ? 'var(--da-green)' : 'var(--da-danger)'
+              'background-color': uni.accreditationStatus === AccreditationStatus.Pending ? 'var(--da-gold)' : uni.accreditationStatus === AccreditationStatus.Accredited ? 'var(--da-green)' : 'var(--da-danger)'
             }"></span>
-            {{ uni.accreditationStatus === 1 ? 'Pending' : uni.accreditationStatus === 2 ? 'Accredited' : 'Rejected' }}
+            {{ uni.accreditationStatus === AccreditationStatus.Pending ? 'Pending' : uni.accreditationStatus === AccreditationStatus.Accredited ? 'Accredited' : 'Rejected' }}
           </span>
         </td>
         <td style="text-align: center !important;">

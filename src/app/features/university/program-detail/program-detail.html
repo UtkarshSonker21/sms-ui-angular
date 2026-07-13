@@ -95,7 +95,7 @@
           </div>
           <div class="field">
             <label class="field-label">Degree</label>
-            <input type="text" class="field-input" readonly [value]="getDegreeName(program.degree)" style="background-color: #fafbfc; color: #2f3a4a; pointer-events: none;" />
+            <input type="text" class="field-input" readonly [value]="program.degreeName || '-'" style="background-color: #fafbfc; color: #2f3a4a; pointer-events: none;" />
           </div>
           
           <div class="field" style="grid-column: span 2;">

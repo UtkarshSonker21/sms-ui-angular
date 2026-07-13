@@ -70,5 +70,13 @@ export class MasterSchoolRequest {
 
   // Response Only
   totalStudents: number = 0;
+  schoolTypeName?: string;
+  schoolStatusName?: string;
+
+  // future
+  gradeRange?: string;
+  kafaatSponsoredStudents?: number;
+  graduatesCount?: number;
+
 
 }

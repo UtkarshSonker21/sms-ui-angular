@@ -324,7 +324,7 @@ export class SchoolAccreditation implements OnInit {
   // Navigation
   viewSchool(schoolId: number): void {
     this.router.navigate([
-      'school-accreditation-detail',
+      AppRoutes.Ngo.SchoolAccreditationDetail,
       schoolId
     ]);
   }
@@ -332,4 +332,5 @@ export class SchoolAccreditation implements OnInit {
   exportList(): void {
     this.notification.success('School accreditation list exported successfully.');
   }
+  
 }

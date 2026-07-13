@@ -8,4 +8,5 @@ export enum MainDropdown {
     SchoolAccreditations = 7,
     UniversityType = 8,
     StudentGenderEligibility = 9,
+    Degrees = 10,
 }

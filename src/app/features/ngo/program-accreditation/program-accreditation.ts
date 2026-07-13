@@ -12,6 +12,9 @@ import { MasterUniversityService } from '../../../core/services/university/maste
 import { MasterUniversityRequest } from '../../../core/models/university/master-university/university-registration.model';
 import { MasterUniversityFilter } from '../../../core/models/university/master-university/university-registration-filter.model';
 import { AppRoutes } from '../../../core/constants/app-routes';
+import { MasterDropDownRequest } from '../../../core/models/super-admin/master-dropdown/master-dropdown-request.model';
+import { MasterDropDownService } from '../../../core/services/superadmin/master-dropdown.service';
+import { MainDropdown } from '../../../core/enums/main-dropdown.enum';
 
 @Component({
   selector: 'app-program-accreditation',
@@ -33,6 +36,7 @@ export class ProgramAccreditation implements OnInit {
   private universityService = inject(MasterUniversityService);
   private notification = inject(NotificationService);
   private router = inject(Router);
+  private masterDropDownService = inject(MasterDropDownService);
 
   // Data List
   programs: ProgramRequest[] = [];
@@ -56,15 +60,7 @@ export class ProgramAccreditation implements OnInit {
   isUniversityDropdownOpen = false;
 
   selectedDegree = 0;
-  degrees = [
-    { id: 1, name: 'Certificate' },
-    { id: 2, name: 'Diploma' },
-    { id: 3, name: 'Associate Degree' },
-    { id: 4, name: 'Bachelor Degree' },
-    { id: 5, name: 'Postgraduate Diploma' },
-    { id: 6, name: 'Masters Degree' },
-    { id: 7, name: 'Doctorate' }
-  ];
+  degrees: MasterDropDownRequest[] = [];
   isDegreeDropdownOpen = false;
 
   isPageSizeDropdownOpen = false;
@@ -74,6 +70,7 @@ export class ProgramAccreditation implements OnInit {
     this.filter.pageSize = 25;
 
     this.loadUniversities();
+    this.getDegrees();
     this.loadData();
   }
 
@@ -209,8 +206,8 @@ export class ProgramAccreditation implements OnInit {
     this.isPageSizeDropdownOpen = false;
   }
 
-  selectDegree(id: number): void {
-    this.selectedDegree = id;
+  selectDegree(uniqueId: number): void {
+    this.selectedDegree = uniqueId;
     this.isDegreeDropdownOpen = false;
     this.filter.pageNumber = 1;
     this.loadData();
@@ -225,21 +222,22 @@ export class ProgramAccreditation implements OnInit {
 
   getSelectedDegreeName(): string {
     if (this.selectedDegree === 0) return 'All Degrees';
-    const found = this.degrees.find(d => d.id === this.selectedDegree);
-    return found ? found.name : 'All Degrees';
+    const found = this.degrees.find(d => d.uniqueId === this.selectedDegree);
+    return found ? found.displayText : 'All Degrees';
   }
 
-  getDegreeFriendlyName(degree: number): string {
-    switch (degree) {
-      case 1: return 'Certificate';
-      case 2: return 'Diploma';
-      case 3: return 'Associate Degree';
-      case 4: return 'Bachelor Degree';
-      case 5: return 'Postgraduate Diploma';
-      case 6: return 'Masters Degree';
-      case 7: return 'Doctorate';
-      default: return 'Unknown';
-    }
+  getDegrees(): void {
+    this.masterDropDownService
+      .getByParentId(MainDropdown.Degrees)
+      .subscribe({
+        next: (response) => {
+          if (response.success && response.result) {
+            this.degrees = response.result;
+          } else {
+            this.notification.warning(response.message);
+          }
+        }
+      });
   }
 
   // Page Size Dropdown

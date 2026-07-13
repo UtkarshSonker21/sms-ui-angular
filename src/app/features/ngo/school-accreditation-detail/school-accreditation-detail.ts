@@ -15,6 +15,7 @@ import { MasterDropDownService } from '../../../core/services/superadmin/master-
 import { MasterDropDownRequest } from '../../../core/models/super-admin/master-dropdown/master-dropdown-request.model';
 import { MainDropdown } from '../../../core/enums/main-dropdown.enum';
 import { AppRoutes } from '../../../core/constants/app-routes';
+import { AccreditationStatus } from '../../../core/enums/accreditation-status.enum';
 
 @Component({
   selector: 'app-school-accreditation-detail',
@@ -65,7 +66,7 @@ export class SchoolAccreditationDetail implements OnInit {
           this.countries = response.result.items;
           this.buildCountryMap();
         }
-        
+
         const schoolId = Number(this.route.snapshot.params['schoolId']);
         if (schoolId) {
           this.loadSchool(schoolId);
@@ -138,10 +139,17 @@ export class SchoolAccreditationDetail implements OnInit {
 
   getStatusLabel(status?: number): string {
     switch (status) {
-      case 1: return 'Pending';
-      case 2: return 'Accepted';
-      case 3: return 'Rejected';
-      default: return 'Pending';
+      case AccreditationStatus.Pending:
+        return 'Pending';
+
+      case AccreditationStatus.Accredited:
+        return 'Accepted';
+
+      case AccreditationStatus.Rejected:
+        return 'Rejected';
+
+      default:
+        return 'Pending';
     }
   }
 

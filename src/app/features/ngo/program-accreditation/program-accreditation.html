@@ -111,8 +111,8 @@
       <div class="da-select-option" [class.selected]="selectedDegree === 0" (click)="selectDegree(0)">
         All Degrees
       </div>
-      <div class="da-select-option" *ngFor="let deg of degrees" [class.selected]="selectedDegree === deg.id" (click)="selectDegree(deg.id)">
-        {{ deg.name }}
+      <div class="da-select-option" *ngFor="let degree of degrees" [class.selected]="selectedDegree === degree.uniqueId" (click)="selectDegree(degree.uniqueId??0)">
+        {{ degree.displayText }}
       </div>
     </div>
   </div>
@@ -154,7 +154,7 @@
         </td>
         <td>
           <span style="font-size: 13px; color: var(--da-text-2);">
-            {{ getDegreeFriendlyName(prog.degree) }}
+            {{ prog.degreeName || '-' }}
           </span>
         </td>
         <td class="num">

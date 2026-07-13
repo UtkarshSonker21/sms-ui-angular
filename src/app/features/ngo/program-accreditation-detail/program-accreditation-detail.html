@@ -72,22 +72,27 @@
         </div>
         <div class="client-item">
           <span class="client-label">Degree</span>
-          <span class="client-value">{{ getDegreeFriendlyName(program.degree) }}</span>
+          <span class="client-value">{{ program.degreeName || '-' }}</span>
         </div>
         <div class="client-item">
           <span class="client-label">Seats Offered</span>
           <span class="client-value">{{ program.allowedStudentSeats || '—' }}</span>
         </div>
-        <div class="client-item">
-          <span class="client-label">Program Accreditation Body</span>
-          <span class="client-value">National Higher Education Commission</span>
-        </div>
+
       </div>
 
       <!-- Divider -->
       <hr class="client-divider" />
 
       <!-- Left Under Divider -->
+
+      <div class="client-item">
+        <span class="client-label">Required Tanzanian Combinations</span>
+        <span class="client-value">
+          {{ program.allowedTanzanianCombinations?.trim() ? program.allowedTanzanianCombinations : 'None Required' }}
+        </span>
+      </div>
+
       <div class="client-item">
         <span class="client-label">Required H.S. Division</span>
         <span class="client-value">
@@ -97,11 +102,15 @@
 
       <!-- Right Under Divider -->
       <div class="client-item">
-        <span class="client-label">Required H.S. Score</span>
+        <span class="client-label">Min. Acceptance Rate</span>
         <span class="client-value">
           {{ program.minAcceptanceRate != null ? program.minAcceptanceRate + '%' : '—' }}
         </span>
       </div>
+
+      <!-- Divider -->
+      <hr class="client-divider" />
+
 
       <!-- Required Documents Section — full width -->
       <div class="client-item" style="grid-column: span 2; margin-top: 2px;">
@@ -175,7 +184,8 @@
         <div class="pd-sem-card" *ngFor="let semNo of getSemesterNumbers()">
           <div class="pd-sem-head">
             <div class="pd-sem-title">
-              Semester {{ semNo }} - Year {{ (semNo + 1) / 2 | number:'1.0-0' }} - {{ semNo % 2 === 1 ? 'Fall' : 'Spring' }}
+              Semester {{ semNo }} - Year {{ (semNo + 1) / 2 | number:'1.0-0' }} - {{ semNo % 2 === 1 ? 'Fall' :
+              'Spring' }}
             </div>
             <div class="pd-sem-meta">
               <span>
@@ -202,8 +212,8 @@
                 <td class="num-ltr">{{ course.courseCode }}</td>
                 <td>{{ course.courseNameEn }}</td>
                 <td>
-                  <span class="pd-tag pd-tag-core"     *ngIf="course.courseType === 1">Core</span>
-                  <span class="pd-tag pd-tag-elective"  *ngIf="course.courseType !== 1">Elective</span>
+                  <span class="pd-tag pd-tag-core" *ngIf="course.courseType === 1">Core</span>
+                  <span class="pd-tag pd-tag-elective" *ngIf="course.courseType !== 1">Elective</span>
                 </td>
                 <td style="text-align: right;">{{ course.credits }}</td>
               </tr>
@@ -236,26 +246,26 @@
       <div class="field" (click)="$event.stopPropagation()">
         <label class="field-label">Status</label>
         <div class="multi-select" [class.open]="isStatusDropdownOpen" id="status-dropdown-filter"
-             (click)="isStatusDropdownOpen = !isStatusDropdownOpen" tabindex="0" style="width: 100%;">
+          (click)="isStatusDropdownOpen = !isStatusDropdownOpen" tabindex="0" style="width: 100%;">
           <div class="ms-display has-selection" style="padding: 0;">
             <span>{{ getStatusLabel(selectedStatus) }}</span>
           </div>
           <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="6 9 12 15 18 9"/>
+            <polyline points="6 9 12 15 18 9" />
           </svg>
           <div class="ms-panel" *ngIf="isStatusDropdownOpen"
-               style="display: block; max-height: 200px; overflow-y: auto; z-index: 100; top: calc(100% + 4px);"
-               (click)="$event.stopPropagation()">
+            style="display: block; max-height: 200px; overflow-y: auto; z-index: 100; top: calc(100% + 4px);"
+            (click)="$event.stopPropagation()">
             <div class="ms-option" [class.checked]="selectedStatus === 1"
-               (click)="selectStatus(1); $event.stopPropagation()">
+              (click)="selectStatus(1); $event.stopPropagation()">
               <span>Pending</span>
             </div>
             <div class="ms-option" [class.checked]="selectedStatus === 2"
-               (click)="selectStatus(2); $event.stopPropagation()">
+              (click)="selectStatus(2); $event.stopPropagation()">
               <span>Accredited</span>
             </div>
             <div class="ms-option" [class.checked]="selectedStatus === 3"
-               (click)="selectStatus(3); $event.stopPropagation()">
+              (click)="selectStatus(3); $event.stopPropagation()">
               <span>Rejected</span>
             </div>
           </div>
@@ -265,16 +275,15 @@
       <!-- Committee Comment -->
       <div class="field">
         <label class="field-label">Committee comment</label>
-        <textarea class="field-input" rows="3"
-                  [(ngModel)]="comment"
-                  placeholder="Reason for the decision or internal note…"></textarea>
+        <textarea class="field-input" rows="3" [(ngModel)]="comment"
+          placeholder="Reason for the decision or internal note…"></textarea>
       </div>
 
     </div><!-- /pd-decision-grid -->
 
     <div class="pd-foot">
       <button class="btn btn-p" type="button" (click)="updateDecision()"
-              style="background: var(--da-green) !important; height: 36px; padding: 0 20px; border-radius: 4px; font-weight: 600; color: white;">
+        style="background: var(--da-green) !important; height: 36px; padding: 0 20px; border-radius: 4px; font-weight: 600; color: white;">
         Update
       </button>
     </div>
