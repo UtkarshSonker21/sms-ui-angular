@@ -1,0 +1,296 @@
+// ── KPI grid: always 4-col ─────────────────────────────────────────
+.kpi-grid {
+  grid-template-columns: repeat(4, 1fr) !important;
+  width: 100%;
+  margin-top: 14px;
+}
+
+// ── Host: allow dropdowns to overflow ─────────────────────────────
+:host {
+  display: block;
+  overflow: visible !important;
+}
+
+// ── Search container ───────────────────────────────────────────────
+.search-container {
+  position: relative;
+  display: inline-block;
+  width: 320px;
+
+  .search-input {
+    width: 100% !important;
+    padding-left: 34px !important;
+    padding-right: 32px !important;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--da-muted);
+    font-size: 13px;
+    pointer-events: none;
+  }
+
+  .clear-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--da-muted);
+    font-size: 13px;
+    cursor: pointer;
+    transition: color 0.15s;
+
+    &:hover {
+      color: var(--da-danger);
+    }
+  }
+}
+
+// ── Status Tabs ────────────────────────────────────────────────────
+.tabs {
+  display: flex;
+  gap: 2px;
+  border-bottom: 1px solid var(--da-border);
+  margin-bottom: 18px;
+  overflow: visible !important;
+  flex-wrap: wrap;
+}
+
+.tab {
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--da-muted);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+
+  &:hover {
+    color: var(--da-black);
+  }
+
+  &.active {
+    color: var(--da-green);
+    border-bottom-color: var(--da-green);
+    font-weight: 700;
+  }
+}
+
+.tab-count {
+  font-size: 10px;
+  background: rgba(0,0,0,0.05);
+  padding: 2px 7px;
+  border-radius: 100px;
+  color: var(--da-muted);
+  font-weight: 700;
+}
+
+.tab.active .tab-count {
+  background: var(--da-green-50);
+  color: var(--da-green-800);
+}
+
+// ── Dot status icon ────────────────────────────────────────────────
+.dot-icon {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+// ── Student avatar ─────────────────────────────────────────────────
+.students-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--da-green-50);
+  border: 1.5px solid var(--da-green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.students-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.students-avatar-initials {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--da-green);
+  letter-spacing: 0.5px;
+  font-family: 'Courier New', monospace;
+}
+
+// ── Candidate programs pill ────────────────────────────────────────
+.cand-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 100px;
+  background: var(--da-info-50, #EFF6FF);
+  color: #1E40AF;
+  border: 1px solid #BFDBFE;
+  font-weight: 700;
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+}
+
+// ── Numeric table cells ────────────────────────────────────────────
+.table .num {
+  font-family: 'Courier New', monospace;
+  direction: ltr;
+  font-weight: 600;
+}
+
+// ── Empty state ────────────────────────────────────────────────────
+.students-empty {
+  padding: 30px 16px;
+  text-align: center;
+  color: var(--da-muted);
+  font-size: 13px;
+}
+
+// ── Transparent "View →" action button ────────────────────────────
+.btn-t {
+  background: transparent !important;
+  color: var(--da-green) !important;
+  padding: 6px 8px !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: none !important;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.12s;
+
+  &:hover {
+    background: var(--da-green-50) !important;
+    border-radius: var(--da-radius-sm, 6px);
+  }
+}
+
+// ── Pagination button disabled state ──────────────────────────────
+.icon-btn:disabled,
+.btn-pagination:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: var(--da-surface) !important;
+  border-color: var(--da-border) !important;
+  color: var(--da-muted) !important;
+}
+
+// ── Page-size custom dropdown ─────────────────────────────────────
+.custom-dropdown {
+  position: relative;
+  display: inline-block;
+  width: 65px;
+  height: 30px;
+  outline: none;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--da-text-2);
+  vertical-align: middle;
+  box-sizing: border-box;
+}
+
+.dropdown-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+  padding: 0 10px;
+  border: 1px solid var(--da-border-strong);
+  border-radius: var(--da-radius-sm);
+  background-color: var(--da-surface);
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+  color: var(--da-text-2);
+
+  i {
+    font-size: 9px;
+    color: var(--da-muted);
+    transition: transform 0.15s ease;
+  }
+
+  &:hover {
+    background-color: var(--da-white);
+    border-color: var(--da-muted);
+  }
+}
+
+.custom-dropdown.open {
+  .dropdown-trigger {
+    background-color: var(--da-white);
+    border-color: var(--da-green);
+    color: var(--da-black);
+    box-shadow: 0 0 0 1px var(--da-green);
+
+    i {
+      color: var(--da-green);
+    }
+  }
+}
+
+.dropdown-menu {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  background-color: var(--da-white);
+  border: 1px solid var(--da-border);
+  border-radius: var(--da-radius-sm);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  z-index: 1000;
+  box-sizing: border-box;
+  overflow: hidden;
+  padding: 4px;
+
+  /* Upward positioning */
+  bottom: 100%;
+  margin-bottom: 4px;
+}
+
+.dropdown-item {
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  color: var(--da-text-2);
+  text-align: start;
+  font-weight: 500;
+  border-radius: var(--da-radius-sm);
+  margin-bottom: 2px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &:hover {
+    background-color: var(--da-green-50);
+    color: var(--da-green-800);
+  }
+
+  &.selected {
+    background-color: #D1FADF !important;
+    color: #027A48 !important;
+    font-weight: 600 !important;
+  }
+}

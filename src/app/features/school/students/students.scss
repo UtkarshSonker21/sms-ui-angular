@@ -1,0 +1,230 @@
+/* File uploads */
+.photo-uploader {
+  display: flex; align-items: center; gap: 16px;
+  padding: 14px;
+  background: var(--da-white);
+  border: 1px dashed var(--da-border-strong);
+  border-radius: 10px;
+}
+.photo-uploader .ph-img {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: var(--da-green-50);
+  color: var(--da-green-800);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 24px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.photo-uploader .ph-img img { width: 100%; height: 100%; object-fit: cover; }
+.photo-uploader .ph-meta { flex: 1; min-width: 0; }
+.photo-uploader .ph-name { font-weight: 600; color: var(--da-black); font-size: 13px; }
+.photo-uploader .ph-hint { font-size: 11.5px; color: var(--da-muted); margin-top: 3px; }
+
+.file-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px;
+  background: var(--da-white);
+  border: 1px dashed var(--da-border-strong);
+  border-radius: 8px;
+}
+.file-row svg { flex-shrink: 0; color: var(--da-muted); }
+.file-row .fr-name { flex: 1; min-width: 0; font-size: 13px; color: var(--da-text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Sticky Footer styling staying within viewport width to prevent horizontal overflow */
+.sticky-footer {
+  position: sticky;
+  bottom: -24px !important;
+  margin-bottom: -24px !important;
+  margin-left: -24px !important;
+  margin-right: -24px !important;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  background: var(--da-surface, #ffffff);
+  border-top: 1px solid var(--da-border);
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
+  padding: 16px 24px;
+  z-index: 100;
+  box-sizing: border-box;
+  height: 54px;
+ gap: 10px;
+}
+
+
+
+
+/* Form Controls - Matched to Program Page */
+.field-input {
+  box-sizing: border-box !important;
+  height: 38px !important;
+  padding: 9px 12px !important;
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+  border: 1px solid var(--da-border, #d8dde6) !important;
+  border-radius: var(--da-radius-sm, 6px) !important;
+  
+  &:focus {
+    outline: none !important;
+    border-color: var(--da-green, #2c9942) !important;
+    box-shadow: 0 0 0 3px rgba(44,153,66,0.12) !important;
+  }
+}
+
+/* Shared Input-with-Suffix unified styling */
+.input-suffix {
+  position: relative;
+  display: flex !important;
+  align-items: stretch !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  border-radius: var(--da-radius-sm, 6px) !important;
+  transition: box-shadow 0.15s ease !important;
+
+  &:focus-within {
+    box-shadow: 0 0 0 3px rgba(44, 153, 66, 0.12) !important;
+  }
+}
+
+.input-suffix .field-input {
+  flex: 1 !important;
+  width: 100% !important;
+  min-width: 0 !important; /* allows input element to shrink below browser defaults */
+  height: 38px !important;
+  box-sizing: border-box !important;
+  border: 1px solid var(--da-border, #d8dde6) !important;
+  border-inline-end: none !important;
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  padding: 9px 12px !important;
+  padding-inline-end: 12px !important;
+  text-align: left !important; /* left align numerical inputs to match Blazor design */
+  background: var(--da-surface, #ffffff) !important;
+
+  &:focus {
+    outline: none !important;
+    border-color: var(--da-green, #2c9942) !important;
+    box-shadow: none !important;
+  }
+}
+
+.input-suffix .suffix {
+  position: static !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 44px !important;
+  height: 38px !important;
+  background: var(--da-surface-muted, #fafbfc) !important;
+  border: 1px solid var(--da-border, #d8dde6) !important;
+  border-inline-start: 1px solid var(--da-border, #d8dde6) !important; /* vertical separator line */
+  border-top-right-radius: var(--da-radius-sm, 6px) !important;
+  border-bottom-right-radius: var(--da-radius-sm, 6px) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: var(--da-muted, #64748b) !important;
+  box-sizing: border-box !important;
+  pointer-events: none !important;
+  margin: 0 !important;
+  padding: 0 4px !important;
+}
+
+.input-suffix:focus-within .field-input,
+.input-suffix:focus-within .suffix {
+  border-color: var(--da-green, #2c9942) !important;
+}
+
+
+
+/* Accordion Collapsible Logic */
+.form-section.collapsible .form-section-body {
+  display: none;
+}
+.form-section.collapsible.open .form-section-body {
+  display: block;
+}
+.form-section.collapsible .form-section-head {
+  border-bottom: none;
+}
+.form-section.collapsible.open .form-section-head {
+  background: var(--da-green-50, #f0fdf4);
+  border-bottom: 1px solid var(--da-border);
+}
+.form-section.collapsible.open .form-section-head .form-section-num {
+  background: var(--da-green, #2c9942);
+  color: #ffffff;
+}
+.form-section.collapsible .chev svg {
+  transition: transform 0.2s ease;
+}
+.form-section.collapsible.open .chev svg {
+  transform: rotate(180deg);
+}
+.chev {
+  width: 24px; height: 24px; color: var(--da-muted);
+}
+
+
+
+
+
+/* Local override to stretch the wrapper and push footer to bottom when content is short */
+.courses-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+/* Country Code + Phone Number Unified Input Group (Copied from University Registration) */
+.phone-input-group {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+    height: 38px;
+    border: 1px solid var(--da-border, #e0e0e0);
+    border-radius: var(--da-radius-sm, 6px);
+    background: var(--da-white, #ffffff);
+    transition: border-color 0.15s, box-shadow 0.15s;
+    box-sizing: border-box;
+    overflow: visible;
+}
+
+.phone-input-group:hover {
+    border-color: var(--da-border-strong, #bdbdbd);
+}
+
+.phone-input-group:focus-within {
+    border-color: var(--da-green, #2C9942);
+    box-shadow: 0 0 0 3px rgba(44,153,66,0.12);
+}
+
+.phone-input-group .multi-select {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    width: 200px;
+    max-width: 200px;
+    flex-shrink: 0;
+    height: 100% !important;
+    border-radius: 0 !important;
+    border-right: 1px solid var(--da-border, #e0e0e0) !important;
+    padding: 0 12px !important;
+}
+
+.phone-input-group .multi-select .ms-display {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    display: block;
+    width: 100%;
+}
+
+.phone-input-group .phone-number-input {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    height: 100% !important;
+    flex: 1;
+    box-sizing: border-box;
+    padding: 7px 12px;
+}
+

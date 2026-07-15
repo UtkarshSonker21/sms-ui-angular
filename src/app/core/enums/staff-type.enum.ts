@@ -4,4 +4,5 @@ export enum StaffType {
   School = 3,
   University = 4,
   Marketing = 5,
+  Finance = 6,
 }

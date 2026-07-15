@@ -30,6 +30,8 @@ import { UniversityAccreditation } from './features/ngo/university-accreditation
 import { UniversityAccreditationDetail } from './features/ngo/university-accreditation-detail/university-accreditation-detail';
 import { SchoolAccreditation } from './features/ngo/school-accreditation/school-accreditation';
 import { SchoolAccreditationDetail } from './features/ngo/school-accreditation-detail/school-accreditation-detail';
+import { Students } from './features/school/students/students';
+import { CoordinatorStudentsList } from './features/school/coordinator-students-list/coordinator-students-list';
 
 export const routes: Routes = [
 
@@ -159,6 +161,23 @@ export const routes: Routes = [
             {
                 path: 'school-accreditation-detail/:schoolId',
                 component: SchoolAccreditationDetail
+            },
+
+            // {
+            //     path: 'coordinator-students',
+            //     component: Students
+            // },
+            {
+                path: 'coordinator-students',
+                component: CoordinatorStudentsList
+            },
+            {
+                path: 'add-student',
+                component: Students
+            },
+            {
+                path: 'edit-student/:studentId',
+                component: Students
             },
 
 

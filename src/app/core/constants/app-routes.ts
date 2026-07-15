@@ -45,7 +45,10 @@ export const AppRoutes = {
 
   School: {
     Registration: 'school-registration',
-    Dashboard: 'school-dashboard'
+    Dashboard: 'school-dashboard',
+    CoordinatorStudents: 'coordinator-students',
+    AddStudent: 'add-student',
+    EditStudent: 'edit-student',
   },
 
   Ngo: {

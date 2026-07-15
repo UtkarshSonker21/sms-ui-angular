@@ -120,7 +120,15 @@ export const ApiEndpoints = {
       Create: 'school/master-school/create',
       Update: (id: number) => `school/master-school/update/${id}`,
       Delete: (id: number) => `school/master-school/delete/${id}`
-    }
+    },
+
+    Student: {
+      Search: 'school/student/search',
+      Create: 'school/student/create',
+      GetById: (id: number) => `school/student/getById/${id}`,
+      Update: (id: number) => `school/student/update/${id}`,
+      Delete: (id: number) => `school/student/delete/${id}`,
+    },
 
   }
 

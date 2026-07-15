@@ -1,0 +1,140 @@
+<!-- Page Header -->
+<div class="page-head">
+  <div>
+    <div class="crumb">
+      <a href="#">Dashboard</a>
+      <span class="sep">/</span>
+      <span class="text-muted">Students</span>
+    </div>
+    <h2 class="page-title">Students</h2>
+    <p class="page-sub">
+      Manage records for the students you nominated — basic info, contact, academics, and evaluation.
+    </p>
+  </div>
+  <div class="page-actions">
+    <button type="button" class="btn btn-g" (click)="exportList()">
+      Export List
+    </button>
+    <button type="button" class="btn btn-p" (click)="addStudent()">
+      + Add Student
+    </button>
+  </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="kpi-l">TOTAL STUDENTS</div>
+    <div class="kpi-v">{{ kpiTotal }}</div>
+    <div class="kpi-d muted">Total nominees</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-l">IN PROCESS</div>
+    <div class="kpi-v">{{ kpiInProcess }}</div>
+    <div class="kpi-d muted">Acceptance in progress</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-l">SPONSORED</div>
+    <div class="kpi-v">{{ kpiSponsored }}</div>
+    <div class="kpi-d">Active sponsorships</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-l">REGISTERED</div>
+    <div class="kpi-v">{{ kpiRegistered }}</div>
+    <div class="kpi-d">Enrolled students</div>
+  </div>
+</div>
+
+<!-- Status Tabs -->
+<div class="tabs" style="margin: 20px 0 18px 0;">
+  <div *ngFor="let tab of STATUS_TABS"
+       class="tab"
+       [class.active]="activeTab === tab.key"
+       (click)="setTab(tab.key)">
+    <span *ngIf="tab.dot"
+          class="dot-icon"
+          [ngStyle]="{'background-color': tab.dot}">
+    </span>
+    {{ tab.label }}
+    <span class="tab-count">{{ getTabCount(tab.key) }}</span>
+  </div>
+</div>
+
+<!-- Filter Toolbar -->
+
+<!--
+<div class="filters" style="display: flex; gap: 10px; align-items: center; padding: 12px 14px; background: var(--da-surface, #ffffff); border: 1px solid var(--da-border, #e0e0e0); border-radius: var(--da-radius, 8px); margin-bottom: 16px; flex-wrap: wrap; overflow: visible; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+
+
+  <div class="search-container" style="flex: 1; max-width: 320px;">
+    <i class="fas fa-search search-icon"></i>
+    <input type="text" class="search-input" placeholder="Search by name, ID, or school…"
+           [(ngModel)]="searchText" (keydown)="handleKeyDown($event)">
+    <i class="fas fa-times clear-icon" *ngIf="searchText" (click)="clearSearch()"></i>
+  </div>
+
+
+  <div class="da-select" [class.da-select-open]="isSchoolDropdownOpen" tabindex="0" (click)="$event.stopPropagation()">
+    <div class="da-select-control" (click)="toggleSchoolDropdown($event)">
+      <div class="ms-display" [class.has-selection]="selectedSchool !== ''" style="display: flex; align-items: center; flex: 1;">
+        <ng-container *ngIf="selectedSchool !== ''; else noSchoolSelected">
+          <span class="ms-chip" style="margin: 0;">
+            {{ selectedSchool }}
+            <span class="ms-chip-x" (click)="clearSchoolSelection($event)">×</span>
+          </span>
+        </ng-container>
+        <ng-template #noSchoolSelected>
+          <span class="da-select-value" style="font-size: 13px;">All Schools</span>
+        </ng-template>
+      </div>
+      <i class="fas da-select-arrow" [ngClass]="isSchoolDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+    </div>
+    <div class="da-select-menu" *ngIf="isSchoolDropdownOpen">
+      <div class="da-select-option" [class.selected]="selectedSchool === ''" (click)="selectSchool('')">
+        All Schools
+      </div>
+      <div class="da-select-option"
+           *ngFor="let school of schools"
+           [class.selected]="selectedSchool === school"
+           (click)="selectSchool(school)">
+        {{ school }}
+      </div>
+    </div>
+  </div>
+
+
+  <div class="da-select" [class.da-select-open]="isSpecDropdownOpen" tabindex="0" (click)="$event.stopPropagation()">
+    <div class="da-select-control" (click)="toggleSpecDropdown($event)">
+      <div class="ms-display" [class.has-selection]="selectedSpec !== ''" style="display: flex; align-items: center; flex: 1;">
+        <ng-container *ngIf="selectedSpec !== ''; else noSpecSelected">
+          <span class="ms-chip" style="margin: 0;">
+            {{ selectedSpec }}
+            <span class="ms-chip-x" (click)="clearSpecSelection($event)">×</span>
+          </span>
+        </ng-container>
+        <ng-template #noSpecSelected>
+          <span class="da-select-value" style="font-size: 13px;">All Specializations</span>
+        </ng-template>
+      </div>
+      <i class="fas da-select-arrow" [ngClass]="isSpecDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+    </div>
+    <div class="da-select-menu" *ngIf="isSpecDropdownOpen">
+      <div class="da-select-option" [class.selected]="selectedSpec === ''" (click)="selectSpec('')">
+        All Specializations
+      </div>
+      <div class="da-select-option"
+           *ngFor="let spec of specializations"
+           [class.selected]="selectedSpec === spec"
+           (click)="selectSpec(spec)">
+        {{ spec }}
+      </div>
+    </div>
+  </div>
+
+  <div class="filter-count" style="margin-inline-start: auto; font-size: 12.5px; color: var(--da-muted); font-weight: 500;">
+    {{ totalRecords }} shown
+  </div>
+</div>
+
+
+-->
