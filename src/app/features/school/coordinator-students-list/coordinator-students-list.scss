@@ -1,21 +1,20 @@
-// ── KPI grid: always 4-col ─────────────────────────────────────────
 .kpi-grid {
   grid-template-columns: repeat(4, 1fr) !important;
   width: 100%;
   margin-top: 14px;
 }
 
-// ── Host: allow dropdowns to overflow ─────────────────────────────
 :host {
   display: block;
   overflow: visible !important;
 }
 
-// ── Search container ───────────────────────────────────────────────
 .search-container {
   position: relative;
   display: inline-block;
   width: 320px;
+  flex: 1;
+  max-width: 320px;
 
   .search-input {
     width: 100% !important;
@@ -49,144 +48,27 @@
   }
 }
 
-// ── Status Tabs ────────────────────────────────────────────────────
-.tabs {
+.filters {
   display: flex;
-  gap: 2px;
-  border-bottom: 1px solid var(--da-border);
-  margin-bottom: 18px;
-  overflow: visible !important;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 14px;
+  background: var(--da-surface, #ffffff);
+  border: 1px solid var(--da-border, #e0e0e0);
+  border-radius: var(--da-radius, 8px);
+  margin-bottom: 16px;
   flex-wrap: wrap;
+  overflow: visible;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
-.tab {
-  padding: 10px 14px;
-  font-size: 13px;
-  color: var(--da-muted);
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
-  white-space: nowrap;
-
-  &:hover {
-    color: var(--da-black);
-  }
-
-  &.active {
-    color: var(--da-green);
-    border-bottom-color: var(--da-green);
-    font-weight: 700;
-  }
-}
-
-.tab-count {
-  font-size: 10px;
-  background: rgba(0,0,0,0.05);
-  padding: 2px 7px;
-  border-radius: 100px;
-  color: var(--da-muted);
-  font-weight: 700;
-}
-
-.tab.active .tab-count {
-  background: var(--da-green-50);
-  color: var(--da-green-800);
-}
-
-// ── Dot status icon ────────────────────────────────────────────────
-.dot-icon {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  display: inline-block;
-  flex-shrink: 0;
-}
-
-// ── Student avatar ─────────────────────────────────────────────────
-.students-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--da-green-50);
-  border: 1.5px solid var(--da-green);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  overflow: hidden;
-}
-
-.students-avatar-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
-}
-
-.students-avatar-initials {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--da-green);
-  letter-spacing: 0.5px;
-  font-family: 'Courier New', monospace;
-}
-
-// ── Candidate programs pill ────────────────────────────────────────
-.cand-pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 10px;
-  border-radius: 100px;
-  background: var(--da-info-50, #EFF6FF);
-  color: #1E40AF;
-  border: 1px solid #BFDBFE;
-  font-weight: 700;
+.filters .filter-count {
+  margin-inline-start: auto;
   font-size: 12px;
-  font-family: 'Courier New', monospace;
-}
-
-// ── Numeric table cells ────────────────────────────────────────────
-.table .num {
-  font-family: 'Courier New', monospace;
-  direction: ltr;
+  color: var(--da-muted);
   font-weight: 600;
 }
 
-// ── Empty state ────────────────────────────────────────────────────
-.students-empty {
-  padding: 30px 16px;
-  text-align: center;
-  color: var(--da-muted);
-  font-size: 13px;
-}
-
-// ── Transparent "View →" action button ────────────────────────────
-.btn-t {
-  background: transparent !important;
-  color: var(--da-green) !important;
-  padding: 6px 8px !important;
-  font-weight: 600 !important;
-  font-size: 12px !important;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  border: none !important;
-  cursor: pointer;
-  text-decoration: none;
-  transition: background 0.12s;
-
-  &:hover {
-    background: var(--da-green-50) !important;
-    border-radius: var(--da-radius-sm, 6px);
-  }
-}
-
-// ── Pagination button disabled state ──────────────────────────────
 .icon-btn:disabled,
 .btn-pagination:disabled {
   opacity: 0.4;
@@ -196,7 +78,16 @@
   color: var(--da-muted) !important;
 }
 
-// ── Page-size custom dropdown ─────────────────────────────────────
+/* Fix table row hover consistency for Course Code cell style consistency */
+.table > tbody > tr:hover .course-code-cell {
+  background: var(--da-green-50) !important;
+}
+
+.table > tbody > tr:hover .course-code-badge {
+  background: transparent !important;
+}
+
+/* Custom Page-Size Dropdown */
 .custom-dropdown {
   position: relative;
   display: inline-block;
@@ -263,7 +154,7 @@
   box-sizing: border-box;
   overflow: hidden;
   padding: 4px;
-
+  
   /* Upward positioning */
   bottom: 100%;
   margin-bottom: 4px;
@@ -294,3 +185,57 @@
     font-weight: 600 !important;
   }
 }
+
+.tabs {
+  display: flex;
+  gap: 2px;
+  border-bottom: 1px solid var(--da-border);
+  margin-bottom: 18px;
+  overflow: visible !important;
+}
+.tab {
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--da-muted);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.tab:hover {
+  color: var(--da-black);
+}
+.tab.active {
+  color: var(--da-green);
+  border-bottom-color: var(--da-green);
+  font-weight: 700;
+}
+.tab-count {
+  font-size: 10px;
+  background: rgba(0,0,0,0.05);
+  padding: 2px 7px;
+  border-radius: 100px;
+  color: var(--da-muted);
+  font-weight: 700;
+}
+.tab.active .tab-count {
+  background: var(--da-green-50);
+  color: var(--da-green-800);
+}
+
+/* Status Badge Colors (Matching Status Tabs) */
+.chip-draft { background-color: #f1f5f9 !important; color: #475569 !important; border: 1px solid #cbd5e1 !important; }
+.chip-acceptance-process { background-color: #fef3c7 !important; color: #d97706 !important; border: 1px solid #fde68a !important; }
+.chip-acceptance-rejected { background-color: #fee2e2 !important; color: #dc2626 !important; border: 1px solid #fecaca !important; }
+.chip-sponsored { background-color: #dcfce7 !important; color: #16a34a !important; border: 1px solid #bbf7d0 !important; }
+.chip-sponsored-rejected { background-color: #ffe4e6 !important; color: #e11d48 !important; border: 1px solid #fecdd3 !important; }
+.chip-awarded-rejected { background-color: #f3e8ff !important; color: #9333ea !important; border: 1px solid #e9d5ff !important; }
+.chip-registered { background-color: #d1fae5 !important; color: #059669 !important; border: 1px solid #a7f3d0 !important; }
+.chip-failed { background-color: #ffedd5 !important; color: #ea580c !important; border: 1px solid #fed7aa !important; }
+.chip-dismissed { background-color: #f3f4f6 !important; color: #4b5563 !important; border: 1px solid #e5e7eb !important; }
+.chip-graduate { background-color: #e2e8f0 !important; color: #334155 !important; border: 1px solid #cbd5e1 !important; }
+

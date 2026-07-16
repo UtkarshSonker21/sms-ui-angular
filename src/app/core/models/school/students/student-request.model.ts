@@ -1,6 +1,6 @@
 export class StudentRequest {
 
-     // ─────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────
     // Identity
     // ─────────────────────────────────────────────────────────────
 
@@ -9,6 +9,8 @@ export class StudentRequest {
     // ─────────────────────────────────────────────────────────────
     // Personal Information
     // ─────────────────────────────────────────────────────────────
+
+    studentCode: string = "";
 
     photoPath?: string;
 
@@ -159,6 +161,13 @@ export class StudentRequest {
     formattedUpdatedBy?: string;
 
     formattedUpdatedDate?: string;
+
+    // Assigned Program
+    studentAssignedProgramName?: string;
+    studentAssignedUniversityName?: string;
+    studentAssignedUniversityId?: number;
+    studentApplicationStatusId?: number;
+
 
 }
 

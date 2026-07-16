@@ -5,14 +5,24 @@ import { Router } from '@angular/router';
 
 import { NotificationService } from '../../../core/services/common/notification.service';
 import { StudentService } from '../../../core/services/school/student.service';
+import { MasterSchoolService } from '../../../core/services/school/master-school.service';
+import { MasterDropDownService } from '../../../core/services/superadmin/master-dropdown.service';
+
 import { StudentRequest } from '../../../core/models/school/students/student-request.model';
 import { StudntFilter } from '../../../core/models/school/students/student-filter.model';
+import { MasterSchoolRequest } from '../../../core/models/school/master-school/master-school-request.model';
+import { MasterSchoolFilter } from '../../../core/models/school/master-school/master-school-filter.model';
+import { MasterDropDownRequest } from '../../../core/models/super-admin/master-dropdown/master-dropdown-request.model';
+import { StudentStatusEnum } from '../../../core/enums/student-application-status.enum';
+import { DisableAutocompleteDirective } from '../../../shared/directives/disable-autocomplete.directive';
 import { AppRoutes } from '../../../core/constants/app-routes';
+import { MainDropdown } from '../../../core/enums/main-dropdown.enum';
+
 
 @Component({
   selector: 'app-coordinator-students-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DisableAutocompleteDirective],
   templateUrl: './coordinator-students-list.html',
   styleUrl: './coordinator-students-list.scss',
 })
@@ -22,150 +32,159 @@ export class CoordinatorStudentsList implements OnInit {
   onDocumentClick(event: MouseEvent): void {
     this.isSchoolDropdownOpen = false;
     this.isSpecDropdownOpen = false;
+    this.isStatusDropdownOpen = false;
     this.isPageSizeDropdownOpen = false;
   }
 
   private studentService = inject(StudentService);
+  private schoolService = inject(MasterSchoolService);
+  private masterDropdownService = inject(MasterDropDownService);
   private notification = inject(NotificationService);
   private router = inject(Router);
 
-  // ── Data ──────────────────────────────────────────────────────────
+  // Table Data
   students: StudentRequest[] = [];
-  allFilteredItems: StudentRequest[] = [];
   totalRecords = 0;
   searchText = '';
 
-  // ── KPIs (derived from status tabs) ───────────────────────────────
+  // KPI Summary
   kpiTotal = 0;
   kpiInProcess = 0;
-  kpiAcceptanceRejected = 0;
   kpiSponsored = 0;
-  kpiSponsoredRejected = 0;
-  kpiAwardedRejected = 0;
   kpiRegistered = 0;
-  kpiFailed = 0;
-  kpiDismissed = 0;
-  kpiGraduate = 0;
 
-  // ── Status tabs ────────────────────────────────────────────────────
-  readonly STATUS_TABS = [
-    { key: 'all', label: 'All', dot: '' },
-    { key: 'Acceptance in process', label: 'Acceptance in process', dot: 'var(--da-gold)' },
-    { key: 'Acceptance rejected', label: 'Acceptance rejected', dot: 'var(--da-danger)' },
-    { key: 'Sponsored', label: 'Sponsored', dot: 'var(--da-green)' },
-    { key: 'Sponsored rejected', label: 'Sponsored rejected', dot: '#991B1B' },
-    { key: 'Awarded rejected', label: 'Awarded rejected', dot: '#6D28D9' },
-    { key: 'Registered', label: 'Registered', dot: 'var(--da-green-700, #15803D)' },
-    { key: 'Failed', label: 'Failed', dot: '#EA580C' },
-    { key: 'Dismissed', label: 'Dismissed', dot: '#4B5563' },
-    { key: 'Graduate', label: 'Graduate', dot: 'var(--da-muted)' },
+  // Tab Counts
+  tabAll = 0;
+  tabInProcess = 0;
+  tabAccRejected = 0;
+  tabSponsored = 0;
+  tabSponRejected = 0;
+  tabAwardedRejected = 0;
+  tabRegistered = 0;
+  tabFailed = 0;
+  tabDismissed = 0;
+  tabGraduate = 0;
+
+  activeTab: number | string = 'all';
+  studentStatus = StudentStatusEnum;
+
+  // Filter
+  filter: StudntFilter = new StudntFilter();
+
+  // Dropdown States & Data
+  schools: MasterSchoolRequest[] = [];
+  specializations: MasterDropDownRequest[] = [];
+  
+  statusOptions = [
+    { id: StudentStatusEnum.Draft, name: 'Draft' },
+    { id: StudentStatusEnum.AcceptanceInProcess, name: 'Acceptance In Process' },
+    { id: StudentStatusEnum.AcceptanceRejected, name: 'Acceptance Rejected' },
+    { id: StudentStatusEnum.Sponsored, name: 'Sponsored' },
+    { id: StudentStatusEnum.SponsoredRejected, name: 'Sponsored Rejected' },
+    { id: StudentStatusEnum.AwardedRejected, name: 'Awarded Rejected' },
+    { id: StudentStatusEnum.Registered, name: 'Registered' },
+    { id: StudentStatusEnum.Failed, name: 'Failed' },
+    { id: StudentStatusEnum.Dismissed, name: 'Dismissed' },
+    { id: StudentStatusEnum.Graduate, name: 'Graduate' },
   ];
-  activeTab = 'all';
+  
+  selectedSchool: number = 0;
+  selectedSpec: string = '';
+  selectedStatus: number | null = null;
 
-  // ── Filter models ─────────────────────────────────────────────────
-  filter = new StudntFilter();
-
-  // ── School dropdown ───────────────────────────────────────────────
-  selectedSchool = '';
-  schools: string[] = [];
   isSchoolDropdownOpen = false;
-
-  // ── Specialization dropdown ───────────────────────────────────────
-  selectedSpec = '';
-  specializations: string[] = [];
   isSpecDropdownOpen = false;
-
-  // ── Page-size dropdown ────────────────────────────────────────────
+  isStatusDropdownOpen = false;
   isPageSizeDropdownOpen = false;
-
-  // ──────────────────────────────────────────────────────────────────
 
   ngOnInit(): void {
     this.filter.pageNumber = 1;
     this.filter.pageSize = 25;
+    this.getSchools();
+    this.getSpecializations();
     this.loadData();
   }
 
-  loadData(): void {
-    const queryFilter = new StudntFilter();
-    queryFilter.pageNumber = 1;
-    queryFilter.pageSize = 10000;
-    queryFilter.searchText = this.searchText.trim() || undefined;
-    // queryFilter.school = this.selectedSchool || undefined;
-    // queryFilter.hsSpecialization = this.selectedSpec || undefined;
-
-    this.studentService.getStudents(queryFilter).subscribe({
-      next: (response) => {
-        if (response.success && response.result) {
-          this.processStudentList(response.result.items);
-        } else {
-          this.processStudentList([]);
+  getSchools(): void {
+    const sFilter = new MasterSchoolFilter();
+    sFilter.pageNumber = 1;
+    sFilter.pageSize = 1000;
+    this.schoolService.getMasterSchools(sFilter).subscribe({
+      next: (res) => {
+        if (res.success && res.result) {
+          this.schools = res.result.items;
         }
-      },
-      error: () => {
-        this.processStudentList([]);
-        this.notification.error('Failed to load students list.');
       }
     });
   }
 
-  private processStudentList(items: StudentRequest[]): void {
-    // 1. Derive school & spec lists from the raw payload
-    // this.buildFilterOptions(items);
-
-    // 2. Compute KPIs over the complete (unfiltered by tab) set
-    this.kpiTotal = items.length;
-    this.kpiInProcess = 0;
-    this.kpiAcceptanceRejected = 0;
-    this.kpiSponsored = 0;
-    this.kpiSponsoredRejected = 0;
-    this.kpiAwardedRejected = 0;
-    this.kpiRegistered = 0;
-    this.kpiFailed = 0;
-    this.kpiDismissed = 0;
-    this.kpiGraduate = 0;
-
-    // 3. Apply active tab filter
-    if (this.activeTab !== 'all') {
-      // filtering by studentStatus has been removed as the property no longer exists
-    }
-
-    this.allFilteredItems = items;
-    this.totalRecords = items.length;
-    this.paginateItems();
+  getSpecializations(): void {
+    // ParentId 1 used as a placeholder for HS Specialization if applicable
+    this.masterDropdownService.getByParentId(MainDropdown.HighSchoolDivision).subscribe({
+      next: (res) => {
+        if (res.success && res.result) {
+          this.specializations = res.result;
+        }
+      }
+    });
   }
 
-  // private buildFilterOptions(items: StudentRequest[]): void {
-  //   const schoolSet = new Set<string>();
-  //   const specSet   = new Set<string>();
-  //   items.forEach(s => {
-  //     if (s.school) schoolSet.add(s.school);
-  //     if (s.hsSpecialization) specSet.add(s.hsSpecialization);
-  //   });
-  //   // Only update if lists changed (avoid re-rendering dropdowns mid-filter)
-  //   if (this.schools.length === 0) {
-  //     this.schools = Array.from(schoolSet).sort();
-  //   }
-  //   if (this.specializations.length === 0) {
-  //     this.specializations = Array.from(specSet).sort();
-  //   }
-  // }
+  loadData(): void {
+    this.filter.isActive = true;
+    this.filter.schoolId = this.selectedSchool || undefined;
+    this.filter.studentStatusId = this.selectedStatus !== null ? this.selectedStatus : undefined;
+    this.filter.hsSpecialization = (this.selectedSpec as any) || undefined;
 
-  paginateItems(): void {
-    const startIndex = (this.filter.pageNumber - 1) * this.filter.pageSize;
-    this.students = this.allFilteredItems.slice(startIndex, startIndex + this.filter.pageSize);
+    this.studentService.getStudents(this.filter).subscribe({
+      next: (response) => {
+        if (response.success && response.result) {
+          this.students = response.result.items;
+          this.totalRecords = response.result.totalCount;
+          this.calculateKPIs(this.students);
+        } else {
+          this.students = [];
+          this.notification.warning(response.message);
+        }
+      },
+      error: () => {
+        this.students = [];
+        this.notification.error('Failed to load students.');
+      }
+    });
   }
 
+  calculateKPIs(items: StudentRequest[]): void {
+    this.kpiTotal = this.totalRecords;
+    this.kpiInProcess = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.AcceptanceInProcess).length;
+    this.kpiSponsored = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.Sponsored).length;
+    this.kpiRegistered = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.Registered).length;
+
+    this.tabAll = this.totalRecords;
+    this.tabInProcess = this.kpiInProcess;
+    this.tabAccRejected = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.AcceptanceRejected).length;
+    this.tabSponsored = this.kpiSponsored;
+    this.tabSponRejected = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.SponsoredRejected).length;
+    this.tabAwardedRejected = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.AwardedRejected).length;
+    this.tabRegistered = this.kpiRegistered;
+    this.tabFailed = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.Failed).length;
+    this.tabDismissed = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.Dismissed).length;
+    this.tabGraduate = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.Graduate).length;
+  }
+
+  // --- Search & Filters ---
   applySearch(): void {
+    this.filter.searchText = this.searchText.trim() || undefined;
     this.filter.pageNumber = 1;
     this.loadData();
   }
 
   clearSearch(): void {
     this.searchText = '';
+    this.filter.searchText = undefined;
     this.filter.pageNumber = 1;
     this.loadData();
   }
+
 
   handleKeyDown(event: KeyboardEvent): void {
     if (event.key === 'Enter') {
@@ -173,59 +192,42 @@ export class CoordinatorStudentsList implements OnInit {
     }
   }
 
-  // ── Tabs ──────────────────────────────────────────────────────────
-  setTab(tab: string): void {
-    this.activeTab = tab;
-    this.filter.pageNumber = 1;
-    this.loadData();
-  }
-
-  getTabCount(key: string): number {
-    if (key === 'all') return this.kpiTotal;
-    if (key === 'Acceptance in process') return this.kpiInProcess;
-    if (key === 'Acceptance rejected') return this.kpiAcceptanceRejected;
-    if (key === 'Sponsored') return this.kpiSponsored;
-    if (key === 'Sponsored rejected') return this.kpiSponsoredRejected;
-    if (key === 'Awarded rejected') return this.kpiAwardedRejected;
-    if (key === 'Registered') return this.kpiRegistered;
-    if (key === 'Failed') return this.kpiFailed;
-    if (key === 'Dismissed') return this.kpiDismissed;
-    if (key === 'Graduate') return this.kpiGraduate;
-    return 0;
-  }
-
-  // ── School Dropdown ───────────────────────────────────────────────
+  // --- Dropdowns ---
   toggleSchoolDropdown(event: Event): void {
     event.stopPropagation();
     this.isSchoolDropdownOpen = !this.isSchoolDropdownOpen;
     this.isSpecDropdownOpen = false;
-    this.isPageSizeDropdownOpen = false;
+    this.isStatusDropdownOpen = false;
   }
 
-  selectSchool(value: string): void {
-    this.selectedSchool = value;
-    this.isSchoolDropdownOpen = false;
+  selectSchoolOption(id: number): void {
+    this.selectedSchool = id;
     this.filter.pageNumber = 1;
     this.loadData();
   }
 
   clearSchoolSelection(event: Event): void {
     event.stopPropagation();
-    this.selectedSchool = '';
+    this.selectedSchool = 0;
+    this.isSchoolDropdownOpen = false;
     this.filter.pageNumber = 1;
     this.loadData();
   }
 
-  // ── Specialization Dropdown ───────────────────────────────────────
+  getSelectedSchoolName(): string {
+    const s = this.schools.find(x => x.schoolId === this.selectedSchool);
+    return s ? s.schoolName : '';
+  }
+
   toggleSpecDropdown(event: Event): void {
     event.stopPropagation();
     this.isSpecDropdownOpen = !this.isSpecDropdownOpen;
     this.isSchoolDropdownOpen = false;
-    this.isPageSizeDropdownOpen = false;
+    this.isStatusDropdownOpen = false;
   }
 
-  selectSpec(value: string): void {
-    this.selectedSpec = value;
+  selectSpecOption(specName: string): void {
+    this.selectedSpec = specName;
     this.isSpecDropdownOpen = false;
     this.filter.pageNumber = 1;
     this.loadData();
@@ -234,107 +236,128 @@ export class CoordinatorStudentsList implements OnInit {
   clearSpecSelection(event: Event): void {
     event.stopPropagation();
     this.selectedSpec = '';
+    this.isSpecDropdownOpen = false;
     this.filter.pageNumber = 1;
     this.loadData();
   }
 
-  // ── Page Size Dropdown ────────────────────────────────────────────
-  togglePageSizeDropdown(event: Event): void {
+  toggleStatusDropdown(event: Event): void {
     event.stopPropagation();
-    this.isPageSizeDropdownOpen = !this.isPageSizeDropdownOpen;
+    this.isStatusDropdownOpen = !this.isStatusDropdownOpen;
     this.isSchoolDropdownOpen = false;
     this.isSpecDropdownOpen = false;
   }
 
-  selectPageSize(size: number): void {
-    this.isPageSizeDropdownOpen = false;
-    this.filter.pageSize = size;
+  selectStatusOption(id: number | null): void {
+    this.selectedStatus = id;
+    this.isStatusDropdownOpen = false;
     this.filter.pageNumber = 1;
-    this.paginateItems();
+    this.loadData();
   }
 
-  previousPage(): void {
-    if (this.filter.pageNumber > 1) {
-      this.filter.pageNumber--;
-      this.paginateItems();
+  clearStatusSelection(event: Event): void {
+    event.stopPropagation();
+    this.selectedStatus = null;
+    this.isStatusDropdownOpen = false;
+    this.filter.pageNumber = 1;
+    this.loadData();
+  }
+
+  getSelectedStatusName(): string {
+    if (this.selectedStatus === null) return 'All Statuses';
+    const s = this.statusOptions.find(x => x.id === this.selectedStatus);
+    return s ? s.name : '';
+  }
+
+  setTab(tab: string | number): void {
+    this.activeTab = tab;
+    this.selectedStatus = tab === 'all' ? null : (tab as number);
+    this.filter.pageNumber = 1;
+    this.loadData();
+  }
+
+  // --- Status Badge Helper ---
+  getStatusBadgeClass(student: StudentRequest): string {
+    switch(student.studentApplicationStatusId) {
+      case StudentStatusEnum.Draft: return 'chip-draft';
+      case StudentStatusEnum.AcceptanceInProcess: return 'chip-acceptance-process';
+      case StudentStatusEnum.AcceptanceRejected: return 'chip-acceptance-rejected';
+      case StudentStatusEnum.Sponsored: return 'chip-sponsored';
+      case StudentStatusEnum.SponsoredRejected: return 'chip-sponsored-rejected';
+      case StudentStatusEnum.AwardedRejected: return 'chip-awarded-rejected';
+      case StudentStatusEnum.Registered: return 'chip-registered';
+      case StudentStatusEnum.Failed: return 'chip-failed';
+      case StudentStatusEnum.Dismissed: return 'chip-dismissed';
+      case StudentStatusEnum.Graduate: return 'chip-graduate';
+      default: return 'chip-draft';
     }
   }
 
-  nextPage(): void {
-    if (this.filter.pageNumber < this.totalPages) {
-      this.filter.pageNumber++;
-      this.paginateItems();
+  getStatusName(student: StudentRequest): string {
+    switch(student.studentApplicationStatusId) {
+      case StudentStatusEnum.Draft: return 'Draft';
+      case StudentStatusEnum.AcceptanceInProcess: return 'Acceptance In Process';
+      case StudentStatusEnum.AcceptanceRejected: return 'Acceptance Rejected';
+      case StudentStatusEnum.Sponsored: return 'Sponsored';
+      case StudentStatusEnum.SponsoredRejected: return 'Sponsored Rejected';
+      case StudentStatusEnum.AwardedRejected: return 'Awarded Rejected';
+      case StudentStatusEnum.Registered: return 'Registered';
+      case StudentStatusEnum.Failed: return 'Failed';
+      case StudentStatusEnum.Dismissed: return 'Dismissed';
+      case StudentStatusEnum.Graduate: return 'Graduate';
+      default: return 'Not Assigned';
     }
   }
 
+  // --- Pagination ---
   get totalPages(): number {
-    return Math.ceil(this.totalRecords / this.filter.pageSize) || 1;
+    return Math.ceil(this.totalRecords / this.filter.pageSize);
   }
 
   get isPreviousDisabled(): boolean {
-    return this.filter.pageNumber <= 1;
+    return this.filter.pageNumber === 1;
   }
 
   get isNextDisabled(): boolean {
     return this.filter.pageNumber >= this.totalPages;
   }
 
-  // ── Student avatar ────────────────────────────────────────────────
-  getInitials(student: StudentRequest): string {
-    const first = (student.firstName || '').charAt(0).toUpperCase();
-    const last = (student.lastName || '').charAt(0).toUpperCase();
-    return first + last || 'ST';
-  }
-
-  getFullName(student: StudentRequest): string {
-    return [student.firstName, student.secondName, student.lastName]
-      .filter(Boolean)
-      .join(' ');
-  }
-
-  // ── Status chip class ─────────────────────────────────────────────
-  getStatusChipClass(status: string): string {
-    switch (status) {
-      case 'Acceptance in process': return 'chip chip-pending';
-      case 'Acceptance rejected': return 'chip chip-rejected';
-      case 'Sponsored': return 'chip chip-sponsored';
-      case 'Sponsored rejected': return 'chip chip-rejected';
-      case 'Awarded rejected': return 'chip chip-rejected';
-      case 'Registered': return 'chip chip-registered';
-      case 'Failed': return 'chip chip-rejected';
-      case 'Dismissed': return 'chip chip-graduated';
-      case 'Graduate': return 'chip chip-graduated';
-      default: return 'chip chip-pending';
+  previousPage(): void {
+    if (!this.isPreviousDisabled) {
+      this.filter.pageNumber--;
+      this.loadData();
     }
   }
 
-  getStatusDotColor(status: string): string {
-    switch (status) {
-      case 'Acceptance in process': return 'var(--da-gold)';
-      case 'Acceptance rejected': return 'var(--da-danger)';
-      case 'Sponsored': return 'var(--da-green)';
-      case 'Sponsored rejected': return '#991B1B';
-      case 'Awarded rejected': return '#6D28D9';
-      case 'Registered': return 'var(--da-green-700, #15803D)';
-      case 'Failed': return '#EA580C';
-      case 'Dismissed': return '#4B5563';
-      case 'Graduate': return 'var(--da-muted)';
-      default: return 'var(--da-muted)';
+  nextPage(): void {
+    if (!this.isNextDisabled) {
+      this.filter.pageNumber++;
+      this.loadData();
     }
   }
 
-  // ── Navigation ────────────────────────────────────────────────────
-  viewStudent(studentId: number): void {
-    this.router.navigate([AppRoutes.School.EditStudent, studentId]);
+  togglePageSizeDropdown(event: Event): void {
+    event.stopPropagation();
+    this.isPageSizeDropdownOpen = !this.isPageSizeDropdownOpen;
+  }
+
+  selectPageSize(size: number): void {
+    this.filter.pageSize = size;
+    this.filter.pageNumber = 1;
+    this.isPageSizeDropdownOpen = false;
+    this.loadData();
+  }
+
+  exportList(): void {
+    this.notification.info('Export functionality coming soon.');
   }
 
   addStudent(): void {
     this.router.navigate([AppRoutes.School.AddStudent]);
   }
 
-
-  exportList(): void {
-    this.notification.success('Students list exported successfully.');
+  viewStudent(id: number): void {
+    this.router.navigate([AppRoutes.School.EditStudent, id]);
   }
 
 }

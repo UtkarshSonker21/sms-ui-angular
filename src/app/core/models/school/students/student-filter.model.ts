@@ -33,4 +33,7 @@ export class StudntFilter extends BaseFilter {
     dobFrom?: Date;
 
     dobTo?: Date;
+
+    studentStatusId?: number;
+    hsSpecialization?: number;
 }

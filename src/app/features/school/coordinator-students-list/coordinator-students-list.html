@@ -1,140 +1,304 @@
-<!-- Page Header -->
 <div class="page-head">
-  <div>
-    <div class="crumb">
-      <a href="#">Dashboard</a>
-      <span class="sep">/</span>
-      <span class="text-muted">Students</span>
+    <div>
+        <div class="crumb">
+            <a href="#">Dashboard</a>
+            <span class="sep">/</span>
+            <span class="text-muted">Students</span>
+        </div>
+        <h2 class="page-title">Students</h2>
+        <p class="page-sub">
+            Manage records for the students you nominated - basic info, contact, academics, and evaluation.
+        </p>
     </div>
-    <h2 class="page-title">Students</h2>
-    <p class="page-sub">
-      Manage records for the students you nominated — basic info, contact, academics, and evaluation.
-    </p>
-  </div>
-  <div class="page-actions">
-    <button type="button" class="btn btn-g" (click)="exportList()">
-      Export List
-    </button>
-    <button type="button" class="btn btn-p" (click)="addStudent()">
-      + Add Student
-    </button>
-  </div>
+    <div class="page-actions">
+        <button type="button" class="btn btn-g" (click)="exportList()">
+            Export List
+        </button>
+        <button type="button" class="btn btn-p" (click)="addStudent()">
+            <i class="fas fa-plus btn-icon"></i> Add Student
+        </button>
+    </div>
 </div>
 
-<!-- KPI Cards -->
 <div class="kpi-grid">
-  <div class="kpi">
-    <div class="kpi-l">TOTAL STUDENTS</div>
-    <div class="kpi-v">{{ kpiTotal }}</div>
-    <div class="kpi-d muted">Total nominees</div>
-  </div>
-  <div class="kpi">
-    <div class="kpi-l">IN PROCESS</div>
-    <div class="kpi-v">{{ kpiInProcess }}</div>
-    <div class="kpi-d muted">Acceptance in progress</div>
-  </div>
-  <div class="kpi">
-    <div class="kpi-l">SPONSORED</div>
-    <div class="kpi-v">{{ kpiSponsored }}</div>
-    <div class="kpi-d">Active sponsorships</div>
-  </div>
-  <div class="kpi">
-    <div class="kpi-l">REGISTERED</div>
-    <div class="kpi-v">{{ kpiRegistered }}</div>
-    <div class="kpi-d">Enrolled students</div>
-  </div>
+    <div class="kpi">
+        <div class="kpi-l">Total students</div>
+        <div class="kpi-v">{{ kpiTotal }}</div>
+        <div class="kpi-d muted">Total nominees</div>
+    </div>
+    <div class="kpi">
+        <div class="kpi-l">In Process</div>
+        <div class="kpi-v">{{ kpiInProcess }}</div>
+        <div class="kpi-d muted">Acceptance in progress</div>
+    </div>
+    <div class="kpi">
+        <div class="kpi-l">Sponsored</div>
+        <div class="kpi-v">{{ kpiSponsored }}</div>
+        <div class="kpi-d muted">Active sponsorships</div>
+    </div>
+    <div class="kpi">
+        <div class="kpi-l">Registered</div>
+        <div class="kpi-v">{{ kpiRegistered }}</div>
+        <div class="kpi-d muted">Enrolled students</div>
+    </div>
 </div>
-
-<!-- Status Tabs -->
-<div class="tabs" style="margin: 20px 0 18px 0;">
-  <div *ngFor="let tab of STATUS_TABS"
-       class="tab"
-       [class.active]="activeTab === tab.key"
-       (click)="setTab(tab.key)">
-    <span *ngIf="tab.dot"
-          class="dot-icon"
-          [ngStyle]="{'background-color': tab.dot}">
-    </span>
-    {{ tab.label }}
-    <span class="tab-count">{{ getTabCount(tab.key) }}</span>
-  </div>
-</div>
-
-<!-- Filter Toolbar -->
 
 <!--
-<div class="filters" style="display: flex; gap: 10px; align-items: center; padding: 12px 14px; background: var(--da-surface, #ffffff); border: 1px solid var(--da-border, #e0e0e0); border-radius: var(--da-radius, 8px); margin-bottom: 16px; flex-wrap: wrap; overflow: visible; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-
-
-  <div class="search-container" style="flex: 1; max-width: 320px;">
-    <i class="fas fa-search search-icon"></i>
-    <input type="text" class="search-input" placeholder="Search by name, ID, or school…"
-           [(ngModel)]="searchText" (keydown)="handleKeyDown($event)">
-    <i class="fas fa-times clear-icon" *ngIf="searchText" (click)="clearSearch()"></i>
+<div class="tabs" style="margin: 20px 0 18px 0;">
+  <div class="tab" [class.active]="activeTab === 'all'" (click)="setTab('all')">
+    All <span class="tab-count">{{ tabAll }}</span>
   </div>
-
-
-  <div class="da-select" [class.da-select-open]="isSchoolDropdownOpen" tabindex="0" (click)="$event.stopPropagation()">
-    <div class="da-select-control" (click)="toggleSchoolDropdown($event)">
-      <div class="ms-display" [class.has-selection]="selectedSchool !== ''" style="display: flex; align-items: center; flex: 1;">
-        <ng-container *ngIf="selectedSchool !== ''; else noSchoolSelected">
-          <span class="ms-chip" style="margin: 0;">
-            {{ selectedSchool }}
-            <span class="ms-chip-x" (click)="clearSchoolSelection($event)">×</span>
-          </span>
-        </ng-container>
-        <ng-template #noSchoolSelected>
-          <span class="da-select-value" style="font-size: 13px;">All Schools</span>
-        </ng-template>
-      </div>
-      <i class="fas da-select-arrow" [ngClass]="isSchoolDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-    </div>
-    <div class="da-select-menu" *ngIf="isSchoolDropdownOpen">
-      <div class="da-select-option" [class.selected]="selectedSchool === ''" (click)="selectSchool('')">
-        All Schools
-      </div>
-      <div class="da-select-option"
-           *ngFor="let school of schools"
-           [class.selected]="selectedSchool === school"
-           (click)="selectSchool(school)">
-        {{ school }}
-      </div>
-    </div>
+  <div class="tab" [class.active]="activeTab === studentStatus.AcceptanceInProcess" (click)="setTab(studentStatus.AcceptanceInProcess)">
+    Acceptance In Process <span class="tab-count">{{ tabInProcess }}</span>
   </div>
-
-
-  <div class="da-select" [class.da-select-open]="isSpecDropdownOpen" tabindex="0" (click)="$event.stopPropagation()">
-    <div class="da-select-control" (click)="toggleSpecDropdown($event)">
-      <div class="ms-display" [class.has-selection]="selectedSpec !== ''" style="display: flex; align-items: center; flex: 1;">
-        <ng-container *ngIf="selectedSpec !== ''; else noSpecSelected">
-          <span class="ms-chip" style="margin: 0;">
-            {{ selectedSpec }}
-            <span class="ms-chip-x" (click)="clearSpecSelection($event)">×</span>
-          </span>
-        </ng-container>
-        <ng-template #noSpecSelected>
-          <span class="da-select-value" style="font-size: 13px;">All Specializations</span>
-        </ng-template>
-      </div>
-      <i class="fas da-select-arrow" [ngClass]="isSpecDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-    </div>
-    <div class="da-select-menu" *ngIf="isSpecDropdownOpen">
-      <div class="da-select-option" [class.selected]="selectedSpec === ''" (click)="selectSpec('')">
-        All Specializations
-      </div>
-      <div class="da-select-option"
-           *ngFor="let spec of specializations"
-           [class.selected]="selectedSpec === spec"
-           (click)="selectSpec(spec)">
-        {{ spec }}
-      </div>
-    </div>
+  <div class="tab" [class.active]="activeTab === studentStatus.AcceptanceRejected" (click)="setTab(studentStatus.AcceptanceRejected)">
+    Acceptance Rejected <span class="tab-count">{{ tabAccRejected }}</span>
   </div>
-
-  <div class="filter-count" style="margin-inline-start: auto; font-size: 12.5px; color: var(--da-muted); font-weight: 500;">
-    {{ totalRecords }} shown
+  <div class="tab" [class.active]="activeTab === studentStatus.Sponsored" (click)="setTab(studentStatus.Sponsored)">
+    Sponsored <span class="tab-count">{{ tabSponsored }}</span>
+  </div>
+  <div class="tab" [class.active]="activeTab === studentStatus.SponsoredRejected" (click)="setTab(studentStatus.SponsoredRejected)">
+    Sponsored Rejected <span class="tab-count">{{ tabSponRejected }}</span>
+  </div>
+  <div class="tab" [class.active]="activeTab === studentStatus.AwardedRejected" (click)="setTab(studentStatus.AwardedRejected)">
+    Awarded Rejected <span class="tab-count">{{ tabAwardedRejected }}</span>
+  </div>
+  <div class="tab" [class.active]="activeTab === studentStatus.Registered" (click)="setTab(studentStatus.Registered)">
+    Registered <span class="tab-count">{{ tabRegistered }}</span>
+  </div>
+  <div class="tab" [class.active]="activeTab === studentStatus.Failed" (click)="setTab(studentStatus.Failed)">
+    Failed <span class="tab-count">{{ tabFailed }}</span>
+  </div>
+  <div class="tab" [class.active]="activeTab === studentStatus.Dismissed" (click)="setTab(studentStatus.Dismissed)">
+    Dismissed <span class="tab-count">{{ tabDismissed }}</span>
+  </div>
+  <div class="tab" [class.active]="activeTab === studentStatus.Graduate" (click)="setTab(studentStatus.Graduate)">
+    Graduate <span class="tab-count">{{ tabGraduate }}</span>
   </div>
 </div>
-
-
 -->
+
+<div class="filters">
+    <div class="search-container">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" class="search-input" placeholder="Search by Name or Registration Number..."
+               [(ngModel)]="searchText" (keydown)="handleKeyDown($event)">
+        <i class="fas fa-times clear-icon" *ngIf="searchText" (click)="clearSearch()"></i>
+    </div>
+    
+    <div class="da-select" [class.da-select-open]="isSchoolDropdownOpen" tabindex="0">
+        <div class="da-select-control" (click)="toggleSchoolDropdown($event)" style="padding: 0 12px 0 6px;">
+            <div class="ms-display" [class.has-selection]="selectedSchool !== 0" style="display: flex; align-items: center; flex: 1;">
+                <ng-container *ngIf="selectedSchool !== 0; else noSchoolSelected">
+                    <span class="ms-chip" style="margin: 0;">
+                        {{ getSelectedSchoolName() }}
+                        <span class="ms-chip-x" (click)="clearSchoolSelection($event)">&times;</span>
+                    </span>
+                </ng-container>
+                <ng-template #noSchoolSelected>
+                    <span class="da-select-value" style="font-size: 13px; margin-left: 6px;">All Schools</span>
+                </ng-template>
+            </div>
+            <i class="fas da-select-arrow" [ngClass]="isSchoolDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+        </div>
+        <div class="da-select-menu" *ngIf="isSchoolDropdownOpen">
+            <div class="da-select-option" 
+                 [class.selected]="selectedSchool === 0"
+                 (click)="selectSchoolOption(0)">
+                All Schools
+            </div>
+            <div class="da-select-option" 
+                 *ngFor="let school of schools"
+                 [class.selected]="selectedSchool === school.schoolId"
+                 (click)="selectSchoolOption(school.schoolId!)">
+                {{ school.schoolName }}
+            </div>
+        </div>
+    </div>
+
+    <div class="da-select" [class.da-select-open]="isSpecDropdownOpen" tabindex="0">
+        <div class="da-select-control" (click)="toggleSpecDropdown($event)" style="padding: 0 12px 0 6px;">
+            <div class="ms-display" [class.has-selection]="selectedSpec !== ''" style="display: flex; align-items: center; flex: 1;">
+                <ng-container *ngIf="selectedSpec !== ''; else noSpecSelected">
+                    <span class="ms-chip" style="margin: 0;">
+                        {{ selectedSpec }}
+                        <span class="ms-chip-x" (click)="clearSpecSelection($event)">&times;</span>
+                    </span>
+                </ng-container>
+                <ng-template #noSpecSelected>
+                    <span class="da-select-value" style="font-size: 13px; margin-left: 6px;">All Specializations</span>
+                </ng-template>
+            </div>
+            <i class="fas da-select-arrow" [ngClass]="isSpecDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+        </div>
+        <div class="da-select-menu" *ngIf="isSpecDropdownOpen">
+            <div class="da-select-option" 
+                 [class.selected]="selectedSpec === ''"
+                 (click)="selectSpecOption('')">
+                All Specializations
+            </div>
+            <div class="da-select-option" 
+                 *ngFor="let spec of specializations"
+                 [class.selected]="selectedSpec === spec.displayText"
+                 (click)="selectSpecOption(spec.displayText!)">
+                {{ spec.displayText }}
+            </div>
+        </div>
+    </div>
+
+    <div class="da-select" [class.da-select-open]="isStatusDropdownOpen" tabindex="0">
+        <div class="da-select-control" (click)="toggleStatusDropdown($event)" style="padding: 0 12px 0 6px;">
+            <div class="ms-display" [class.has-selection]="selectedStatus !== null" style="display: flex; align-items: center; flex: 1;">
+                <ng-container *ngIf="selectedStatus !== null; else noStatusSelected">
+                    <span class="ms-chip" style="margin: 0;">
+                        {{ getSelectedStatusName() }}
+                        <span class="ms-chip-x" (click)="clearStatusSelection($event)">&times;</span>
+                    </span>
+                </ng-container>
+                <ng-template #noStatusSelected>
+                    <span class="da-select-value" style="font-size: 13px; margin-left: 6px;">All Statuses</span>
+                </ng-template>
+            </div>
+            <i class="fas da-select-arrow" [ngClass]="isStatusDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+        </div>
+        <div class="da-select-menu" *ngIf="isStatusDropdownOpen">
+            <div class="da-select-option" 
+                 [class.selected]="selectedStatus === null"
+                 (click)="selectStatusOption(null)">
+                All Statuses
+            </div>
+            <div class="da-select-option" 
+                 *ngFor="let status of statusOptions"
+                 [class.selected]="selectedStatus === status.id"
+                 (click)="selectStatusOption(status.id)">
+                {{ status.name }}
+            </div>
+        </div>
+    </div>
+    
+    <div class="filter-count">
+        {{ totalRecords }} students
+    </div>
+</div>
+
+<div class="card" style="border-radius: var(--da-radius); overflow: visible; margin-bottom: 20px; border: 1px solid var(--da-border, #e0e0e0); background: var(--da-surface, #ffffff); box-shadow: 0 10px 40px rgba(5,5,5,0.04);">
+    <table class="table">
+        <thead>
+              <tr>
+                  <th style="width: 25%;">Student</th>
+                  <th style="width: 15%;">School</th>
+                  <th style="width: 15%;">Specialization</th>
+                  <th style="width: 10%;">Total Score</th>
+                  <th style="width: 10%;">Status</th>
+                  <th style="width: 15%;">Assigned Program</th>
+                  <th style="width: 10%; text-align: center !important;">Action</th>
+              </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let student of students">
+                  <td>
+                      <div style="display: flex; align-items: center; gap: 12px;">
+                          <img *ngIf="student.photoPath" [src]="student.photoPath" class="profile-photo" alt="Photo" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
+                          <div *ngIf="!student.photoPath" style="width: 36px; height: 36px; border-radius: 50%; background: var(--da-green); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 13px; font-weight: 600;">
+                              {{ student.firstName ? student.firstName.charAt(0).toUpperCase() : '?' }}
+                          </div>
+                          <div>
+                              <div style="font-size: 13.5px; font-weight: 600; color: var(--da-black);">
+                                  {{ student.firstName }} {{ student.lastName }}
+                              </div>
+                              <div style="font-size: 12.5px; color: var(--da-green); margin-top: 1.5px;">
+                                  Std Code: {{ student.studentCode || '-' }}
+                              </div>
+                          </div>
+                      </div>
+                  </td>
+                <td>
+                    <div style="font-size: 12.5px; color: var(--da-text);">
+                        {{ student.schoolName || '-' }}
+                    </div>
+                </td>
+                  <td>
+                      <div style="font-size: 12.5px; color: var(--da-text);">
+                          {{ student.hsSpecialization || '-' }}
+                      </div>
+                  </td>
+                  <td>
+                      <div style="font-size: 12.5px; color: var(--da-text);">
+                          {{ student.totalScore || '-' }}
+                      </div>
+                  </td>
+                  <td>
+                      <span class="chip {{ getStatusBadgeClass(student) }}" style="font-size: 11px;">
+                          {{ getStatusName(student) }}
+                      </span>
+                  </td>
+                  <td>
+                      <ng-container *ngIf="student.studentAssignedProgramName; else noProgram">
+                          <div style="font-size: 13.5px; font-weight: 600; color: var(--da-black);">
+                              {{ student.studentAssignedProgramName }}
+                          </div>
+                          <div style="font-size: 11.5px; color: var(--da-muted); margin-top: 2px;">
+                              {{ student.studentAssignedUniversityName }}
+                          </div>
+                      </ng-container>
+                      <ng-template #noProgram>
+                          <div style="font-size: 13.5px; font-weight: 600; color: var(--da-danger);">
+                              Not Assigned Yet
+                          </div>
+                          <div style="font-size: 11.5px; color: var(--da-danger); margin-top: 2px;">
+                              No university assigned
+                          </div>
+                      </ng-template>
+                  </td>
+                <td style="text-align: center;">
+                    <button type="button" class="btn btn-g" style="padding: 4px 10px; font-size: 12px; height: 28px;" (click)="viewStudent(student.studentId!)">
+                        View
+                    </button>
+                </td>
+            </tr>
+            
+            <tr *ngIf="students.length === 0">
+                <td colspan="7" style="text-align: center; padding: 42px 20px;">
+                    <div style="font-size: 15px; font-weight: 600; color: var(--da-black);">No students found</div>
+                    <div style="font-size: 13px; color: var(--da-text-2); margin-top: 4px;">Adjust your search or filter to find what you're looking for.</div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div class="pagination-footer">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="text-muted" style="font-size: 13px; font-weight: 500;">Show</span>
+            <div class="custom-dropdown" [class.open]="isPageSizeDropdownOpen" [class.open-up]="true" tabindex="0">
+                <div class="dropdown-trigger" (click)="togglePageSizeDropdown($event)">
+                    <span class="dropdown-value">{{ filter.pageSize }}</span>
+                    <i class="fas" [ngClass]="isPageSizeDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                </div>
+                <div class="dropdown-menu" *ngIf="isPageSizeDropdownOpen">
+                    <div class="dropdown-item" 
+                         *ngFor="let size of [25, 50, 100, 500]"
+                         [class.selected]="size === filter.pageSize"
+                         (click)="selectPageSize(size)">
+                        {{ size }}
+                    </div>
+                </div>
+            </div>
+            <span class="text-muted" style="font-size: 13px; font-weight: 500;">entries</span>
+        </div>
+        
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 13px; color: var(--da-text-2);">
+                Page <strong style="font-weight: 700; color: var(--da-black);">{{ filter.pageNumber }}</strong> of <strong style="font-weight: 700; color: var(--da-black);">{{ totalPages || 1 }}</strong>
+            </span>
+            
+            <div style="display: flex; gap: 6px;">
+                <button type="button" class="icon-btn btn-pagination" [disabled]="isPreviousDisabled" (click)="previousPage()">
+                    <i class="fas fa-chevron-left" style="font-size: 11px;"></i>
+                </button>
+                <button type="button" class="icon-btn btn-pagination" [disabled]="isNextDisabled" (click)="nextPage()">
+                    <i class="fas fa-chevron-right" style="font-size: 11px;"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

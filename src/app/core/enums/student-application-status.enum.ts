@@ -1,4 +1,6 @@
 export enum StudentStatusEnum {
+  Draft = 0,
+
   AcceptanceInProcess = 1,
   AcceptanceRejected = 2,
 
