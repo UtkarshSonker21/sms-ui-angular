@@ -15,6 +15,7 @@ import { AppRoutes } from '../../../core/constants/app-routes';
 import { MasterDropDownRequest } from '../../../core/models/super-admin/master-dropdown/master-dropdown-request.model';
 import { MasterDropDownService } from '../../../core/services/superadmin/master-dropdown.service';
 import { MainDropdown } from '../../../core/enums/main-dropdown.enum';
+import { AccreditationStatus } from '../../../core/enums/accreditation-status.enum';
 
 @Component({
   selector: 'app-program-accreditation',
@@ -79,7 +80,7 @@ export class ProgramAccreditation implements OnInit {
     uniFilter.pageNumber = 1;
     uniFilter.pageSize = 0; // Fetch all
     uniFilter.isActive = true;
-    uniFilter.isApproved = true;
+    uniFilter.accreditationStatus = AccreditationStatus.Accredited;
 
     this.universityService.getMasterUniversities(uniFilter).subscribe({
       next: (response) => {

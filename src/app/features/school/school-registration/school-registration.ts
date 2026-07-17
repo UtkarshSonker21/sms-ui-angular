@@ -36,6 +36,8 @@ export class SchoolRegistration implements OnInit {
   private masterDropDownService = inject(MasterDropDownService);
   private router = inject(Router);
   school: MasterSchoolRequest = new MasterSchoolRequest();
+  
+  isCoordinatorMode = false;
 
   // Accordion & Stepper state
   activeSection = 1;
@@ -80,6 +82,7 @@ export class SchoolRegistration implements OnInit {
   currencies: MasterCurrencyRequest[] = [];
 
   ngOnInit(): void {
+    this.isCoordinatorMode = this.router.url.startsWith('/coordinator-school-registration');
 
     this.school.isDraft = true;
     this.school.accreditationStatus = 0; // Default to Pending / Draft status
@@ -419,7 +422,11 @@ export class SchoolRegistration implements OnInit {
   }
 
   goToLogin(): void {
-    this.router.navigate([AppRoutes.Common.Login]);
+    if (this.isCoordinatorMode) {
+      this.router.navigate([AppRoutes.School.CoordinatorSchoolAdd]);
+    } else {
+      this.router.navigate([AppRoutes.Common.Login]);
+    }
   }
 
   saveDraft(): void {

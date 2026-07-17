@@ -1,0 +1,169 @@
+<div class="page-head">
+    <div>
+        <div class="crumb">
+            <a href="#">Dashboard</a>
+            <span class="sep">/</span>
+            <span class="text-muted">Schools</span>
+        </div>
+        <h2 class="page-title">Schools</h2>
+        <p class="page-sub">
+            Manage your schools and registrations.
+        </p>
+    </div>
+    <div class="page-actions">
+        <button type="button" class="btn btn-g" (click)="exportList()">
+            Export List
+        </button>
+        <button type="button" class="btn btn-p" [routerLink]="['/coordinator-school-registration']">
+            <i class="fas fa-plus btn-icon"></i> Register New School
+        </button>
+    </div>
+</div>
+
+<div class="kpi-grid">
+    <div class="kpi">
+        <div class="kpi-l">Total Schools</div>
+        <div class="kpi-v">{{ kpiTotal }}</div>
+        <div class="kpi-d muted">Registered with Kafaat</div>
+    </div>
+    <div class="kpi">
+        <div class="kpi-l">Accepted</div>
+        <div class="kpi-v">{{ kpiAccepted }}</div>
+        <div class="kpi-d muted">Accreditation Processed</div>
+    </div>
+    <div class="kpi">
+        <div class="kpi-l">Pending</div>
+        <div class="kpi-v">{{ kpiPending }}</div>
+        <div class="kpi-d muted">Awaiting Review</div>
+    </div>
+    <div class="kpi">
+        <div class="kpi-l">Rejected</div>
+        <div class="kpi-v">{{ kpiRejected }}</div>
+        <div class="kpi-d muted">Action Required</div>
+    </div>
+</div>
+
+<!-- Tabs commented out as per standard matching (if standard uses dropdown, but wait, Students has tabs commented out!) -->
+<!--
+<div class="tabs" style="margin: 20px 0 18px 0;">
+  <div class="tab" [class.active]="activeTab === 'all'" (click)="setTab('all')">
+    All <span class="tab-count">{{ kpiTotal }}</span>
+  </div>
+  <div class="tab" [class.active]="activeTab === accreditationStatusEnum.Accredited" (click)="setTab(accreditationStatusEnum.Accredited)">
+    Accepted <span class="tab-count">{{ kpiAccepted }}</span>
+  </div>
+  <div class="tab" [class.active]="activeTab === accreditationStatusEnum.Pending" (click)="setTab(accreditationStatusEnum.Pending)">
+    Pending <span class="tab-count">{{ kpiPending }}</span>
+  </div>
+  <div class="tab" [class.active]="activeTab === accreditationStatusEnum.Rejected" (click)="setTab(accreditationStatusEnum.Rejected)">
+    Rejected <span class="tab-count">{{ kpiRejected }}</span>
+  </div>
+</div>
+-->
+
+<div class="filters">
+    <div class="search-container">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" class="search-input" placeholder="Search by School Name or Number..."
+               [(ngModel)]="searchText" (keydown)="handleKeyDown($event)">
+        <i class="fas fa-times clear-icon" *ngIf="searchText" (click)="clearSearch()"></i>
+    </div>
+    
+    <div class="filter-count">
+        {{ totalRecords }} schools
+    </div>
+</div>
+
+<div class="card" style="border-radius: var(--da-radius); overflow: visible; margin-bottom: 20px; border: 1px solid var(--da-border, #e0e0e0); background: var(--da-surface, #ffffff); box-shadow: 0 10px 40px rgba(5,5,5,0.04);">
+    <table class="table">
+        <thead>
+              <tr>
+                  <th style="width: 30%;">School</th>
+                  <th style="width: 20%;">Country / Area</th>
+                  <th style="width: 15%;">Status</th>
+                  <th style="width: 20%;">Last Updated</th>
+                  <th style="width: 15%; text-align: center !important;">Action</th>
+              </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let school of schools">
+                  <td>
+                      <div>
+                          <div style="font-size: 13.5px; font-weight: 600; color: var(--da-black);">
+                              {{ school.schoolName }}
+                          </div>
+                          <div style="font-size: 12.5px; color: var(--da-green); margin-top: 1.5px;">
+                              School Code: {{ school.schoolNumber || '-' }}
+                          </div>
+                      </div>
+                  </td>
+                <td>
+                    <div style="font-size: 12.5px; color: var(--da-text);">
+                        {{ school.countryName || '-' }}
+                    </div>
+                    <div style="font-size: 11.5px; color: var(--da-muted); margin-top: 2px;">
+                        {{ school.area || 'No Area' }}
+                    </div>
+                </td>
+                  <td>
+                      <span class="chip {{ getStatusBadgeClass(school) }}" style="font-size: 11px;">
+                          {{ getStatusName(school) }}
+                      </span>
+                  </td>
+                  <td>
+                      <div style="font-size: 12.5px; color: var(--da-text);">
+                          {{ school.createdDate | date:'mediumDate' }}
+                      </div>
+                  </td>
+                <td style="text-align: center;">
+                    <button type="button" class="btn btn-g" style="padding: 4px 10px; font-size: 12px; height: 28px;" [routerLink]="['/coordinator-school-registration', school.schoolId]">
+                        Edit
+                    </button>
+                </td>
+            </tr>
+            
+            <tr *ngIf="schools.length === 0">
+                <td colspan="5" style="text-align: center; padding: 42px 20px;">
+                    <div style="font-size: 15px; font-weight: 600; color: var(--da-black);">No schools found</div>
+                    <div style="font-size: 13px; color: var(--da-text-2); margin-top: 4px;">Adjust your search or filter to find what you're looking for.</div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div class="pagination-footer">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="text-muted" style="font-size: 13px; font-weight: 500;">Show</span>
+            <div class="custom-dropdown" [class.open]="isPageSizeDropdownOpen" [class.open-up]="true" tabindex="0">
+                <div class="dropdown-trigger" (click)="togglePageSizeDropdown($event)">
+                    <span class="dropdown-value">{{ filter.pageSize }}</span>
+                    <i class="fas" [ngClass]="isPageSizeDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                </div>
+                <div class="dropdown-menu" *ngIf="isPageSizeDropdownOpen">
+                    <div class="dropdown-item" 
+                         *ngFor="let size of [25, 50, 100, 500]"
+                         [class.selected]="size === filter.pageSize"
+                         (click)="selectPageSize(size)">
+                        {{ size }}
+                    </div>
+                </div>
+            </div>
+            <span class="text-muted" style="font-size: 13px; font-weight: 500;">entries</span>
+        </div>
+        
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 13px; color: var(--da-text-2);">
+                Page <strong style="font-weight: 700; color: var(--da-black);">{{ filter.pageNumber }}</strong> of <strong style="font-weight: 700; color: var(--da-black);">{{ totalPages || 1 }}</strong>
+            </span>
+            
+            <div style="display: flex; gap: 6px;">
+                <button type="button" class="icon-btn btn-pagination" [disabled]="isPreviousDisabled" (click)="previousPage()">
+                    <i class="fas fa-chevron-left" style="font-size: 11px;"></i>
+                </button>
+                <button type="button" class="icon-btn btn-pagination" [disabled]="isNextDisabled" (click)="nextPage()">
+                    <i class="fas fa-chevron-right" style="font-size: 11px;"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

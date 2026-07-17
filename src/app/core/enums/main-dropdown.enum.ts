@@ -9,4 +9,7 @@ export enum MainDropdown {
     UniversityType = 8,
     StudentGenderEligibility = 9,
     Degrees = 10,
+    Religion = 11,
+    AssessmentLevel = 12,
+    FinancialNeedStatus = 13,
 }

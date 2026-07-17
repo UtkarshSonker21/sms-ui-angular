@@ -1,1 +1,778 @@
-<p>students works!</p>
+<div class="courses-page" data-lang="en">
+  
+  <div class="page-head">
+    <div>
+      <div class="crumb">
+        <a href="#">Dashboard</a> <span class="sep">/</span>
+        <a href="javascript:void(0)" (click)="cancel()">Students</a> <span class="sep">/</span>
+        <span *ngIf="isEditMode">{{ student.firstName }} {{ student.lastName }}</span>
+        <span *ngIf="!isEditMode">New Student</span>
+      </div>
+      <h1 class="page-title">{{ isEditMode ? 'Edit Student' : 'Add Student' }}</h1>
+      <div class="page-sub">
+        {{ isEditMode ? 'Update the student\'s basic, contact, academic, and evaluation details.' : 'Fill out the form below to register a new student.' }}
+        Changes are saved when you click <b>{{ isEditMode ? 'Update Student' : 'Save Student' }}</b>.
+      </div>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-faculties-outline" type="button" (click)="cancel()">
+        Cancel
+      </button>
+    </div>
+  </div>
+
+  <form id="student-form" autocomplete="off" (ngSubmit)="saveStudent()" style="display: flex; flex-direction: column; flex: 1;" #studentForm="ngForm">
+
+    <!-- ═════ Section 1 — Basic Information ═════ -->
+    <section class="form-section collapsible" [class.open]="activeSection === 1">
+      <div class="form-section-head" (click)="toggleSection(1)" style="cursor: pointer;">
+        <div class="form-section-num">1</div>
+        <div>
+          <div class="form-section-title">Basic Information</div>
+          <div class="form-section-sub">Identity, photo, and family details.</div>
+        </div>
+        <div class="form-section-spacer"></div>
+        <div class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+      </div>
+      <div class="form-section-body">
+
+        <div class="field form-group">
+          <label class="field-label">Personal photo</label>
+          <div class="photo-uploader">
+            <div class="ph-img" *ngIf="photoPreviewUrl">
+              <img [src]="photoPreviewUrl" alt="Preview" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <div class="ph-img" id="ph-initials" *ngIf="!photoPreviewUrl">
+              {{ student.firstName ? student.firstName.charAt(0).toUpperCase() : 'S' }}{{ student.lastName ? student.lastName.charAt(0).toUpperCase() : 'T' }}
+            </div>
+            <div class="ph-meta">
+              <div class="ph-name">{{ student.photoPath || 'No file chosen' }}</div>
+              <div class="ph-hint">PNG or JPG · square image preferred · max 2MB</div>
+            </div>
+            <label class="btn btn-g btn-sm" *ngIf="!photoPreviewUrl && !student.photoPath">
+              Upload photo
+              <input type="file" name="photo" accept="image/*" hidden (change)="onPhotoSelected($event)">
+            </label>
+            <button type="button" class="btn btn-sm btn-faculties-outline" style="color: var(--da-danger); border-color: var(--da-danger);" (click)="clearPhoto($event)" *ngIf="photoPreviewUrl || student.photoPath">Remove</button>
+          </div>
+        </div>
+
+        <div class="form-grid form-grid-2">
+          <div class="field">
+            <label class="field-label">First name <span class="required">*</span></label>
+            <input type="text" class="field-input" name="firstName" placeholder="First name" [(ngModel)]="student.firstName" required #firstNameModel="ngModel" [class.invalid]="(firstNameModel.touched || studentForm.submitted) && firstNameModel.invalid">
+            <div class="validation-error" *ngIf="(firstNameModel.touched || studentForm.submitted) && firstNameModel.invalid">First name is required.</div>
+          </div>
+          <div class="field">
+            <label class="field-label">Second name</label>
+            <input type="text" class="field-input" name="secondName" placeholder="Second name" [(ngModel)]="student.secondName">
+          </div>
+          <div class="field">
+            <label class="field-label">Third name</label>
+            <input type="text" class="field-input" name="thirdName" placeholder="Third name" [(ngModel)]="student.thirdName">
+          </div>
+          <div class="field">
+            <label class="field-label">Last name (family) <span class="required">*</span></label>
+            <input type="text" class="field-input" name="lastName" placeholder="Family name" [(ngModel)]="student.lastName" required #lastNameModel="ngModel" [class.invalid]="(lastNameModel.touched || studentForm.submitted) && lastNameModel.invalid">
+            <div class="validation-error" *ngIf="(lastNameModel.touched || studentForm.submitted) && lastNameModel.invalid">Last name is required.</div>
+          </div>
+          <div class="field">
+            <label class="field-label">Mother's name</label>
+            <input type="text" class="field-input" name="motherName" placeholder="Mother's full name" [(ngModel)]="student.motherName">
+          </div>
+          <div class="field">
+            <label class="field-label">Date of birth</label>
+            <input type="date" class="field-input" name="dob" [ngModel]="student.dob | date:'yyyy-MM-dd'" (ngModelChange)="student.dob = $event">
+          </div>
+
+          <!-- Nationality Dropdown -->
+          <div class="field">
+            <label class="field-label">Nationality <span class="required">*</span></label>
+            <div class="multi-select" [class.open]="isNationalityOpen" [class.invalid]="(nationalityModel.touched || studentForm.submitted) && nationalityModel.invalid" (click)="toggleDropdown($event, 'isNationalityOpen')" tabindex="0">
+              <div class="ms-display" [class.has-selection]="student.nationalityId">
+                <span *ngIf="!student.nationalityId">Select nationality...</span>
+                <span *ngIf="student.nationalityId" class="ms-chip">{{ getCountryName(student.nationalityId) }}<span class="ms-chip-x" (click)="clearSelection($event, 'nationalityId', 'isNationalityOpen'); nationalityModel.control.markAsTouched(); $event.stopPropagation()">×</span></span>
+                <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+              <div class="ms-panel" *ngIf="isNationalityOpen" (click)="$event.stopPropagation()" style="display: block; max-height: 200px; overflow-y: auto;">
+                <div>
+                  <div class="ms-option" *ngFor="let c of filteredCountries(searchNationality)" 
+                       [class.checked]="student.nationalityId === c.countryId"
+                       (click)="selectOption('nationalityId', c.countryId, 'isNationalityOpen'); $event.stopPropagation()">
+                    <span>{{ c.countryName }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <input type="hidden" name="nationalityHidden" [ngModel]="student.nationalityId || ''" required #nationalityModel="ngModel">
+            <div class="validation-error" *ngIf="(nationalityModel.touched || studentForm.submitted) && nationalityModel.invalid">Nationality is required.</div>
+          </div>
+
+          <!-- Residence Country Dropdown -->
+          <div class="field">
+            <label class="field-label">Residence Country</label>
+            <div class="multi-select" [class.open]="isResidenceCountryOpen" (click)="toggleDropdown($event, 'isResidenceCountryOpen')" tabindex="0">
+              <div class="ms-display" [class.has-selection]="student.residenceCountryId">
+                <span *ngIf="!student.residenceCountryId">— Select Country —</span>
+                <span *ngIf="student.residenceCountryId" class="ms-chip">
+                  {{ getCountryName(student.residenceCountryId) }}
+                  <span class="ms-chip-x" (click)="clearSelection($event, 'residenceCountryId', 'isResidenceCountryOpen'); $event.stopPropagation()">×</span>
+                </span>
+                <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+              <div class="ms-panel" *ngIf="isResidenceCountryOpen" (click)="$event.stopPropagation()" style="display: block; max-height: 200px; overflow-y: auto;">
+                <div>
+                  <div class="ms-option" *ngFor="let c of filteredCountries(searchResidenceCountry)" 
+                       [class.checked]="student.residenceCountryId === c.countryId"
+                       (click)="selectOption('residenceCountryId', c.countryId, 'isResidenceCountryOpen'); $event.stopPropagation()">
+                    <span>{{ c.countryName }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field-label">Tribe / Clan</label>
+            <input type="text" class="field-input" name="tribe" placeholder="e.g. Sukuma" [(ngModel)]="student.tribe">
+          </div>
+
+          <!-- Religion Dropdown -->
+          <div class="field">
+            <label class="field-label">Religion</label>
+            <div class="multi-select" [class.open]="isReligionOpen" (click)="toggleDropdown($event, 'isReligionOpen')" tabindex="0">
+              <div class="ms-display" [class.has-selection]="student.religionId">
+                <span *ngIf="!student.religionId">— Select —</span>
+                <span *ngIf="student.religionId" class="ms-chip">
+                  {{ getDropdownName(student.religionId, religions, '— Select Religion —') }}
+                  <span class="ms-chip-x" (click)="clearSelection($event, 'religionId', 'isReligionOpen'); $event.stopPropagation()">×</span>
+                </span>
+                <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+              <div class="ms-panel" *ngIf="isReligionOpen" (click)="$event.stopPropagation()" style="display: block; max-height: 200px; overflow-y: auto;">
+                <div>
+                  <div class="ms-option" *ngFor="let r of religions" 
+                       [class.checked]="student.religionId === r.uniqueId"
+                       (click)="selectOption('religionId', r.uniqueId, 'isReligionOpen'); $event.stopPropagation()">
+                    <span>{{ r.displayText }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Gender Radio -->
+          <div class="field">
+            <label class="field-label">Gender <span class="required">*</span></label>
+            <div class="seg" [class.invalid]="(genderModel.touched || studentForm.submitted) && genderModel.invalid">
+              <label *ngFor="let g of genders" class="seg-opt" [class.on]="student.genderId === g.uniqueId">
+                <input type="radio" name="gender" [value]="g.uniqueId" [(ngModel)]="student.genderId" hidden>
+                {{ g.displayText }}
+              </label>
+            </div>
+            <input type="hidden" name="genderHidden" [ngModel]="student.genderId || ''" required #genderModel="ngModel">
+            <div class="validation-error" *ngIf="(genderModel.touched || studentForm.submitted) && genderModel.invalid">Gender is required.</div>
+          </div>
+
+          <!-- Orphan Radio -->
+          <div class="field">
+            <label class="field-label">Is orphan?</label>
+            <div class="seg">
+              <label class="seg-opt" [class.on]="student.isOrphan === true">
+                <input type="radio" name="isOrphan" [value]="true" [(ngModel)]="student.isOrphan" hidden>
+                Yes
+              </label>
+              <label class="seg-opt" [class.on]="student.isOrphan === false">
+                <input type="radio" name="isOrphan" [value]="false" [(ngModel)]="student.isOrphan" hidden>
+                No
+              </label>
+            </div>
+          </div>
+
+          <div class="field" *ngIf="student.isOrphan">
+            <label class="field-label">Orphan ID Number</label>
+            <input type="text" class="field-input" name="orphanNumber" placeholder="If applicable" [(ngModel)]="student.orphanNumber">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════ Section 2 — Contact Information ═════ -->
+    <section class="form-section collapsible" [class.open]="activeSection === 2">
+      <div class="form-section-head" (click)="toggleSection(2)" style="cursor: pointer;">
+        <div class="form-section-num">2</div>
+        <div>
+          <div class="form-section-title">Contact Information</div>
+          <div class="form-section-sub">Address and communication details.</div>
+        </div>
+        <div class="form-section-spacer"></div>
+        <div class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+      </div>
+      <div class="form-section-body">
+        <div class="form-grid form-grid-2">
+          <div class="field">
+            <label class="field-label">City</label>
+            <input type="text" class="field-input" name="city" placeholder="City name" [(ngModel)]="student.city">
+          </div>
+          <div class="field">
+            <label class="field-label">Village</label>
+            <input type="text" class="field-input" name="village" placeholder="Village name" [(ngModel)]="student.village">
+          </div>
+          <div class="field">
+            <label class="field-label">Block</label>
+            <input type="text" class="field-input" name="block" placeholder="Block" [(ngModel)]="student.block">
+          </div>
+          <div class="field">
+            <label class="field-label">Street</label>
+            <input type="text" class="field-input" name="street" placeholder="Street" [(ngModel)]="student.street">
+          </div>
+          <div class="field">
+            <label class="field-label">House</label>
+            <input type="text" class="field-input" name="house" placeholder="House number" [(ngModel)]="student.house">
+          </div>
+          <div class="field" (click)="$event.stopPropagation()">
+            <label class="field-label">Phone</label>
+            <div class="phone-input-group">
+              <div class="multi-select" [class.open]="isPhoneDropdownOpen" (click)="togglePhoneDropdown($event)" tabindex="0">
+                <div class="ms-display" [class.has-selection]="PhoneCountryId !== null">
+                  <span>{{ PhoneCountryId ? getPhoneCountryName() : 'Select Code...' }}</span>
+                </div>
+                <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                <div class="ms-panel" *ngIf="isPhoneDropdownOpen" (click)="$event.stopPropagation()">
+                  <div *ngFor="let c of countries" class="ms-option" [class.checked]="PhoneCountryCode === c.countryIsdCode?.toString()" (click)="selectPhoneCountry(c); $event.stopPropagation()">
+                    <span>{{ c.countryName }} (+{{ c.countryIsdCode }})</span>
+                  </div>
+                </div>
+              </div>
+              <input type="text" name="studentPhoneNumber" class="field-input phone-number-input" placeholder="55554444" [(ngModel)]="PhoneNumber">
+            </div>
+          </div>
+          <div class="field" >
+            <label class="field-label">Email</label>
+            <input type="email" class="field-input" name="email" placeholder="Email address" [(ngModel)]="student.email">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════ Section 3 — Academic Information ═════ -->
+    <section class="form-section collapsible" [class.open]="activeSection === 3">
+      <div class="form-section-head" (click)="toggleSection(3)" style="cursor: pointer;">
+        <div class="form-section-num">3</div>
+        <div>
+          <div class="form-section-title">Academic Information</div>
+          <div class="form-section-sub">Schooling, grades, and qualifications.</div>
+        </div>
+        <div class="form-section-spacer"></div>
+        <div class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+      </div>
+      <div class="form-section-body">
+        <div class="form-grid form-grid-2">
+          
+          <div class="field">
+            <label class="field-label">Graduate of DA School?</label>
+            <div class="seg">
+              <label class="seg-opt" [class.on]="student.fromDaSchool === true">
+                <input type="radio" name="fromDaSchool" [value]="true" [(ngModel)]="student.fromDaSchool" hidden>
+                Yes
+              </label>
+              <label class="seg-opt" [class.on]="student.fromDaSchool === false">
+                <input type="radio" name="fromDaSchool" [value]="false" [(ngModel)]="student.fromDaSchool" hidden>
+                No
+              </label>
+            </div>
+          </div>
+
+          <div class="field" *ngIf="student.fromDaSchool">
+            <label class="field-label">DA Student Code</label>
+            <input type="text" class="field-input" name="daStudentCode" placeholder="Code" [(ngModel)]="student.daStudentCode">
+          </div>
+
+          <!-- School Dropdown -->
+          <div class="field" >
+            <label class="field-label">Graduating School <span class="required">*</span></label>
+            <div class="multi-select" [class.open]="isSchoolOpen" [class.invalid]="(schoolModel.touched || studentForm.submitted) && schoolModel.invalid" (click)="toggleDropdown($event, 'isSchoolOpen')" tabindex="0">
+              <div class="ms-display" [class.has-selection]="student.schoolId">
+                <span *ngIf="!student.schoolId">Select school...</span>
+                <span *ngIf="student.schoolId" class="ms-chip">{{ getSchoolName(student.schoolId) }}<span class="ms-chip-x" (click)="clearSelection($event, 'schoolId', 'isSchoolOpen'); schoolModel.control.markAsTouched(); $event.stopPropagation()">×</span></span>
+                <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+              <div class="ms-panel" *ngIf="isSchoolOpen" (click)="$event.stopPropagation()" style="display: block; max-height: 200px; overflow-y: auto;">
+                <div>
+                  <div class="ms-option" *ngFor="let s of filteredSchools(searchSchool)" 
+                       [class.checked]="student.schoolId === s.schoolId"
+                       (click)="selectOption('schoolId', s.schoolId, 'isSchoolOpen'); $event.stopPropagation()">
+                    <span>{{ s.schoolName }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <input type="hidden" name="schoolHidden" [ngModel]="student.schoolId || ''" required #schoolModel="ngModel">
+            <div class="validation-error" *ngIf="(schoolModel.touched || studentForm.submitted) && schoolModel.invalid">Graduating School is required.</div>
+          </div>
+
+          <!-- HS Division Dropdown -->
+          <div class="field">
+            <label class="field-label">H.S. Division / Specialization</label>
+            <div class="multi-select" [class.open]="isHsDivisionOpen" (click)="toggleDropdown($event, 'isHsDivisionOpen')" tabindex="0">
+              <div class="ms-display" [class.has-selection]="student.hsSpecialization">
+                <span *ngIf="!student.hsSpecialization">— Select —</span>
+                <span *ngIf="student.hsSpecialization" class="ms-chip">
+                  {{ getHsDivisionName(student.hsSpecialization) }}
+                  <span class="ms-chip-x" (click)="clearSelection($event, 'hsSpecialization', 'isHsDivisionOpen'); $event.stopPropagation()">×</span>
+                </span>
+                <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+              <div class="ms-panel" *ngIf="isHsDivisionOpen" (click)="$event.stopPropagation()" style="display: block; max-height: 200px; overflow-y: auto;">
+                <div>
+                  <div class="ms-option" *ngFor="let h of hsDivisions" 
+                       [class.checked]="student.hsSpecialization === h.displayText"
+                       (click)="selectOption('hsSpecialization', h.displayText, 'isHsDivisionOpen'); $event.stopPropagation()">
+                    <span>{{ h.displayText }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tz Combination Dropdown -->
+          <div class="field">
+            <label class="field-label">Tanzanian Combination</label>
+            <div class="multi-select" [class.open]="isTzCombinationOpen" (click)="toggleDropdown($event, 'isTzCombinationOpen')" tabindex="0">
+              <div class="ms-display" [class.has-selection]="student.tanzanianStudentCombination">
+                <span *ngIf="!student.tanzanianStudentCombination">— Select —</span>
+                <span *ngIf="student.tanzanianStudentCombination" class="ms-chip">
+                  {{ getTzCombinationName(student.tanzanianStudentCombination) }}
+                  <span class="ms-chip-x" (click)="clearSelection($event, 'tanzanianStudentCombination', 'isTzCombinationOpen'); $event.stopPropagation()">×</span>
+                </span>
+                <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+              <div class="ms-panel" *ngIf="isTzCombinationOpen" (click)="$event.stopPropagation()" style="display: block; max-height: 200px; overflow-y: auto;">
+                <div>
+                  <div class="ms-option" *ngFor="let tz of filteredTzCombinations" 
+                       [class.checked]="student.tanzanianStudentCombination === tz.displayText"
+                       (click)="selectOption('tanzanianStudentCombination', tz.displayText, 'isTzCombinationOpen'); $event.stopPropagation()">
+                    <span>{{ tz.displayText }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field-label">Total Score</label>
+            <input type="number" class="field-input" name="totalScore" placeholder="e.g. 85" [(ngModel)]="student.totalScore">
+          </div>
+          <div class="field">
+            <label class="field-label">Max Score</label>
+            <input type="number" class="field-input" name="maxScore" placeholder="e.g. 100" [(ngModel)]="student.maxScore">
+          </div>
+          <div class="field">
+            <label class="field-label">Relative Grade</label>
+            <input type="number" class="field-input" name="relativeGrade" placeholder="Calculated / Relative" [(ngModel)]="student.relativeGrade">
+          </div>
+          <div class="field">
+            <label class="field-label">English Score</label>
+            <input type="number" class="field-input" name="englishScore" placeholder="English proficiency score" [(ngModel)]="student.englishScore">
+          </div>
+
+          <!-- Transfer Student Details inline -->
+          <div style="grid-column: 1 / -1; margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--da-border); display: flex; flex-direction: column; gap: 4px;">
+            <div class="form-section-title">Transfer Student Details</div>
+            <div class="form-section-sub">Fill if the student is transferring from another institution.</div>
+          </div>
+
+          <div class="field" >
+            <label class="field-label">Transfer Institution</label>
+            <input type="text" class="field-input" name="transferInstitution" placeholder="Previous university/college" [(ngModel)]="student.transferInstitution">
+          </div>
+          <div class="field">
+            <label class="field-label">Transfer Program</label>
+            <input type="text" class="field-input" name="transferProgram" placeholder="Program name" [(ngModel)]="student.transferProgram">
+          </div>
+          <div class="field">
+            <label class="field-label">Institution Type</label>
+            <input type="text" class="field-input" name="transferInstitutionType" placeholder="e.g. Public, Private" [(ngModel)]="student.transferInstitutionType">
+          </div>
+          <div class="field">
+            <label class="field-label">Transfer Credits</label>
+            <input type="number" class="field-input" name="transferCredits" placeholder="Total completed credits" [(ngModel)]="student.transferCredits">
+          </div>
+          <div class="field">
+            <label class="field-label">Last Semester End Date</label>
+            <input type="date" class="field-input" name="transferLastSemEnd" [ngModel]="student.transferLastSemEnd | date:'yyyy-MM-dd'" (ngModelChange)="student.transferLastSemEnd = $event">
+          </div>
+          <div class="field">
+            <label class="field-label">Transfer GPA</label>
+            <input type="number" class="field-input" name="transferGpa" placeholder="Current GPA" [(ngModel)]="student.transferGpa" step="0.01">
+          </div>
+        
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════ Section 4 — Behavioral & Social Evaluation ═════ -->
+    <section class="form-section collapsible" [class.open]="activeSection === 4">
+      <div class="form-section-head" (click)="toggleSection(4)" style="cursor: pointer;">
+        <div class="form-section-num">4</div>
+        <div>
+          <div class="form-section-title">Behavioral & Social Evaluation</div>
+          <div class="form-section-sub">Coordinator's assessment of the student.</div>
+        </div>
+        <div class="form-section-spacer"></div>
+        <div class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+      </div>
+      <div class="form-section-body">
+        
+        <div class="form-grid form-grid-2">
+          
+          <div class="field">
+            <label class="field-label">Financial Need</label>
+            <div class="seg">
+              <label *ngFor="let opt of financialStatuses" class="seg-opt" [class.on]="student.financialNeedStatusId === opt.uniqueId">
+                <input type="radio" name="financialNeed" [value]="opt.uniqueId" [(ngModel)]="student.financialNeedStatusId" hidden>
+                {{ opt.displayText }}
+              </label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field-label">Self-Reliance Level</label>
+            <div class="seg">
+              <label *ngFor="let opt of assessmentLevels" class="seg-opt" [class.on]="student.selfRelianceLevelId === opt.uniqueId">
+                <input type="radio" name="selfReliance" [value]="opt.uniqueId" [(ngModel)]="student.selfRelianceLevelId" hidden>
+                {{ opt.displayText }}
+              </label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field-label">Motivation Level</label>
+            <div class="seg">
+              <label *ngFor="let opt of assessmentLevels" class="seg-opt" [class.on]="student.motivationLevelId === opt.uniqueId">
+                <input type="radio" name="motivation" [value]="opt.uniqueId" [(ngModel)]="student.motivationLevelId" hidden>
+                {{ opt.displayText }}
+              </label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field-label">Future Goals Alignment</label>
+            <div class="seg">
+              <label *ngFor="let opt of assessmentLevels" class="seg-opt" [class.on]="student.futureGoalsLevelId === opt.uniqueId">
+                <input type="radio" name="futureGoals" [value]="opt.uniqueId" [(ngModel)]="student.futureGoalsLevelId" hidden>
+                {{ opt.displayText }}
+              </label>
+            </div>
+          </div>
+
+          <div class="field field-span-2" style="margin-top: 12px;">
+            <label class="field-label">Recommendation Letter</label>
+            <div class="form-hint" style="margin-bottom: 8px;">
+              Letter from school principal or relevant authority supporting the nomination.<br>
+              PDF preferred; clear scans of signed paper letters are accepted.
+            </div>
+            <div class="file-row" *ngIf="student.recommendationLetterPath">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              <div class="fr-name">{{ student.recommendationLetterPath }}</div>
+              <button type="button" class="btn btn-sm btn-faculties-outline" style="color: var(--da-danger); border-color: var(--da-danger);" (click)="clearRecommendation($event)">Remove</button>
+            </div>
+            
+            <div class="file-row" *ngIf="!student.recommendationLetterPath" style="margin-top: 6px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+              <div class="fr-name" style="color: var(--da-muted); font-style: italic;">No file chosen</div>
+              <label class="btn btn-p" style="cursor: pointer; margin: 0;">
+                Upload PDF / Image
+                <input type="file" accept=".pdf,image/*" hidden (change)="onRecommendationSelected($event)">
+              </label>
+            </div>
+            
+            <div style="margin-top: 12px;">
+              <label class="field-label">Notes for Recommendation</label>
+              <textarea class="field-input" style="min-height: 80px;" name="recommendationNotes" [(ngModel)]="student.recommendationLetterNotes" placeholder="Additional notes about the student's behavior..."></textarea>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ═════ Section 5 — Candidate Program ═════ -->
+    <section class="form-section collapsible" [class.open]="activeSection === 5" *ngIf="isEditMode">
+      <div class="form-section-head" (click)="toggleSection(5)" style="cursor: pointer;">
+        <div class="form-section-num">5</div>
+        <div>
+          <div class="form-section-title">Candidate Programs</div>
+          <div class="form-section-sub">Available programs and current application status.</div>
+        </div>
+        <div class="form-section-spacer"></div>
+        <div class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+      </div>
+      <div class="form-section-body">
+        
+        <div class="alert alert-info" *ngIf="hasActiveApplication" style="margin-bottom: 20px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px; vertical-align: middle;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+          Apply to one program at a time. Cancel the current application before applying to a different program. The choice is saved automatically.
+        </div>
+
+        <!-- Filters -->
+        <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr; margin-bottom: 24px;">
+          <div class="field">
+            <label class="field-label">Search</label>
+            <input type="text" class="field-input" placeholder="Program name or code..." [(ngModel)]="searchCandidateProgram" name="searchProg" (ngModelChange)="filterCandidatePrograms()">
+          </div>
+          
+          <div class="field">
+            <label class="field-label">Faculty</label>
+            <div class="multi-select" [class.open]="isProgramFacultyOpen" (click)="isProgramFacultyOpen = !isProgramFacultyOpen; $event.stopPropagation()" tabindex="0">
+              <div class="ms-display" [class.has-selection]="selectedFaculty">
+                <span *ngIf="!selectedFaculty">All Faculties</span>
+                <span *ngIf="selectedFaculty" class="ms-chip">
+                  {{ selectedFaculty }}
+                  <span class="ms-chip-x" (click)="clearProgramFilter($event, 'faculty', 'isProgramFacultyOpen')">×</span>
+                </span>
+                <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+              <div class="ms-panel" *ngIf="isProgramFacultyOpen" (click)="$event.stopPropagation()" style="display: block; max-height: 200px; overflow-y: auto;">
+                <div>
+                  <div class="ms-option" *ngFor="let f of uniqueFaculties" 
+                       [class.checked]="selectedFaculty === f"
+                       (click)="selectProgramFilter('faculty', f, 'isProgramFacultyOpen'); $event.stopPropagation()">
+                    <span>{{ f }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="field">
+            <label class="field-label">University</label>
+            <div class="multi-select" [class.open]="isProgramUniversityOpen" (click)="isProgramUniversityOpen = !isProgramUniversityOpen; $event.stopPropagation()" tabindex="0">
+              <div class="ms-display" [class.has-selection]="selectedUniversity">
+                <span *ngIf="!selectedUniversity">All Universities</span>
+                <span *ngIf="selectedUniversity" class="ms-chip">
+                  {{ selectedUniversity }}
+                  <span class="ms-chip-x" (click)="clearProgramFilter($event, 'university', 'isProgramUniversityOpen')">×</span>
+                </span>
+                <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+              <div class="ms-panel" *ngIf="isProgramUniversityOpen" (click)="$event.stopPropagation()" style="display: block; max-height: 200px; overflow-y: auto;">
+                <div>
+                  <div class="ms-option" *ngFor="let u of uniqueUniversities" 
+                       [class.checked]="selectedUniversity === u"
+                       (click)="selectProgramFilter('university', u, 'isProgramUniversityOpen'); $event.stopPropagation()">
+                    <span>{{ u }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="filteredCandidatePrograms.length === 0" style="padding: 40px; text-align: center; color: var(--da-muted); border: 1px dashed var(--da-border); border-radius: 6px;">
+          No programs found matching the selected criteria.
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div class="card" *ngFor="let prog of filteredCandidatePrograms" style="border: 1px solid var(--da-border); border-radius: 6px; background: white; overflow: hidden;">
+            <div style="padding: 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; flex-wrap: wrap; gap: 16px;" (click)="toggleProgramExpand(prog)">
+              
+              <!-- Left Side -->
+              <div style="display: flex; align-items: center; gap: 16px; flex: 1; min-width: 300px;">
+                <div style="flex: 0 0 48px; height: 48px; border-radius: 8px; background: #dcfce7; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2">
+                    <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                  </svg>
+                </div>
+                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
+                  <h4 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                    {{ prog.programName }}
+                    <span class="badge" *ngIf="prog.applicationStatusName" style="background: var(--da-primary); color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px;">{{ prog.applicationStatusName }}</span>
+                  </h4>
+                  <div style="color: var(--da-muted); font-size: 13px; margin-bottom: 4px;">{{ prog.programCode }}</div>
+                  <div style="display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px;">
+                    <div><strong>Faculty:</strong> {{ prog.facultyName || '-' }}</div>
+                    <div><strong>University:</strong> {{ prog.universityName || '-' }}</div>
+                    <div *ngIf="prog.duration"><strong>Duration:</strong> {{ prog.duration }}</div>
+                    <div *ngIf="prog.minimumPercentage !== undefined"><strong>Min %:</strong> {{ prog.minimumPercentage }}%</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right Side -->
+              <div style="flex: 0 0 auto; display: flex; align-items: center; justify-content: flex-end; gap: 12px; flex-wrap: nowrap;">
+                <span class="badge" style="background: var(--da-surface-2); border: 1px solid var(--da-border); color: var(--da-text); padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; white-space: nowrap;">
+                  {{ getUploadedRequiredDocsCount(prog) }} / {{ getRequiredDocsCount(prog) }} Docs
+                </span>
+                
+                <div (click)="$event.stopPropagation()" style="display: flex;">
+                  <button type="button" class="btn btn-p" 
+                          *ngIf="!prog.applicationId" 
+                          [disabled]="hasActiveApplication || isApplying || !canApply(prog)"
+                          [title]="!canApply(prog) ? 'Upload all required documents before applying.' : ''"
+                          (click)="applyForProgram(prog.programId)">
+                    Apply
+                  </button>
+                  <button type="button" class="btn btn-faculties-outline" style="color: var(--da-danger); border-color: var(--da-danger);"
+                          *ngIf="prog.applicationId"
+                          [disabled]="isApplying"
+                          (click)="cancelApplication(prog.applicationId)">
+                    Cancel Application
+                  </button>
+                </div>
+
+                <div class="chev" [style.transform]="expandedProgramId === prog.programId ? 'rotate(180deg)' : 'rotate(0deg)'" style="transition: transform 0.2s ease; display: flex; align-items: center; justify-content: center;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Expanded State: Required Documents -->
+            <div *ngIf="expandedProgramId === prog.programId" style="border-top: 1px solid var(--da-border); padding: 16px; background: var(--da-surface-1);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h5 style="margin: 0; font-size: 14px;">Required Documents</h5>
+                <div style="font-size: 12px; color: var(--da-muted);">
+                  {{ getUploadedRequiredDocsCount(prog) }} / {{ getRequiredDocsCount(prog) }} Uploaded
+                </div>
+              </div>
+
+              <div *ngIf="isDocumentsLoading" style="padding: 24px; text-align: center; color: var(--da-muted);">
+                <div style="font-size: 13px;">Loading documents...</div>
+              </div>
+
+              <div *ngIf="!isDocumentsLoading">
+                <div *ngIf="!prog.requiredDocuments || prog.requiredDocuments.length === 0" style="padding: 16px; text-align: center; color: var(--da-muted); font-size: 13px; border: 1px dashed var(--da-border); border-radius: 6px;">
+                  No documents required for this program.
+                </div>
+
+                <div *ngFor="let doc of prog.requiredDocuments" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: white; border: 1px solid var(--da-border); border-radius: 6px; margin-bottom: 8px;">
+                  <div>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                      <strong style="font-size: 13px;">{{ doc.documentTypeName }}</strong>
+                      <span *ngIf="doc.isRequired" class="badge" style="background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; padding: 2px 8px; border-radius: 12px; font-size: 11px;">Required</span>
+                      <span *ngIf="!doc.isRequired" class="badge" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; padding: 2px 8px; border-radius: 12px; font-size: 11px;">Optional</span>
+                      
+                      <span class="badge" 
+                            [ngStyle]="{
+                              'background': getUploadedDocStatus(doc.documentTypeId) === 'Uploaded' ? '#dcfce7' : '#f1f5f9',
+                              'color': getUploadedDocStatus(doc.documentTypeId) === 'Uploaded' ? '#166534' : '#475569',
+                              'padding': '2px 8px', 'border-radius': '12px', 'font-size': '11px', 'margin-left': '8px'
+                            }">
+                        {{ getUploadedDocStatus(doc.documentTypeId) }}
+                      </span>
+                    </div>
+                    <div style="color: var(--da-muted); font-size: 12px;">{{ doc.description || 'Please provide this document.' }}</div>
+                  </div>
+                  <div style="display: flex; gap: 12px; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 4px; color: var(--da-muted); font-size: 12px; cursor: pointer;"
+                         (click)="openDiscussionModal(doc.documentTypeId); $event.stopPropagation()">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                      {{ getDiscussionCount(doc.documentTypeId) }}
+                    </div>
+                    <button type="button" class="btn btn-sm btn-faculties-outline" [disabled]="!prog.applicationId">Upload</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+        
+        <!-- Discussion Modal -->
+        <div *ngIf="isDiscussionModalOpen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+          <div class="card" style="width: 800px; max-width: 90%; background: white; padding: 24px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+            <h3 style="margin: 0 0 16px 0; font-size: 18px;">Document Discussion</h3>
+            <textarea class="field-input" rows="8" style="min-height: 130px; resize: vertical;" placeholder="Enter remarks for this document..."
+                      [(ngModel)]="currentDiscussionRemark" name="docRemark"></textarea>
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px;">
+              <button type="button" class="btn btn-faculties-outline" (click)="closeDiscussionModal()">Cancel</button>
+              <button type="button" class="btn btn-p" (click)="saveDiscussionRemark()">Save</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    
+    <!-- Section 6 - History Log (Read-only) -->
+    <section class="form-section collapsible" [class.open]="activeSection === 6" *ngIf="isEditMode">
+      <div class="form-section-head" (click)="toggleSection(6)" style="cursor: pointer;">
+        <div class="form-section-num">6</div>
+        <div>
+          <div class="form-section-title">Student History</div>
+          <div class="form-section-sub">Complete activity timeline for this student.</div>
+        </div>
+        <div class="form-section-spacer"></div>
+        <div class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+      </div>
+      <div class="form-section-body">
+        
+        <div *ngIf="!studentHistory || studentHistory.length === 0" class="student-history-empty">
+          No activity has been recorded for this student yet.
+        </div>
+
+        <div *ngIf="studentHistory && studentHistory.length > 0" class="student-history">
+          
+          <div class="student-history-line"></div>
+          
+          <div *ngFor="let item of studentHistory" class="student-history-item">
+            
+            <div class="student-history-icon" [style.borderColor]="item.color" [ngSwitch]="item.icon">
+              <svg *ngSwitchCase="'user-plus'" width="14" height="14" viewBox="0 0 24 24" fill="none" [attr.stroke]="item.color" stroke-width="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+              <svg *ngSwitchCase="'user'" width="14" height="14" viewBox="0 0 24 24" fill="none" [attr.stroke]="item.color" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <svg *ngSwitchCase="'graduation-cap'" width="14" height="14" viewBox="0 0 24 24" fill="none" [attr.stroke]="item.color" stroke-width="2.5"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+              <svg *ngSwitchCase="'upload'" width="14" height="14" viewBox="0 0 24 24" fill="none" [attr.stroke]="item.color" stroke-width="2.5"><path d="M16 16l-4-4-4 4"/><path d="M12 12v9"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/><path d="M16 16l-4-4-4 4"/></svg>
+              <svg *ngSwitchCase="'check-circle'" width="14" height="14" viewBox="0 0 24 24" fill="none" [attr.stroke]="item.color" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <svg *ngSwitchCase="'x-circle'" width="14" height="14" viewBox="0 0 24 24" fill="none" [attr.stroke]="item.color" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              <svg *ngSwitchCase="'message-circle'" width="14" height="14" viewBox="0 0 24 24" fill="none" [attr.stroke]="item.color" stroke-width="2.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+              <svg *ngSwitchCase="'edit-2'" width="14" height="14" viewBox="0 0 24 24" fill="none" [attr.stroke]="item.color" stroke-width="2.5"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+              <svg *ngSwitchDefault width="14" height="14" viewBox="0 0 24 24" fill="none" [attr.stroke]="item.color" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            
+            <div class="student-history-content">
+              <div>
+                <strong class="student-history-title">{{ item.title }}</strong>
+                <div *ngIf="item.description" class="student-history-description">{{ item.description }}</div>
+                <!-- 
+                <div class="student-history-meta">
+                  Created by:<br>
+                  <strong class="student-history-meta-value">User #{{ item.createdBy }}</strong>
+                </div>
+                -->
+              </div>
+              <div class="student-history-time">
+                <strong class="student-history-date">{{ item.createdDate | date:'dd MMM yyyy' }}</strong><br>
+                {{ item.createdDate | date:'hh:mm a' }}
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    
+    <div class="spacer" style="flex: 1;"></div>
+
+    <!-- Form Actions (Sticky Footer) -->
+    <div class="sticky-footer">
+      <div style="flex: 1;"></div>
+      <button type="button" class="btn btn-g" (click)="cancel()">Cancel</button>
+
+      <button  type="button" class="btn btn-faculties-outline" (click)="saveDraft()" [disabled]="isSaving">
+        <span *ngIf="!isSaving">Save Draft</span>
+        <span *ngIf="isSaving">Saving...</span>
+      </button>
+
+      <button type="submit" class="btn btn-p" [disabled]="isSaving">
+        <span *ngIf="!isSaving">{{ isEditMode ? 'Update Student' : 'Save Student' }}</span>
+        <span *ngIf="isSaving">Saving...</span>
+      </button>
+    </div>
+
+  </form>
+</div>
