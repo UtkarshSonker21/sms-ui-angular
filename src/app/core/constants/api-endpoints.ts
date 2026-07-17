@@ -130,6 +130,19 @@ export const ApiEndpoints = {
       Delete: (id: number) => `school/student/delete/${id}`,
     },
 
+    StudentProgram: {
+      CandidatePrograms: (studentId: number) => `school/student-program/candidate-programs/${studentId}`,
+      Apply: (studentId: number) => `school/student-program/apply/${studentId}`,
+      Cancel: (applicationId: number) => `school/student-program/cancel/${applicationId}`,
+      Submit: (applicationId: number) => `school/student-program/submit/${applicationId}`,
+      GetById: (applicationId: number) => `school/student-program/getById/${applicationId}`,
+      UploadDocument: (applicationId: number) => `school/student-program/upload-document/${applicationId}`,
+      DeleteDocument: (applicationId: number, documentId: number) =>
+        `school/student-program/delete-document/${applicationId}/${documentId}`,
+      GetDocuments: (applicationId: number) => `school/student-program/documents/${applicationId}`,
+      GetHistory: (studentId: number) => `school/student-program/history/${studentId}`,
+    }
+
   }
 
 } as const;

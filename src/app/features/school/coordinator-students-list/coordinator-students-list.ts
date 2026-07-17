@@ -59,6 +59,7 @@ export class CoordinatorStudentsList implements OnInit {
   tabAccRejected = 0;
   tabSponsored = 0;
   tabSponRejected = 0;
+  tabAwarded = 0;
   tabAwardedRejected = 0;
   tabRegistered = 0;
   tabFailed = 0;
@@ -81,6 +82,7 @@ export class CoordinatorStudentsList implements OnInit {
     { id: StudentStatusEnum.AcceptanceRejected, name: 'Acceptance Rejected' },
     { id: StudentStatusEnum.Sponsored, name: 'Sponsored' },
     { id: StudentStatusEnum.SponsoredRejected, name: 'Sponsored Rejected' },
+    { id: StudentStatusEnum.Awarded, name: 'Sponsored' },
     { id: StudentStatusEnum.AwardedRejected, name: 'Awarded Rejected' },
     { id: StudentStatusEnum.Registered, name: 'Registered' },
     { id: StudentStatusEnum.Failed, name: 'Failed' },
@@ -164,6 +166,7 @@ export class CoordinatorStudentsList implements OnInit {
     this.tabAccRejected = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.AcceptanceRejected).length;
     this.tabSponsored = this.kpiSponsored;
     this.tabSponRejected = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.SponsoredRejected).length;
+    this.tabAwarded = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.Awarded).length;
     this.tabAwardedRejected = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.AwardedRejected).length;
     this.tabRegistered = this.kpiRegistered;
     this.tabFailed = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.Failed).length;
@@ -284,6 +287,7 @@ export class CoordinatorStudentsList implements OnInit {
       case StudentStatusEnum.AcceptanceRejected: return 'chip-acceptance-rejected';
       case StudentStatusEnum.Sponsored: return 'chip-sponsored';
       case StudentStatusEnum.SponsoredRejected: return 'chip-sponsored-rejected';
+      case StudentStatusEnum.Awarded: return 'chip-awarded';
       case StudentStatusEnum.AwardedRejected: return 'chip-awarded-rejected';
       case StudentStatusEnum.Registered: return 'chip-registered';
       case StudentStatusEnum.Failed: return 'chip-failed';
@@ -300,6 +304,7 @@ export class CoordinatorStudentsList implements OnInit {
       case StudentStatusEnum.AcceptanceRejected: return 'Acceptance Rejected';
       case StudentStatusEnum.Sponsored: return 'Sponsored';
       case StudentStatusEnum.SponsoredRejected: return 'Sponsored Rejected';
+      case StudentStatusEnum.Awarded: return 'Awarded';
       case StudentStatusEnum.AwardedRejected: return 'Awarded Rejected';
       case StudentStatusEnum.Registered: return 'Registered';
       case StudentStatusEnum.Failed: return 'Failed';
@@ -353,11 +358,11 @@ export class CoordinatorStudentsList implements OnInit {
   }
 
   addStudent(): void {
-    this.router.navigate([AppRoutes.School.AddStudent]);
+    this.router.navigate([AppRoutes.School.CoordinatorAddStudent]);
   }
 
   viewStudent(id: number): void {
-    this.router.navigate([AppRoutes.School.EditStudent, id]);
+    this.router.navigate([AppRoutes.School.CoordinatorEditStudent, id]);
   }
 
 }

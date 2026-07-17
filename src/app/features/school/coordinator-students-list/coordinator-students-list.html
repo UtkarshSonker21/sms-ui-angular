@@ -60,6 +60,9 @@
   <div class="tab" [class.active]="activeTab === studentStatus.SponsoredRejected" (click)="setTab(studentStatus.SponsoredRejected)">
     Sponsored Rejected <span class="tab-count">{{ tabSponRejected }}</span>
   </div>
+  <div class="tab" [class.active]="activeTab === studentStatus.Awarded" (click)="setTab(studentStatus.Awarded)">
+    Awarded Rejected <span class="tab-count">{{ tabAwarded }}</span>
+  </div>
   <div class="tab" [class.active]="activeTab === studentStatus.AwardedRejected" (click)="setTab(studentStatus.AwardedRejected)">
     Awarded Rejected <span class="tab-count">{{ tabAwardedRejected }}</span>
   </div>

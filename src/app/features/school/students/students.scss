@@ -228,3 +228,97 @@
     padding: 7px 12px;
 }
 
+
+/* ==========================================
+   Student History Timeline
+========================================== */
+.student-history {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    padding-left: 24px;
+    padding-top: 8px;
+}
+
+.student-history-empty {
+    padding: 32px;
+    text-align: center;
+    color: var(--da-muted);
+}
+
+.student-history-line {
+    width: 2px;
+    background: var(--da-border);
+    position: absolute;
+    left: 39px;
+    top: 20px;
+    bottom: 40px;
+}
+
+.student-history-item {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 32px;
+    position: relative;
+    z-index: 1;
+}
+
+.student-history-icon {
+    flex: 0 0 auto;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid transparent; /* default, overridden by inline style */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.student-history-content {
+    flex: 1;
+    padding-top: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.student-history-title {
+    display: block;
+    font-size: 14px;
+    color: var(--da-text);
+    margin-bottom: 4px;
+    font-weight: 600;
+}
+
+.student-history-description {
+    font-size: 13px;
+    color: var(--da-muted);
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.student-history-meta {
+    font-size: 12px;
+    color: var(--da-muted);
+}
+
+.student-history-meta-value {
+    font-weight: 600;
+}
+
+.student-history-time {
+    font-size: 13px;
+    color: var(--da-muted);
+    text-align: right;
+    min-width: 100px;
+}
+
+.student-history-date {
+    font-size: 14px;
+    color: var(--da-text);
+    font-weight: 700;
+}
+
