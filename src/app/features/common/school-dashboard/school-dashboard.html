@@ -1,1 +1,108 @@
-<p>school-dashboard works!</p>
+<div class="dashboard-page">
+  
+  <!-- 1. Page Header -->
+  <div class="page-head">
+    <div>
+      <h1 class="page-title">{{ welcomeMessage }}</h1>
+      <div class="page-sub">Your Kafaat nominations &bull; Nomination window open until Dec 10.</div>
+    </div>
+    <!-- TODO: Re-enable Search & Export when features are ready
+    <div class="page-actions">
+      <div class="search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" placeholder="Search nominations...">
+      </div>
+      <button class="btn btn-p" (click)="exportData()">Export</button>
+    </div>
+    -->
+  </div>
+
+  <!-- 2. Statistics Cards Grid -->
+  <div class="kpi-grid">
+    <div class="kpi" *ngFor="let stat of dashboardStats">
+      <div class="kpi-l">{{ stat.title }}</div>
+      <div class="kpi-v">{{ stat.value }}</div>
+      <div class="kpi-d" [ngClass]="stat.subtextClass">{{ stat.subtext }}</div>
+    </div>
+  </div>
+
+  <!-- 3. Nomination Journey -->
+  <div class="card journey-card">
+    <div class="card-head">
+      <div>
+        <h2 class="card-title">Nomination Journey</h2>
+        <div class="card-sub">Current status of your nominated students</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="journey-grid">
+        <ng-container *ngFor="let stage of nominationJourney; let last = last; let i = index">
+          <div class="journey-stage" [ngClass]="last ? 'stage-final' : 'stage-completed'">
+            <div class="stage-count">{{ stage.count }}</div>
+            <div class="stage-name">{{ stage.name }}</div>
+          </div>
+          <div class="journey-arrow" *ngIf="!last">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Nominee Tracking Table -->
+  <div class="card tracking-card">
+    <div class="card-head">
+      <div>
+        <h2 class="card-title">Nominee Tracking</h2>
+        <div class="card-sub">Recent updates to your nominated students</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Nominee</th>
+              <th>Target University</th>
+              <th>Program</th>
+              <th>Status</th>
+              <th>Last Update</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let student of recentStudents">
+              <td>
+                <div class="student-info">
+                  <div class="avatar" [attr.data-name]="student.avatar">{{ student.avatar }}</div>
+                  <div>
+                    <div class="student-name">{{ student.studentName }}</div>
+                    <div class="student-id">{{ student.studentId }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="university-name">{{ student.universityName }}</div>
+              </td>
+              <td>
+                <div class="program-name">{{ student.programName }}</div>
+              </td>
+              <td>
+                <span class="chip" [ngClass]="student.statusClass">
+                  {{ student.status }}
+                </span>
+              </td>
+              <td class="time-col">{{ student.lastUpdated }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>

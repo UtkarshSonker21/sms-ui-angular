@@ -45,7 +45,7 @@ export const AppRoutes = {
 
   School: {
     Registration: 'school-registration',
-    Dashboard: 'school-dashboard',
+    Dashboard: 'coordinator-dashboard',
     
     CoordinatorSchools: 'coordinator-schools',
     CoordinatorSchoolAdd: 'coordinator-school-registration',

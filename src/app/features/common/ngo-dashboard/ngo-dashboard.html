@@ -1,1 +1,143 @@
-<p>ngo-dashboard works!</p>
+<div class="dashboard-page">
+  
+  <!-- 1. Page Header -->
+  <div class="page-head">
+    <div>
+      <h1 class="page-title">{{ welcomeMessage }}</h1>
+      <div class="page-sub">Overview of your NGO partnerships and projects.</div>
+    </div>
+  </div>
+
+  <!-- 2. Statistics Cards Grid -->
+  <div class="kpi-grid">
+    <div class="kpi" *ngFor="let stat of summaryCards">
+      <div class="kpi-l">{{ stat.title }}</div>
+      <div class="kpi-v">{{ stat.value }}</div>
+      <div class="kpi-d" [ngClass]="stat.subtextClass">{{ stat.subtext }}</div>
+    </div>
+  </div>
+
+  <!-- 3. Middle Section: Programs (Left) & Failing-core Approval Cases (Right) -->
+  <div class="dashboard-content">
+    
+    <!-- Left Column: Programs Pending Accreditation -->
+    <div class="card projects-card">
+      <div class="card-head">
+        <div>
+          <h2 class="card-title">Programs Pending Accreditation</h2>
+          <div class="card-sub">Awaiting your approval for new university programs.</div>
+        </div>
+        <a class="view-all-link" *ngIf="totalPendingPrograms > 5" (click)="viewAllPrograms()">View all &rarr;</a>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive" *ngIf="pendingAccreditations.length; else noPendingAccreditations">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Program Code</th>
+                <th>Program Name</th>
+                <th>University</th>
+                <th>Submitted Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let acc of pendingAccreditations">
+                <td class="id-col">{{ acc.programCode }}</td>
+                <td><div class="project-name">{{ acc.programName }}</div></td>
+                <td>{{ acc.universityName }}</td>
+                <td>{{ acc.submittedDate | date:'dd MMM yyyy' }}</td>
+                <td><span class="chip chip-pending">Pending</span></td>
+                <td class="actions-col">
+                  <a class="action-link text-primary" (click)="reviewProgram(acc.programId)">Review</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ng-template #noPendingAccreditations>
+          <div class="empty-state">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+            <p>No programs pending accreditation.</p>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+
+    <!-- Right Column: Failing-core Approval Cases -->
+    <div class="card activity-card">
+      <div class="card-head">
+        <div>
+          <h2 class="card-title text-danger">Failing-core Approval Cases</h2>
+          <div class="card-sub">Urgent attention required.</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="empty-state">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+          <p>No failing-core approval cases.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 4. Bottom Section: Tabs & University Accreditation Requests -->
+  <div class="nav-tabs" style="margin-top: 24px;">
+    <div class="tab-item active">
+      Pending Requests
+    </div>
+    <div class="tab-item">
+      Approved
+    </div>
+    <div class="tab-item">
+      Rejected
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-head">
+      <div>
+        <h2 class="card-title">University Accreditation Requests</h2>
+        <div class="card-sub">Requests submitted directly by universities.</div>
+      </div>
+      <a class="view-all-link" *ngIf="totalPendingUniversities > 5" (click)="viewAllUniversities()">View all &rarr;</a>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive" *ngIf="universityRequests.length; else noUniRequests">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Request ID</th>
+              <th>University Name</th>
+              <th>Request Type</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let req of universityRequests">
+              <td class="id-col">{{ req.registrationId }}</td>
+              <td><div class="project-name">{{ req.universityName }}</div></td>
+              <td>New Accreditation</td>
+              <td>{{ req.createdDate | date:'dd MMM yyyy' }}</td>
+              <td><span class="chip chip-pending">Pending</span></td>
+              <td class="actions-col">
+                <a class="action-link text-primary" (click)="reviewUniversity(req.registrationId)">View</a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <ng-template #noUniRequests>
+        <div class="empty-state">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H9H8"/></svg>
+          <p>No university accreditation requests.</p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+
+</div>

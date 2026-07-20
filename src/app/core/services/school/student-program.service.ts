@@ -29,7 +29,7 @@ export class StudentProgramService {
   }
 
   apply(studentId: number, model: ApplyRequest) {
-    return this.api.post<ApiResponse<void>>(
+    return this.api.post<ApiResponse<number>>(
       ApiEndpoints.School.StudentProgram.Apply(studentId),
       model
     );

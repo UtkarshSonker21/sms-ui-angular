@@ -18,7 +18,7 @@ import { AppRoutes } from '../../../core/constants/app-routes';
 import { MasterCountryFilter } from '../../../core/models/super-admin/master-country/master-country-filter.model';
 import { MasterSchoolFilter } from '../../../core/models/school/master-school/master-school-filter.model';
 import { StudentProgramService } from '../../../core/services/school/student-program.service';
-import { CandidateProgram, ApplyRequest, StudentProgramDocument, StudentHistory } from '../../../core/models/school/students/student-program-application.model';
+import { CandidateProgram, ApplyRequest, StudentProgramDocument, StudentHistory, UploadDocumentRequest } from '../../../core/models/school/students/student-program-application.model';
 
 
 
@@ -94,6 +94,7 @@ export class Students implements OnInit {
   // Candidate Programs State
   candidatePrograms: CandidateProgram[] = [];
   filteredCandidatePrograms: CandidateProgram[] = [];
+  uploadingDocs = new Set<number>();
   uniqueFaculties: string[] = [];
   uniqueUniversities: string[] = [];
   
@@ -111,9 +112,20 @@ export class Students implements OnInit {
   activeApplicationDocuments: StudentProgramDocument[] = [];
   isDocumentsLoading = false;
 
+  get activeCandidateProgram(): CandidateProgram | undefined {
+    return this.candidatePrograms.find(p => p.applicationId && p.applicationStatus !== undefined);
+  }
+
+  get availableCandidatePrograms(): CandidateProgram[] {
+    return this.filteredCandidatePrograms.filter(p => !p.applicationId || p.applicationStatus === undefined);
+  }
+
   isDiscussionModalOpen = false;
   currentDiscussionDocTypeId: number | null = null;
   currentDiscussionRemark = '';
+
+  isApplyModalOpen = false;
+  selectedApplyProgram: CandidateProgram | null = null;
 
   studentHistory: (StudentHistory & { icon?: string; color?: string })[] = [];
 
@@ -380,24 +392,20 @@ export class Students implements OnInit {
   filterCandidatePrograms(): void {
     let filtered = this.candidatePrograms;
 
-    if (this.hasActiveApplication) {
-      filtered = filtered.filter(p => p.applicationId && p.applicationStatus !== undefined);
-    } else {
-      if (this.searchCandidateProgram) {
-        const term = this.searchCandidateProgram.toLowerCase();
-        filtered = filtered.filter(p => 
-          (p.programName && p.programName.toLowerCase().includes(term)) ||
-          (p.programCode && p.programCode.toLowerCase().includes(term))
-        );
-      }
+    if (this.searchCandidateProgram) {
+      const term = this.searchCandidateProgram.toLowerCase();
+      filtered = filtered.filter(p => 
+        (p.programName && p.programName.toLowerCase().includes(term)) ||
+        (p.programCode && p.programCode.toLowerCase().includes(term))
+      );
+    }
 
-      if (this.selectedFaculty) {
-        filtered = filtered.filter(p => p.facultyName === this.selectedFaculty);
-      }
+    if (this.selectedFaculty) {
+      filtered = filtered.filter(p => p.facultyName === this.selectedFaculty);
+    }
 
-      if (this.selectedUniversity) {
-        filtered = filtered.filter(p => p.universityName === this.selectedUniversity);
-      }
+    if (this.selectedUniversity) {
+      filtered = filtered.filter(p => p.universityName === this.selectedUniversity);
     }
 
     this.filteredCandidatePrograms = filtered;
@@ -425,31 +433,80 @@ export class Students implements OnInit {
       .every(d => this.getUploadedDocStatus(d.documentTypeId) === 'Uploaded');
   }
 
-  applyForProgram(programId: number): void {
+  cancelProgramApplication(program: CandidateProgram): void {
+    // TODO:
+    // If documents are uploaded but the user decides not to apply,
+    // later we will call an API to clean up orphan uploaded documents
+    // and draft data.
+  }
+
+  openApplyModal(prog: CandidateProgram): void {
+    if (this.isApplying || this.hasActiveApplication) return;
+    this.selectedApplyProgram = prog;
+    this.isApplyModalOpen = true;
+  }
+
+  closeApplyModal(): void {
+    this.isApplyModalOpen = false;
+    this.selectedApplyProgram = null;
+  }
+
+  confirmApply(): void {
+    if (!this.selectedApplyProgram || this.isApplying || this.hasActiveApplication) return;
+    
+    this.isApplying = true;
+    const req = new ApplyRequest();
+    req.programId = this.selectedApplyProgram.programId;
+    
+    this.studentProgramService.apply(this.student.studentId!, req).subscribe({
+      next: (res) => {
+        if (res.success && res.result) {
+          this.selectedApplyProgram!.applicationId = res.result;
+          this.selectedApplyProgram!.applicationStatusName = 'Draft';
+          // Auto expand the row after draft is created so they can upload
+          this.expandedProgramId = null; // Reset first so toggle expands it
+          this.toggleProgramExpand(this.selectedApplyProgram!);
+          this.closeApplyModal();
+        } else {
+          this.notification.error(res.message || 'Failed to create draft application.');
+        }
+        this.isApplying = false;
+      },
+      error: () => {
+        this.notification.error('Error creating draft application.');
+        this.isApplying = false;
+      }
+    });
+  }
+
+  submitProgramApplication(programId: number): void {
     if (this.isApplying || this.hasActiveApplication) return;
     
     const prog = this.candidatePrograms.find(p => p.programId === programId);
-    if (prog && !this.canApply(prog)) {
-      this.notification.error('Please upload all required documents before applying for this program.');
+    if (!prog || !prog.applicationId) return;
+    
+    if (!this.canApply(prog)) {
+      this.notification.error('Please upload all required documents before submitting this program.');
       return;
     }
     
     this.isApplying = true;
-    const req = new ApplyRequest();
-    req.programId = programId;
+    this.doSubmit(prog.applicationId);
+  }
 
-    this.studentProgramService.apply(this.student.studentId!, req).subscribe({
+  private doSubmit(applicationId: number): void {
+    this.studentProgramService.submitApplication(applicationId).subscribe({
       next: (res) => {
         if (res.success) {
           this.notification.success('Successfully applied for program.');
           this.loadCandidatePrograms(); // Reload to get updated application ID and status
         } else {
-          this.notification.error(res.message || 'Failed to apply.');
+          this.notification.error(res.message || 'Failed to submit application.');
         }
         this.isApplying = false;
       },
       error: () => {
-        this.notification.error('Error applying for program.');
+        this.notification.error('Error submitting application.');
         this.isApplying = false;
       }
     });
@@ -555,6 +612,77 @@ export class Students implements OnInit {
   getDiscussionCount(docTypeId: number): number {
     const doc = this.activeApplicationDocuments.find(d => d.documentTypeId === docTypeId);
     return (doc && doc.reviewerRemark && doc.reviewerRemark.trim().length > 0) ? 1 : 0;
+  }
+
+  // Program Document Upload Logic
+  onFileSelected(event: any, doc: any, prog: CandidateProgram): void {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (!prog.applicationId) {
+      this.notification.error('A draft application must exist before uploading documents.');
+      event.target.value = '';
+      return;
+    }
+
+    this.uploadingDocs.add(doc.documentTypeId);
+    this.executeDocumentUpload(file, doc, prog.applicationId, event);
+  }
+
+  private executeDocumentUpload(file: File, doc: any, applicationId: number, event: any): void {
+    const req = new UploadDocumentRequest();
+    req.programDocumentId = doc.programDocumentId;
+    req.documentTypeId = doc.documentTypeId;
+    req.file = file;
+
+    this.studentProgramService.uploadDocument(applicationId, req).subscribe({
+      next: (res) => {
+        if (res.success && res.result) {
+          this.activeApplicationDocuments = this.activeApplicationDocuments.filter(d => d.documentTypeId !== doc.documentTypeId);
+          this.activeApplicationDocuments.push(res.result);
+          this.notification.success('Document uploaded successfully.');
+        } else {
+          this.notification.error(res.message || 'Failed to upload document.');
+        }
+        this.uploadingDocs.delete(doc.documentTypeId);
+        event.target.value = ''; // Reset input
+      },
+      error: () => {
+        this.notification.error('Error occurred during upload.');
+        this.uploadingDocs.delete(doc.documentTypeId);
+        event.target.value = '';
+      }
+    });
+  }
+
+  previewDocument(documentTypeId: number): void {
+    const doc = this.activeApplicationDocuments.find(d => d.documentTypeId === documentTypeId);
+    if (doc && doc.storagePath) {
+      window.open(doc.storagePath, '_blank');
+    } else {
+      this.notification.info('Document preview is not available.');
+    }
+  }
+
+  removeDocument(doc: any, applicationId: number): void {
+    if (!confirm('Are you sure you want to remove this document?')) return;
+
+    const uploadedDoc = this.activeApplicationDocuments.find(d => d.documentTypeId === doc.documentTypeId);
+    if (!uploadedDoc) return;
+
+    this.studentProgramService.deleteDocument(applicationId, uploadedDoc.studentProgramDocumentId).subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.activeApplicationDocuments = this.activeApplicationDocuments.filter(d => d.documentTypeId !== doc.documentTypeId);
+          this.notification.success('Document removed successfully.');
+        } else {
+          this.notification.error(res.message || 'Failed to remove document.');
+        }
+      },
+      error: () => {
+        this.notification.error('Error occurred while removing document.');
+      }
+    });
   }
 
   // File Upload Handlers

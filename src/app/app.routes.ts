@@ -110,7 +110,7 @@ export const routes: Routes = [
                 component: UniversityDashboard
             },
             {
-                path: 'school-dashboard',
+                path: 'coordinator-dashboard',
                 component: SchoolDashboard
             },
             {
