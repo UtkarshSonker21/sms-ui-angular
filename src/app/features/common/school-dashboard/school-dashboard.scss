@@ -1,0 +1,231 @@
+.dashboard-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Page Header positioning */
+.page-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.page-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Search Box matching standard input styling */
+.search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  svg {
+    position: absolute;
+    left: 12px;
+    color: var(--da-muted, #64748b);
+  }
+
+  input {
+    padding: 8px 12px 8px 36px;
+    border: 1px solid var(--da-border, #e2e8f0);
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+    width: 240px;
+    transition: all 0.2s ease;
+
+    &:focus {
+      border-color: var(--da-primary, #0f172a);
+      box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.1);
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .page-head {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .search-box input {
+    width: 100%;
+  }
+  .page-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+/* Statistics Grid - using global .kpi-grid but specifying columns */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  width: 100%;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  display: flex !important;
+  flex-direction: column !important;
+
+  .card-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.journey-grid {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 16px;
+
+  .journey-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    text-align: center;
+    padding: 24px 16px;
+    border-radius: 8px;
+    
+    &.stage-completed {
+      background: var(--da-success-50, #ecfdf5);
+      border: 1px solid var(--da-success-200, #a7f3d0);
+    }
+    
+    &.stage-final {
+      background: var(--da-warning-50, #fffbeb);
+      border: 1px solid var(--da-warning-200, #fde68a);
+    }
+    
+    .stage-count {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--da-green, #16a34a);
+      margin-bottom: 8px;
+      line-height: 1;
+    }
+
+    .stage-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--da-black, #1e293b);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+  }
+
+  .journey-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--da-border, #cbd5e1);
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 16px;
+
+    .journey-arrow {
+      transform: rotate(90deg);
+    }
+  }
+}
+
+/* Table layout adjustments */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  td {
+    padding: 10px 14px !important;
+  }
+
+  /* Student Column */
+  .student-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 9999px;
+      background: #f1f5f9;
+      color: #475569;
+      font-weight: 700;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      border: 1px solid #e2e8f0;
+
+      &[data-name="A1"] {
+        background: #ecfdf5;
+        color: #065f46;
+        border-color: #a7f3d0;
+      }
+      &[data-name="B2"] {
+        background: #eff6ff;
+        color: #1e40af;
+        border-color: #bfdbfe;
+      }
+      &[data-name="C3"] {
+        background: #f5f3ff;
+        color: #5b21b6;
+        border-color: #ddd6fe;
+      }
+      &[data-name="D4"] {
+        background: #fef2f2;
+        color: #991b1b;
+        border-color: #fca5a5;
+      }
+      &[data-name="E5"] {
+        background: #fffbeb;
+        color: #92400e;
+        border-color: #fde68a;
+      }
+    }
+
+    .student-name {
+      font-weight: 600;
+      color: var(--da-black);
+    }
+
+    .student-id {
+      font-size: 11px;
+      color: var(--da-muted);
+      margin-top: 1px;
+    }
+  }
+
+  /* Program Column */
+  .program-name, .university-name {
+    font-weight: 600;
+    color: var(--da-black);
+  }
+
+  .time-col {
+    color: var(--da-muted);
+    font-size: 12px;
+  }
+}

@@ -52,6 +52,7 @@ export class StudentProgramDocument {
   uploadedDate!: Date;
 
   isRequired: boolean = false;
+  isUploaded?: boolean;
 }
 
 export class StudentHistory {
@@ -84,6 +85,7 @@ export class CandidateProgram {
   applicationStatusName?: string;
 
   requiredDocuments: RequiredDocument[] = [];
+  documents?: StudentProgramDocument[];
 }
 
 export class RequiredDocument {
@@ -93,6 +95,7 @@ export class RequiredDocument {
 
   isRequired: boolean = false;
   description?: string;
+  isUploaded?: boolean;
 }
 
 export class UploadDocumentRequest {
