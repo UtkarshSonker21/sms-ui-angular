@@ -13,6 +13,15 @@
   z-index: 9990 !important;
 }
 
+/* Angular Material ConfirmDialog Overlay Panel Override */
+.confirm-dialog-overlay-panel .mat-mdc-dialog-container .mdc-dialog__surface {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border-radius: 12px !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
 .modal-backdrop {
   display: grid;
   place-items: center;

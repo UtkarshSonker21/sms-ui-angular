@@ -5,6 +5,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 
 import { NotificationService } from '../../../core/services/common/notification.service';
+import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
+import { HelperMethods } from '../../../core/helpers/helper-methods';
 import { StudentService } from '../../../core/services/school/student.service';
 import { StudentRequest } from '../../../core/models/school/students/student-request.model';
 import { MasterCountryService } from '../../../core/services/superadmin/master-country.service';
@@ -55,6 +57,7 @@ export class Students implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private studentProgramService = inject(StudentProgramService);
+  private confirmDialog = inject(ConfirmDialogService);
 
   // Model
   student = new StudentRequest();
@@ -199,7 +202,7 @@ export class Students implements OnInit {
           this.student = res.result;
           this.parsePhone(this.student.phone);
           if (this.student.photoPath) {
-            this.photoPreviewUrl = this.student.photoPath;
+            this.photoPreviewUrl = HelperMethods.getFileUrl(this.student.photoPath);
           }
           this.loadCandidatePrograms();
           this.loadStudentHistory(id);
@@ -356,6 +359,12 @@ export class Students implements OnInit {
   // Candidate Programs Logic
   loadCandidatePrograms(): void {
     if (!this.student.studentId) return;
+
+    this.activeApplicationDocuments = [];
+    this.expandedProgramDocuments = [];
+    this.expandedProgramId = null;
+    this.hasActiveApplication = false;
+
     this.studentProgramService.getCandidatePrograms(this.student.studentId).subscribe({
       next: (res) => {
         if (res.success && res.result) {
@@ -365,7 +374,6 @@ export class Students implements OnInit {
           this.uniqueFaculties = [...new Set(this.candidatePrograms.map(p => p.facultyName).filter(f => f))];
           this.uniqueUniversities = [...new Set(this.candidatePrograms.map(p => p.universityName).filter(u => u))];
           
-          this.expandedProgramId = null;
           this.filterCandidatePrograms();
 
           const activeApp = this.candidatePrograms.find(p => p.applicationId && p.applicationStatus !== undefined);
@@ -377,9 +385,16 @@ export class Students implements OnInit {
                   if (this.expandedProgramId === activeApp.programId) {
                     this.expandedProgramDocuments = docRes.result;
                   }
+                } else {
+                  this.activeApplicationDocuments = [];
                 }
+              },
+              error: () => {
+                this.activeApplicationDocuments = [];
               }
             });
+          } else {
+            this.activeApplicationDocuments = [];
           }
         }
       },
@@ -515,12 +530,24 @@ export class Students implements OnInit {
   cancelApplication(applicationId?: number): void {
     if (!applicationId || this.isApplying) return;
 
-    if (confirm('Are you sure you want to cancel this application?')) {
+    this.confirmDialog.confirm({
+      title: 'Cancel Application',
+      message: 'Are you sure you want to cancel this application?\nAll uploaded documents will remain available until the application is cancelled.',
+      cancelText: 'Keep Application',
+      confirmText: 'Yes, Cancel',
+      variant: 'danger'
+    }).then(confirmed => {
+      if (!confirmed) return;
+
       this.isApplying = true;
       this.studentProgramService.cancelApplication(applicationId).subscribe({
         next: (res) => {
           if (res.success) {
             this.notification.success('Application cancelled successfully.');
+            this.activeApplicationDocuments = [];
+            this.expandedProgramDocuments = [];
+            this.expandedProgramId = null;
+            this.hasActiveApplication = false;
             this.loadCandidatePrograms();
           } else {
             this.notification.error(res.message || 'Failed to cancel application.');
@@ -532,10 +559,12 @@ export class Students implements OnInit {
           this.isApplying = false;
         }
       });
-    }
+    });
   }
 
   toggleProgramExpand(prog: CandidateProgram): void {
+    if (!prog.applicationId) return;
+
     if (this.expandedProgramId === prog.programId) {
       this.expandedProgramId = null;
       return;
@@ -658,30 +687,39 @@ export class Students implements OnInit {
   previewDocument(documentTypeId: number): void {
     const doc = this.activeApplicationDocuments.find(d => d.documentTypeId === documentTypeId);
     if (doc && doc.storagePath) {
-      window.open(doc.storagePath, '_blank');
+      const previewUrl = HelperMethods.getFileUrl(doc.storagePath);
+      window.open(previewUrl, '_blank');
     } else {
       this.notification.info('Document preview is not available.');
     }
   }
 
   removeDocument(doc: any, applicationId: number): void {
-    if (!confirm('Are you sure you want to remove this document?')) return;
+    this.confirmDialog.confirm({
+      title: 'Remove Document',
+      message: 'Are you sure you want to remove this document?\nThis action cannot be undone.',
+      cancelText: 'Keep Document',
+      confirmText: 'Remove',
+      variant: 'danger'
+    }).then(confirmed => {
+      if (!confirmed) return;
 
-    const uploadedDoc = this.activeApplicationDocuments.find(d => d.documentTypeId === doc.documentTypeId);
-    if (!uploadedDoc) return;
+      const uploadedDoc = this.activeApplicationDocuments.find(d => d.documentTypeId === doc.documentTypeId);
+      if (!uploadedDoc) return;
 
-    this.studentProgramService.deleteDocument(applicationId, uploadedDoc.studentProgramDocumentId).subscribe({
-      next: (res) => {
-        if (res.success) {
-          this.activeApplicationDocuments = this.activeApplicationDocuments.filter(d => d.documentTypeId !== doc.documentTypeId);
-          this.notification.success('Document removed successfully.');
-        } else {
-          this.notification.error(res.message || 'Failed to remove document.');
+      this.studentProgramService.deleteDocument(applicationId, uploadedDoc.studentProgramDocumentId).subscribe({
+        next: (res) => {
+          if (res.success) {
+            this.activeApplicationDocuments = this.activeApplicationDocuments.filter(d => d.documentTypeId !== doc.documentTypeId);
+            this.notification.success('Document removed successfully.');
+          } else {
+            this.notification.error(res.message || 'Failed to remove document.');
+          }
+        },
+        error: () => {
+          this.notification.error('Error occurred while removing document.');
         }
-      },
-      error: () => {
-        this.notification.error('Error occurred while removing document.');
-      }
+      });
     });
   }
 

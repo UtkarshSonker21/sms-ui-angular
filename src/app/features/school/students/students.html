@@ -58,8 +58,7 @@
               Upload photo
               <input type="file" name="photo" accept="image/*" hidden (change)="onPhotoSelected($event)">
             </label>
-            <button type="button" class="btn btn-sm btn-faculties-outline"
-              style="color: var(--da-danger); border-color: var(--da-danger);" (click)="clearPhoto($event)"
+            <button type="button" class="btn btn-sm btn-faculties-outline btn-danger-outline" (click)="clearPhoto($event)"
               *ngIf="photoPreviewUrl || student.photoPath">Remove</button>
           </div>
         </div>
@@ -574,8 +573,7 @@
                 <polyline points="10 9 9 9 8 9" />
               </svg>
               <div class="fr-name">{{ student.recommendationLetterPath }}</div>
-              <button type="button" class="btn btn-sm btn-faculties-outline"
-                style="color: var(--da-danger); border-color: var(--da-danger);"
+              <button type="button" class="btn btn-sm btn-faculties-outline btn-danger-outline"
                 (click)="clearRecommendation($event)">Remove</button>
             </div>
 
@@ -704,7 +702,8 @@
 
         <ng-template #programCardTemplate let-prog="prog">
           <div
-            style="padding: 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; flex-wrap: wrap; gap: 16px;"
+            style="padding: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;"
+            [style.cursor]="prog.applicationId ? 'pointer' : 'default'"
             (click)="toggleProgramExpand(prog)">
 
             <!-- Left Side -->
@@ -744,8 +743,7 @@
               </span>
 
               <div (click)="$event.stopPropagation()" style="display: flex; gap: 8px;">
-                <button type="button" class="btn btn-faculties-outline"
-                  style="color: var(--da-danger); border-color: var(--da-danger);" *ngIf="prog.applicationId"
+                <button type="button" class="btn btn-faculties-outline btn-danger-outline" *ngIf="prog.applicationId"
                   [disabled]="isApplying" (click)="cancelApplication(prog.applicationId)">
                   Cancel Application
                 </button>
@@ -755,7 +753,7 @@
                 </button>
               </div>
 
-              <div class="chev"
+              <div class="chev" *ngIf="prog.applicationId"
                 [style.transform]="expandedProgramId === prog.programId ? 'rotate(0deg)' : 'rotate(180deg)'"
                 style="transition: transform 0.2s ease; display: flex; align-items: center; justify-content: center;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -828,7 +826,7 @@
                     (change)="onFileSelected($event, doc, prog)">
 
                   <!-- Uploading State -->
-                  <button type="button" class="btn btn-sm btn-faculties-outline"
+                  <button type="button" class="btn btn-sm btn-faculties-outline btn-info-outline"
                     *ngIf="uploadingDocs.has(doc.documentTypeId)" disabled>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                       class="spin" style="margin-right: 4px; animation: spin 1s linear infinite;">
@@ -839,7 +837,7 @@
                   </button>
 
                   <!-- Default Upload Button -->
-                  <button type="button" class="btn btn-sm btn-faculties-outline"
+                  <button type="button" class="btn btn-sm btn-faculties-outline btn-info-outline"
                     *ngIf="getUploadedDocStatus(doc.documentTypeId) !== 'Uploaded' && !uploadingDocs.has(doc.documentTypeId)"
                     (click)="fileInput.click(); $event.stopPropagation()">
                     Upload
@@ -848,7 +846,7 @@
                   <!-- Preview and Remove Actions -->
                   <ng-container
                     *ngIf="getUploadedDocStatus(doc.documentTypeId) === 'Uploaded' && !uploadingDocs.has(doc.documentTypeId)">
-                    <button type="button" class="btn btn-sm btn-faculties-outline"
+                    <button type="button" class="btn btn-sm btn-faculties-outline btn-info-outline"
                       (click)="previewDocument(doc.documentTypeId); $event.stopPropagation()">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2" style="margin-right: 4px;">
@@ -857,8 +855,7 @@
                       </svg>
                       Preview
                     </button>
-                    <button type="button" class="btn btn-sm btn-faculties-outline"
-                      style="color: var(--da-danger); border-color: var(--da-danger);"
+                    <button type="button" class="btn btn-sm btn-faculties-outline btn-danger-outline"
                       (click)="removeDocument(doc, prog.applicationId!); $event.stopPropagation()">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2" style="margin-right: 4px;">

@@ -66,6 +66,52 @@
   color: var(--da-text-2) !important;
 }
 
+/* Outlined Action Buttons (Soft Badge Look) */
+.btn-danger-outline,
+.btn-outline-danger {
+  background: var(--da-danger-50, #fef2f2) !important;
+  border: 1px solid var(--da-danger-border, #fecaca) !important;
+  color: var(--da-danger, #dc2626) !important;
+}
+.btn-danger-outline:hover,
+.btn-outline-danger:hover {
+  background: #fee2e2 !important;
+  border-color: var(--da-danger, #dc2626) !important;
+  color: #b91c1c !important;
+}
+.btn-danger-outline svg,
+.btn-outline-danger svg {
+  stroke: currentColor !important;
+}
+.btn-danger-outline:disabled,
+.btn-outline-danger:disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+}
+
+.btn-info-outline,
+.btn-outline-info {
+  background: var(--da-info-50, #eff6ff) !important;
+  border: 1px solid var(--da-info-border, #bfdbfe) !important;
+  color: var(--da-info, #2563eb) !important;
+}
+.btn-info-outline:hover,
+.btn-outline-info:hover {
+  background: #dbeafe !important;
+  border-color: var(--da-info, #2563eb) !important;
+  color: #1d4ed8 !important;
+}
+.btn-info-outline svg,
+.btn-outline-info svg {
+  stroke: currentColor !important;
+}
+.btn-info-outline:disabled,
+.btn-outline-info:disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+}
+
+
 .btn-faculties-primary {
   background: var(--da-green) !important;
   color: #ffffff !important;
