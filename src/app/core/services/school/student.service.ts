@@ -48,5 +48,38 @@ export class StudentService {
         );
     }
 
-    
+
+    uploadProfilePhoto(studentId: number, file: File) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        return this.api.post<ApiResponse<string>>(
+            ApiEndpoints.School.Student.UploadProfilePhoto(studentId),
+            formData
+        );
+    }
+
+    deleteProfilePhoto(studentId: number) {
+        return this.api.delete<ApiResponse<void>>(
+            ApiEndpoints.School.Student.DeleteProfilePhoto(studentId)
+        );
+    }
+
+    uploadRecommendationLetter(studentId: number, file: File) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        return this.api.post<ApiResponse<string>>(
+            ApiEndpoints.School.Student.UploadRecommendationLetter(studentId),
+            formData
+        );
+    }
+
+    deleteRecommendationLetter(studentId: number) {
+        return this.api.delete<ApiResponse<void>>(
+            ApiEndpoints.School.Student.DeleteRecommendationLetter(studentId)
+        );
+    }
+
+
 }

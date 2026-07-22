@@ -128,6 +128,18 @@ export const ApiEndpoints = {
       GetById: (id: number) => `school/student/getById/${id}`,
       Update: (id: number) => `school/student/update/${id}`,
       Delete: (id: number) => `school/student/delete/${id}`,
+
+      UploadProfilePhoto: (studentId: number) =>
+        `school/student/upload-profile-photo/${studentId}`,
+
+      DeleteProfilePhoto: (studentId: number) =>
+        `school/student/delete-profile-photo/${studentId}`,
+
+      UploadRecommendationLetter: (studentId: number) =>
+        `school/student/upload-recommendation-letter/${studentId}`,
+
+      DeleteRecommendationLetter: (studentId: number) =>
+        `school/student/delete-recommendation-letter/${studentId}`,
     },
 
     StudentProgram: {
@@ -136,6 +148,7 @@ export const ApiEndpoints = {
       Cancel: (applicationId: number) => `school/student-program/cancel/${applicationId}`,
       Submit: (applicationId: number) => `school/student-program/submit/${applicationId}`,
       GetById: (applicationId: number) => `school/student-program/getById/${applicationId}`,
+      
       UploadDocument: (applicationId: number) => `school/student-program/upload-document/${applicationId}`,
       DeleteDocument: (applicationId: number, documentId: number) =>
         `school/student-program/delete-document/${applicationId}/${documentId}`,

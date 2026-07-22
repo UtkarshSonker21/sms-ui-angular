@@ -171,3 +171,8 @@ export class StudentRequest {
 
 }
 
+
+export class UploadFileRequest {
+  file!: File;
+}
+
