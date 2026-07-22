@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
 import { NotificationService } from '../../../core/services/common/notification.service';
+import { HelperMethods } from '../../../core/helpers/helper-methods';
 import { StudentService } from '../../../core/services/school/student.service';
 import { MasterSchoolService } from '../../../core/services/school/master-school.service';
 import { MasterDropDownService } from '../../../core/services/superadmin/master-dropdown.service';
@@ -363,6 +364,22 @@ export class CoordinatorStudentsList implements OnInit {
 
   viewStudent(id: number): void {
     this.router.navigate([AppRoutes.School.CoordinatorEditStudent, id]);
+  }
+
+  photoErrors = new Set<number>();
+
+  getPhotoUrl(path?: string): string {
+    return HelperMethods.getFileUrl(path);
+  }
+
+  handlePhotoError(studentId: number): void {
+    if (studentId) {
+      this.photoErrors.add(studentId);
+    }
+  }
+
+  hasPhotoError(studentId: number): boolean {
+    return this.photoErrors.has(studentId);
   }
 
 }

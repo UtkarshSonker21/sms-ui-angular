@@ -7,11 +7,11 @@
   border-radius: 10px;
 }
 .photo-uploader .ph-img {
-  width: 80px; height: 80px; border-radius: 50%;
-  background: var(--da-green-50);
-  color: var(--da-green-800);
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--da-green);
+  color: #ffffff;
   display: flex; align-items: center; justify-content: center;
-  font-weight: 800; font-size: 24px;
+  font-weight: 600; font-size: 13px;
   overflow: hidden;
   flex-shrink: 0;
 }

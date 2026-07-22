@@ -3,8 +3,11 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 
 import { NotificationService } from '../../../core/services/common/notification.service';
+import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
+import { HelperMethods } from '../../../core/helpers/helper-methods';
 import { StudentService } from '../../../core/services/school/student.service';
 import { StudentRequest } from '../../../core/models/school/students/student-request.model';
 import { MasterCountryService } from '../../../core/services/superadmin/master-country.service';
@@ -37,9 +40,18 @@ export class Students implements OnInit {
   PhoneCountryCode = '';
   PhoneNumber = '';
   photoPreviewUrl: string | null = null;
+  photoError = false;
 
   toggleSection(section: number): void {
     this.activeSection = this.activeSection === section ? 0 : section;
+  }
+
+  getPhotoUrl(path?: string): string {
+    return HelperMethods.getFileUrl(path);
+  }
+
+  handlePhotoError(): void {
+    this.photoError = true;
   }
 
   @HostListener('document:click', ['$event'])
@@ -55,6 +67,7 @@ export class Students implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private studentProgramService = inject(StudentProgramService);
+  private confirmDialog = inject(ConfirmDialogService);
 
   // Model
   student = new StudentRequest();
@@ -199,7 +212,7 @@ export class Students implements OnInit {
           this.student = res.result;
           this.parsePhone(this.student.phone);
           if (this.student.photoPath) {
-            this.photoPreviewUrl = this.student.photoPath;
+            this.photoPreviewUrl = environment.apiUrl + this.student.photoPath;
           }
           this.loadCandidatePrograms();
           this.loadStudentHistory(id);
@@ -356,6 +369,12 @@ export class Students implements OnInit {
   // Candidate Programs Logic
   loadCandidatePrograms(): void {
     if (!this.student.studentId) return;
+
+    this.activeApplicationDocuments = [];
+    this.expandedProgramDocuments = [];
+    this.expandedProgramId = null;
+    this.hasActiveApplication = false;
+
     this.studentProgramService.getCandidatePrograms(this.student.studentId).subscribe({
       next: (res) => {
         if (res.success && res.result) {
@@ -365,7 +384,6 @@ export class Students implements OnInit {
           this.uniqueFaculties = [...new Set(this.candidatePrograms.map(p => p.facultyName).filter(f => f))];
           this.uniqueUniversities = [...new Set(this.candidatePrograms.map(p => p.universityName).filter(u => u))];
           
-          this.expandedProgramId = null;
           this.filterCandidatePrograms();
 
           const activeApp = this.candidatePrograms.find(p => p.applicationId && p.applicationStatus !== undefined);
@@ -377,9 +395,16 @@ export class Students implements OnInit {
                   if (this.expandedProgramId === activeApp.programId) {
                     this.expandedProgramDocuments = docRes.result;
                   }
+                } else {
+                  this.activeApplicationDocuments = [];
                 }
+              },
+              error: () => {
+                this.activeApplicationDocuments = [];
               }
             });
+          } else {
+            this.activeApplicationDocuments = [];
           }
         }
       },
@@ -515,12 +540,24 @@ export class Students implements OnInit {
   cancelApplication(applicationId?: number): void {
     if (!applicationId || this.isApplying) return;
 
-    if (confirm('Are you sure you want to cancel this application?')) {
+    this.confirmDialog.confirm({
+      title: 'Cancel Application',
+      message: 'Are you sure you want to cancel this application?\nAll uploaded documents will remain available until the application is cancelled.',
+      cancelText: 'Keep Application',
+      confirmText: 'Yes, Cancel',
+      variant: 'danger'
+    }).then(confirmed => {
+      if (!confirmed) return;
+
       this.isApplying = true;
       this.studentProgramService.cancelApplication(applicationId).subscribe({
         next: (res) => {
           if (res.success) {
             this.notification.success('Application cancelled successfully.');
+            this.activeApplicationDocuments = [];
+            this.expandedProgramDocuments = [];
+            this.expandedProgramId = null;
+            this.hasActiveApplication = false;
             this.loadCandidatePrograms();
           } else {
             this.notification.error(res.message || 'Failed to cancel application.');
@@ -532,10 +569,12 @@ export class Students implements OnInit {
           this.isApplying = false;
         }
       });
-    }
+    });
   }
 
   toggleProgramExpand(prog: CandidateProgram): void {
+    if (!prog.applicationId) return;
+
     if (this.expandedProgramId === prog.programId) {
       this.expandedProgramId = null;
       return;
@@ -658,60 +697,150 @@ export class Students implements OnInit {
   previewDocument(documentTypeId: number): void {
     const doc = this.activeApplicationDocuments.find(d => d.documentTypeId === documentTypeId);
     if (doc && doc.storagePath) {
-      window.open(doc.storagePath, '_blank');
+      const previewUrl = HelperMethods.getFileUrl(doc.storagePath);
+      window.open(previewUrl, '_blank');
     } else {
       this.notification.info('Document preview is not available.');
     }
   }
 
   removeDocument(doc: any, applicationId: number): void {
-    if (!confirm('Are you sure you want to remove this document?')) return;
+    this.confirmDialog.confirm({
+      title: 'Remove Document',
+      message: 'Are you sure you want to remove this document?\nThis action cannot be undone.',
+      cancelText: 'Keep Document',
+      confirmText: 'Remove',
+      variant: 'danger'
+    }).then(confirmed => {
+      if (!confirmed) return;
 
-    const uploadedDoc = this.activeApplicationDocuments.find(d => d.documentTypeId === doc.documentTypeId);
-    if (!uploadedDoc) return;
+      const uploadedDoc = this.activeApplicationDocuments.find(d => d.documentTypeId === doc.documentTypeId);
+      if (!uploadedDoc) return;
 
-    this.studentProgramService.deleteDocument(applicationId, uploadedDoc.studentProgramDocumentId).subscribe({
-      next: (res) => {
-        if (res.success) {
-          this.activeApplicationDocuments = this.activeApplicationDocuments.filter(d => d.documentTypeId !== doc.documentTypeId);
-          this.notification.success('Document removed successfully.');
-        } else {
-          this.notification.error(res.message || 'Failed to remove document.');
+      this.studentProgramService.deleteDocument(applicationId, uploadedDoc.studentProgramDocumentId).subscribe({
+        next: (res) => {
+          if (res.success) {
+            this.activeApplicationDocuments = this.activeApplicationDocuments.filter(d => d.documentTypeId !== doc.documentTypeId);
+            this.notification.success('Document removed successfully.');
+          } else {
+            this.notification.error(res.message || 'Failed to remove document.');
+          }
+        },
+        error: () => {
+          this.notification.error('Error occurred while removing document.');
         }
+      });
+    });
+  }
+
+  onPhotoSelected(event: any): void {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    this.studentService.uploadProfilePhoto(this.student.studentId || 0, file).subscribe({
+      next: (res) => {
+        if (res.success && res.result) {
+          this.student.photoPath = res.result;
+          this.photoPreviewUrl = environment.apiUrl + res.result;
+          this.photoError = false;
+          this.notification.success('Profile photo uploaded successfully.');
+        } else {
+          this.notification.error(res.message || 'Failed to upload profile photo.');
+        }
+        event.target.value = '';
       },
       error: () => {
-        this.notification.error('Error occurred while removing document.');
+        this.notification.error('Error occurred during profile photo upload.');
+        event.target.value = '';
       }
     });
   }
 
-  // File Upload Handlers
-  onPhotoSelected(event: any): void {
-    const file = event.target.files[0];
-    if (file) {
-      this.student.photoPath = file.name;
-      this.photoPreviewUrl = URL.createObjectURL(file);
-    }
-  }
-
-  clearPhoto(event: Event): void {
+  removePhoto(event: Event): void {
     event.stopPropagation();
-    this.student.photoPath = undefined;
-    this.photoPreviewUrl = null;
+    this.confirmDialog.confirm({
+      title: 'Remove Profile Photo',
+      message: 'Are you sure you want to remove the profile photo?\nThis action cannot be undone.',
+      cancelText: 'Keep Photo',
+      confirmText: 'Remove',
+      variant: 'danger'
+    }).then(confirmed => {
+      if (!confirmed) return;
+
+      this.studentService.deleteProfilePhoto(this.student.studentId || 0).subscribe({
+        next: (res) => {
+          if (res.success) {
+            this.student.photoPath = undefined;
+            this.photoPreviewUrl = null;
+            this.photoError = false;
+            this.notification.success('Profile photo removed successfully.');
+          } else {
+            this.notification.error(res.message || 'Failed to remove profile photo.');
+          }
+        },
+        error: () => {
+          this.notification.error('Error occurred while removing profile photo.');
+        }
+      });
+    });
   }
 
   onRecommendationSelected(event: any): void {
     const file = event.target.files[0];
-    if (file) {
-      this.student.recommendationLetterFile = file;
-      this.student.recommendationLetterPath = file.name;
+    if (!file) return;
+
+    this.studentService.uploadRecommendationLetter(this.student.studentId || 0, file).subscribe({
+      next: (res) => {
+        if (res.success && res.result) {
+          this.student.recommendationLetterPath = res.result;
+          this.notification.success('Recommendation letter uploaded successfully.');
+        } else {
+          this.notification.error(res.message || 'Failed to upload recommendation letter.');
+        }
+        event.target.value = '';
+      },
+      error: () => {
+        this.notification.error('Error occurred during recommendation letter upload.');
+        event.target.value = '';
+      }
+    });
+  }
+
+  previewRecommendation(event: Event): void {
+    event.stopPropagation();
+    if (this.student.recommendationLetterPath) {
+      const previewUrl = HelperMethods.getFileUrl(this.student.recommendationLetterPath);
+      window.open(previewUrl, '_blank');
+    } else {
+      this.notification.info('Recommendation letter is not available.');
     }
   }
 
-  clearRecommendation(event: Event): void {
+  removeRecommendation(event: Event): void {
     event.stopPropagation();
-    this.student.recommendationLetterFile = undefined;
-    this.student.recommendationLetterPath = undefined;
+    this.confirmDialog.confirm({
+      title: 'Remove Recommendation Letter',
+      message: 'Are you sure you want to remove the recommendation letter?\nThis action cannot be undone.',
+      cancelText: 'Keep Document',
+      confirmText: 'Remove',
+      variant: 'danger'
+    }).then(confirmed => {
+      if (!confirmed) return;
+
+      this.studentService.deleteRecommendationLetter(this.student.studentId || 0).subscribe({
+        next: (res) => {
+          if (res.success) {
+            this.student.recommendationLetterPath = undefined;
+            this.notification.success('Recommendation letter removed successfully.');
+          } else {
+            this.notification.error(res.message || 'Failed to remove recommendation letter.');
+          }
+        },
+        error: () => {
+          this.notification.error('Error occurred while removing recommendation letter.');
+        }
+      });
+    });
   }
 
   // Save Logic

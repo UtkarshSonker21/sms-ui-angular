@@ -1,6 +1,7 @@
 import { ApplicationConfig, importProvidersFrom, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialogModule } from '@angular/material/dialog';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
@@ -25,7 +26,8 @@ export const appConfig: ApplicationConfig = {
     ),
     provideAnimationsAsync(),
     importProvidersFrom(
-      MatTooltipModule
+      MatTooltipModule,
+      MatDialogModule
     )
 
   ]
