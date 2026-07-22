@@ -54,6 +54,9 @@ export const AppRoutes = {
     CoordinatorStudents: 'coordinator-students',
     CoordinatorAddStudent: 'add-student',
     CoordinatorEditStudent: 'edit-student',
+
+    CoordinatorNominations:'coordinator-nominations',
+    
   },
 
   Ngo: {

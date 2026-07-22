@@ -33,6 +33,7 @@ import { SchoolAccreditationDetail } from './features/ngo/school-accreditation-d
 import { Students } from './features/school/students/students';
 import { CoordinatorStudentsList } from './features/school/coordinator-students-list/coordinator-students-list';
 import { CoordinatorSchoolList } from './features/school/coordinator-school-list/coordinator-school-list';
+import { CoordinatorNominations } from './features/school/coordinator-nominations/coordinator-nominations';
 
 export const routes: Routes = [
 
@@ -179,6 +180,10 @@ export const routes: Routes = [
             {
                 path: 'coordinator-students',
                 component: CoordinatorStudentsList
+            },
+            {
+                path: 'coordinator-nominations',
+                component: CoordinatorNominations
             },
             {
                 path: 'add-student',
