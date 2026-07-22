@@ -366,8 +366,20 @@ export class CoordinatorStudentsList implements OnInit {
     this.router.navigate([AppRoutes.School.CoordinatorEditStudent, id]);
   }
 
+  photoErrors = new Set<number>();
+
   getPhotoUrl(path?: string): string {
     return HelperMethods.getFileUrl(path);
+  }
+
+  handlePhotoError(studentId: number): void {
+    if (studentId) {
+      this.photoErrors.add(studentId);
+    }
+  }
+
+  hasPhotoError(studentId: number): boolean {
+    return this.photoErrors.has(studentId);
   }
 
 }

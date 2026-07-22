@@ -201,8 +201,8 @@
             <tr *ngFor="let student of students">
                   <td>
                       <div style="display: flex; align-items: center; gap: 12px;">
-                          <img *ngIf="student.photoPath" [src]="getPhotoUrl(student.photoPath)" class="profile-photo" alt="Photo" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
-                          <div *ngIf="!student.photoPath" style="width: 36px; height: 36px; border-radius: 50%; background: var(--da-green); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 13px; font-weight: 600;">
+                          <img *ngIf="student.photoPath && !hasPhotoError(student.studentId!)" [src]="getPhotoUrl(student.photoPath)" (error)="handlePhotoError(student.studentId!)" class="profile-photo" alt="Photo" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
+                          <div *ngIf="!student.photoPath || hasPhotoError(student.studentId!)" style="width: 36px; height: 36px; border-radius: 50%; background: var(--da-green); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 13px; font-weight: 600;">
                               {{ student.firstName ? student.firstName.charAt(0).toUpperCase() : '?' }}
                           </div>
                           <div>

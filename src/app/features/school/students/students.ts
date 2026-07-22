@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 
 import { NotificationService } from '../../../core/services/common/notification.service';
 import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
@@ -39,9 +40,18 @@ export class Students implements OnInit {
   PhoneCountryCode = '';
   PhoneNumber = '';
   photoPreviewUrl: string | null = null;
+  photoError = false;
 
   toggleSection(section: number): void {
     this.activeSection = this.activeSection === section ? 0 : section;
+  }
+
+  getPhotoUrl(path?: string): string {
+    return HelperMethods.getFileUrl(path);
+  }
+
+  handlePhotoError(): void {
+    this.photoError = true;
   }
 
   @HostListener('document:click', ['$event'])
@@ -202,7 +212,7 @@ export class Students implements OnInit {
           this.student = res.result;
           this.parsePhone(this.student.phone);
           if (this.student.photoPath) {
-            this.photoPreviewUrl = HelperMethods.getFileUrl(this.student.photoPath);
+            this.photoPreviewUrl = environment.apiUrl + this.student.photoPath;
           }
           this.loadCandidatePrograms();
           this.loadStudentHistory(id);
@@ -723,33 +733,114 @@ export class Students implements OnInit {
     });
   }
 
-  // File Upload Handlers
   onPhotoSelected(event: any): void {
     const file = event.target.files[0];
-    if (file) {
-      this.student.photoPath = file.name;
-      this.photoPreviewUrl = URL.createObjectURL(file);
-    }
+    if (!file) return;
+
+    this.studentService.uploadProfilePhoto(this.student.studentId || 0, file).subscribe({
+      next: (res) => {
+        if (res.success && res.result) {
+          this.student.photoPath = res.result;
+          this.photoPreviewUrl = environment.apiUrl + res.result;
+          this.photoError = false;
+          this.notification.success('Profile photo uploaded successfully.');
+        } else {
+          this.notification.error(res.message || 'Failed to upload profile photo.');
+        }
+        event.target.value = '';
+      },
+      error: () => {
+        this.notification.error('Error occurred during profile photo upload.');
+        event.target.value = '';
+      }
+    });
   }
 
-  clearPhoto(event: Event): void {
+  removePhoto(event: Event): void {
     event.stopPropagation();
-    this.student.photoPath = undefined;
-    this.photoPreviewUrl = null;
+    this.confirmDialog.confirm({
+      title: 'Remove Profile Photo',
+      message: 'Are you sure you want to remove the profile photo?\nThis action cannot be undone.',
+      cancelText: 'Keep Photo',
+      confirmText: 'Remove',
+      variant: 'danger'
+    }).then(confirmed => {
+      if (!confirmed) return;
+
+      this.studentService.deleteProfilePhoto(this.student.studentId || 0).subscribe({
+        next: (res) => {
+          if (res.success) {
+            this.student.photoPath = undefined;
+            this.photoPreviewUrl = null;
+            this.photoError = false;
+            this.notification.success('Profile photo removed successfully.');
+          } else {
+            this.notification.error(res.message || 'Failed to remove profile photo.');
+          }
+        },
+        error: () => {
+          this.notification.error('Error occurred while removing profile photo.');
+        }
+      });
+    });
   }
 
   onRecommendationSelected(event: any): void {
     const file = event.target.files[0];
-    if (file) {
-      this.student.recommendationLetterFile = file;
-      this.student.recommendationLetterPath = file.name;
+    if (!file) return;
+
+    this.studentService.uploadRecommendationLetter(this.student.studentId || 0, file).subscribe({
+      next: (res) => {
+        if (res.success && res.result) {
+          this.student.recommendationLetterPath = res.result;
+          this.notification.success('Recommendation letter uploaded successfully.');
+        } else {
+          this.notification.error(res.message || 'Failed to upload recommendation letter.');
+        }
+        event.target.value = '';
+      },
+      error: () => {
+        this.notification.error('Error occurred during recommendation letter upload.');
+        event.target.value = '';
+      }
+    });
+  }
+
+  previewRecommendation(event: Event): void {
+    event.stopPropagation();
+    if (this.student.recommendationLetterPath) {
+      const previewUrl = HelperMethods.getFileUrl(this.student.recommendationLetterPath);
+      window.open(previewUrl, '_blank');
+    } else {
+      this.notification.info('Recommendation letter is not available.');
     }
   }
 
-  clearRecommendation(event: Event): void {
+  removeRecommendation(event: Event): void {
     event.stopPropagation();
-    this.student.recommendationLetterFile = undefined;
-    this.student.recommendationLetterPath = undefined;
+    this.confirmDialog.confirm({
+      title: 'Remove Recommendation Letter',
+      message: 'Are you sure you want to remove the recommendation letter?\nThis action cannot be undone.',
+      cancelText: 'Keep Document',
+      confirmText: 'Remove',
+      variant: 'danger'
+    }).then(confirmed => {
+      if (!confirmed) return;
+
+      this.studentService.deleteRecommendationLetter(this.student.studentId || 0).subscribe({
+        next: (res) => {
+          if (res.success) {
+            this.student.recommendationLetterPath = undefined;
+            this.notification.success('Recommendation letter removed successfully.');
+          } else {
+            this.notification.error(res.message || 'Failed to remove recommendation letter.');
+          }
+        },
+        error: () => {
+          this.notification.error('Error occurred while removing recommendation letter.');
+        }
+      });
+    });
   }
 
   // Save Logic
