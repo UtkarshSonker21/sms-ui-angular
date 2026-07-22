@@ -40,7 +40,7 @@
       </div>
       <div class="form-section-body">
 
-        <div class="field form-group">
+        <div class="field form-group" *ngIf="isEditMode">
           <label class="field-label">Personal photo</label>
           <div class="photo-uploader">
             <div class="ph-img" *ngIf="student.photoPath && !photoError">
@@ -238,6 +238,7 @@
               [(ngModel)]="student.orphanNumber">
           </div>
         </div>
+
       </div>
     </section>
 
@@ -563,7 +564,7 @@
             </div>
           </div>
 
-          <div class="field field-span-2" style="margin-top: 12px;">
+          <div class="field field-span-2" style="margin-top: 12px;" *ngIf="isEditMode">
             <label class="field-label">Recommendation Letter</label>
             <div class="form-hint" style="margin-bottom: 8px; font-size: 11.5px;">
               Letter from school principal or relevant authority supporting the nomination. PDF preferred; clear scans of signed paper letters are accepted.

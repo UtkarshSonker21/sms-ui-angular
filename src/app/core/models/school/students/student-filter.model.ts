@@ -36,4 +36,11 @@ export class StudntFilter extends BaseFilter {
 
     studentStatusId?: number;
     hsSpecialization?: number;
+
+    
+    // for coordinator nominations
+    createdBy? : number;
+    facultyId? : number;
+    universityId? : number;
+
 }
