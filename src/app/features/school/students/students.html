@@ -926,7 +926,7 @@
               <div style="display: flex; gap: 12px; align-items: center;">
                 <!-- Submit Button -->
                 <button type="button" class="btn btn-p"
-                  [disabled]="hasActiveApplication || isApplying || !canApply(prog)"
+                  [disabled]="isApplying || !canApply(prog)"
                   (click)="submitProgramApplication(prog.programId)">
                   Submit
                 </button>
@@ -1000,15 +1000,15 @@
 
           <div *ngFor="let item of studentHistory" class="student-history-item">
 
-            <div class="student-history-icon" style="border-color: #6c757d; color: #6c757d;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-              </svg>
-            </div>
+            <div class="student-history-left">
+              <div class="student-history-icon" style="border-color: #6c757d; color: #6c757d;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+              </div>
 
-            <div class="student-history-content">
-              <div>
+              <div class="student-history-content">
                 <strong class="student-history-title">{{ item.title }}</strong>
                 <div *ngIf="item.description" class="student-history-description">{{ item.description }}</div>
                 <!-- 
@@ -1018,10 +1018,11 @@
                 </div>
                 -->
               </div>
-              <div class="student-history-time">
-                <strong class="student-history-date">{{ item.createdDate | date:'dd MMM yyyy' }}</strong><br>
-                {{ item.createdDate | date:'hh:mm a' }}
-              </div>
+            </div>
+            
+            <div class="student-history-time">
+              <strong class="student-history-date">{{ item.createdDate | date:'dd MMM yyyy' }}</strong>
+              <span>{{ item.createdDate | date:'hh:mm a' }}</span>
             </div>
 
           </div>

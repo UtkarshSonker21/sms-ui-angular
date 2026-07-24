@@ -452,7 +452,9 @@ export class Students implements OnInit {
   }
 
   canApply(prog: CandidateProgram): boolean {
-    if (!prog.requiredDocuments) return true;
+    if (!prog || !prog.applicationId || prog.applicationStatusName !== 'Draft') return false;
+
+    if (!prog.requiredDocuments || prog.requiredDocuments.length === 0) return true;
     return prog.requiredDocuments
       .filter(d => d.isRequired)
       .every(d => this.getUploadedDocStatus(d.documentTypeId) === 'Uploaded');
@@ -505,7 +507,8 @@ export class Students implements OnInit {
   }
 
   submitProgramApplication(programId: number): void {
-    if (this.isApplying || this.hasActiveApplication) return;
+    debugger;
+    if (this.isApplying) return;
     
     const prog = this.candidatePrograms.find(p => p.programId === programId);
     if (!prog || !prog.applicationId) return;
@@ -603,7 +606,7 @@ export class Students implements OnInit {
 
   getUploadedDocStatus(documentTypeId: number): string {
     const doc = this.activeApplicationDocuments.find(d => d.documentTypeId === documentTypeId);
-    return doc ? 'Uploaded' : 'Pending Upload';
+    return (doc && doc.storagePath && doc.storagePath.length > 0) ? 'Uploaded' : 'Pending Upload';
   }
 
   getRequiredDocsCount(prog: CandidateProgram): number {

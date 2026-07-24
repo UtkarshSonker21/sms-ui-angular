@@ -42,5 +42,6 @@ export class StudntFilter extends BaseFilter {
     createdBy? : number;
     facultyId? : number;
     universityId? : number;
+    programId? : number;
 
 }
