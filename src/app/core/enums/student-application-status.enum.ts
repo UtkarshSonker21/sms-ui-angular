@@ -15,4 +15,5 @@ export enum StudentStatusEnum {
   Failed = 8,
   Dismissed = 9,
   Graduate = 10
+  
 }

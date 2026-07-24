@@ -1,0 +1,27 @@
+/* Accordion Collapsible Logic */
+.form-section.collapsible .form-section-body {
+  display: none;
+}
+.form-section.collapsible.open .form-section-body {
+  display: block;
+}
+.form-section.collapsible .form-section-head {
+  border-bottom: none;
+}
+.form-section.collapsible.open .form-section-head {
+  background: var(--da-green-50, #f0fdf4);
+  border-bottom: 1px solid var(--da-border);
+}
+.form-section.collapsible.open .form-section-head .form-section-num {
+  background: var(--da-green, #2c9942);
+  color: #ffffff;
+}
+.form-section.collapsible .chev svg {
+  transition: transform 0.2s ease;
+}
+.form-section.collapsible.open .chev svg {
+  transform: rotate(180deg);
+}
+.chev {
+  width: 24px; height: 24px; color: var(--da-muted);
+}

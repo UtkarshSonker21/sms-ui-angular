@@ -110,6 +110,12 @@ export const ApiEndpoints = {
       Delete: (id: number) => `university/master-university/delete/${id}`
     },
 
+
+    Students: {
+      Search: 'university/students/search',
+      GetById: (id: number) => `university/students/getById/${id}`,
+    }
+
   },
 
   School: {
@@ -148,7 +154,7 @@ export const ApiEndpoints = {
       Cancel: (applicationId: number) => `school/student-program/cancel/${applicationId}`,
       Submit: (applicationId: number) => `school/student-program/submit/${applicationId}`,
       GetById: (applicationId: number) => `school/student-program/getById/${applicationId}`,
-      
+
       UploadDocument: (applicationId: number) => `school/student-program/upload-document/${applicationId}`,
       DeleteDocument: (applicationId: number, documentId: number) =>
         `school/student-program/delete-document/${applicationId}/${documentId}`,

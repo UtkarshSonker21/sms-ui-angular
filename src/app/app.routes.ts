@@ -34,6 +34,8 @@ import { Students } from './features/school/students/students';
 import { CoordinatorStudentsList } from './features/school/coordinator-students-list/coordinator-students-list';
 import { CoordinatorSchoolList } from './features/school/coordinator-school-list/coordinator-school-list';
 import { CoordinatorNominations } from './features/school/coordinator-nominations/coordinator-nominations';
+import { UniversityStudents } from './features/university/university-students/university-students';
+import { UniversityStudentDetail } from './features/university/university-student-detail/university-student-detail';
 
 export const routes: Routes = [
 
@@ -141,6 +143,17 @@ export const routes: Routes = [
                 component: ProgramDetail
             },
             {
+                path: 'university-students',
+                component: UniversityStudents
+            },
+            {
+                path: 'university-student-details/:id',
+                component: UniversityStudentDetail
+            },
+
+
+
+            {
                 path: 'program-accreditation',
                 component: ProgramAccreditation
             },
@@ -171,11 +184,11 @@ export const routes: Routes = [
             },
             {
                 path: 'coordinator-school-registration',
-                component:SchoolRegistration
+                component: SchoolRegistration
             },
             {
                 path: 'coordinator-school-registration/:schoolId',
-                component:SchoolRegistration
+                component: SchoolRegistration
             },
             {
                 path: 'coordinator-students',

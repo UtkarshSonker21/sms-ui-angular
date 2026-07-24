@@ -47,6 +47,9 @@ export class StudentProgramDocument {
   fileSize: number = 0;
 
   reviewerRemark?: string;
+  universityRemark?: string;
+  
+  description?: string;
 
   uploadedBy: number = 0;
   uploadedDate!: Date;

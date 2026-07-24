@@ -1,0 +1,501 @@
+<div class="courses-page" data-lang="en">
+
+    <div class="page-head">
+        <div>
+            <div class="crumb">
+                <a href="#">Dashboard</a> <span class="sep">/</span>
+                <a href="javascript:void(0)" (click)="goBack()">University Students</a> <span class="sep">/</span>
+                <span *ngIf="student">{{ student.firstName }} {{ student.lastName }}</span>
+            </div>
+            <h1 class="page-title">Student Details</h1>
+            <div class="page-sub">
+                View the complete details for the student's university application.
+            </div>
+        </div>
+        <div class="page-actions">
+            <button class="btn btn-faculties-outline" type="button" (click)="goBack()" style="display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </button>
+        </div>
+    </div>
+
+
+
+    <div *ngIf="student" style="display: flex; flex-direction: column; flex: 1;">
+
+        <!-- ═════ Section 1 — Student Summary ═════ -->
+        <section class="form-section collapsible" [class.open]="activeSection === 1">
+            <div class="form-section-head" (click)="toggleSection(1)" style="cursor: pointer;">
+                <div class="form-section-num">1</div>
+                <div>
+                    <div class="form-section-title">Student Summary</div>
+                    <div class="form-section-sub">Overview of the student's identity and status.</div>
+                </div>
+                <div class="form-section-spacer"></div>
+                <div class="chev">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                </div>
+            </div>
+            <div class="form-section-body">
+
+                <div
+                    style="display: flex; gap: 24px; align-items: flex-start; padding: 16px; background: white; border: 1px solid var(--da-border); border-radius: 8px;">
+                    <!-- Photo -->
+                    <div
+                        style="flex: 0 0 100px; height: 100px; border-radius: 8px; overflow: hidden; border: 1px solid var(--da-border); background: var(--da-surface-2); display: flex; align-items: center; justify-content: center;">
+                        <img *ngIf="student.photoPath && !photoError" [src]="getPhotoUrl(student.photoPath)"
+                            (error)="handlePhotoError()" style="width: 100%; height: 100%; object-fit: cover;">
+                        <div *ngIf="!student.photoPath || photoError"
+                            style="font-size: 32px; font-weight: 600; color: var(--da-muted);">
+                            {{ student.firstName ? student.firstName.charAt(0).toUpperCase() : 'S' }}{{ student.lastName
+                            ? student.lastName.charAt(0).toUpperCase() : 'T' }}
+                        </div>
+                    </div>
+
+                    <div style="flex: 1;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                            <h3 style="margin: 0; font-size: 20px; font-weight: 600;">
+                                {{ student.fullName }}
+                            </h3>
+                            <span class="chip {{ getStatusBadgeClass(student) }}" style="font-size: 11px;">
+                                {{ student.applicationStatusName || 'Draft' }}
+                            </span>
+                        </div>
+
+                        <div
+                            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; color: var(--da-muted); font-size: 13px;">
+                            <div><strong>Student Code:</strong> <br><span style="color: var(--da-text);">{{
+                                    student.studentCode ? student.studentCode : '-' }}</span></div>
+                            <div><strong>Submitted Date:</strong> <br><span style="color: var(--da-text);">{{
+                                    student.actionDate ? (student.actionDate | date:'yyyy/MM/dd') : '-' }}</span></div>
+                            <div><strong>University:</strong> <br><span style="color: var(--da-text);">{{
+                                    student.universityName || '-' }}</span></div>
+                            <div><strong>Faculty:</strong> <br><span style="color: var(--da-text);">{{
+                                    student.facultyName || '-' }}</span></div>
+                            <div><strong>Program:</strong> <br><span style="color: var(--da-text);">{{
+                                    student.programName || '-' }}</span></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ═════ Section 2 — Applied Program ═════ -->
+        <section class="form-section collapsible" [class.open]="activeSection === 2">
+            <div class="form-section-head" (click)="toggleSection(2)" style="cursor: pointer;">
+                <div class="form-section-num">2</div>
+                <div>
+                    <div class="form-section-title">Applied Program</div>
+                    <div class="form-section-sub">Details of the program the student applied to.</div>
+                </div>
+                <div class="form-section-spacer"></div>
+                <div class="chev">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                </div>
+            </div>
+            <div class="form-section-body">
+
+                <!-- Reusing Coordinator Program Card Layout -->
+                <div class="card"
+                    style="border: 2px solid var(--da-primary); border-radius: 6px; background: white; overflow: hidden; padding: 16px; display: flex; align-items: center; gap: 16px;">
+                    <div
+                        style="flex: 0 0 48px; height: 48px; border-radius: 8px; background: #dcfce7; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2">
+                            <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                            <path d="M6 12v5c3 3 9 3 12 0v-5" />
+                        </svg>
+                    </div>
+                    <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
+                        <h4
+                            style="margin: 0 0 4px 0; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                            {{ student.programName || '-' }}
+                            <span class="badge" *ngIf="student.applicationStatusName"
+                                style="background: var(--da-primary); color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px;">Status:
+                                {{ student.applicationStatusName }}</span>
+                        </h4>
+                        <div style="color: var(--da-muted); font-size: 13px; margin-bottom: 4px;">{{ student.programCode
+                            || '-' }}</div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px;">
+                            <div><strong>Faculty:</strong> {{ student.facultyName || '-' }}</div>
+                            <div><strong>University:</strong> {{ student.universityName || '-' }}</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ═════ Section 3 — Submitted Documents ═════ -->
+        <section class="form-section collapsible" [class.open]="activeSection === 3">
+            <div class="form-section-head" (click)="toggleSection(3)" style="cursor: pointer;">
+                <div class="form-section-num">3</div>
+                <div>
+                    <div class="form-section-title">Submitted Documents - {{ getUploadedDocumentsCount() }} / {{
+                        documents.length }} submitted</div>
+                    <div class="form-section-sub">Documents provided by the student for this application.</div>
+                </div>
+                <div class="form-section-spacer"></div>
+                <div class="chev">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                </div>
+            </div>
+            <div class="form-section-body">
+
+                <div *ngIf="documents.length === 0"
+                    style="padding: 32px; text-align: center; border: 1px dashed var(--da-border); border-radius: 6px;">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--da-muted)"
+                        stroke-width="2" style="margin-bottom: 12px;">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                        <polyline points="10 9 9 9 8 9" />
+                    </svg>
+                    <div style="font-weight: 500; font-size: 14px; margin-bottom: 4px;">No documents available</div>
+                    <div style="color: var(--da-muted); font-size: 13px;">There are currently no documents fetched from
+                        the API for this application.</div>
+                </div>
+
+                <div *ngFor="let doc of documents"
+                    style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: white; border: 1px solid var(--da-border); border-radius: 6px; margin-bottom: 8px;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                            <strong style="font-size: 13px;">{{ doc.documentTypeName }}</strong>
+                            <span *ngIf="doc.isRequired" class="badge"
+                                style="background: var(--da-danger-bg, #fef2f2); color: var(--da-danger, #dc2626); border: 1px solid var(--da-danger-border, #fecaca); padding: 2px 8px; border-radius: 12px; font-size: 11px;">Required</span>
+                            <span *ngIf="!doc.isRequired" class="badge"
+                                style="background: var(--da-info-bg, #eff6ff); color: var(--da-info, #2563eb); border: 1px solid var(--da-info-border, #bfdbfe); padding: 2px 8px; border-radius: 12px; font-size: 11px;">Optional</span>
+
+                            <span class="badge" [ngStyle]="{
+                      'background': getUploadedDocStatus(doc.documentTypeId) === 'Uploaded' ? '#dcfce7' : '#f1f5f9',
+                      'color': getUploadedDocStatus(doc.documentTypeId) === 'Uploaded' ? '#166534' : '#475569',
+                      'padding': '2px 8px', 'border-radius': '12px', 'font-size': '11px', 'margin-left': '8px'
+                    }">
+                                {{ getUploadedDocStatus(doc.documentTypeId) }}
+                            </span>
+                        </div>
+                        <div style="color: var(--da-muted); font-size: 12px;">
+                            <span *ngIf="doc.originalFileName || doc.storedFileName">{{ doc.originalFileName ||
+                                doc.storedFileName }} - </span>
+                            <span *ngIf="doc.uploadedDate">uploaded {{ doc.uploadedDate | date:'yyyy-MM-dd' }}</span>
+                            <span *ngIf="!doc.originalFileName && !doc.storedFileName && !doc.uploadedDate">{{
+                                doc.description || 'Student provided document.' }}</span>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <div (click)="openDiscussionModal(doc.documentTypeId)"
+                            style="cursor: pointer; display: flex; align-items: center; gap: 4px; color: var(--da-muted); font-size: 12px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                            </svg>
+                            {{ getDiscussionCount(doc.documentTypeId) }}
+                        </div>
+
+                        <!-- Preview Action -->
+                        <ng-container *ngIf="getUploadedDocStatus(doc.documentTypeId) === 'Uploaded'">
+                            <button type="button" class="btn btn-sm btn-faculties-outline btn-info-outline"
+                                (click)="previewDocument(doc.documentTypeId); $event.stopPropagation()">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" style="margin-right: 4px;">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                                Preview
+                            </button>
+                        </ng-container>
+                    </div>
+                </div>
+
+                <!-- Discussion Modal -->
+                <div *ngIf="isDiscussionModalOpen"
+                    style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+                    <div class="card"
+                        style="width: 800px; max-width: 90%; background: white; padding: 24px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                        <h3 style="margin: 0 0 16px 0; font-size: 18px;">Document Discussion</h3>
+
+                        <label
+                            style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px; color: var(--da-text);">Coordinator
+                            Remark</label>
+                        <textarea class="field-input" rows="4"
+                            style="min-height: 80px; resize: vertical; background: var(--da-surface-2); cursor: not-allowed; margin-bottom: 16px;"
+                            placeholder="No remarks entered." [ngModel]="currentDiscussionRemark" name="docRemark"
+                            readonly disabled></textarea>
+
+                        <label
+                            style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px; color: var(--da-text);">University
+                            Remark</label>
+                        <textarea class="field-input" rows="4" style="min-height: 80px; resize: vertical;"
+                            placeholder="Enter remarks for this document..." [(ngModel)]="universityDiscussionRemark"
+                            name="universityRemark"></textarea>
+
+                        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px;">
+                            <button type="button" class="btn btn-faculties-outline"
+                                (click)="closeDiscussionModal()">Cancel</button>
+                            <button type="button" class="btn btn-p" (click)="saveUniversityRemark()">Save</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ═════ Section 4 — Personal Information ═════ -->
+        <section class="form-section collapsible" [class.open]="activeSection === 4">
+            <div class="form-section-head" (click)="toggleSection(4)" style="cursor: pointer;">
+                <div class="form-section-num">4</div>
+                <div>
+                    <div class="form-section-title">Personal Information</div>
+                    <div class="form-section-sub">Student's personal profile and demographic information.</div>
+                </div>
+                <div class="form-section-spacer"></div>
+                <div class="chev">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                </div>
+            </div>
+            <div class="form-section-body">
+
+                <div class="form-grid form-grid-2">
+                    <div class="field">
+                        <label class="field-label">First Name</label>
+                        <input type="text" class="field-input" [value]="student.firstName || '-'" readonly disabled>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">Second Name</label>
+                        <input type="text" class="field-input" [value]="student.secondName || '-'" readonly disabled>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">Third Name</label>
+                        <input type="text" class="field-input" [value]="student.thirdName || '-'" readonly disabled>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">Last Name</label>
+                        <input type="text" class="field-input" [value]="student.lastName || '-'" readonly disabled>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">Mother's Name</label>
+                        <input type="text" class="field-input" [value]="student.motherName || '-'" readonly disabled>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">Date of Birth</label>
+                        <input type="text" class="field-input"
+                            [value]="student.dateOfBirth ? (student.dateOfBirth | date:'mediumDate') : '-'" readonly
+                            disabled>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">Nationality</label>
+                        <input type="text" class="field-input" [value]="student.nationality || '-'" readonly disabled>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">Country of Residence</label>
+                        <input type="text" class="field-input" [value]="student.countryOfResidence || '-'" readonly
+                            disabled>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">Gender</label>
+                        <input type="text" class="field-input" [value]="student.genderName || '-'" readonly disabled>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">Religion</label>
+                        <input type="text" class="field-input" [value]="student.religionName || '-'" readonly disabled>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">Direct Aid Orphan</label>
+                        <input type="text" class="field-input" [value]="student.isDirectAidOrphan ? 'Yes' : 'No'"
+                            readonly disabled>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">Orphan Number</label>
+                        <input type="text" class="field-input" [value]="student.orphanNumber || '-'" readonly disabled>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ═════ Section 5 — Contact Information ═════ -->
+        <section class="form-section collapsible" [class.open]="activeSection === 5">
+            <div class="form-section-head" (click)="toggleSection(5)" style="cursor: pointer;">
+                <div class="form-section-num">5</div>
+                <div>
+                    <div class="form-section-title">Contact Information</div>
+                    <div class="form-section-sub">Student's contact and residential information.</div>
+                </div>
+                <div class="form-section-spacer"></div>
+                <div class="chev">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                </div>
+            </div>
+            <div class="form-section-body">
+
+                <div class="form-grid form-grid-2">
+                    <div class="field">
+                        <label class="field-label">Phone Number</label>
+                        <input type="text" class="field-input num-ltr" [value]="student.phoneNumber || '-'" readonly
+                            disabled>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">Email Address</label>
+                        <input type="text" class="field-input" [value]="student.emailAddress || '-'" readonly disabled>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">City</label>
+                        <input type="text" class="field-input" [value]="student.city || '-'" readonly disabled>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">Village</label>
+                        <input type="text" class="field-input" [value]="student.village || '-'" readonly disabled>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">Block</label>
+                        <input type="text" class="field-input" [value]="student.block || '-'" readonly disabled>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">Street</label>
+                        <input type="text" class="field-input" [value]="student.street || '-'" readonly disabled>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ═════ Section 6 — Academic Information ═════ -->
+        <section class="form-section collapsible" [class.open]="activeSection === 6">
+            <div class="form-section-head" (click)="toggleSection(6)" style="cursor: pointer;">
+                <div class="form-section-num">6</div>
+                <div>
+                    <div class="form-section-title">Academic Information & Scores</div>
+                    <div class="form-section-sub">Student's high school performance.</div>
+                </div>
+                <div class="form-section-spacer"></div>
+                <div class="chev">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                </div>
+            </div>
+            <div class="form-section-body">
+
+                <div class="form-grid form-grid-2">
+                    <div class="field" style="grid-column: 1 / -1;">
+                        <label class="field-label">School Name</label>
+                        <input type="text" class="field-input" [value]="student.schoolName || '-'" readonly disabled>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">High School Specialization</label>
+                        <input type="text" class="field-input" [value]="student.hsSpecialization || '-'" readonly
+                            disabled>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">Tanzanian Student Combination</label>
+                        <input type="text" class="field-input" [value]="student.tanzanianStudentCombination || '-'"
+                            readonly disabled>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">Total Score</label>
+                        <input type="text" class="field-input"
+                            [value]="student.totalScore !== undefined ? student.totalScore : '-'" readonly disabled>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">English Score</label>
+                        <input type="text" class="field-input"
+                            [value]="student.englishScore !== undefined ? student.englishScore : '-'" readonly disabled>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ═════ Section 7 — Timeline / History ═════ -->
+        <section class="form-section collapsible" [class.open]="activeSection === 7">
+            <div class="form-section-head" (click)="toggleSection(7)" style="cursor: pointer;">
+                <div class="form-section-num">7</div>
+                <div>
+                    <div class="form-section-title">Student History</div>
+                    <div class="form-section-sub">Complete activity timeline for this student.</div>
+                </div>
+                <div class="form-section-spacer"></div>
+                <div class="chev">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                </div>
+            </div>
+            <div class="form-section-body">
+
+                <div *ngIf="!studentHistory || studentHistory.length === 0" class="student-history-empty">
+                    No activity has been recorded for this student yet.
+                </div>
+
+                <div *ngIf="studentHistory && studentHistory.length > 0" class="student-history">
+
+                    <div class="student-history-line"></div>
+
+                    <div *ngFor="let item of studentHistory" class="student-history-item">
+
+                        <div class="student-history-left">
+                            <div class="student-history-icon" style="border-color: #6c757d; color: #6c757d;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <polyline points="12 6 12 12 16 14" />
+                                </svg>
+                            </div>
+
+                            <div class="student-history-content">
+                                <strong class="student-history-title">{{ item.title }}</strong>
+                                <div *ngIf="item.description" class="student-history-description">{{ item.description }}
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="student-history-time">
+                            <strong class="student-history-date">{{ item.createdDate | date:'dd MMM yyyy' }}</strong>
+                            <span>{{ item.createdDate | date:'hh:mm a' }}</span>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <div class="spacer" style="flex: 1;"></div>
+
+        <!-- Form Actions (Sticky Footer) -->
+        <div class="sticky-footer" style="display: flex; gap: 12px; align-items: center; justify-content: flex-end;">
+
+            <!-- Workflow Buttons (TODOs) -->
+            <button type="button" class="btn btn-faculties-outline btn-success-outline" *ngIf="student.canApprove"
+                (click)="approve()">
+                Approve
+            </button>
+            <button type="button" class="btn btn-faculties-outline btn-danger-outline" *ngIf="student.canReject"
+                (click)="reject()">
+                Reject
+            </button>
+            <button type="button" class="btn btn-faculties-outline btn-info-outline" *ngIf="student.canRegister"
+                (click)="register()">
+                Register
+            </button>
+            <button type="button" class="btn btn-faculties-outline btn-success-outline" *ngIf="student.canGraduate"
+                (click)="graduate()">
+                Graduate
+            </button>
+
+        </div>
+
+    </div>
+</div>
