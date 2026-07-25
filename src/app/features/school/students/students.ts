@@ -21,7 +21,11 @@ import { AppRoutes } from '../../../core/constants/app-routes';
 import { MasterCountryFilter } from '../../../core/models/super-admin/master-country/master-country-filter.model';
 import { MasterSchoolFilter } from '../../../core/models/school/master-school/master-school-filter.model';
 import { StudentProgramService } from '../../../core/services/school/student-program.service';
-import { CandidateProgram, ApplyRequest, StudentProgramDocument, StudentHistory, UploadDocumentRequest } from '../../../core/models/school/students/student-program-application.model';
+import { StudentProgramDocument } from '../../../core/models/school/student-program-application/student-program-document.model';
+import { CandidateProgram } from '../../../core/models/school/student-program-application/candidate-program.model';
+import { StudentHistory } from '../../../core/models/school/student-program-application/student-history.model';
+import { ApplyRequest } from '../../../core/models/school/student-program-application/apply-request.model';
+import { UploadDocumentRequest } from '../../../core/models/school/student-program-application/upload-document-request.model';
 
 
 

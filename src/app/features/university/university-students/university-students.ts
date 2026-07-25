@@ -5,18 +5,20 @@ import { Router } from '@angular/router';
 
 import { NotificationService } from '../../../core/services/common/notification.service';
 import { HelperMethods } from '../../../core/helpers/helper-methods';
-import { UniversityStudentService } from '../../../core/services/university/university-students.service';
+import { StudentProgramService } from '../../../core/services/school/student-program.service';
 import { FacultyService } from '../../../core/services/university/faculty.service';
 import { ProgramService } from '../../../core/services/university/programs.service';
 import { CurrentUserProfileService } from '../../../core/services/common/current-user-profile.service';
 
-import { UniversityStudentRequestModel } from '../../../core/models/university/university-students/university-student-request.model';
-import { UniversityStudentFilterModel } from '../../../core/models/university/university-students/university-student-filter.model';
 import { FacultyFilter } from '../../../core/models/university/faculties/faculty-filter.model';
 import { ProgramFilter } from '../../../core/models/university/programs/program-filter.model';
 import { FacultyRequest } from '../../../core/models/university/faculties/faculty-request.model';
 import { ProgramRequest } from '../../../core/models/university/programs/program-request.model';
 import { StudentStatusEnum } from '../../../core/enums/student-application-status.enum';
+import { StudentStatusService } from '../../../core/services/common/student-status.service';
+import { UNIVERSITY_STATUS_IDS } from '../../../core/constants/student-status.config';
+import { StudentProgramApplication } from '../../../core/models/school/student-program-application/student-program-application.model';
+import { StudentProgramApplicationFilter } from '../../../core/models/school/student-program-application/student-program-application-filter.model';
 
 @Component({
   selector: 'app-university-students',
@@ -35,17 +37,18 @@ export class UniversityStudents implements OnInit {
     this.isPageSizeDropdownOpen = false;
   }
 
-  private studentService = inject(UniversityStudentService);
+  private studentService = inject(StudentProgramService);
   private facultyService = inject(FacultyService);
   private programService = inject(ProgramService);
   private currentUserProfileService = inject(CurrentUserProfileService);
   private notification = inject(NotificationService);
+  private studentStatusService = inject(StudentStatusService);
   private router = inject(Router);
 
   universityId: number = 0;
 
   // Table Data
-  students: UniversityStudentRequestModel[] = [];
+  students: StudentProgramApplication[] = [];
   totalRecords = 0;
   searchText = '';
 
@@ -72,24 +75,13 @@ export class UniversityStudents implements OnInit {
   studentStatus = StudentStatusEnum;
 
   // Filter
-  filter: UniversityStudentFilterModel = new UniversityStudentFilterModel();
+  filter: StudentProgramApplicationFilter = new StudentProgramApplicationFilter();
 
   // Dropdown States & Data
   faculties: FacultyRequest[] = [];
   programs: ProgramRequest[] = [];
   
-  statusOptions = [
-    { id: StudentStatusEnum.AcceptanceInProcess, name: 'Acceptance In Process' },
-    { id: StudentStatusEnum.AcceptanceRejected, name: 'Acceptance Rejected' },
-    { id: StudentStatusEnum.Sponsored, name: 'Sponsored' },
-    { id: StudentStatusEnum.SponsoredRejected, name: 'Sponsored Rejected' },
-    { id: StudentStatusEnum.Awarded, name: 'Awarded' },
-    { id: StudentStatusEnum.AwardedRejected, name: 'Awarded Rejected' },
-    { id: StudentStatusEnum.Registered, name: 'Registered' },
-    { id: StudentStatusEnum.Failed, name: 'Failed' },
-    { id: StudentStatusEnum.Dismissed, name: 'Dismissed' },
-    { id: StudentStatusEnum.Graduate, name: 'Graduate' },
-  ];
+  statusOptions = this.studentStatusService.getStatusOptions(UNIVERSITY_STATUS_IDS);
   
   selectedFaculty: number = 0;
   selectedProgram: number = 0;
@@ -142,9 +134,9 @@ export class UniversityStudents implements OnInit {
     this.filter.universityId = this.universityId || undefined;
     this.filter.facultyId = this.selectedFaculty || undefined;
     this.filter.programId = this.selectedProgram || undefined;
-    this.filter.studentStatusId = this.selectedStatus !== null ? this.selectedStatus : undefined;
+    this.filter.applicationStatusId = this.selectedStatus !== null ? this.selectedStatus : undefined;
 
-    this.studentService.getStudents(this.filter).subscribe({
+    this.studentService.search(this.filter).subscribe({
       next: (response) => {
         if (response.success && response.result) {
           // The backend should handle excluding drafts etc. per instructions
@@ -163,23 +155,25 @@ export class UniversityStudents implements OnInit {
     });
   }
 
-  calculateKPIs(items: UniversityStudentRequestModel[]): void {
-    this.kpiTotal = this.totalRecords;
-    this.kpiInProcess = items.filter(s => s.applicationStatusId === StudentStatusEnum.AcceptanceInProcess).length;
-    this.kpiSponsored = items.filter(s => s.applicationStatusId === StudentStatusEnum.Sponsored).length;
-    this.kpiRegistered = items.filter(s => s.applicationStatusId === StudentStatusEnum.Registered).length;
+  calculateKPIs(items: StudentProgramApplication[]): void {
 
-    this.tabAll = this.totalRecords;
-    this.tabInProcess = this.kpiInProcess;
-    this.tabAccRejected = items.filter(s => s.applicationStatusId === StudentStatusEnum.AcceptanceRejected).length;
-    this.tabSponsored = this.kpiSponsored;
-    this.tabSponRejected = items.filter(s => s.applicationStatusId === StudentStatusEnum.SponsoredRejected).length;
-    this.tabAwarded = items.filter(s => s.applicationStatusId === StudentStatusEnum.Awarded).length;
-    this.tabAwardedRejected = items.filter(s => s.applicationStatusId === StudentStatusEnum.AwardedRejected).length;
-    this.tabRegistered = this.kpiRegistered;
-    this.tabFailed = items.filter(s => s.applicationStatusId === StudentStatusEnum.Failed).length;
-    this.tabDismissed = items.filter(s => s.applicationStatusId === StudentStatusEnum.Dismissed).length;
-    this.tabGraduate = items.filter(s => s.applicationStatusId === StudentStatusEnum.Graduate).length;
+    this.kpiTotal = this.totalRecords;
+    this.kpiInProcess = this.studentStatusService.counts(items as any, StudentStatusEnum.AcceptanceInProcess);
+    this.kpiSponsored = this.studentStatusService.counts(items as any, StudentStatusEnum.Sponsored);
+    this.kpiRegistered = this.studentStatusService.counts(items as any, StudentStatusEnum.Registered);
+    this.tabAccRejected = this.studentStatusService.counts(items as any, StudentStatusEnum.AcceptanceRejected);
+
+    // this.tabAll = this.totalRecords;
+    // this.tabInProcess = this.kpiInProcess;
+    // this.tabAccRejected = items.filter(s => s.applicationStatusId === StudentStatusEnum.AcceptanceRejected).length;
+    // this.tabSponsored = this.kpiSponsored;
+    // this.tabSponRejected = items.filter(s => s.applicationStatusId === StudentStatusEnum.SponsoredRejected).length;
+    // this.tabAwarded = items.filter(s => s.applicationStatusId === StudentStatusEnum.Awarded).length;
+    // this.tabAwardedRejected = items.filter(s => s.applicationStatusId === StudentStatusEnum.AwardedRejected).length;
+    // this.tabRegistered = this.kpiRegistered;
+    // this.tabFailed = items.filter(s => s.applicationStatusId === StudentStatusEnum.Failed).length;
+    // this.tabDismissed = items.filter(s => s.applicationStatusId === StudentStatusEnum.Dismissed).length;
+    // this.tabGraduate = items.filter(s => s.applicationStatusId === StudentStatusEnum.Graduate).length;
   }
 
   // --- Search & Filters ---
@@ -297,38 +291,17 @@ export class UniversityStudents implements OnInit {
   }
 
   // --- Status Badge Helper ---
-  getStatusBadgeClass(student: UniversityStudentRequestModel): string {
-    switch(student.applicationStatusId) {
-      case StudentStatusEnum.Draft: return 'chip-draft';
-      case StudentStatusEnum.AcceptanceInProcess: return 'chip-acceptance-process';
-      case StudentStatusEnum.AcceptanceRejected: return 'chip-acceptance-rejected';
-      case StudentStatusEnum.Sponsored: return 'chip-sponsored';
-      case StudentStatusEnum.SponsoredRejected: return 'chip-sponsored-rejected';
-      case StudentStatusEnum.Awarded: return 'chip-awarded';
-      case StudentStatusEnum.AwardedRejected: return 'chip-awarded-rejected';
-      case StudentStatusEnum.Registered: return 'chip-registered';
-      case StudentStatusEnum.Failed: return 'chip-failed';
-      case StudentStatusEnum.Dismissed: return 'chip-dismissed';
-      case StudentStatusEnum.Graduate: return 'chip-graduate';
-      default: return 'chip-draft';
-    }
+  getStatusBadgeClass(student: StudentProgramApplication): string {
+    return this.studentStatusService.getBadgeClass(
+      student.applicationStatusId ?? StudentStatusEnum.Draft
+    );
   }
 
-  getStatusName(student: UniversityStudentRequestModel): string {
-    switch(student.applicationStatusId) {
-      case StudentStatusEnum.Draft: return 'Draft';
-      case StudentStatusEnum.AcceptanceInProcess: return 'Acceptance In Process';
-      case StudentStatusEnum.AcceptanceRejected: return 'Acceptance Rejected';
-      case StudentStatusEnum.Sponsored: return 'Sponsored';
-      case StudentStatusEnum.SponsoredRejected: return 'Sponsored Rejected';
-      case StudentStatusEnum.Awarded: return 'Awarded';
-      case StudentStatusEnum.AwardedRejected: return 'Awarded Rejected';
-      case StudentStatusEnum.Registered: return 'Registered';
-      case StudentStatusEnum.Failed: return 'Failed';
-      case StudentStatusEnum.Dismissed: return 'Dismissed';
-      case StudentStatusEnum.Graduate: return 'Graduate';
-      default: return 'Unknown';
-    }
+
+  getStatusName(student: StudentProgramApplication): string {
+    return this.studentStatusService.getName(
+      student.applicationStatusId ?? StudentStatusEnum.Draft
+    );
   }
 
   // --- Pagination ---
@@ -374,8 +347,11 @@ export class UniversityStudents implements OnInit {
     this.notification.info('Export functionality coming soon.');
   }
 
-  viewStudent(id: number): void {
-    this.router.navigate(['/university-student-details', id]);
+  viewStudent(studentId: number): void {
+    const student = this.students.find(x => x.studentId === studentId);
+    if (student) {
+      this.router.navigate(['/university-student-details', student.applicationId]);
+    }
   }
 
   photoErrors = new Set<number>();

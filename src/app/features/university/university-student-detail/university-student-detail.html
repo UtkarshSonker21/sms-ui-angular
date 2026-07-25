@@ -405,12 +405,22 @@
                     <div class="field">
                         <label class="field-label">Total Score</label>
                         <input type="text" class="field-input"
-                            [value]="student.totalScore !== undefined ? student.totalScore : '-'" readonly disabled>
+                            [value]="student.highSchoolTotalScore !== undefined && student.highSchoolTotalScore !== null ? student.highSchoolTotalScore : '-'" readonly disabled>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">Max Score</label>
+                        <input type="text" class="field-input"
+                            [value]="student.highSchoolMaxScore !== undefined && student.highSchoolMaxScore !== null ? student.highSchoolMaxScore : '-'" readonly disabled>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">Relative Grade / Percentage</label>
+                        <input type="text" class="field-input"
+                            [value]="student.highSchoolRelativeGradeOrPercentage !== undefined && student.highSchoolRelativeGradeOrPercentage !== null ? student.highSchoolRelativeGradeOrPercentage : '-'" readonly disabled>
                     </div>
                     <div class="field">
                         <label class="field-label">English Score</label>
                         <input type="text" class="field-input"
-                            [value]="student.englishScore !== undefined ? student.englishScore : '-'" readonly disabled>
+                            [value]="student.englishScore !== undefined && student.englishScore !== null ? student.englishScore : '-'" readonly disabled>
                     </div>
                 </div>
 

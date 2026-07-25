@@ -18,6 +18,8 @@ import { StudentStatusEnum } from '../../../core/enums/student-application-statu
 import { DisableAutocompleteDirective } from '../../../shared/directives/disable-autocomplete.directive';
 import { AppRoutes } from '../../../core/constants/app-routes';
 import { MainDropdown } from '../../../core/enums/main-dropdown.enum';
+import { StudentStatusService } from '../../../core/services/common/student-status.service';
+import { SCHOOL_STATUS_IDS } from '../../../core/constants/student-status.config';
 
 
 @Component({
@@ -41,6 +43,7 @@ export class CoordinatorStudentsList implements OnInit {
   private schoolService = inject(MasterSchoolService);
   private masterDropdownService = inject(MasterDropDownService);
   private notification = inject(NotificationService);
+  private studentStatusService = inject(StudentStatusService);
   private router = inject(Router);
 
   // Table Data
@@ -76,21 +79,10 @@ export class CoordinatorStudentsList implements OnInit {
   // Dropdown States & Data
   schools: MasterSchoolRequest[] = [];
   specializations: MasterDropDownRequest[] = [];
-  
-  statusOptions = [
-    { id: StudentStatusEnum.Draft, name: 'Draft' },
-    { id: StudentStatusEnum.AcceptanceInProcess, name: 'Acceptance In Process' },
-    { id: StudentStatusEnum.AcceptanceRejected, name: 'Acceptance Rejected' },
-    { id: StudentStatusEnum.Sponsored, name: 'Sponsored' },
-    { id: StudentStatusEnum.SponsoredRejected, name: 'Sponsored Rejected' },
-    { id: StudentStatusEnum.Awarded, name: 'Sponsored' },
-    { id: StudentStatusEnum.AwardedRejected, name: 'Awarded Rejected' },
-    { id: StudentStatusEnum.Registered, name: 'Registered' },
-    { id: StudentStatusEnum.Failed, name: 'Failed' },
-    { id: StudentStatusEnum.Dismissed, name: 'Dismissed' },
-    { id: StudentStatusEnum.Graduate, name: 'Graduate' },
-  ];
-  
+
+
+  statusOptions = this.studentStatusService.getStatusOptions(SCHOOL_STATUS_IDS);
+
   selectedSchool: number = 0;
   selectedSpec: string = '';
   selectedStatus: number | null = null;
@@ -157,22 +149,25 @@ export class CoordinatorStudentsList implements OnInit {
   }
 
   calculateKPIs(items: StudentRequest[]): void {
-    this.kpiTotal = this.totalRecords;
-    this.kpiInProcess = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.AcceptanceInProcess).length;
-    this.kpiSponsored = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.Sponsored).length;
-    this.kpiRegistered = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.Registered).length;
 
-    this.tabAll = this.totalRecords;
-    this.tabInProcess = this.kpiInProcess;
-    this.tabAccRejected = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.AcceptanceRejected).length;
-    this.tabSponsored = this.kpiSponsored;
-    this.tabSponRejected = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.SponsoredRejected).length;
-    this.tabAwarded = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.Awarded).length;
-    this.tabAwardedRejected = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.AwardedRejected).length;
-    this.tabRegistered = this.kpiRegistered;
-    this.tabFailed = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.Failed).length;
-    this.tabDismissed = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.Dismissed).length;
-    this.tabGraduate = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.Graduate).length;
+    this.kpiTotal = this.totalRecords;
+    this.kpiInProcess = this.studentStatusService.count(items, StudentStatusEnum.AcceptanceInProcess);
+    this.kpiSponsored = this.studentStatusService.count(items, StudentStatusEnum.Sponsored);
+    this.kpiRegistered = this.studentStatusService.count(items, StudentStatusEnum.Registered);
+    this.tabAccRejected = this.studentStatusService.count(items, StudentStatusEnum.AcceptanceRejected);
+
+    // this.tabAll = this.totalRecords;
+    // this.tabInProcess = this.kpiInProcess;
+    // this.tabAccRejected = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.AcceptanceRejected).length;
+    // this.tabSponsored = this.kpiSponsored;
+    // this.tabSponRejected = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.SponsoredRejected).length;
+    // this.tabAwarded = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.Awarded).length;
+    // this.tabAwardedRejected = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.AwardedRejected).length;
+    // this.tabRegistered = this.kpiRegistered;
+    // this.tabFailed = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.Failed).length;
+    // this.tabDismissed = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.Dismissed).length;
+    // this.tabGraduate = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.Graduate).length;
+
   }
 
   // --- Search & Filters ---
@@ -280,40 +275,7 @@ export class CoordinatorStudentsList implements OnInit {
     this.loadData();
   }
 
-  // --- Status Badge Helper ---
-  getStatusBadgeClass(student: StudentRequest): string {
-    switch(student.studentApplicationStatusId) {
-      case StudentStatusEnum.Draft: return 'chip-draft';
-      case StudentStatusEnum.AcceptanceInProcess: return 'chip-acceptance-process';
-      case StudentStatusEnum.AcceptanceRejected: return 'chip-acceptance-rejected';
-      case StudentStatusEnum.Sponsored: return 'chip-sponsored';
-      case StudentStatusEnum.SponsoredRejected: return 'chip-sponsored-rejected';
-      case StudentStatusEnum.Awarded: return 'chip-awarded';
-      case StudentStatusEnum.AwardedRejected: return 'chip-awarded-rejected';
-      case StudentStatusEnum.Registered: return 'chip-registered';
-      case StudentStatusEnum.Failed: return 'chip-failed';
-      case StudentStatusEnum.Dismissed: return 'chip-dismissed';
-      case StudentStatusEnum.Graduate: return 'chip-graduate';
-      default: return 'chip-draft';
-    }
-  }
 
-  getStatusName(student: StudentRequest): string {
-    switch(student.studentApplicationStatusId) {
-      case StudentStatusEnum.Draft: return 'Draft';
-      case StudentStatusEnum.AcceptanceInProcess: return 'Acceptance In Process';
-      case StudentStatusEnum.AcceptanceRejected: return 'Acceptance Rejected';
-      case StudentStatusEnum.Sponsored: return 'Sponsored';
-      case StudentStatusEnum.SponsoredRejected: return 'Sponsored Rejected';
-      case StudentStatusEnum.Awarded: return 'Awarded';
-      case StudentStatusEnum.AwardedRejected: return 'Awarded Rejected';
-      case StudentStatusEnum.Registered: return 'Registered';
-      case StudentStatusEnum.Failed: return 'Failed';
-      case StudentStatusEnum.Dismissed: return 'Dismissed';
-      case StudentStatusEnum.Graduate: return 'Graduate';
-      default: return 'Not Assigned';
-    }
-  }
 
   // --- Pagination ---
   get totalPages(): number {
@@ -381,5 +343,25 @@ export class CoordinatorStudentsList implements OnInit {
   hasPhotoError(studentId: number): boolean {
     return this.photoErrors.has(studentId);
   }
+
+
+
+
+
+
+  getStatusBadgeClass(student: StudentRequest): string {
+    return this.studentStatusService.getBadgeClass(
+      student.studentApplicationStatusId ?? StudentStatusEnum.Draft
+    );
+  }
+
+
+  getStatusName(student: StudentRequest): string {
+    return this.studentStatusService.getName(
+      student.studentApplicationStatusId ?? StudentStatusEnum.Draft
+    );
+  }
+
+
 
 }
