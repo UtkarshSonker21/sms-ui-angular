@@ -1,7 +1,7 @@
-import { StudentStatusEnum } from "../../../enums/student-application-status.enum";
+import { RequiredDocument } from "./required-document.model";
+import { StudentProgramDocument } from "./student-program-document.model";
 
-export class UniversityStudentRequestModel {
-
+export class StudentProgramApplication {
   // Student
   studentId: number = 0;
   studentCode: string = '';
@@ -29,28 +29,45 @@ export class UniversityStudentRequestModel {
   isDirectAidOrphan?: boolean;
   orphanNumber: string = '';
 
-  // Contact Information
+  // Contact
   phoneNumber: string = '';
   emailAddress: string = '';
+
   city: string = '';
   village: string = '';
   block: string = '';
   street: string = '';
 
   // Academic Information
-  totalScore?: number;
+  highSchoolTotalScore?: number;
+  highSchoolMaxScore?: number;
+  highSchoolRelativeGradeOrPercentage?: number;
   englishScore?: number;
+
   hsSpecialization: string = '';
   tanzanianStudentCombination: string = '';
 
   // School
+  schoolId?: number;
   schoolName: string = '';
 
   // Application
   applicationId: number = 0;
-  applicationStatusId?: StudentStatusEnum;
+  applicationStatusId: number = 0;
+  applicationStatus: number = 0;
   applicationStatusName: string = '';
   actionDate?: Date;
+  appliedDate!: Date;
+  submittedDate?: Date | null;
+  remarks?: string;
+
+  createdBy: number = 0;
+  createdDate!: Date;
+
+  isAllRequiredDocumentsUploaded: boolean = false;
+
+  requiredDocuments: RequiredDocument[] = [];
+  documents: StudentProgramDocument[] = [];
 
   // Program
   programId: number = 0;
@@ -65,12 +82,12 @@ export class UniversityStudentRequestModel {
   universityId: number = 0;
   universityName: string = '';
 
-  // Permissions
+  // University specific and permission fields
+  totalScore?: number;
   canApprove: boolean = false;
   canReject: boolean = false;
   canRegister: boolean = false;
   canGraduate: boolean = false;
   canEdit: boolean = false;
   canView: boolean = false;
-  
 }

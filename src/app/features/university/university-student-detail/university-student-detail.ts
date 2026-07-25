@@ -3,13 +3,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { UniversityStudentService } from '../../../core/services/university/university-students.service';
-import { UniversityStudentRequestModel } from '../../../core/models/university/university-students/university-student-request.model';
 import { StudentStatusEnum } from '../../../core/enums/student-application-status.enum';
 import { NotificationService } from '../../../core/services/common/notification.service';
 import { HelperMethods } from '../../../core/helpers/helper-methods';
 import { StudentProgramService } from '../../../core/services/school/student-program.service';
-import { StudentProgramDocument } from '../../../core/models/school/students/student-program-application.model';
+import { StudentStatusService } from '../../../core/services/common/student-status.service';
+import { StudentProgramDocument } from '../../../core/models/school/student-program-application/student-program-document.model';
+import { StudentProgramApplication } from '../../../core/models/school/student-program-application/student-program-application.model';
+
 
 @Component({
   selector: 'app-university-student-detail',
@@ -21,12 +22,12 @@ import { StudentProgramDocument } from '../../../core/models/school/students/stu
 export class UniversityStudentDetail implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private universityStudentService = inject(UniversityStudentService);
   private notification = inject(NotificationService);
   private studentProgramService = inject(StudentProgramService);
+  private studentStatusService = inject(StudentStatusService);
 
   studentId: number = 0;
-  student: UniversityStudentRequestModel | null = null;
+  student: StudentProgramApplication | null = null;
 
   photoError: boolean = false;
 
@@ -47,7 +48,7 @@ export class UniversityStudentDetail implements OnInit {
 
   loadStudentDetails(): void {
 
-    this.universityStudentService.getStudentById(this.studentId).subscribe({
+    this.studentProgramService.getById(this.studentId).subscribe({
       next: (res) => {
         if (res.success && res.result) {
           this.student = res.result;
@@ -186,21 +187,11 @@ export class UniversityStudentDetail implements OnInit {
     this.closeDiscussionModal();
   }
 
-  getStatusBadgeClass(student: UniversityStudentRequestModel): string {
-    switch(student.applicationStatusId) {
-      case StudentStatusEnum.Draft: return 'chip-draft';
-      case StudentStatusEnum.AcceptanceInProcess: return 'chip-acceptance-process';
-      case StudentStatusEnum.AcceptanceRejected: return 'chip-acceptance-rejected';
-      case StudentStatusEnum.Sponsored: return 'chip-sponsored';
-      case StudentStatusEnum.SponsoredRejected: return 'chip-sponsored-rejected';
-      case StudentStatusEnum.Awarded: return 'chip-awarded';
-      case StudentStatusEnum.AwardedRejected: return 'chip-awarded-rejected';
-      case StudentStatusEnum.Registered: return 'chip-registered';
-      case StudentStatusEnum.Failed: return 'chip-failed';
-      case StudentStatusEnum.Dismissed: return 'chip-dismissed';
-      case StudentStatusEnum.Graduate: return 'chip-graduate';
-      default: return 'chip-draft';
-    }
+  // --- Status Badge Helper ---
+  getStatusBadgeClass(student: StudentProgramApplication): string {
+    return this.studentStatusService.getBadgeClass(
+      student.applicationStatusId ?? StudentStatusEnum.Draft
+    );
   }
 
   getUploadedDocumentsCount(): number {

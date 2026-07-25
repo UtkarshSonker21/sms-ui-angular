@@ -156,10 +156,15 @@ export const ApiEndpoints = {
       GetById: (applicationId: number) => `school/student-program/getById/${applicationId}`,
 
       UploadDocument: (applicationId: number) => `school/student-program/upload-document/${applicationId}`,
-      DeleteDocument: (applicationId: number, documentId: number) =>
-        `school/student-program/delete-document/${applicationId}/${documentId}`,
+      DeleteDocument: (applicationId: number, documentId: number) => `school/student-program/delete-document/${applicationId}/${documentId}`,
       GetDocuments: (applicationId: number) => `school/student-program/documents/${applicationId}`,
       GetHistory: (studentId: number) => `school/student-program/history/${studentId}`,
+
+      // University / Direct Aid Committee
+      Search: `school/student-program/search`,
+      GetApplication: (applicationId: number) => `school/student-program/${applicationId}`,
+      ChangeStatus: (applicationId: number) => `school/student-program/change-status/${applicationId}`
+
     }
 
   }

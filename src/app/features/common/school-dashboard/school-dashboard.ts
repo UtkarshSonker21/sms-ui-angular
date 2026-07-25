@@ -7,6 +7,8 @@ import { StudentStatusEnum } from '../../../core/enums/student-application-statu
 import { StudntFilter } from '../../../core/models/school/students/student-filter.model';
 import { AppRoutes } from '../../../core/constants/app-routes';
 import { HelperMethods } from '../../../core/helpers/helper-methods';
+import { StudentStatusService } from '../../../core/services/common/student-status.service';
+
 export interface DashboardStat {
   title: string;
   value: string;
@@ -51,6 +53,7 @@ export class SchoolDashboard implements OnInit {
   private currentUserProfileService = inject(CurrentUserProfileService);
   private studentService = inject(StudentService);
   private router = inject(Router);
+  private studentStatusService = inject(StudentStatusService);
 
   ngOnInit(): void {
     // current user
@@ -81,7 +84,7 @@ export class SchoolDashboard implements OnInit {
           const inProcessCount = items.filter(s => s.studentApplicationStatusId === StudentStatusEnum.AcceptanceInProcess).length;
           const sponsoredCount = items.filter(s => s.studentApplicationStatusId === StudentStatusEnum.Sponsored).length;
           const registeredCount = items.filter(s => s.studentApplicationStatusId === StudentStatusEnum.Registered).length;
-          const graduatedCount = items.filter(s => s.studentApplicationStatusId === StudentStatusEnum.Graduate).length;
+          const graduatedCount = items.filter(s => s.studentApplicationStatusId === StudentStatusEnum.Graduated).length;
 
           this.nominationJourney = [
             { name: 'Nominated', count: totalRecords },
@@ -142,37 +145,11 @@ export class SchoolDashboard implements OnInit {
   }
 
   getStatusBadgeClass(statusId?: number): string {
-    switch(statusId) {
-      case StudentStatusEnum.Draft: return 'chip-draft';
-      case StudentStatusEnum.AcceptanceInProcess: return 'chip-acceptance-process';
-      case StudentStatusEnum.AcceptanceRejected: return 'chip-acceptance-rejected';
-      case StudentStatusEnum.Sponsored: return 'chip-sponsored';
-      case StudentStatusEnum.SponsoredRejected: return 'chip-sponsored-rejected';
-      case StudentStatusEnum.Awarded: return 'chip-awarded';
-      case StudentStatusEnum.AwardedRejected: return 'chip-awarded-rejected';
-      case StudentStatusEnum.Registered: return 'chip-registered';
-      case StudentStatusEnum.Failed: return 'chip-failed';
-      case StudentStatusEnum.Dismissed: return 'chip-dismissed';
-      case StudentStatusEnum.Graduate: return 'chip-graduate';
-      default: return 'chip-draft';
-    }
+    return this.studentStatusService.getBadgeClass(statusId as StudentStatusEnum);
   }
 
   getStatusName(statusId?: number): string {
-    switch(statusId) {
-      case StudentStatusEnum.Draft: return 'Draft';
-      case StudentStatusEnum.AcceptanceInProcess: return 'Acceptance In Process';
-      case StudentStatusEnum.AcceptanceRejected: return 'Acceptance Rejected';
-      case StudentStatusEnum.Sponsored: return 'Sponsored';
-      case StudentStatusEnum.SponsoredRejected: return 'Sponsored Rejected';
-      case StudentStatusEnum.Awarded: return 'Awarded';
-      case StudentStatusEnum.AwardedRejected: return 'Awarded Rejected';
-      case StudentStatusEnum.Registered: return 'Registered';
-      case StudentStatusEnum.Failed: return 'Failed';
-      case StudentStatusEnum.Dismissed: return 'Dismissed';
-      case StudentStatusEnum.Graduate: return 'Graduate';
-      default: return 'Not Assigned';
-    }
+    return this.studentStatusService.getName(statusId as StudentStatusEnum);
   }
 
   photoErrors = new Set<number>();

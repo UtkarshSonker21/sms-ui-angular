@@ -1,3 +1,5 @@
+import { StudentStatusEnum } from "../../../enums/student-application-status.enum";
+
 export class StudentRequest {
 
     // ─────────────────────────────────────────────────────────────
@@ -166,7 +168,7 @@ export class StudentRequest {
     studentAssignedProgramName?: string;
     studentAssignedUniversityName?: string;
     studentAssignedUniversityId?: number;
-    studentApplicationStatusId?: number;
+    studentApplicationStatusId?: StudentStatusEnum;
 
 
 }
