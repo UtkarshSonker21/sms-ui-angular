@@ -1,0 +1,184 @@
+<div class="page-head">
+    <div>
+        <div class="crumb">
+            <a href="#">Dashboard</a>
+            <span class="sep">/</span>
+            <span class="text-muted">Preferences</span>
+        </div>
+        <h2 class="page-title">Sponsorship Matrix</h2>
+        <p class="page-sub">
+            Configure the mappings between Sponsorship Types and Student Categories.
+        </p>
+    </div>
+    <div class="page-actions" style="display: flex; gap: 12px; align-items: center;">
+        <button type="button" class="btn btn-g" (click)="resetToDefaults()">
+            <i class="fas fa-undo btn-icon" style="margin-right: 6px;"></i> Reset to defaults
+        </button>
+        <button type="button" class="btn btn-p" (click)="openSponsorshipModal()">
+            <i class="fas fa-plus btn-icon"></i> Sponsorship Type
+        </button>
+        <button type="button" class="btn btn-p" (click)="openCategoryModal()">
+            <i class="fas fa-plus btn-icon"></i> Category
+        </button>
+    </div>
+</div>
+
+<div class="kpi-grid">
+    <div class="kpi">
+        <div class="kpi-l">Sponsorship Types</div>
+        <div class="kpi-v">{{ kpiSponsorshipTypes }}</div>
+        <div class="kpi-d muted">Total Active Sponsorship Types</div>
+    </div>
+    <div class="kpi">
+        <div class="kpi-l">Student Categories</div>
+        <div class="kpi-v">{{ kpiStudentCategories }}</div>
+        <div class="kpi-d muted">Total Active Student Categories</div>
+    </div>
+    <div class="kpi">
+        <div class="kpi-l">Active Cells</div>
+        <div class="kpi-v">{{ kpiActiveCells }}</div>
+        <div class="kpi-d muted">Mapped Intersections</div>
+    </div>
+    <div class="kpi">
+        <div class="kpi-l">Coverage</div>
+        <div class="kpi-v">{{ kpiCoverage }}</div>
+        <div class="kpi-d muted">Overall mapping percentage</div>
+    </div>
+</div>
+
+<div class="filters">
+    <div class="search-container">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" class="search-input" placeholder="Search Types or Categories..."
+               [(ngModel)]="searchText">
+        <i class="fas fa-times clear-icon" *ngIf="searchText" (click)="searchText = ''"></i>
+    </div>
+</div>
+
+<div class="card" style="border-radius: var(--da-radius); overflow-x: auto; margin-bottom: 20px; border: 1px solid var(--da-border, #e0e0e0); background: var(--da-surface, #ffffff); box-shadow: 0 10px 40px rgba(5,5,5,0.04);">
+    <table class="table" style="min-width: 1000px;">
+        <thead>
+            <tr>
+                <th style="min-width: 120px; position: sticky; left: 0; background: var(--da-surface); z-index: 2; border-right: 1px solid var(--da-border, #e0e0e0); padding: 12px 16px; vertical-align: middle; text-align: center;">Actions</th>
+                <th style="min-width: 250px; position: sticky; left: 120px; background: var(--da-surface); z-index: 2; border-right: 1px solid var(--da-border, #e0e0e0); padding: 12px 16px; vertical-align: middle; font-weight: 600;">Sponsorship Type \ Student Category</th>
+                <th *ngFor="let category of filteredCategories" style="text-align: center; padding: 12px 16px; vertical-align: middle;">
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                        <span style="font-weight: 600;">{{ category.categoryName }}</span>
+                        <div style="display: flex; gap: 6px;">
+                            <button class="icon-btn matrix-small-btn" (click)="openCategoryModal(category.studentCategoryId)" title="Edit">
+                                <i class="far fa-edit"></i>
+                            </button>
+                            <button class="icon-btn icon-btn-danger matrix-small-btn" (click)="deleteCategory(category.studentCategoryId!)" title="Delete">
+                                <i class="far fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let type of filteredTypes">
+                <td style="position: sticky; left: 0; background: var(--da-surface); z-index: 1; border-right: 1px solid var(--da-border, #e0e0e0); text-align: center; vertical-align: middle;">
+                    <div style="display: flex; justify-content: center; gap: 6px;">
+                        <button class="icon-btn matrix-small-btn" (click)="openSponsorshipModal(type.sponsorshipTypeId)" title="Edit">
+                            <i class="far fa-edit"></i>
+                        </button>
+                        <button class="icon-btn icon-btn-danger matrix-small-btn" (click)="deleteSponsorship(type.sponsorshipTypeId!)" title="Delete">
+                            <i class="far fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </td>
+                <td style="font-weight: 600; position: sticky; left: 120px; background: var(--da-surface); z-index: 1; border-right: 1px solid var(--da-border, #e0e0e0); padding: 10px 16px; vertical-align: middle;">
+                    <div>{{ type.sponsorshipName }}</div>
+                    <div class="freq-badge badge-semester" *ngIf="type.frequencyType === 1">PER SEMESTER</div>
+                    <div class="freq-badge badge-once" *ngIf="type.frequencyType === 2">ONCE</div>
+                </td>
+                <td *ngFor="let category of filteredCategories" style="text-align: center; vertical-align: middle;">
+                    <div style="display: flex; justify-content: center; align-items: center; width: 100%; height: 100%;">
+                        <input type="checkbox" 
+                               [checked]="isMapped(type.sponsorshipTypeId!, category.studentCategoryId!)" 
+                               [disabled]="loadingStates[type.sponsorshipTypeId! + '-' + category.studentCategoryId!]"
+                               (change)="toggleMapping(type.sponsorshipTypeId!, category.studentCategoryId!, $event)"
+                               style="width: 16px; height: 16px; cursor: pointer;">
+                    </div>
+                </td>
+            </tr>
+            <tr *ngIf="filteredTypes.length === 0 || filteredCategories.length === 0">
+                <td [attr.colspan]="filteredCategories.length + 2" style="text-align: center; padding: 42px 20px;">
+                    <div style="font-size: 15px; font-weight: 600; color: var(--da-black);">No data available</div>
+                    <div style="font-size: 13px; color: var(--da-text-2); margin-top: 4px;">Adjust your search or wait for data to load.</div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Sponsorship Type Modal -->
+<div class="modal-backdrop" *ngIf="showSponsorshipModal">
+    <div class="modal-card">
+        <div class="modal-head">
+            <div>
+                <div class="modal-title">{{ editingSponsorship.sponsorshipTypeId ? 'Edit' : 'Add' }} Sponsorship Type</div>
+                <div class="modal-sub">Add or edit sponsorship details here.</div>
+            </div>
+            <button type="button" class="modal-close" (click)="showSponsorshipModal = false">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form (ngSubmit)="saveSponsorship()" novalidate>
+            <div class="modal-body">
+                <div class="field" style="margin-bottom: 16px;">
+                    <label class="field-label required-label">Sponsorship Type Name</label>
+                    <input type="text" name="sponsorshipName" class="field-input" placeholder="Enter name" required [(ngModel)]="editingSponsorship.sponsorshipName">
+                </div>
+                
+                <div class="field" style="margin-bottom: 16px;">
+                    <label class="field-label required-label">Frequency</label>
+                    <div style="display: flex; gap: 16px; margin-top: 8px;">
+                        <label style="display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--da-black); cursor: pointer;">
+                            <input type="radio" name="frequencyType" [value]="1" [(ngModel)]="editingSponsorship.frequencyType"> Recurring
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--da-black); cursor: pointer;">
+                            <input type="radio" name="frequencyType" [value]="2" [(ngModel)]="editingSponsorship.frequencyType"> One-time
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-foot">
+                <button type="button" class="btn btn-g" (click)="showSponsorshipModal = false">Cancel</button>
+                <button type="submit" class="btn btn-p">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Student Category Modal -->
+<div class="modal-backdrop" *ngIf="showCategoryModal">
+    <div class="modal-card">
+        <div class="modal-head">
+            <div>
+                <div class="modal-title">{{ editingCategory.studentCategoryId ? 'Edit' : 'Add' }} Student Category</div>
+                <div class="modal-sub">Add or edit category details here.</div>
+            </div>
+            <button type="button" class="modal-close" (click)="showCategoryModal = false">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form (ngSubmit)="saveCategory()" novalidate>
+            <div class="modal-body">
+                <div class="field" style="margin-bottom: 16px;">
+                    <label class="field-label required-label">Category Name</label>
+                    <input type="text" name="categoryName" class="field-input" placeholder="Enter category name" required [(ngModel)]="editingCategory.categoryName">
+                </div>
+            </div>
+
+            <div class="modal-foot">
+                <button type="button" class="btn btn-g" (click)="showCategoryModal = false">Cancel</button>
+                <button type="submit" class="btn btn-p">Save</button>
+            </div>
+        </form>
+    </div>
+</div>

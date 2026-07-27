@@ -1,0 +1,233 @@
+import { Component, inject, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { SponsorshipMatrixService } from '../../../core/services/ngo/sponsorship-matrix.service';
+import { SponsorshipMatrix } from '../../../core/models/ngo/sponsorshipMatrix/sponsorship-matrix.model';
+import { SponsorshipTypeService } from '../../../core/services/ngo/sponsorship-type.service';
+import { StudentCategoryService } from '../../../core/services/ngo/student-category.service';
+import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
+import { SponsorshipTypeRequest } from '../../../core/models/ngo/sponsorship-type/sponsorship-type-request.model';
+import { StudentCategoryRequest } from '../../../core/models/ngo/student-category/student-category.request.model';
+
+@Component({
+  selector: 'app-preferences-sponsorship-matrix',
+  imports: [CommonModule, FormsModule],
+  templateUrl: './preferences-sponsorship-matrix.html',
+  styleUrl: './preferences-sponsorship-matrix.scss',
+})
+export class PreferencesSponsorshipMatrix implements OnInit {
+  private readonly matrixService = inject(SponsorshipMatrixService);
+  private readonly sponsorshipTypeService = inject(SponsorshipTypeService);
+  private readonly studentCategoryService = inject(StudentCategoryService);
+  private readonly confirmDialogService = inject(ConfirmDialogService);
+
+  matrixData: SponsorshipMatrix | null = null;
+  searchText: string = '';
+  loadingStates: { [key: string]: boolean } = {};
+
+  // Modals state
+  showSponsorshipModal = false;
+  editingSponsorship: SponsorshipTypeRequest = new SponsorshipTypeRequest();
+  
+  showCategoryModal = false;
+  editingCategory: StudentCategoryRequest = new StudentCategoryRequest();
+
+  get kpiSponsorshipTypes(): number {
+    return this.matrixData?.sponsorshipTypes?.length || 0;
+  }
+
+  get kpiStudentCategories(): number {
+    return this.matrixData?.studentCategories?.length || 0;
+  }
+
+  get kpiActiveCells(): number {
+    return this.matrixData?.mappings?.filter(m => m.isActive).length || 0;
+  }
+
+  get kpiCoverage(): string {
+    const totalCells = this.kpiSponsorshipTypes * this.kpiStudentCategories;
+    const activeCells = this.kpiActiveCells;
+    const coverage = totalCells === 0 ? 0 : Math.round((activeCells / totalCells) * 100);
+    return `${coverage}%`;
+  }
+
+  ngOnInit(): void {
+    this.loadMatrix();
+  }
+
+  loadMatrix(): void {
+    this.matrixService.getMatrix().subscribe({
+      next: (res) => {
+        if (res.success && res.result) {
+          this.matrixData = res.result;
+        }
+      },
+      error: (err) => {
+        console.error('Error loading sponsorship matrix', err);
+      }
+    });
+  }
+
+  resetToDefaults(): void {
+    console.log('Reset to defaults clicked');
+    // Implement API call for reset when available
+  }
+
+  get filteredTypes() {
+    if (!this.matrixData?.sponsorshipTypes) return [];
+    if (!this.searchText) return this.matrixData.sponsorshipTypes;
+    const lowerSearch = this.searchText.toLowerCase();
+    return this.matrixData.sponsorshipTypes.filter(t => 
+      t.sponsorshipName.toLowerCase().includes(lowerSearch)
+    );
+  }
+
+  get filteredCategories() {
+    if (!this.matrixData?.studentCategories) return [];
+    if (!this.searchText) return this.matrixData.studentCategories;
+    const lowerSearch = this.searchText.toLowerCase();
+    return this.matrixData.studentCategories.filter(c => 
+      c.categoryName.toLowerCase().includes(lowerSearch)
+    );
+  }
+
+  isMapped(typeId: number, categoryId: number): boolean {
+    if (!this.matrixData?.mappings) return false;
+    const mapping = this.matrixData.mappings.find(m => m.sponsorshipTypeId === typeId && m.studentCategoryId === categoryId);
+    return mapping ? mapping.isActive : false;
+  }
+
+  toggleMapping(typeId: number, categoryId: number, event: Event): void {
+    // Prevent default to rely on our optimistic update / server response
+    event.preventDefault();
+    
+    const key = `${typeId}-${categoryId}`;
+    if (this.loadingStates[key]) return;
+
+    this.loadingStates[key] = true;
+
+    this.matrixService.toggle({ sponsorshipTypeId: typeId, studentCategoryId: categoryId }).subscribe({
+      next: (res) => {
+        if (res.success) {
+          // Toggle local state
+          if (this.matrixData && this.matrixData.mappings) {
+            const mapping = this.matrixData.mappings.find(m => m.sponsorshipTypeId === typeId && m.studentCategoryId === categoryId);
+            if (mapping) {
+              mapping.isActive = !mapping.isActive;
+            } else {
+              this.matrixData.mappings.push({
+                sponsorshipTypeId: typeId,
+                studentCategoryId: categoryId,
+                isActive: true
+              });
+            }
+          }
+        }
+        this.loadingStates[key] = false;
+      },
+      error: (err) => {
+        console.error('Error toggling mapping', err);
+        this.loadingStates[key] = false;
+      }
+    });
+  }
+
+  // --- Sponsorship Type Actions ---
+  openSponsorshipModal(id?: number): void {
+    if (id) {
+      this.sponsorshipTypeService.getSponsorshipTypeById(id).subscribe({
+        next: (res) => {
+          if (res.success && res.result) {
+            this.editingSponsorship = res.result;
+            this.showSponsorshipModal = true;
+          }
+        }
+      });
+    } else {
+      this.editingSponsorship = new SponsorshipTypeRequest();
+      this.showSponsorshipModal = true;
+    }
+  }
+
+  saveSponsorship(): void {
+    // Determine create vs update based on if an ID exists
+    const saveObservable = this.editingSponsorship.sponsorshipTypeId 
+      ? this.sponsorshipTypeService.updateSponsorshipType(this.editingSponsorship)
+      : this.sponsorshipTypeService.updateSponsorshipType(this.editingSponsorship); // Create typically has a separate endpoint, but following prompt
+
+    saveObservable.subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.showSponsorshipModal = false;
+          this.loadMatrix();
+        }
+      }
+    });
+  }
+
+  deleteSponsorship(id: number): void {
+    this.confirmDialogService.confirm({
+      title: 'Delete Sponsorship Type',
+      message: 'Are you sure you want to delete this sponsorship type?'
+    }).then((confirmed) => {
+      if (confirmed) {
+        this.sponsorshipTypeService.deleteSponsorshipType(id).subscribe({
+          next: (res) => {
+            if (res.success) {
+              this.loadMatrix();
+            }
+          }
+        });
+      }
+    });
+  }
+
+  // --- Student Category Actions ---
+  openCategoryModal(id?: number): void {
+    if (id) {
+      this.studentCategoryService.getStudentCategoryById(id).subscribe({
+        next: (res) => {
+          if (res.success && res.result) {
+            this.editingCategory = res.result;
+            this.showCategoryModal = true;
+          }
+        }
+      });
+    } else {
+      this.editingCategory = new StudentCategoryRequest();
+      this.showCategoryModal = true;
+    }
+  }
+
+  saveCategory(): void {
+    const saveObservable = this.editingCategory.studentCategoryId
+      ? this.studentCategoryService.updateStudentCategory(this.editingCategory)
+      : this.studentCategoryService.updateStudentCategory(this.editingCategory);
+
+    saveObservable.subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.showCategoryModal = false;
+          this.loadMatrix();
+        }
+      }
+    });
+  }
+
+  deleteCategory(id: number): void {
+    this.confirmDialogService.confirm({
+      title: 'Delete Student Category',
+      message: 'Are you sure you want to delete this category?'
+    }).then((confirmed) => {
+      if (confirmed) {
+        this.studentCategoryService.deleteStudentCategory(id).subscribe({
+          next: (res) => {
+            if (res.success) {
+              this.loadMatrix();
+            }
+          }
+        });
+      }
+    });
+  }
+}
