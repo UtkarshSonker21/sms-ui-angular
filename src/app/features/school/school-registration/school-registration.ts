@@ -391,7 +391,6 @@ export class SchoolRegistration implements OnInit {
     const filter = new MasterCountryFilter();
     filter.pageNumber = 1;
     filter.pageSize = 0;
-    filter.isActive = true;
 
     this.masterCountryService.getMasterCountries(filter).subscribe({
       next: (response) => {

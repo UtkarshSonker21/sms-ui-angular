@@ -1,0 +1,197 @@
+<div class="page-head">
+    <div>
+        <div class="crumb">
+            <a href="#">Home</a>
+            <span class="sep">/</span>
+            <span class="text-muted">Countries</span>
+        </div>
+        <h2 class="page-title">Countries Catalog</h2>
+        <p class="page-sub">
+            A shared list of countries available in the system.
+        </p>
+    </div>
+    <div class="page-actions">
+        <button type="button" class="btn btn-p" (click)="openAddCountryModal()">
+            <i class="fas fa-plus btn-icon"></i> Add Country
+        </button>
+    </div>
+</div>
+
+<div class="kpi-grid">
+    <div class="kpi">
+        <div class="kpi-l">Total Countries</div>
+        <div class="kpi-v">{{ totalRecords }}</div>
+        <div class="kpi-d muted">Total available countries</div>
+    </div>
+</div>
+
+<div class="filters">
+    <div class="search-container">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" class="search-input" placeholder="Search by name, ISO code, or ISD code..." [(ngModel)]="searchText"
+            (keydown)="handleKeyDown($event)">
+        <i class="fas fa-times clear-icon" *ngIf="searchText" (click)="clearSearch()"></i>
+    </div>
+
+    <div class="filter-count">
+        {{ totalRecords }} countries
+    </div>
+</div>
+
+<div class="card"
+    style="border-radius: var(--da-radius); overflow: visible; margin-bottom: 20px; border: 1px solid var(--da-border, #e0e0e0); background: var(--da-surface, #ffffff); box-shadow: 0 10px 40px rgba(5,5,5,0.04);">
+    <table class="table">
+        <thead>
+            <tr>
+                <th style="width: 45%;">Country Name</th>
+                <th style="width: 25%;">ISO Alpha-3 Code</th>
+                <th style="width: 20%;">ISD Code</th>
+                <th style="width: 10%; text-align: center !important;">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let country of countries">
+                <td>
+                    <div class="course-name-primary"
+                        style="font-size: 13.5px; font-weight: 600; color: var(--da-black);">
+                        {{ country.countryName }}
+                    </div>
+                </td>
+                <td class="course-code-cell">
+                    <span *ngIf="country.countryAlphaCode3" class="chip chip-registered course-code-badge">{{ country.countryAlphaCode3 }}</span>
+                </td>
+                <td>
+                    {{ country.countryIsdCode ? '+' + country.countryIsdCode : '-' }}
+                </td>
+                <td class="row-actions" style="text-align: center !important;">
+                    <button type="button" class="icon-btn" title="Edit" (click)="openEditCountryModal(country)">
+                        <i class="far fa-edit"></i>
+                    </button>
+                    <button type="button" class="icon-btn icon-btn-danger" title="Delete"
+                        (click)="openDeleteCountryModal(country)">
+                        <i class="far fa-trash-alt"></i>
+                    </button>
+                </td>
+            </tr>
+
+            <tr *ngIf="countries.length === 0">
+                <td colspan="4" class="courses-empty">
+                    No Countries Found
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="pagination-footer">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="text-muted" style="font-size: 13px; font-weight: 500;">Show</span>
+            <div class="custom-dropdown" [class.open]="isPageSizeDropdownOpen" [class.open-up]="true" tabindex="0">
+                <div class="dropdown-trigger" (click)="togglePageSizeDropdown($event)">
+                    <span class="dropdown-value">{{ filter.pageSize }}</span>
+                    <i class="fas" [ngClass]="isPageSizeDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                </div>
+                <div class="dropdown-menu" *ngIf="isPageSizeDropdownOpen">
+                    <div class="dropdown-item" *ngFor="let size of [25, 50, 100, 500]"
+                        [class.selected]="size === filter.pageSize" (click)="selectPageSize(size)">
+                        {{ size }}
+                    </div>
+                </div>
+            </div>
+            <span class="text-muted" style="font-size: 13px; font-weight: 500;">entries</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 13px; color: var(--da-text-2);">
+                Page <strong style="font-weight: 700; color: var(--da-black);">{{ filter.pageNumber }}</strong> of
+                <strong style="font-weight: 700; color: var(--da-black);">{{ totalPages || 1 }}</strong>
+            </span>
+
+            <div style="display: flex; gap: 6px;">
+                <button type="button" class="icon-btn btn-pagination" [disabled]="isPreviousDisabled"
+                    (click)="previousPage()">
+                    <i class="fas fa-chevron-left" style="font-size: 11px;"></i>
+                </button>
+                <button type="button" class="icon-btn btn-pagination" [disabled]="isNextDisabled" (click)="nextPage()">
+                    <i class="fas fa-chevron-right" style="font-size: 11px;"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add / Edit Country Modal -->
+<div class="modal-backdrop" *ngIf="showCountryModal">
+    <div class="modal-card">
+        <div class="modal-head">
+            <div>
+                <div class="modal-title">{{ tempCountryModel.countryId ? 'Edit Country' : 'Add Country' }}</div>
+                <div class="modal-sub">Add or edit country details here.</div>
+            </div>
+            <button type="button" class="modal-close" (click)="showCountryModal = false">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form #countryForm="ngForm" (ngSubmit)="saveCountry(countryForm)" novalidate>
+            <div class="modal-body">
+                <div class="modal-error" *ngIf="modalErrorMessage">{{ modalErrorMessage }}</div>
+
+                <div class="modal-form-row" style="margin-bottom: 16px;">
+                    <div class="field">
+                        <label class="field-label required-label">Country Name</label>
+                        <input type="text" name="countryName" class="field-input" placeholder="Enter country name" required
+                            [(ngModel)]="tempCountryModel.countryName" #nameModel="ngModel">
+                        <div class="validation-error" *ngIf="nameModel.touched && nameModel.errors?.['required']">
+                            Country Name is required.
+                        </div>
+                    </div>
+                    
+                    <div class="field">
+                        <label class="field-label required-label">ISD Code</label>
+                        <input type="text" name="countryIsdCode" class="field-input" placeholder="Enter ISD code (e.g. 91)" required
+                            [ngModel]="tempCountryModel.countryIsdCode" (ngModelChange)="tempCountryModel.countryIsdCode = $event" #isdModel="ngModel">
+                        <div class="validation-error" *ngIf="isdModel.touched && isdModel.errors?.['required']">
+                            ISD Code is required.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field" style="margin-bottom: 16px;">
+                    <label class="field-label">ISO Alpha-3 Code</label>
+                    <input type="text" name="countryAlphaCode3" class="field-input" placeholder="Enter ISO Alpha-3 code"
+                        [(ngModel)]="tempCountryModel.countryAlphaCode3" #isoModel="ngModel">
+                    <div class="form-hint">Three-letter ISO country code (e.g. IND, USA, GBR).</div>
+                </div>
+            </div>
+
+            <div class="modal-foot">
+                <button type="button" class="btn btn-g" (click)="showCountryModal = false">Cancel</button>
+                <button type="submit" class="btn btn-p">{{ tempCountryModel.countryId ? 'Update Country' : 'Save Country' }}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-backdrop" *ngIf="showDeleteModal">
+    <div class="modal-card" style="max-width: 400px;">
+        <div class="modal-head">
+            <div>
+                <div class="modal-title">Delete Country</div>
+                <div class="modal-sub">Are you sure you want to delete this country? This action cannot be undone.</div>
+            </div>
+            <button type="button" class="modal-close" (click)="showDeleteModal = false">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body" *ngIf="countryToDelete">
+            <div style="font-weight: 600; font-size: 14px; color: var(--da-black);">
+                {{ countryToDelete.countryName }} <span *ngIf="countryToDelete.countryAlphaCode3">({{ countryToDelete.countryAlphaCode3 }})</span>
+            </div>
+        </div>
+        <div class="modal-foot">
+            <button type="button" class="btn btn-g" (click)="showDeleteModal = false">Cancel</button>
+            <button type="button" class="btn btn-danger-custom" (click)="confirmDeleteCountry()">Delete</button>
+        </div>
+    </div>
+</div>

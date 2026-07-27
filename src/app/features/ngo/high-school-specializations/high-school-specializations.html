@@ -1,0 +1,175 @@
+<div class="page-head">
+    <div>
+        <div class="crumb">
+            <a href="#">Home</a>
+            <span class="sep">/</span>
+            <span class="text-muted">High School Specializations</span>
+        </div>
+        <h2 class="page-title">High School Specializations</h2>
+        <p class="page-sub">
+            A shared list of high school specializations available in the system.
+        </p>
+    </div>
+    <div class="page-actions">
+        <button type="button" class="btn btn-p" (click)="openAddSpecializationModal()">
+            <i class="fas fa-plus btn-icon"></i> Add Specialization
+        </button>
+    </div>
+</div>
+
+<div class="kpi-grid">
+    <div class="kpi">
+        <div class="kpi-l">Total Specializations</div>
+        <div class="kpi-v">{{ totalRecords }}</div>
+        <div class="kpi-d muted">Available in the system</div>
+    </div>
+</div>
+
+<div class="filters">
+    <div class="search-container">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" class="search-input" placeholder="Search by name..." [(ngModel)]="searchText"
+            (keydown)="handleKeyDown($event)">
+        <i class="fas fa-times clear-icon" *ngIf="searchText" (click)="clearSearch()"></i>
+    </div>
+
+    <div class="filter-count">
+        {{ totalRecords }} specializations
+    </div>
+</div>
+
+<div class="card"
+    style="border-radius: var(--da-radius); overflow: visible; margin-bottom: 20px; border: 1px solid var(--da-border, #e0e0e0); background: var(--da-surface, #ffffff); box-shadow: 0 10px 40px rgba(5,5,5,0.04);">
+    <table class="table">
+        <thead>
+            <tr>
+                <th style="width: 80%;">Specialization Name</th>
+                <th style="width: 20%; text-align: center !important;">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let specialization of specializations">
+                <td>
+                    <div class="course-name-primary"
+                        style="font-size: 13.5px; font-weight: 600; color: var(--da-black);">
+                        {{ specialization.displayText }}
+                    </div>
+                </td>
+                <td class="row-actions" style="text-align: center !important;">
+                    <button type="button" class="icon-btn" title="Edit" (click)="openEditSpecializationModal(specialization)">
+                        <i class="far fa-edit"></i>
+                    </button>
+                    <button type="button" class="icon-btn icon-btn-danger" title="Delete"
+                        (click)="openDeleteSpecializationModal(specialization)">
+                        <i class="far fa-trash-alt"></i>
+                    </button>
+                </td>
+            </tr>
+
+            <tr *ngIf="specializations.length === 0">
+                <td colspan="2" class="courses-empty">
+                    No Specializations Found
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="pagination-footer">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="text-muted" style="font-size: 13px; font-weight: 500;">Show</span>
+            <div class="custom-dropdown" [class.open]="isPageSizeDropdownOpen" [class.open-up]="true" tabindex="0">
+                <div class="dropdown-trigger" (click)="togglePageSizeDropdown($event)">
+                    <span class="dropdown-value">{{ filter.pageSize }}</span>
+                    <i class="fas" [ngClass]="isPageSizeDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                </div>
+                <div class="dropdown-menu" *ngIf="isPageSizeDropdownOpen">
+                    <div class="dropdown-item" *ngFor="let size of [25, 50, 100, 500]"
+                        [class.selected]="size === filter.pageSize" (click)="selectPageSize(size)">
+                        {{ size }}
+                    </div>
+                </div>
+            </div>
+            <span class="text-muted" style="font-size: 13px; font-weight: 500;">entries</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 13px; color: var(--da-text-2);">
+                Page <strong style="font-weight: 700; color: var(--da-black);">{{ filter.pageNumber }}</strong> of
+                <strong style="font-weight: 700; color: var(--da-black);">{{ totalPages || 1 }}</strong>
+            </span>
+
+            <div style="display: flex; gap: 6px;">
+                <button type="button" class="icon-btn btn-pagination" [disabled]="isPreviousDisabled"
+                    (click)="previousPage()">
+                    <i class="fas fa-chevron-left" style="font-size: 11px;"></i>
+                </button>
+                <button type="button" class="icon-btn btn-pagination" [disabled]="isNextDisabled" (click)="nextPage()">
+                    <i class="fas fa-chevron-right" style="font-size: 11px;"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add / Edit Specialization Modal -->
+<div class="modal-backdrop" *ngIf="showSpecializationModal">
+    <div class="modal-card">
+        <div class="modal-head">
+            <div>
+                <div class="modal-title">{{ tempSpecializationModel.uniqueId ? 'Edit Specialization' : 'Add Specialization' }}</div>
+                <div class="modal-sub">This list appears in the High School specialization dropdown when editing student records.</div>
+            </div>
+            <button type="button" class="modal-close" (click)="showSpecializationModal = false">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form #specializationForm="ngForm" (ngSubmit)="saveSpecialization(specializationForm)" novalidate>
+            <div class="modal-body">
+                <div class="modal-error" *ngIf="modalErrorMessage">{{ modalErrorMessage }}</div>
+
+                <div class="field" style="margin-bottom: 16px;">
+                    <label class="field-label required-label">Specialization Name</label>
+                    <input type="text" name="displayText" class="field-input" placeholder="e.g. Science" required
+                        pattern=".*[^\s].*"
+                        [(ngModel)]="tempSpecializationModel.displayText" #nameModel="ngModel">
+                    <div class="validation-error" *ngIf="nameModel.touched && nameModel.errors?.['required']">
+                        Specialization Name is required.
+                    </div>
+                    <div class="validation-error" *ngIf="nameModel.touched && nameModel.errors?.['pattern']">
+                        Specialization Name cannot be only whitespace.
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-foot">
+                <button type="button" class="btn btn-g" (click)="showSpecializationModal = false">Cancel</button>
+                <button type="submit" class="btn btn-p">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-backdrop" *ngIf="showDeleteModal">
+    <div class="modal-card" style="max-width: 400px;">
+        <div class="modal-head">
+            <div>
+                <div class="modal-title">Delete Specialization</div>
+                <div class="modal-sub">Are you sure you want to delete this specialization? This action cannot be undone.</div>
+            </div>
+            <button type="button" class="modal-close" (click)="showDeleteModal = false">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body" *ngIf="specializationToDelete">
+            <div style="font-weight: 600; font-size: 14px; color: var(--da-black);">
+                {{ specializationToDelete.displayText }}
+            </div>
+        </div>
+        <div class="modal-foot">
+            <button type="button" class="btn btn-g" (click)="showDeleteModal = false">Cancel</button>
+            <button type="button" class="btn btn-danger-custom" (click)="confirmDeleteSpecialization()">Delete</button>
+        </div>
+    </div>
+</div>

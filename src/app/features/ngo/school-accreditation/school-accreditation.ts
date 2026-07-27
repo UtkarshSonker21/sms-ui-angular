@@ -80,7 +80,6 @@ export class SchoolAccreditation implements OnInit {
     const countryFilter = new MasterCountryFilter();
     countryFilter.pageNumber = 1;
     countryFilter.pageSize = 1000;
-    countryFilter.isActive = true;
 
     this.countryService.getMasterCountries(countryFilter).subscribe({
       next: (response) => {
