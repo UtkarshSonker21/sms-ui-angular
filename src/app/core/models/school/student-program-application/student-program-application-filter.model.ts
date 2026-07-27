@@ -4,11 +4,9 @@ export class StudentProgramApplicationFilter extends BaseFilter {
 
   schoolCoordinatorId?: number;
 
+  countryId?: number;
+
   universityId?: number;
-
-  facultyId?: number;
-
-  programId?: number;
 
   applicationStatusId?: number;
 

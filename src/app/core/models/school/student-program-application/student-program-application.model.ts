@@ -81,6 +81,10 @@ export class StudentProgramApplication {
   // University
   universityId: number = 0;
   universityName: string = '';
+  
+  // UniversityCountry
+  universityCountryId: number = 0;
+  universityCountryName: string = '';
 
   // University specific and permission fields
   canApprove: boolean = false;

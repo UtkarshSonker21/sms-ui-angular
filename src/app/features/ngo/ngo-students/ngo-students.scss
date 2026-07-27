@@ -1,0 +1,229 @@
+.kpi-grid {
+  grid-template-columns: repeat(4, 1fr) !important;
+  width: 100%;
+  margin-top: 14px;
+}
+
+:host {
+  display: block;
+  overflow: visible !important;
+}
+
+.search-container {
+  position: relative;
+  display: inline-block;
+  width: 320px;
+  flex: 1;
+  max-width: 320px;
+
+  .search-input {
+    width: 100% !important;
+    padding-left: 34px !important;
+    padding-right: 32px !important;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--da-muted);
+    font-size: 13px;
+    pointer-events: none;
+  }
+
+  .clear-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--da-muted);
+    font-size: 13px;
+    cursor: pointer;
+    transition: color 0.15s;
+
+    &:hover {
+      color: var(--da-danger);
+    }
+  }
+}
+
+.filters {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 14px;
+  background: var(--da-surface, #ffffff);
+  border: 1px solid var(--da-border, #e0e0e0);
+  border-radius: var(--da-radius, 8px);
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  overflow: visible;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.filters .filter-count {
+  margin-inline-start: auto;
+  font-size: 12px;
+  color: var(--da-muted);
+  font-weight: 600;
+}
+
+.icon-btn:disabled,
+.btn-pagination:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: var(--da-surface) !important;
+  border-color: var(--da-border) !important;
+  color: var(--da-muted) !important;
+}
+
+/* Fix table row hover consistency for Course Code cell style consistency */
+.table > tbody > tr:hover .course-code-cell {
+  background: var(--da-green-50) !important;
+}
+
+.table > tbody > tr:hover .course-code-badge {
+  background: transparent !important;
+}
+
+/* Custom Page-Size Dropdown */
+.custom-dropdown {
+  position: relative;
+  display: inline-block;
+  width: 65px;
+  height: 30px;
+  outline: none;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--da-text-2);
+  vertical-align: middle;
+  box-sizing: border-box;
+}
+
+.dropdown-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+  padding: 0 10px;
+  border: 1px solid var(--da-border-strong);
+  border-radius: var(--da-radius-sm);
+  background-color: var(--da-surface);
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+  color: var(--da-text-2);
+
+  i {
+    font-size: 9px;
+    color: var(--da-muted);
+    transition: transform 0.15s ease;
+  }
+
+  &:hover {
+    background-color: var(--da-white);
+    border-color: var(--da-muted);
+  }
+}
+
+.custom-dropdown.open {
+  .dropdown-trigger {
+    background-color: var(--da-white);
+    border-color: var(--da-green);
+    color: var(--da-black);
+    box-shadow: 0 0 0 1px var(--da-green);
+
+    i {
+      color: var(--da-green);
+    }
+  }
+}
+
+.dropdown-menu {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  background-color: var(--da-white);
+  border: 1px solid var(--da-border);
+  border-radius: var(--da-radius-sm);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  z-index: 1000;
+  box-sizing: border-box;
+  overflow: hidden;
+  padding: 4px;
+  
+  /* Upward positioning */
+  bottom: 100%;
+  margin-bottom: 4px;
+}
+
+.dropdown-item {
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  color: var(--da-text-2);
+  text-align: start;
+  font-weight: 500;
+  border-radius: var(--da-radius-sm);
+  margin-bottom: 2px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &:hover {
+    background-color: var(--da-green-50);
+    color: var(--da-green-800);
+  }
+
+  &.selected {
+    background-color: #D1FADF !important;
+    color: #027A48 !important;
+    font-weight: 600 !important;
+  }
+}
+
+.tabs {
+  display: flex;
+  gap: 2px;
+  border-bottom: 1px solid var(--da-border);
+  margin-bottom: 18px;
+  overflow: visible !important;
+}
+.tab {
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--da-muted);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.tab:hover {
+  color: var(--da-black);
+}
+.tab.active {
+  color: var(--da-green);
+  border-bottom-color: var(--da-green);
+  font-weight: 700;
+}
+.tab-count {
+  font-size: 10px;
+  background: rgba(0,0,0,0.05);
+  padding: 2px 7px;
+  border-radius: 100px;
+  color: var(--da-muted);
+  font-weight: 700;
+}
+.tab.active .tab-count {
+  background: var(--da-green-50);
+  color: var(--da-green-800);
+}
+

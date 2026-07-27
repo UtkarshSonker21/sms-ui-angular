@@ -6,14 +6,15 @@ import { Router } from '@angular/router';
 import { NotificationService } from '../../../core/services/common/notification.service';
 import { HelperMethods } from '../../../core/helpers/helper-methods';
 import { StudentProgramService } from '../../../core/services/school/student-program.service';
-import { FacultyService } from '../../../core/services/university/faculty.service';
-import { ProgramService } from '../../../core/services/university/programs.service';
+import { MasterCountryService } from '../../../core/services/superadmin/master-country.service';
+import { MasterUniversityService } from '../../../core/services/university/master-university.service';
 import { CurrentUserProfileService } from '../../../core/services/common/current-user-profile.service';
 
-import { FacultyFilter } from '../../../core/models/university/faculties/faculty-filter.model';
-import { ProgramFilter } from '../../../core/models/university/programs/program-filter.model';
-import { FacultyRequest } from '../../../core/models/university/faculties/faculty-request.model';
-import { ProgramRequest } from '../../../core/models/university/programs/program-request.model';
+import { MasterCountryFilter } from '../../../core/models/super-admin/master-country/master-country-filter.model';
+import { MasterUniversityFilter } from '../../../core/models/university/master-university/university-registration-filter.model';
+import { MasterCountryRequest } from '../../../core/models/super-admin/master-country/master-country-request.model';
+import { MasterUniversityRequest } from '../../../core/models/university/master-university/university-registration.model';
+import { AccreditationStatus } from '../../../core/enums/accreditation-status.enum';
 import { StudentStatusEnum } from '../../../core/enums/student-application-status.enum';
 import { StudentStatusService } from '../../../core/services/common/student-status.service';
 import { UNIVERSITY_STATUS_IDS } from '../../../core/constants/student-status.config';
@@ -21,25 +22,25 @@ import { StudentProgramApplication } from '../../../core/models/school/student-p
 import { StudentProgramApplicationFilter } from '../../../core/models/school/student-program-application/student-program-application-filter.model';
 
 @Component({
-  selector: 'app-university-students',
+  selector: 'app-ngo-students',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './university-students.html',
-  styleUrl: './university-students.scss',
+  templateUrl: './ngo-students.html',
+  styleUrl: './ngo-students.scss',
 })
-export class UniversityStudents implements OnInit {
+export class NgoStudents implements OnInit {
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
-    this.isFacultyDropdownOpen = false;
-    this.isProgramDropdownOpen = false;
+    this.isCountryDropdownOpen = false;
+    this.isUniversityDropdownOpen = false;
     this.isStatusDropdownOpen = false;
     this.isPageSizeDropdownOpen = false;
   }
 
   private studentService = inject(StudentProgramService);
-  private facultyService = inject(FacultyService);
-  private programService = inject(ProgramService);
+  private countryService = inject(MasterCountryService);
+  private universityService = inject(MasterUniversityService);
   private currentUserProfileService = inject(CurrentUserProfileService);
   private notification = inject(NotificationService);
   private studentStatusService = inject(StudentStatusService);
@@ -78,17 +79,18 @@ export class UniversityStudents implements OnInit {
   filter: StudentProgramApplicationFilter = new StudentProgramApplicationFilter();
 
   // Dropdown States & Data
-  faculties: FacultyRequest[] = [];
-  programs: ProgramRequest[] = [];
+  countries: MasterCountryRequest[] = [];
+  universities: MasterUniversityRequest[] = [];
   
+  // NOTE: If there are NGO specific statuses later, we can update this constant.
   statusOptions = this.studentStatusService.getStatusOptions(UNIVERSITY_STATUS_IDS);
   
-  selectedFaculty: number = 0;
-  selectedProgram: number = 0;
+  selectedCountry: number = 0;
+  selectedUniversity: number = 0;
   selectedStatus: number | null = null;
 
-  isFacultyDropdownOpen = false;
-  isProgramDropdownOpen = false;
+  isCountryDropdownOpen = false;
+  isUniversityDropdownOpen = false;
   isStatusDropdownOpen = false;
   isPageSizeDropdownOpen = false;
 
@@ -96,50 +98,47 @@ export class UniversityStudents implements OnInit {
     // this.universityId = this.currentUserProfileService.getCurrentUserProfile().universityId || 0;
     this.filter.pageNumber = 1;
     this.filter.pageSize = 25;
-    this.getFaculties();
-    this.getPrograms();
+    this.getCountries();
+    this.getUniversities();
     this.loadData();
   }
 
-  getFaculties(): void {
-    const fFilter = new FacultyFilter();
-    fFilter.pageNumber = 1;
-    fFilter.pageSize = 1000;
-    fFilter.universityId = this.universityId || undefined;
-    this.facultyService.getFaculties(fFilter).subscribe({
+  getCountries(): void {
+    const cFilter = new MasterCountryFilter();
+    cFilter.pageNumber = 1;
+    cFilter.pageSize = 1000;
+    this.countryService.getMasterCountries(cFilter).subscribe({
       next: (res) => {
         if (res.success && res.result) {
-          this.faculties = res.result.items;
+          this.countries = res.result.items;
         }
       }
     });
   }
 
-  getPrograms(): void {
-    const pFilter = new ProgramFilter();
-    pFilter.pageNumber = 1;
-    pFilter.pageSize = 1000;
-    pFilter.universityId = this.universityId || undefined;
-    pFilter.facultyId = this.selectedFaculty || undefined;
-    this.programService.getPrograms(pFilter).subscribe({
+  getUniversities(): void {
+    const uFilter = new MasterUniversityFilter();
+    uFilter.pageNumber = 1;
+    uFilter.pageSize = 1000;
+    uFilter.accreditationStatus = AccreditationStatus.Accredited;
+    uFilter.countryId = this.selectedCountry || undefined;
+    this.universityService.getMasterUniversities(uFilter).subscribe({
       next: (res) => {
         if (res.success && res.result) {
-          this.programs = res.result.items;
+          this.universities = res.result.items;
         }
       }
     });
   }
 
   loadData(): void {
-    this.filter.universityId = this.universityId || undefined;
-    (this.filter as any).facultyId = this.selectedFaculty || undefined;
-    (this.filter as any).programId = this.selectedProgram || undefined;
+    this.filter.countryId = this.selectedCountry || undefined;
+    this.filter.universityId = this.selectedUniversity || undefined;
     this.filter.applicationStatusId = this.selectedStatus !== null ? this.selectedStatus : undefined;
 
     this.studentService.search(this.filter).subscribe({
       next: (response) => {
         if (response.success && response.result) {
-          // The backend should handle excluding drafts etc. per instructions
           this.students = response.result.items;
           this.totalRecords = response.result.totalCount;
           this.calculateKPIs(this.students);
@@ -156,24 +155,11 @@ export class UniversityStudents implements OnInit {
   }
 
   calculateKPIs(items: StudentProgramApplication[]): void {
-
     this.kpiTotal = this.totalRecords;
     this.kpiInProcess = this.studentStatusService.counts(items as any, StudentStatusEnum.AcceptanceInProcess);
     this.kpiSponsored = this.studentStatusService.counts(items as any, StudentStatusEnum.Sponsored);
     this.kpiRegistered = this.studentStatusService.counts(items as any, StudentStatusEnum.Registered);
     this.tabAccRejected = this.studentStatusService.counts(items as any, StudentStatusEnum.AcceptanceRejected);
-
-    // this.tabAll = this.totalRecords;
-    // this.tabInProcess = this.kpiInProcess;
-    // this.tabAccRejected = items.filter(s => s.applicationStatusId === StudentStatusEnum.AcceptanceRejected).length;
-    // this.tabSponsored = this.kpiSponsored;
-    // this.tabSponRejected = items.filter(s => s.applicationStatusId === StudentStatusEnum.SponsoredRejected).length;
-    // this.tabAwarded = items.filter(s => s.applicationStatusId === StudentStatusEnum.Awarded).length;
-    // this.tabAwardedRejected = items.filter(s => s.applicationStatusId === StudentStatusEnum.AwardedRejected).length;
-    // this.tabRegistered = this.kpiRegistered;
-    // this.tabFailed = items.filter(s => s.applicationStatusId === StudentStatusEnum.Failed).length;
-    // this.tabDismissed = items.filter(s => s.applicationStatusId === StudentStatusEnum.Dismissed).length;
-    // this.tabGraduate = items.filter(s => s.applicationStatusId === StudentStatusEnum.Graduate).length;
   }
 
   // --- Search & Filters ---
@@ -197,68 +183,68 @@ export class UniversityStudents implements OnInit {
   }
 
   // --- Dropdowns ---
-  toggleFacultyDropdown(event: Event): void {
+  toggleCountryDropdown(event: Event): void {
     event.stopPropagation();
-    this.isFacultyDropdownOpen = !this.isFacultyDropdownOpen;
-    this.isProgramDropdownOpen = false;
+    this.isCountryDropdownOpen = !this.isCountryDropdownOpen;
+    this.isUniversityDropdownOpen = false;
     this.isStatusDropdownOpen = false;
   }
 
-  selectFacultyOption(id: number): void {
-    this.selectedFaculty = id;
-    this.selectedProgram = 0;
+  selectCountryOption(id: number): void {
+    this.selectedCountry = id;
+    this.selectedUniversity = 0;
     this.filter.pageNumber = 1;
-    this.getPrograms();
+    this.getUniversities();
     this.loadData();
   }
 
-  clearFacultySelection(event: Event): void {
+  clearCountrySelection(event: Event): void {
     event.stopPropagation();
-    this.selectedFaculty = 0;
-    this.selectedProgram = 0;
-    this.isFacultyDropdownOpen = false;
+    this.selectedCountry = 0;
+    this.selectedUniversity = 0;
+    this.isCountryDropdownOpen = false;
     this.filter.pageNumber = 1;
-    this.getPrograms();
+    this.getUniversities();
     this.loadData();
   }
 
-  getSelectedFacultyName(): string {
-    const f = this.faculties.find(x => x.facultyId === this.selectedFaculty);
-    return f ? f.facultyName : '';
+  getSelectedCountryName(): string {
+    const c = this.countries.find(x => x.countryId === this.selectedCountry);
+    return c ? c.countryName : '';
   }
 
-  toggleProgramDropdown(event: Event): void {
+  toggleUniversityDropdown(event: Event): void {
     event.stopPropagation();
-    this.isProgramDropdownOpen = !this.isProgramDropdownOpen;
-    this.isFacultyDropdownOpen = false;
+    this.isUniversityDropdownOpen = !this.isUniversityDropdownOpen;
+    this.isCountryDropdownOpen = false;
     this.isStatusDropdownOpen = false;
   }
 
-  selectProgramOption(id: number): void {
-    this.selectedProgram = id;
-    this.isProgramDropdownOpen = false;
+  selectUniversityOption(id: number): void {
+    this.selectedUniversity = id;
+    this.isUniversityDropdownOpen = false;
     this.filter.pageNumber = 1;
     this.loadData();
   }
 
-  clearProgramSelection(event: Event): void {
+  clearUniversitySelection(event: Event): void {
     event.stopPropagation();
-    this.selectedProgram = 0;
-    this.isProgramDropdownOpen = false;
+    this.selectedUniversity = 0;
+    this.isUniversityDropdownOpen = false;
     this.filter.pageNumber = 1;
     this.loadData();
   }
 
-  getSelectedProgramName(): string {
-    const p = this.programs.find(x => x.programId === this.selectedProgram);
-    return p ? p.programName : '';
+  getSelectedUniversityName(): string {
+    const u = this.universities.find(x => x.registrationId === this.selectedUniversity);
+    return u ? u.universityName : '';
   }
 
   toggleStatusDropdown(event: Event): void {
     event.stopPropagation();
     this.isStatusDropdownOpen = !this.isStatusDropdownOpen;
-    this.isFacultyDropdownOpen = false;
-    this.isProgramDropdownOpen = false;
+    this.isCountryDropdownOpen = false;
+    this.isUniversityDropdownOpen = false;
   }
 
   selectStatusOption(id: number | null): void {
@@ -297,7 +283,6 @@ export class UniversityStudents implements OnInit {
     );
   }
 
-
   getStatusName(student: StudentProgramApplication): string {
     return this.studentStatusService.getName(
       student.applicationStatusId ?? StudentStatusEnum.Draft
@@ -306,7 +291,7 @@ export class UniversityStudents implements OnInit {
 
   // --- Pagination ---
   get totalPages(): number {
-    return Math.ceil(this.totalRecords / this.filter.pageSize);
+    return Math.ceil(this.totalRecords / (this.filter.pageSize || 25));
   }
 
   get isPreviousDisabled(): boolean {
@@ -319,14 +304,14 @@ export class UniversityStudents implements OnInit {
 
   previousPage(): void {
     if (!this.isPreviousDisabled) {
-      this.filter.pageNumber--;
+      if(this.filter.pageNumber) this.filter.pageNumber--;
       this.loadData();
     }
   }
 
   nextPage(): void {
     if (!this.isNextDisabled) {
-      this.filter.pageNumber++;
+      if(this.filter.pageNumber) this.filter.pageNumber++;
       this.loadData();
     }
   }
@@ -350,7 +335,7 @@ export class UniversityStudents implements OnInit {
   viewStudent(studentId: number): void {
     const student = this.students.find(x => x.studentId === studentId);
     if (student) {
-      this.router.navigate(['/university-student-details', student.applicationId]);
+      this.router.navigate(['/ngo-student-details', student.applicationId]);
     }
   }
 

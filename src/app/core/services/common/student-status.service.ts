@@ -12,7 +12,6 @@ import {
 
 import { StudentStatusEnum } from '../../enums/student-application-status.enum';
 import { StudentRequest } from '../../models/school/students/student-request.model';
-import { UniversityStudentRequestModel } from '../../models/university/university-students/university-student-request.model';
 import { StudentProgramApplication } from '../../models/school/student-program-application/student-program-application.model';
 
 @Injectable({
