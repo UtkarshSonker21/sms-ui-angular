@@ -656,8 +656,28 @@
           </div> -->
         </div>
 
-        <!-- Filters -->
-        <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr; margin-bottom: 24px;">
+        <!-- Tabs -->
+        <div style="display: flex; gap: 24px; border-bottom: 1px solid var(--da-border); margin-bottom: 24px; padding-bottom: 0;">
+          <div 
+            (click)="activeTab = 'current'"
+            [style.color]="activeTab === 'current' ? 'var(--da-primary)' : 'var(--da-muted)'"
+            [style.font-weight]="activeTab === 'current' ? '600' : '400'"
+            [style.border-bottom]="activeTab === 'current' ? '2px solid var(--da-primary)' : '2px solid transparent'"
+            style="font-size: 15px; padding-bottom: 12px; cursor: pointer; transition: all 0.2s; margin-bottom: -1px;">
+            Current Application
+          </div>
+          <div 
+            (click)="activeTab = 'available'"
+            [style.color]="activeTab === 'available' ? 'var(--da-primary)' : 'var(--da-muted)'"
+            [style.font-weight]="activeTab === 'available' ? '600' : '400'"
+            [style.border-bottom]="activeTab === 'available' ? '2px solid var(--da-primary)' : '2px solid transparent'"
+            style="font-size: 15px; padding-bottom: 12px; cursor: pointer; transition: all 0.2s; margin-bottom: -1px;">
+            Other Available Programs
+          </div>
+        </div>
+
+        <!-- Filters (Only show in available tab) -->
+        <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr; margin-bottom: 24px;" *ngIf="activeTab === 'available'">
           <div class="field">
             <label class="field-label">Search</label>
             <input type="text" class="field-input" placeholder="Program name or code..."
@@ -719,7 +739,7 @@
           </div>
         </div>
 
-        <div *ngIf="filteredCandidatePrograms.length === 0"
+        <div *ngIf="activeTab === 'available' && filteredCandidatePrograms.length === 0"
           style="padding: 40px; text-align: center; color: var(--da-muted); border: 1px dashed var(--da-border); border-radius: 6px;">
           No programs found matching the selected criteria.
         </div>
@@ -951,19 +971,22 @@
           </div>
         </ng-template>
 
-        <div *ngIf="activeCandidateProgram">
-          <h4 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; padding-bottom: 8px; border-bottom: 1px solid var(--da-border);">Current Application</h4>
-          
-          <div class="card"
-            style="border: 2px solid var(--da-primary); border-radius: 6px; background: white; overflow: hidden; margin-bottom: 32px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);">
-            <ng-container *ngTemplateOutlet="programCardTemplate; context: { prog: activeCandidateProgram }"></ng-container>
+        <!-- Current Application Content -->
+        <div *ngIf="activeTab === 'current'">
+          <div *ngIf="activeCandidateProgram">
+            <div class="card"
+              style="border: 2px solid var(--da-primary); border-radius: 6px; background: white; overflow: hidden; margin-bottom: 32px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);">
+              <ng-container *ngTemplateOutlet="programCardTemplate; context: { prog: activeCandidateProgram }"></ng-container>
+            </div>
+          </div>
+          <div *ngIf="!activeCandidateProgram" style="padding: 40px; text-align: center; color: var(--da-muted); border: 1px dashed var(--da-border); border-radius: 6px; margin-bottom: 32px;">
+            No current application found. Switch to the "Other Available Programs" tab to browse and apply.
           </div>
         </div>
 
-        <div *ngIf="availableCandidatePrograms.length > 0">
-          <h4 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; padding-bottom: 8px; border-bottom: 1px solid var(--da-border);">Other Available Programs</h4>
-          
-          <div style="display: flex; flex-direction: column; gap: 16px;">
+        <!-- Available Programs Content -->
+        <div *ngIf="activeTab === 'available'">
+          <div *ngIf="availableCandidatePrograms.length > 0" style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 32px;">
             <div class="card" *ngFor="let prog of availableCandidatePrograms"
               style="border: 1px solid var(--da-border); border-radius: 6px; background: white; overflow: hidden;">
               <ng-container *ngTemplateOutlet="programCardTemplate; context: { prog: prog }"></ng-container>

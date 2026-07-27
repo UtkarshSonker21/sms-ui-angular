@@ -133,7 +133,7 @@ export class CoordinatorNominations implements OnInit {
     this.filter.isActive = true;
     this.filter.studentStatusId = this.selectedStatus !== null ? this.selectedStatus : undefined;
     this.filter.universityId = this.selectedUniversity || undefined;
-    this.filter.facultyId = this.selectedFaculty || undefined;
+    (this.filter as any).facultyId = this.selectedFaculty || undefined;
 
     // Filter by coordinator's nominated students only
     const currentUser = this.currentUserProfileService.getCurrentUserProfile();
@@ -172,12 +172,12 @@ export class CoordinatorNominations implements OnInit {
     // this.tabAccRejected = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.AcceptanceRejected).length;
     // this.tabSponsored = this.kpiSponsored;
     // this.tabSponRejected = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.SponsoredRejected).length;
-    // this.tabAwarded = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.Awarded).length;
-    // this.tabAwardedRejected = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.AwardedRejected).length;
+    // this.tabAwarded = items.filter(s => (s as any).studentApplicationStatusId === StudentStatusEnum.Awarded).length;
+    // this.tabAwardedRejected = items.filter(s => (s as any).studentApplicationStatusId === StudentStatusEnum.AwardedRejected).length;
     // this.tabRegistered = this.kpiRegistered;
-    // this.tabFailed = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.Failed).length;
-    // this.tabDismissed = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.Dismissed).length;
-    // this.tabGraduate = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.Graduate).length;
+    // this.tabFailed = items.filter(s => (s as any).studentApplicationStatusId === StudentStatusEnum.Failed).length;
+    // this.tabDismissed = items.filter(s => (s as any).studentApplicationStatusId === StudentStatusEnum.Dismissed).length;
+    // this.tabGraduate = items.filter(s => (s as any).studentApplicationStatusId === StudentStatusEnum.Graduate).length;
   }
 
   // --- Search & Filters ---
@@ -215,7 +215,7 @@ export class CoordinatorNominations implements OnInit {
 
     // Clear selected faculty
     this.selectedFaculty = 0;
-    this.filter.facultyId = undefined;
+    (this.filter as any).facultyId = undefined;
     this.faculties = [];
     if (id !== 0) {
       this.getFaculties(id);
@@ -232,8 +232,7 @@ export class CoordinatorNominations implements OnInit {
     this.isUniversityDropdownOpen = false;
 
     // Clear selected faculty
-    this.selectedFaculty = 0;
-    this.filter.facultyId = undefined;
+    (this.filter as any).facultyId = undefined;
     this.faculties = [];
 
     this.filter.pageNumber = 1;
@@ -255,7 +254,7 @@ export class CoordinatorNominations implements OnInit {
 
   selectFacultyOption(id: number): void {
     this.selectedFaculty = id;
-    this.filter.facultyId = id || undefined;
+    (this.filter as any).facultyId = id || undefined;
     this.isFacultyDropdownOpen = false;
     this.filter.pageNumber = 1;
     this.loadData();

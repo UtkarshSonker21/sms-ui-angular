@@ -111,11 +111,6 @@ export const ApiEndpoints = {
     },
 
 
-    Students: {
-      Search: 'university/students/search',
-      GetById: (id: number) => `university/students/getById/${id}`,
-    }
-
   },
 
   School: {
