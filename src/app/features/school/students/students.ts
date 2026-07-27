@@ -114,6 +114,7 @@ export class Students implements OnInit {
   searchTzCombination = '';
 
   // Candidate Programs State
+  activeTab: 'current' | 'available' = 'current';
   candidatePrograms: CandidateProgram[] = [];
   filteredCandidatePrograms: CandidateProgram[] = [];
   uploadingDocs = new Set<number>();
@@ -389,6 +390,7 @@ export class Students implements OnInit {
         if (res.success && res.result) {
           this.candidatePrograms = res.result;
           this.hasActiveApplication = this.candidatePrograms.some(p => p.applicationId && p.applicationStatus !== undefined);
+          this.activeTab = this.hasActiveApplication ? 'current' : 'available';
           
           this.uniqueFaculties = [...new Set(this.candidatePrograms.map(p => p.facultyName).filter(f => f))];
           this.uniqueUniversities = [...new Set(this.candidatePrograms.map(p => p.universityName).filter(u => u))];
@@ -499,6 +501,8 @@ export class Students implements OnInit {
         if (res.success && res.result) {
           this.selectedApplyProgram!.applicationId = res.result;
           this.selectedApplyProgram!.applicationStatusName = 'Draft';
+          this.hasActiveApplication = true;
+          this.activeTab = 'current';
           // Auto expand the row after draft is created so they can upload
           this.expandedProgramId = null; // Reset first so toggle expands it
           this.toggleProgramExpand(this.selectedApplyProgram!);
