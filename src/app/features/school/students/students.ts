@@ -500,6 +500,7 @@ export class Students implements OnInit {
       next: (res) => {
         if (res.success && res.result) {
           this.selectedApplyProgram!.applicationId = res.result;
+          this.selectedApplyProgram!.applicationStatus = StudentStatusEnum.Draft;
           this.selectedApplyProgram!.applicationStatusName = 'Draft';
           this.hasActiveApplication = true;
           this.activeTab = 'current';
@@ -520,7 +521,6 @@ export class Students implements OnInit {
   }
 
   submitProgramApplication(programId: number): void {
-    debugger;
     if (this.isApplying) return;
     
     const prog = this.candidatePrograms.find(p => p.programId === programId);
@@ -531,8 +531,18 @@ export class Students implements OnInit {
       return;
     }
     
-    this.isApplying = true;
-    this.doSubmit(prog.applicationId);
+    this.confirmDialog.confirm({
+      title: 'Submit Application',
+      message: 'Are you sure you want to submit this application?\nOnce submitted, you will not be able to modify the application or uploaded documents.',
+      cancelText: 'Cancel',
+      confirmText: 'Yes, Submit',
+      variant: 'info'
+    }).then(confirmed => {
+      if (!confirmed) return;
+
+      this.isApplying = true;
+      this.doSubmit(prog.applicationId!);
+    });
   }
 
   private doSubmit(applicationId: number): void {

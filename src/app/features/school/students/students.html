@@ -791,10 +791,6 @@
               </span>
 
               <div (click)="$event.stopPropagation()" style="display: flex; gap: 8px;">
-                <button type="button" class="btn btn-faculties-outline btn-danger-outline" *ngIf="prog.applicationId && isApplicationEditable(prog)"
-                  [disabled]="isApplying" (click)="cancelApplication(prog.applicationId)">
-                  Cancel Application
-                </button>
                 <button type="button" class="btn btn-p" *ngIf="!prog.applicationId"
                   [disabled]="hasActiveApplication || isApplying" (click)="openApplyModal(prog)">
                   Apply
@@ -931,9 +927,9 @@
 
             <!-- Application Action Footer -->
             <div *ngIf="isApplicationEditable(prog)"
-              style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--da-border); display: flex; justify-content: space-between; align-items: center;">
+              style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--da-border); display: flex; flex-direction: column; gap: 16px;">
 
-              <!-- Left Side: Helper Messages -->
+              <!-- Helper Messages -->
               <div>
                 <!-- Helper Message: Incomplete -->
                 <div *ngIf="!canApply(prog)"
@@ -958,13 +954,19 @@
                 </div>
               </div>
 
-              <!-- Right Side: Action Buttons -->
-              <div style="display: flex; gap: 12px; align-items: center;">
-                <!-- Submit Button -->
+              <!-- Action Buttons -->
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <!-- Left Side: Cancel Application -->
+                <button type="button" class="btn btn-faculties-outline btn-danger-outline"
+                  [disabled]="isApplying" (click)="cancelApplication(prog.applicationId)">
+                  Cancel Application
+                </button>
+
+                <!-- Right Side: Submit Application -->
                 <button type="button" class="btn btn-p"
                   [disabled]="isApplying || !canApply(prog)"
                   (click)="submitProgramApplication(prog.programId)">
-                  Submit
+                  Submit Application
                 </button>
               </div>
             </div>

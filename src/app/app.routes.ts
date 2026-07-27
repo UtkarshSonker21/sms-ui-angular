@@ -38,6 +38,8 @@ import { UniversityStudents } from './features/university/university-students/un
 import { UniversityStudentDetail } from './features/university/university-student-detail/university-student-detail';
 import { NgoStudents } from './features/ngo/ngo-students/ngo-students';
 import { NgoStudentDetail } from './features/ngo/ngo-student-detail/ngo-student-detail';
+import { PreferencesCountries } from './features/ngo/preferences-countries/preferences-countries';
+import { HighSchoolSpecializations } from './features/ngo/high-school-specializations/high-school-specializations';
 
 export const routes: Routes = [
 
@@ -186,6 +188,14 @@ export const routes: Routes = [
             {
                 path: 'ngo-student-details/:id',
                 component: NgoStudentDetail
+            },
+            {
+                path: 'preferences-countries',
+                component: PreferencesCountries
+            },
+            {
+                path: 'high-school-specializations',
+                component: HighSchoolSpecializations
             },
 
 
