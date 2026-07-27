@@ -63,6 +63,19 @@ export const ApiEndpoints = {
       Create: 'ngo/sponsorship-types/create',
       Update: (id: number) => `ngo/sponsorship-types/update/${id}`,
       Delete: (id: number) => `ngo/sponsorship-types/delete/${id}`
+    },
+
+    StudentCategories: {
+      Search: 'ngo/student-categories/search',
+      GetById: (id: number) => `ngo/student-categories/getById/${id}`,
+      Create: 'ngo/student-categories/create',
+      Update: (id: number) => `ngo/student-categories/update/${id}`,
+      Delete: (id: number) => `ngo/student-categories/delete/${id}`
+    },
+
+    SponsorshipMatrix: {
+      GetMatrix: 'ngo/sponsorship-matrix',
+      Toggle: 'ngo/sponsorship-matrix/toggle'
     }
 
   },
