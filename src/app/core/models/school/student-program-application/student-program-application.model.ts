@@ -83,11 +83,11 @@ export class StudentProgramApplication {
   universityName: string = '';
 
   // University specific and permission fields
-  totalScore?: number;
   canApprove: boolean = false;
   canReject: boolean = false;
   canRegister: boolean = false;
   canGraduate: boolean = false;
   canEdit: boolean = false;
   canView: boolean = false;
+  
 }

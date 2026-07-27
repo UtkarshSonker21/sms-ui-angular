@@ -26,6 +26,8 @@ import { CandidateProgram } from '../../../core/models/school/student-program-ap
 import { StudentHistory } from '../../../core/models/school/student-program-application/student-history.model';
 import { ApplyRequest } from '../../../core/models/school/student-program-application/apply-request.model';
 import { UploadDocumentRequest } from '../../../core/models/school/student-program-application/upload-document-request.model';
+import { StudentStatusEnum } from '../../../core/enums/student-application-status.enum';
+import { StudentStatusService } from '../../../core/services/common/student-status.service';
 
 
 
@@ -72,6 +74,9 @@ export class Students implements OnInit {
   private router = inject(Router);
   private studentProgramService = inject(StudentProgramService);
   private confirmDialog = inject(ConfirmDialogService);
+  private studentStatusService = inject(StudentStatusService);
+
+  studentStatus = StudentStatusEnum;
 
   // Model
   student = new StudentRequest();
@@ -978,6 +983,37 @@ export class Students implements OnInit {
 
   cancel(): void {
     this.router.navigate([AppRoutes.School.CoordinatorStudents]);
+  }
+
+  isApplicationEditable(program: CandidateProgram): boolean {
+    return !program.applicationId || program.applicationStatus === StudentStatusEnum.Draft;
+  }
+
+  getStatusBadgeClass(program: CandidateProgram): string {
+    return this.studentStatusService.getBadgeClass(
+      program.applicationStatus ?? StudentStatusEnum.Draft
+    );
+  }
+
+  getWorkflowStatusMessage(program: CandidateProgram): string {
+    switch (program.applicationStatus) {
+      case StudentStatusEnum.AcceptanceInProcess:
+        return 'This application has been submitted to the University and is currently under review. The School Coordinator can no longer modify this application.';
+      case StudentStatusEnum.Accepted:
+        return 'The application has been accepted by the University and is awaiting Awarding Review.';
+      case StudentStatusEnum.AwardingInProcess:
+        return 'The application is currently under Awarding Review by the University.';
+      case StudentStatusEnum.Awarded:
+        return 'The application has been awarded and forwarded to the Direct Aid Committee for Sponsorship Review.';
+      case StudentStatusEnum.Sponsored:
+        return 'The application has been approved for sponsorship by the Direct Aid Committee.';
+      case StudentStatusEnum.Registered:
+        return 'The student has been successfully registered.';
+      case StudentStatusEnum.Graduated:
+        return 'The student has successfully completed the program.';
+      default:
+        return 'This application is under University review and can no longer be modified.';
+    }
   }
 
 

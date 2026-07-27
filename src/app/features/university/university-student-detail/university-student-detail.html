@@ -13,7 +13,8 @@
             </div>
         </div>
         <div class="page-actions">
-            <button class="btn btn-faculties-outline" type="button" (click)="goBack()" style="display: flex; align-items: center; gap: 8px;">
+            <button class="btn btn-faculties-outline" type="button" (click)="goBack()"
+                style="display: flex; align-items: center; gap: 8px;">
                 <i class="fas fa-arrow-left"></i> Back to List
             </button>
         </div>
@@ -55,7 +56,8 @@
                     </div>
 
                     <div style="flex: 1;">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
                             <h3 style="margin: 0; font-size: 20px; font-weight: 600;">
                                 {{ student.fullName }}
                             </h3>
@@ -244,6 +246,129 @@
                     </div>
                 </div>
 
+                <!-- Workflow Action Bar (Acceptance/Awarding transition) -->
+                <div *ngIf="student.applicationStatusId === studentStatus.AcceptanceInProcess || student.applicationStatusId === studentStatus.Accepted || student.applicationStatusId === studentStatus.AwardingInProcess || student.applicationStatusId === studentStatus.Awarded"
+                    style="display: flex; justify-content: space-between; align-items: flex-start; padding: 20px 24px; background: var(--da-success-bg, #f0fdf4); border: 1px solid var(--da-success-border, #bbf7d0); border-left: 5px solid var(--da-success, #16a34a); border-radius: 6px; margin-top: 20px;">
+
+                    <!-- Content for AcceptanceInProcess -->
+                    <ng-container *ngIf="student.applicationStatusId === studentStatus.AcceptanceInProcess">
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <div>
+                                <div
+                                    style="font-weight: 700; font-size: 15px; color: var(--da-text, #1e293b); margin-bottom: 4px;">
+                                    Application Review</div>
+                                <div style="color: var(--da-muted, #64748b); font-size: 12.5px;">Review the submitted
+                                    documents and choose the appropriate action for this application.</div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                                <span style="font-weight: 600; font-size: 13px; color: var(--da-text, #1e293b);">Current
+                                    Status:</span>
+                                <span class="chip {{ getStatusBadgeClass(student) }}" style="font-size: 11px;">
+                                    {{ student.applicationStatusName }}
+                                </span>
+                            </div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+                            <span style="color: var(--da-muted, #64748b); font-size: 12px; font-weight: 500;">Available
+                                Actions</span>
+                            <div style="display: flex; gap: 12px;">
+                                <button type="button" class="btn btn-faculties-outline btn-danger-outline"
+                                    (click)="rejectApplication()">
+                                    Reject
+                                </button>
+                                <button type="button" class="btn btn-p" (click)="acceptApplication()">
+                                    Accept
+                                </button>
+                            </div>
+                        </div>
+                    </ng-container>
+
+                    <!-- Content for Accepted -->
+                    <ng-container *ngIf="student.applicationStatusId === studentStatus.Accepted">
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <div>
+                                <div
+                                    style="font-weight: 700; font-size: 15px; color: var(--da-text, #1e293b); margin-bottom: 4px;">
+                                    Application Review
+                                </div>
+                                <div
+                                    style="display: flex; align-items: center; gap: 6px; color: var(--da-success, #16a34a); font-weight: 600; font-size: 13.5px; margin-bottom: 8px;">
+                                    <span>✓ Acceptance Completed</span>
+                                </div>
+                                <div style="color: var(--da-muted, #64748b); font-size: 12.5px;">
+                                    The application has been accepted successfully.
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                                <span style="font-weight: 600; font-size: 13px; color: var(--da-text, #1e293b);">
+                                    Next Step:
+                                </span>
+                                <span style="color: var(--da-text, #1e293b); font-size: 13px;">
+                                    Submit this application for Awarding Review.
+                                </span>
+                            </div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px; align-self: center;">
+                            <button type="button" class="btn btn-p" (click)="submitForAwardingReview()">
+                                Submit for Awarding Review
+                            </button>
+                        </div>
+                    </ng-container>
+
+                    <!-- Content for AwardingInProcess -->
+                    <ng-container *ngIf="student.applicationStatusId === studentStatus.AwardingInProcess">
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <div>
+                                <div style="font-weight: 700; font-size: 15px; color: var(--da-text, #1e293b); margin-bottom: 4px;">Application Review</div>
+                                <div style="color: var(--da-muted, #64748b); font-size: 12.5px;">The application is currently under awarding review. Review the application and choose the appropriate action.</div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                                <span style="font-weight: 600; font-size: 13px; color: var(--da-text, #1e293b);">Current Status:</span>
+                                <span class="chip {{ getStatusBadgeClass(student) }}" style="font-size: 11px;">
+                                    {{ student.applicationStatusName }}
+                                </span>
+                            </div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+                            <span style="color: var(--da-muted, #64748b); font-size: 12px; font-weight: 500;">Available Actions</span>
+                            <div style="display: flex; gap: 12px;">
+                                <button type="button" class="btn btn-faculties-outline btn-danger-outline" (click)="rejectAwardingApplication()">
+                                    Reject
+                                </button>
+                                <button type="button" class="btn btn-p" (click)="awardApplication()">
+                                    Award
+                                </button>
+                            </div>
+                        </div>
+                    </ng-container>
+
+                    <!-- Content for Awarded -->
+                    <ng-container *ngIf="student.applicationStatusId === studentStatus.Awarded">
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <div>
+                                <div style="font-weight: 700; font-size: 15px; color: var(--da-text, #1e293b); margin-bottom: 4px;">Application Review</div>
+                                <div style="display: flex; align-items: center; gap: 6px; color: var(--da-success, #16a34a); font-weight: 600; font-size: 13.5px; margin-bottom: 8px; margin-top: 4px;">
+                                    <span>✓ Awarding Completed</span>
+                                </div>
+                                <div style="color: var(--da-muted, #64748b); font-size: 12.5px;">This application has been awarded successfully and has been forwarded to the Direct Aid Committee for sponsorship review.</div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                                <span style="font-weight: 600; font-size: 13px; color: var(--da-text, #1e293b);">Current Status:</span>
+                                <span class="chip {{ getStatusBadgeClass(student) }}" style="font-size: 11px;">
+                                    {{ student.applicationStatusName }}
+                                </span>
+                            </div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px; align-self: center;">
+                            <span style="color: var(--da-muted, #64748b); font-size: 12px; font-weight: 500; margin-bottom: 4px;">Workflow Complete</span>
+                            <div style="color: var(--da-text, #1e293b); font-size: 12.5px; font-weight: 500; padding: 6px 12px; background: var(--da-surface-2, #f8fafc); border-radius: 4px; border: 1px solid var(--da-border, #e2e8f0);">
+                                No further action required.
+                            </div>
+                        </div>
+                    </ng-container>
+
+                </div>
+
             </div>
         </section>
 
@@ -405,22 +530,26 @@
                     <div class="field">
                         <label class="field-label">Total Score</label>
                         <input type="text" class="field-input"
-                            [value]="student.highSchoolTotalScore !== undefined && student.highSchoolTotalScore !== null ? student.highSchoolTotalScore : '-'" readonly disabled>
+                            [value]="student.highSchoolTotalScore !== undefined && student.highSchoolTotalScore !== null ? student.highSchoolTotalScore : '-'"
+                            readonly disabled>
                     </div>
                     <div class="field">
                         <label class="field-label">Max Score</label>
                         <input type="text" class="field-input"
-                            [value]="student.highSchoolMaxScore !== undefined && student.highSchoolMaxScore !== null ? student.highSchoolMaxScore : '-'" readonly disabled>
+                            [value]="student.highSchoolMaxScore !== undefined && student.highSchoolMaxScore !== null ? student.highSchoolMaxScore : '-'"
+                            readonly disabled>
                     </div>
                     <div class="field">
                         <label class="field-label">Relative Grade / Percentage</label>
                         <input type="text" class="field-input"
-                            [value]="student.highSchoolRelativeGradeOrPercentage !== undefined && student.highSchoolRelativeGradeOrPercentage !== null ? student.highSchoolRelativeGradeOrPercentage : '-'" readonly disabled>
+                            [value]="student.highSchoolRelativeGradeOrPercentage !== undefined && student.highSchoolRelativeGradeOrPercentage !== null ? student.highSchoolRelativeGradeOrPercentage : '-'"
+                            readonly disabled>
                     </div>
                     <div class="field">
                         <label class="field-label">English Score</label>
                         <input type="text" class="field-input"
-                            [value]="student.englishScore !== undefined && student.englishScore !== null ? student.englishScore : '-'" readonly disabled>
+                            [value]="student.englishScore !== undefined && student.englishScore !== null ? student.englishScore : '-'"
+                            readonly disabled>
                     </div>
                 </div>
 
@@ -488,6 +617,12 @@
         <div class="sticky-footer" style="display: flex; gap: 12px; align-items: center; justify-content: flex-end;">
 
             <!-- Workflow Buttons (TODOs) -->
+
+            <button type="button" class="btn btn-faculties-outline btn-info-outline" *ngIf="student.canRegister"
+                (click)="register()">
+                Register
+            </button>
+
             <button type="button" class="btn btn-faculties-outline btn-success-outline" *ngIf="student.canApprove"
                 (click)="approve()">
                 Approve
@@ -495,14 +630,6 @@
             <button type="button" class="btn btn-faculties-outline btn-danger-outline" *ngIf="student.canReject"
                 (click)="reject()">
                 Reject
-            </button>
-            <button type="button" class="btn btn-faculties-outline btn-info-outline" *ngIf="student.canRegister"
-                (click)="register()">
-                Register
-            </button>
-            <button type="button" class="btn btn-faculties-outline btn-success-outline" *ngIf="student.canGraduate"
-                (click)="graduate()">
-                Graduate
             </button>
 
         </div>
