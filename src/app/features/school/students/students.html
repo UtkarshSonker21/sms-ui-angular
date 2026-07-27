@@ -761,13 +761,17 @@
             <!-- Right Side -->
             <div
               style="flex: 0 0 auto; display: flex; align-items: center; justify-content: flex-end; gap: 12px; flex-wrap: nowrap;">
+              <span class="chip {{ getStatusBadgeClass(prog) }}" *ngIf="prog.applicationId" style="font-size: 11px;">
+                {{ prog.applicationStatusName }}
+              </span>
+
               <span class="badge" *ngIf="prog.requiredDocuments && prog.requiredDocuments.length > 0"
                 style="background: var(--da-surface-2); border: 1px solid var(--da-border); color: var(--da-text); padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; white-space: nowrap;">
                 {{ getUploadedRequiredDocsCount(prog) }} / {{ getRequiredDocsCount(prog) }} Docs
               </span>
 
               <div (click)="$event.stopPropagation()" style="display: flex; gap: 8px;">
-                <button type="button" class="btn btn-faculties-outline btn-danger-outline" *ngIf="prog.applicationId"
+                <button type="button" class="btn btn-faculties-outline btn-danger-outline" *ngIf="prog.applicationId && isApplicationEditable(prog)"
                   [disabled]="isApplying" (click)="cancelApplication(prog.applicationId)">
                   Cancel Application
                 </button>
@@ -789,6 +793,18 @@
 
           <div *ngIf="expandedProgramId === prog.programId && prog.applicationId"
             style="border-top: 1px solid var(--da-border); padding: 16px; background: var(--da-surface-1);">
+            
+            <!-- Information Banner (Non-editable application status info) -->
+            <div *ngIf="!isApplicationEditable(prog)" 
+                 style="margin-bottom: 16px; display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: var(--da-info-bg, #eff6ff); border: 1px solid var(--da-info-border, #bfdbfe); border-radius: 6px; color: var(--da-info, #2563eb); font-size: 13px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0;">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="16" x2="12" y2="12" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
+              </svg>
+              <span>{{ getWorkflowStatusMessage(prog) }}</span>
+            </div>
+
             <div style="margin-bottom: 16px;">
               <h5 style="margin: 0; font-size: 14px;">Required Documents</h5>
             </div>
@@ -826,7 +842,7 @@
                             'background': getUploadedDocStatus(doc.documentTypeId) === 'Uploaded' ? '#dcfce7' : '#f1f5f9',
                             'color': getUploadedDocStatus(doc.documentTypeId) === 'Uploaded' ? '#166534' : '#475569',
                             'padding': '2px 8px', 'border-radius': '12px', 'font-size': '11px', 'margin-left': '8px'
-                          }">
+                           }">
                       {{ getUploadedDocStatus(doc.documentTypeId) }}
                     </span>
                   </div>
@@ -862,7 +878,7 @@
 
                   <!-- Default Upload Button -->
                   <button type="button" class="btn btn-sm btn-faculties-outline btn-info-outline"
-                    *ngIf="getUploadedDocStatus(doc.documentTypeId) !== 'Uploaded' && !uploadingDocs.has(doc.documentTypeId)"
+                    *ngIf="isApplicationEditable(prog) && getUploadedDocStatus(doc.documentTypeId) !== 'Uploaded' && !uploadingDocs.has(doc.documentTypeId)"
                     (click)="fileInput.click(); $event.stopPropagation()">
                     Upload
                   </button>
@@ -879,7 +895,7 @@
                       </svg>
                       Preview
                     </button>
-                    <button type="button" class="btn btn-sm btn-faculties-outline btn-danger-outline"
+                    <button type="button" class="btn btn-sm btn-faculties-outline btn-danger-outline" *ngIf="isApplicationEditable(prog)"
                       (click)="removeDocument(doc, prog.applicationId!); $event.stopPropagation()">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2" style="margin-right: 4px;">
@@ -894,7 +910,7 @@
             </div>
 
             <!-- Application Action Footer -->
-            <div *ngIf="!prog.applicationId || (prog.applicationId && prog.applicationStatusName === 'Draft')"
+            <div *ngIf="isApplicationEditable(prog)"
               style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--da-border); display: flex; justify-content: space-between; align-items: center;">
 
               <!-- Left Side: Helper Messages -->

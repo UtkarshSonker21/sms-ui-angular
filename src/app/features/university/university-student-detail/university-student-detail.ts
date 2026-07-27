@@ -10,6 +10,7 @@ import { StudentProgramService } from '../../../core/services/school/student-pro
 import { StudentStatusService } from '../../../core/services/common/student-status.service';
 import { StudentProgramDocument } from '../../../core/models/school/student-program-application/student-program-document.model';
 import { StudentProgramApplication } from '../../../core/models/school/student-program-application/student-program-application.model';
+import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
 
 
 @Component({
@@ -25,6 +26,9 @@ export class UniversityStudentDetail implements OnInit {
   private notification = inject(NotificationService);
   private studentProgramService = inject(StudentProgramService);
   private studentStatusService = inject(StudentStatusService);
+  private confirmDialog = inject(ConfirmDialogService);
+
+  studentStatus = StudentStatusEnum;
 
   studentId: number = 0;
   student: StudentProgramApplication | null = null;
@@ -197,6 +201,170 @@ export class UniversityStudentDetail implements OnInit {
   getUploadedDocumentsCount(): number {
     return this.documents.filter(d => this.getUploadedDocStatus(d.documentTypeId) === 'Uploaded').length;
   }
+
+  private refreshApplicationWorkflow(): void {
+    this.activeSection = 3;
+    this.loadStudentDetails();
+  }
+
+  rejectApplication(): void {
+    if (!this.student) return;
+
+    this.confirmDialog.confirm({
+      title: 'Reject Application',
+      message: 'Are you sure you want to reject this application?\nThis action will change the application status to "Acceptance Rejected".',
+      confirmText: 'Reject',
+      cancelText: 'Cancel',
+      variant: 'danger'
+    }).then(confirmed => {
+      if (confirmed) {
+        this.studentProgramService.changeStatus(this.studentId, {
+          applicationStatusId: StudentStatusEnum.AcceptanceRejected,
+          remarks: null as any
+        }).subscribe({
+          next: (res) => {
+            if (res.success) {
+              this.notification.success('Application rejected successfully.');
+              this.refreshApplicationWorkflow();
+            } else {
+              this.notification.error(res.message || 'Failed to reject application.');
+            }
+          },
+          error: () => {
+            this.notification.error('An error occurred while rejecting the application.');
+          }
+        });
+      }
+    });
+  }
+
+  acceptApplication(): void {
+    if (!this.student) return;
+
+    this.confirmDialog.confirm({
+      title: 'Accept Application',
+      message: 'Are you sure you want to accept this application?',
+      confirmText: 'Accept',
+      cancelText: 'Cancel',
+      variant: 'info'
+    }).then(confirmed => {
+      if (confirmed) {
+        this.studentProgramService.changeStatus(this.studentId, {
+          applicationStatusId: StudentStatusEnum.Accepted,
+          remarks: null as any
+        }).subscribe({
+          next: (res) => {
+            if (res.success) {
+              this.notification.success('Application accepted successfully.');
+              this.refreshApplicationWorkflow();
+            } else {
+              this.notification.error(res.message || 'Failed to accept application.');
+            }
+          },
+          error: () => {
+            this.notification.error('An error occurred while accepting the application.');
+          }
+        });
+      }
+    });
+  }
+
+  submitForAwardingReview(): void {
+    if (!this.student) return;
+
+    this.confirmDialog.confirm({
+      title: 'Submit for Awarding Review',
+      message: 'Are you sure you want to submit this application for Awarding Review?\n\nOnce submitted, the application status will change to "Awarding In Process" and the university can begin the final awarding review.',
+      confirmText: 'Submit',
+      cancelText: 'Cancel',
+      variant: 'info'
+    }).then(confirmed => {
+      if (confirmed) {
+        this.studentProgramService.changeStatus(this.studentId, {
+          applicationStatusId: StudentStatusEnum.AwardingInProcess,
+          remarks: null as any
+        }).subscribe({
+          next: (res) => {
+            if (res.success) {
+              this.notification.success('Application submitted for awarding review successfully.');
+              this.refreshApplicationWorkflow();
+            } else {
+              this.notification.error(res.message || 'Failed to submit application.');
+            }
+          },
+          error: () => {
+            this.notification.error('An error occurred while submitting the application.');
+          }
+        });
+      }
+    });
+  }
+
+  awardApplication(): void {
+    if (!this.student) return;
+
+    this.confirmDialog.confirm({
+      title: 'Award Application',
+      message: 'Are you sure you want to award this application?',
+      confirmText: 'Award',
+      cancelText: 'Cancel',
+      variant: 'info'
+    }).then(confirmed => {
+      if (confirmed) {
+        this.studentProgramService.changeStatus(this.studentId, {
+          applicationStatusId: StudentStatusEnum.Awarded,
+          remarks: null as any
+        }).subscribe({
+          next: (res) => {
+            if (res.success) {
+              this.notification.success('Application awarded successfully.');
+              this.refreshApplicationWorkflow();
+            } else {
+              this.notification.error(res.message || 'Failed to award application.');
+            }
+          },
+          error: () => {
+            this.notification.error('An error occurred while awarding the application.');
+          }
+        });
+      }
+    });
+  }
+
+  rejectAwardingApplication(): void {
+    if (!this.student) return;
+
+    this.confirmDialog.confirm({
+      title: 'Reject Awarding',
+      message: 'Are you sure you want to reject this application?\nThis action will change the application status to "Awarding Rejected".',
+      confirmText: 'Reject',
+      cancelText: 'Cancel',
+      variant: 'danger'
+    }).then(confirmed => {
+      if (confirmed) {
+        this.studentProgramService.changeStatus(this.studentId, {
+          applicationStatusId: StudentStatusEnum.AwardingRejected,
+          remarks: null as any
+        }).subscribe({
+          next: (res) => {
+            if (res.success) {
+              this.notification.success('Awarding review rejected successfully.');
+              this.refreshApplicationWorkflow();
+            } else {
+              this.notification.error(res.message || 'Failed to reject awarding review.');
+            }
+          },
+          error: () => {
+            this.notification.error('An error occurred while rejecting the awarding review.');
+          }
+        });
+      }
+    });
+  }
+
+
+
+
 
   // ==========================================
   // TODO: Temporary UI placeholders.
