@@ -17,7 +17,6 @@ export class CurrentUserProfile {
 
     universityId?: number;
     schoolId?: number;
-    ngoId?: number;
 
     organizationName!: string;
 
@@ -29,7 +28,7 @@ export class CurrentUserProfile {
     firstName!: string;
     lastName!: string;
 
-    mobile?: string;
+    mobileNumber?: string;
     personalEmail?: string;
 
     officialEmail!: string;
