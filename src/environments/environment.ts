@@ -1,6 +1,7 @@
 export const environment = {
   production: false,
 
+  // apiUrl: 'https://localhost:7000/api/',
   apiUrl: 'https://sm-api.runasp.net/api/',
 
   appName: 'Scholarship Management System',
