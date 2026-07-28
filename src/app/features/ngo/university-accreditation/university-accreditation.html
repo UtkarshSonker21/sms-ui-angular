@@ -104,9 +104,9 @@
         <th style="width: 25%;">University</th>
         <th style="width: 15%;">Country</th>
         <th style="width: 15%;">Type (License)</th>
-        <th style="width: 8%; text-align: end;">Faculties</th>
-        <th style="width: 8%; text-align: end;">Programs</th>
-        <th style="width: 8%; text-align: end;">Students</th>
+        <th style="width: 8%;">Faculties</th>
+        <th style="width: 8%;">Programs</th>
+        <th style="width: 8%;">Students</th>
         <th style="width: 10%;">Submitted</th>
         <th style="width: 10%;">Status</th>
         <th style="width: 10%;">Action</th>
@@ -132,13 +132,13 @@
              {{ uni.universityType ?? 'N/A' }}
           </span>
         </td>
-        <td class="num" style="text-align: end !important;">
+        <td class="num">
           {{ uni.facultiesCount || 0 }}
         </td>
-        <td class="num" style="text-align: end !important;">
+        <td class="num">
           {{ getProgramsCount(uni) }}
         </td>
-        <td class="num" style="text-align: end !important;">
+        <td class="num">
           {{ uni.studentsTotal || 0 }}
         </td>
         <td>
