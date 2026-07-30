@@ -22,7 +22,15 @@ export const ApiEndpoints = {
     UsersModule: 'common/user-modules',
     LoadMenus: 'common/load-menus',
     Dashboard: 'common/load-dashboard',
-    UpdateMyProfile: 'auth/update/my-profile'
+    UpdateMyProfile: 'auth/update/my-profile',
+
+    // Marketing Administrative Fee
+    MarketingAdministrativeFee: {
+      GetCurrent: 'common/marketing-administrative-fee/current',
+      Update: 'common/marketing-administrative-fee/update',
+      GetHistory: 'common/marketing-administrative-fee/history'
+    },
+
   },
 
   SuperAdmin: {
