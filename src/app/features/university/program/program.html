@@ -339,17 +339,17 @@
           {{ program.courses?.length || 0 }} {{ program.courses?.length === 1 ? 'course' : 'courses' }} • {{ getTotalCredits() }} credits
         </div>
       </div>
-      <div class="form-section-body" style="padding-top: 10px; padding-bottom: 14px;">
+      <div class="form-section-body" style="padding-top: 10px; padding-bottom: 24px;">
         
-        <div class="dyn-list">
+        <div class="dyn-list" style="margin-bottom: 12px;">
           <ng-container *ngIf="program.courses && program.courses.length > 0">
-            <div class="dyn-row course-dyn" style="padding: 6px 0; border-bottom: 1px dashed var(--da-border); grid-template-columns: 1fr 140px auto 80px auto; gap: 14px; align-items: center; min-height: 44px; height: 44px; box-sizing: border-box;" *ngFor="let c of program.courses">
+            <div class="dyn-row course-dyn" style="padding: 6px 0; border-bottom: 1px dashed var(--da-border); grid-template-columns: 1fr 140px auto 80px auto; gap: 14px; align-items: center; min-height: 50px; height: 50px; box-sizing: border-box;" *ngFor="let c of program.courses">
               <div class="fixed-name" style="font-size: 13px; font-weight: 600; color: var(--da-black);">
                 {{ c.courseNameEn }} 
                 <span class="program-code" style="color: var(--da-green); font-size: 12px; font-weight: 600; margin-inline-start: 6px; letter-spacing: 0.02em;">{{ c.courseCode }}</span>
               </div>
               <div style="position: relative;" (click)="$event.stopPropagation()">
-                <div class="multi-select" [class.open]="openSemesterDropdownCourseId === c.courseId" (click)="toggleSemesterDropdown(c.courseId || 0, $event)" tabindex="0" style="height: 28px; padding: 2px 8px; background: var(--da-white); min-height: 28px;">
+                <div class="multi-select" [class.open]="openSemesterDropdownCourseId === c.courseId" (click)="toggleSemesterDropdown(c.courseId || 0, $event)" tabindex="0" style="height: 26px; padding: 2px 8px; background: var(--da-white); min-height: 26px;">
                   <div class="ms-display" style="font-size: 12px; color: var(--da-black);">
                     Semester {{ c.semesterNo }}
                   </div>
@@ -395,7 +395,7 @@
                 <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                 <div class="ms-panel" *ngIf="isAddCourseDropdownOpen" style="display: block; max-height: 200px; overflow-y: auto; text-align: start; bottom: calc(100% + 4px) !important; top: auto !important; box-shadow: 0 -4px 12px rgba(0,0,0,0.1);">
                   <ng-container *ngIf="courses.length > 0; else noCoursesAvailable">
-                    <div class="ms-option" *ngFor="let c of courses" (click)="selectCourseToAdd(c.courseId || 0)">
+                    <div class="ms-option" *ngFor="let c of courses" (click)="selectCourseToAdd(c.courseId || 0, $event)">
                       <span>{{ c.courseNameEn }} ({{ c.courseCode }})</span>
                     </div>
                   </ng-container>

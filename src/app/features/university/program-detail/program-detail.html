@@ -305,7 +305,7 @@
               <div>
                 <div class="multi-select" style="height: 28px; padding: 2px 8px; background: #fafbfc; min-height: 28px; pointer-events: none; border-color: var(--da-border-strong);">
                   <div class="ms-display" style="font-size: 12px; color: var(--da-black);">
-                    Semester {{ c.semesterNo }}
+                     {{ c.semesterName }}
                   </div>
                 </div>
               </div>
@@ -331,4 +331,86 @@
     </section>
   </div>
 
+</div>
+
+<div class="modal-backdrop" *ngIf="showRegistrationModal">
+    <div class="modal-card">
+        <div class="modal-head">
+            <div>
+                <div class="modal-title">Registration Window</div>
+                <div class="modal-sub">Open or update registration dates for this program.</div>
+            </div>
+            <button type="button" class="modal-close" (click)="closeRegistrationModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form #registrationForm="ngForm" (ngSubmit)="saveRegistration(registrationForm)" novalidate>
+            <div class="modal-body" *ngIf="registrationData">
+
+                <div class="field" style="margin-bottom: 16px;">
+                    <label class="field-label required-label">Program Semester</label>
+                    <div class="da-select" [class.da-select-open]="isSemesterDropdownOpen" tabindex="0">
+                        <div class="da-select-control" (click)="toggleSemesterDropdown($event)" style="padding: 0 12px 0 6px;">
+                            <div class="ms-display" [class.has-selection]="registrationData.semesterNo"
+                                style="display: flex; align-items: center; flex: 1;">
+                                <ng-container *ngIf="registrationData.semesterNo; else noSemesterSelected">
+                                    <span class="ms-chip" style="margin: 0;">
+                                        {{ getSelectedSemesterName() }}
+                                        <span class="ms-chip-x" (click)="clearSemesterSelection($event)">×</span>
+                                    </span>
+                                </ng-container>
+                                <ng-template #noSemesterSelected>
+                                    <span class="da-select-value" style="font-size: 13px; margin-left: 6px; color: var(--da-text-3, #9ca3af);">Select Semester</span>
+                                </ng-template>
+                            </div>
+                            <i class="fas da-select-arrow" [ngClass]="isSemesterDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                        </div>
+                        <div class="da-select-menu" *ngIf="isSemesterDropdownOpen">
+                            <div class="da-select-option" *ngFor="let sem of registrationSemesters"
+                                [class.selected]="registrationData.semesterNo === (sem.semesterNo || sem.SemesterNo)"
+                                (click)="selectSemesterOption(sem.semesterNo || sem.SemesterNo)">
+                                {{ sem.semesterName || sem.SemesterName || ('Semester ' + (sem.semesterNo || sem.SemesterNo)) }}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Using manual validation display since it's a custom dropdown -->
+                    <div class="validation-error" *ngIf="registrationForm.submitted && !registrationData.semesterNo">
+                        Semester is required.
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 16px; display: flex; gap: 16px;">
+                    <div class="field" style="flex: 1;">
+                        <label class="field-label required-label">Registration From</label>
+                        <input type="date" name="registrationFrom" class="field-input" required
+                            [(ngModel)]="registrationDateFrom" #fromModel="ngModel">
+                        <div class="validation-error" *ngIf="(fromModel.touched || registrationForm.submitted) && fromModel.errors?.['required']">
+                            Registration From is required.
+                        </div>
+                    </div>
+                    
+                    <div class="field" style="flex: 1;">
+                        <label class="field-label required-label">Registration To</label>
+                        <input type="date" name="registrationTo" class="field-input" required
+                            [(ngModel)]="registrationDateTo" #toModel="ngModel">
+                        <div class="validation-error" *ngIf="(toModel.touched || registrationForm.submitted) && toModel.errors?.['required']">
+                            Registration To is required.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field" style="margin-bottom: 16px;">
+                    <label class="field-label">Notes</label>
+                    <textarea class="field-input" name="notes" rows="3" placeholder="Enter notes..."
+                        [(ngModel)]="registrationData.notes"></textarea>
+                </div>
+            </div>
+
+            <div class="modal-foot" style="display: flex; justify-content: flex-end; gap: 12px;">
+                <button type="button" class="btn btn-g" (click)="closeRegistrationModal()">Cancel</button>
+                <button type="submit" class="btn btn-p">Open Registration</button>
+            </div>
+        </form>
+    </div>
 </div>

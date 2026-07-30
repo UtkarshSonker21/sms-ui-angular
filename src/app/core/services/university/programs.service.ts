@@ -8,6 +8,7 @@ import { PagedResult } from '../../models/common/response/paged-result.model';
 
 import { ProgramFilter } from '../../models/university/programs/program-filter.model';
 import { ProgramRequest } from '../../models/university/programs/program-request.model';
+import { ProgramRegistrationWindowModel } from '../../models/university/programs/program-registration-window.model';
 
 @Injectable({
     providedIn: 'root'
@@ -48,5 +49,27 @@ export class ProgramService {
             ApiEndpoints.University.Programs.Delete(id)
         );
     }
+
+
+    getSemesterByProgramId(id: number) {
+        return this.api.get<ApiResponse<ProgramRequest>>(
+            ApiEndpoints.University.Programs.GetSemesterByProgramId(id)
+        );
+    }
+
+
+    getProgramRegistrationWindowByProgramId(programId: number) {
+        return this.api.get<ApiResponse<ProgramRegistrationWindowModel>>(
+            ApiEndpoints.University.ProgramRegistrationWindow.GetByProgramId(programId)
+        );
+    }
+
+    saveProgramRegistrationWindow(model: ProgramRegistrationWindowModel) {
+        return this.api.post<ApiResponse<number>>(
+            ApiEndpoints.University.ProgramRegistrationWindow.Save,
+            model
+        );
+    }
+
 
 }
