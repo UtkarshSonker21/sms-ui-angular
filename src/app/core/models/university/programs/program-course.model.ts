@@ -19,4 +19,5 @@ export class ProgramCourse {
   displayOrder?: number;
 
   semesterNo: number = 1;
+  semesterName: string = "";
 }

@@ -110,9 +110,15 @@ export const ApiEndpoints = {
     Programs: {
       Search: 'university/programs/search',
       GetById: (id: number) => `university/programs/getById/${id}`,
+      GetSemesterByProgramId: (id: number) => `university/programs/semesters/${id}`,
       Create: 'university/programs/create',
       Update: (id: number) => `university/programs/update/${id}`,
       Delete: (id: number) => `university/programs/delete/${id}`
+    },
+
+    ProgramRegistrationWindow: {
+      GetByProgramId: (programId: number) => `program-registration-window/${programId}`,
+      Save: 'program-registration-window'
     },
 
     DocumentTypes: {

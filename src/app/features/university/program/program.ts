@@ -519,7 +519,8 @@ export class Program implements OnInit {
     this.isAddCourseDropdownOpen = !isOpen;
   }
 
-  selectCourseToAdd(id: number): void {
+  selectCourseToAdd(id: number, event: Event): void {
+    event.stopPropagation();
     this.selectedCourseToAdd = id;
     this.isAddCourseDropdownOpen = false;
   }

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -9,9 +9,9 @@ import { ProgramService } from '../../../core/services/university/programs.servi
 import { ProgramRequest } from '../../../core/models/university/programs/program-request.model';
 import { ProgramCourse } from '../../../core/models/university/programs/program-course.model';
 import { ProgramDocument } from '../../../core/models/university/programs/program-document.model';
+import { ProgramRegistrationWindowModel } from '../../../core/models/university/programs/program-registration-window.model';
 import { StaffType } from '../../../core/enums/staff-type.enum';
 import { AppRoutes } from '../../../core/constants/app-routes';
-
 
 @Component({
   selector: 'app-program-detail',
@@ -148,9 +148,141 @@ export class ProgramDetail implements OnInit {
     return this.program.courses.reduce((sum, c) => sum + (c.credits || 0), 0);
   }
 
+  // Registration Modal State
+  showRegistrationModal = false;
+  registrationSemesters: any[] = [];
+  registrationData: ProgramRegistrationWindowModel | null = null;
+  registrationDateFrom: string = '';
+  registrationDateTo: string = '';
+  isSemesterDropdownOpen = false;
+
+  formatDateForInput(date: Date | string | undefined): string {
+    if (!date) return '';
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return '';
+    const year = d.getFullYear();
+    const month = (d.getMonth() + 1).toString().padStart(2, '0');
+    const day = d.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  openRegistration(): void {
+    if (this.programId <= 0) return;
+
+    this.programService.getSemesterByProgramId(this.programId).subscribe({
+      next: (res: any) => {
+        this.registrationSemesters = Array.isArray(res.result) ? res.result : (Array.isArray(res.data) ? res.data : []);
+        
+        this.programService.getProgramRegistrationWindowByProgramId(this.programId).subscribe({
+          next: (regRes: any) => {
+            if ((regRes.success || regRes.isSuccess) && (regRes.result || regRes.data)) {
+              this.registrationData = regRes.result || regRes.data;
+            } else {
+              this.registrationData = new ProgramRegistrationWindowModel();
+              this.registrationData.programId = this.programId;
+            }
+            this.registrationDateFrom = this.formatDateForInput(this.registrationData?.registrationFrom);
+            this.registrationDateTo = this.formatDateForInput(this.registrationData?.registrationTo);
+            this.showRegistrationModal = true;
+          },
+          error: () => {
+            this.registrationData = new ProgramRegistrationWindowModel();
+            this.registrationData.programId = this.programId;
+            this.registrationDateFrom = '';
+            this.registrationDateTo = '';
+            this.showRegistrationModal = true;
+          }
+        });
+      },
+      error: () => {
+        this.notification.error('Failed to load semesters.');
+      }
+    });
+  }
+
+  closeRegistrationModal(): void {
+    this.showRegistrationModal = false;
+  }
+
+  toggleSemesterDropdown(event: Event): void {
+    event.stopPropagation();
+    this.isSemesterDropdownOpen = !this.isSemesterDropdownOpen;
+  }
+
+  selectSemesterOption(semesterNo: number): void {
+    if (this.registrationData) {
+      this.registrationData.semesterNo = semesterNo;
+    }
+    this.isSemesterDropdownOpen = false;
+  }
+
+  clearSemesterSelection(event: Event): void {
+    event.stopPropagation();
+    if (this.registrationData) {
+      this.registrationData.semesterNo = 0;
+    }
+  }
+
+  getSelectedSemesterName(): string {
+    if (!this.registrationData || !this.registrationData.semesterNo) return '';
+    const sem = this.registrationSemesters.find(s => (s.semesterNo || s.SemesterNo) === this.registrationData!.semesterNo);
+    return sem ? (sem.semesterName || sem.SemesterName || ('Semester ' + (sem.semesterNo || sem.SemesterNo))) : '';
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.da-select')) {
+      this.isSemesterDropdownOpen = false;
+    }
+  }
+
+  saveRegistration(form: any): void {
+    if (form && form.invalid) {
+      this.notification.warning('Please fill out all required fields.');
+      return;
+    }
+
+    if (!this.registrationData || !this.registrationData.semesterNo) {
+      this.notification.warning('Semester is required.');
+      return;
+    }
+
+    if (!this.registrationDateFrom || !this.registrationDateTo) {
+      this.notification.warning('Please provide both registration dates.');
+      return;
+    }
+
+    const from = new Date(this.registrationDateFrom);
+    const to = new Date(this.registrationDateTo);
+
+    if (from >= to) {
+      this.notification.warning('Registration From must be earlier than Registration To.');
+      return;
+    }
+
+    this.registrationData.registrationFrom = from;
+    this.registrationData.registrationTo = to;
+    this.registrationData.programId = this.programId;
+
+    this.programService.saveProgramRegistrationWindow(this.registrationData).subscribe({
+      next: (res: any) => {
+        if (res.success || res.isSuccess) {
+          this.notification.success('Registration window saved successfully.');
+          this.showRegistrationModal = false;
+          // Optionally refresh the data if needed
+        } else {
+          this.notification.error(res.message || 'Failed to save registration window.');
+        }
+      },
+      error: () => {
+        this.notification.error('Error saving registration window.');
+      }
+    });
+  }
+
   // Placeholder actions
   requestEditWindow(): void {}
-  openRegistration(): void {}
 
   goBack(): void {
     this.router.navigate([AppRoutes.University.Faculties]);
