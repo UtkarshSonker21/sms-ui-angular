@@ -41,6 +41,7 @@ import { NgoStudentDetail } from './features/ngo/ngo-student-detail/ngo-student-
 import { PreferencesCountries } from './features/ngo/preferences-countries/preferences-countries';
 import { HighSchoolSpecializations } from './features/ngo/high-school-specializations/high-school-specializations';
 import { PreferencesSponsorshipMatrix } from './features/ngo/preferences-sponsorship-matrix/preferences-sponsorship-matrix';
+import { MarketingAdministrativeFee } from './features/ngo/marketing-administrative-fee/marketing-administrative-fee';
 
 export const routes: Routes = [
 
@@ -201,6 +202,10 @@ export const routes: Routes = [
             {
                 path: 'preferences-sponsorship-matrix',
                 component: PreferencesSponsorshipMatrix
+            },
+            {
+                path: 'preferences-marketing-admin-fee',
+                component: MarketingAdministrativeFee
             },
 
 

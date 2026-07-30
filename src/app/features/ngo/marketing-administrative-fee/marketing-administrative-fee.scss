@@ -1,0 +1,21 @@
+.layout-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+@media (min-width: 992px) {
+  .layout-container.show-history {
+    flex-direction: row;
+    
+    .left-col {
+      flex: 0 0 55%;
+      max-width: 55%;
+    }
+    
+    .right-col {
+      flex: 0 0 calc(45% - 24px);
+      max-width: calc(45% - 24px);
+    }
+  }
+}

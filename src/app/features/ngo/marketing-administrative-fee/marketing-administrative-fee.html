@@ -1,0 +1,116 @@
+<div class="page-head">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; width: 100%;">
+        <div>
+            <div class="crumb">
+                <a href="#">Preferences</a>
+                <span class="sep">/</span>
+                <span class="text-muted">Marketing Administrative Fee</span>
+            </div>
+            <h2 class="page-title">Marketing Administrative Fee</h2>
+            <p class="page-sub">
+                A fixed percentage added to the university's per-student expenses when a donor sponsors a student. Appears in the Marketing department's student cost view.
+            </p>
+        </div>
+        <div class="page-actions">
+            <button type="button" class="btn btn-g" (click)="toggleHistory()">
+                {{ showHistory ? 'Hide History' : 'View History' }}
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="layout-container" [class.show-history]="showHistory">
+    <!-- Left Column (Configuration) -->
+    <div class="left-col">
+        <div class="card" style="border-radius: var(--da-radius); border: 1px solid var(--da-border, #e0e0e0); background: var(--da-surface, #ffffff); box-shadow: 0 10px 40px rgba(5,5,5,0.04); margin-bottom: 14px;">
+            <div class="card-head" style="padding: 16px 20px; border-bottom: 1px solid var(--da-border, #e0e0e0);">
+                <div>
+                    <div class="card-title" style="font-weight: 600; font-size: 15px;">Fee percentage</div>
+                    <div class="card-sub" style="font-size: 13px; color: var(--da-text-2, #6b7280); margin-top: 2px;">Set the value applied across all sponsored-student cost calculations</div>
+                </div>
+            </div>
+            <div style="padding: 18px 20px;">
+                <div>
+                    <label class="field-label" style="display: block; font-size: 12.5px; font-weight: 500; margin-bottom: 6px;" for="set-mkt-admin-fee">Percentage</label>
+                    <div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-start;">
+                        <div class="input-suffix" style="position: relative; display: flex; align-items: center; flex: 0 0 220px;">
+                            <input id="set-mkt-admin-fee" type="number" class="field-input num-ltr" min="0" max="100" step="0.1" inputmode="decimal" placeholder="0.0"
+                                   [(ngModel)]="feePercentage" [disabled]="isLoading || isSaving"
+                                   style="width: 100%; padding: 8px 30px 8px 12px; border: 1px solid var(--da-border-input, #d1d5db); border-radius: 6px; font-size: 14px;">
+                            <span class="suffix" style="position: absolute; right: 12px; color: var(--da-text-2, #6b7280);">%</span>
+                        </div>
+                        <button type="button" class="btn btn-p" (click)="saveFee()" [disabled]="isLoading || isSaving">Save</button>
+                    </div>
+                    <div class="form-hint" [style.color]="validationError ? 'var(--da-danger, #ef4444)' : 'var(--da-text-2, #6b7280)'" style="font-size: 12px; margin-top: 4px;">
+                        {{ validationError || successMessage || 'Enter a value between 0 and 100.' }}
+                    </div>
+                </div>
+
+                <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--da-border, #e0e0e0);">
+                    <div class="field-label" style="font-size: 12.5px; font-weight: 500; margin-bottom: 6px;">Current value on file</div>
+                    <div class="muted-cell" style="font-size: 13px; color: var(--da-text-2, #6b7280);" [innerHTML]="formattedLastUpdated"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card info-card" style="margin-top: 14px; background: var(--da-green-50, #f0fdf4); border: 1px solid #BBF7D0; border-radius: var(--da-radius);">
+            <div style="padding: 14px 18px; font-size: 12.5px; line-height: 1.7; color: var(--da-green-800, #166534);">
+                <b style="font-weight: 600;">How this value is used</b>
+                <div style="margin-top: 6px;">When a sponsor (donor) funds a student, Marketing displays the student's total cost as:</div>
+                <div class="num-ltr" style="margin-top: 6px; padding: 8px 12px; background: #fff; border-radius: 6px; border: 1px solid #BBF7D0; font-weight: 600;">
+                    Total = University expenses × (1 + fee%)
+                </div>
+                <div style="margin-top: 8px;">Only the Kafaat Committee can change this value. Changes apply to new donor-facing cost views only — already-issued donor reports keep the percentage they were generated with.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column (History) -->
+    <div class="right-col" *ngIf="showHistory">
+        <div class="card" style="border-radius: var(--da-radius); border: 1px solid var(--da-border, #e0e0e0); background: var(--da-surface, #ffffff); box-shadow: 0 10px 40px rgba(5,5,5,0.04);">
+            <div class="card-head" style="padding: 16px 20px; border-bottom: 1px solid var(--da-border, #e0e0e0);">
+                <div>
+                    <div class="card-title" style="font-weight: 600; font-size: 15px;">Marketing Fee History</div>
+                    <div class="card-sub" style="font-size: 13px; color: var(--da-text-2, #6b7280); margin-top: 2px;">Previous fee configurations.</div>
+                </div>
+            </div>
+            
+            <div style="padding: 0; overflow-x: auto;">
+                <div *ngIf="isLoadingHistory" style="padding: 24px; text-align: center; color: var(--da-text-2, #6b7280); font-size: 13px;">
+                    <i class="fas fa-spinner fa-spin" style="margin-right: 6px;"></i> Loading history...
+                </div>
+                
+                <table class="table" *ngIf="!isLoadingHistory">
+                    <thead>
+                        <tr>
+                            <th style="white-space: nowrap;">Fee %</th>
+                            <th style="white-space: nowrap;">Effective From</th>
+                            <th style="white-space: nowrap;">Effective To</th>
+                            <th style="white-space: nowrap;">Status</th>
+                            <th style="white-space: nowrap;">Created By</th>
+                            <th style="white-space: nowrap;">Created Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of history">
+                            <td class="num-ltr" style="font-weight: 600; white-space: nowrap;">{{ item.feePercentage }}%</td>
+                            <td class="num-ltr" style="white-space: nowrap;">{{ item.effectiveFrom ? (item.effectiveFrom | date:'yyyy-MM-dd') : '-' }}</td>
+                            <td class="num-ltr" style="white-space: nowrap;">{{ item.effectiveTo ? (item.effectiveTo | date:'yyyy-MM-dd') : '-' }}</td>
+                            <td style="white-space: nowrap;">
+                                <span *ngIf="item.isCurrent" class="chip chip-registered course-code-badge" style="background: var(--da-green-50, #f0fdf4); color: var(--da-green-800, #166534); border: 1px solid #BBF7D0;">Current</span>
+                                <span *ngIf="!item.isCurrent" class="chip chip-muted" style="background: var(--da-gray-100, #f3f4f6); color: var(--da-text-2, #6b7280);">Expired</span>
+                            </td>
+                            <td style="white-space: nowrap;">{{ item.createdByName }}</td>
+                            <td class="num-ltr" style="white-space: nowrap;">{{ item.createdDate ? (item.createdDate | date:'yyyy-MM-dd') : '-' }}</td>
+                        </tr>
+                        <tr *ngIf="history.length === 0">
+                            <td colspan="6" style="text-align: center; padding: 24px; color: var(--da-text-2, #6b7280); font-size: 13px;">
+                                No history records found.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
