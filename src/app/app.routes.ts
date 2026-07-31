@@ -42,6 +42,7 @@ import { PreferencesCountries } from './features/ngo/preferences-countries/prefe
 import { HighSchoolSpecializations } from './features/ngo/high-school-specializations/high-school-specializations';
 import { PreferencesSponsorshipMatrix } from './features/ngo/preferences-sponsorship-matrix/preferences-sponsorship-matrix';
 import { MarketingAdministrativeFee } from './features/ngo/marketing-administrative-fee/marketing-administrative-fee';
+import { AcademicRegistration } from './features/university/academic-registration/academic-registration';
 
 export const routes: Routes = [
 
@@ -128,37 +129,7 @@ export const routes: Routes = [
             },
 
 
-            {
-                path: 'course-list',
-                component: Courses
-            },
-            {
-                path: 'faculties',
-                component: Faculties
-            },
-            {
-                path: 'programs',
-                component: Program
-            },
-            {
-                path: 'programs/:programId',
-                component: Program
-            },
-            {
-                path: 'programs-detail/:programId',
-                component: ProgramDetail
-            },
-            {
-                path: 'university-students',
-                component: UniversityStudents
-            },
-            {
-                path: 'university-student-details/:id',
-                component: UniversityStudentDetail
-            },
-
-
-
+            // ngo components
             {
                 path: 'program-accreditation',
                 component: ProgramAccreditation
@@ -209,6 +180,46 @@ export const routes: Routes = [
             },
 
 
+
+            // university components
+            {
+                path: 'course-list',
+                component: Courses
+            },
+            {
+                path: 'faculties',
+                component: Faculties
+            },
+            {
+                path: 'programs',
+                component: Program
+            },
+            {
+                path: 'programs/:programId',
+                component: Program
+            },
+            {
+                path: 'programs-detail/:programId',
+                component: ProgramDetail
+            },
+            {
+                path: 'university-students',
+                component: UniversityStudents
+            },
+            {
+                path: 'university-student-details/:id',
+                component: UniversityStudentDetail
+            },
+            {
+                path: 'academic-registration',
+                component: AcademicRegistration
+            },
+
+
+
+
+
+            // school coordinator  components
             {
                 path: 'coordinator-schools',
                 component: CoordinatorSchoolList
