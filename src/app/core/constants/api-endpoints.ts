@@ -137,6 +137,10 @@ export const ApiEndpoints = {
       Delete: (id: number) => `university/master-university/delete/${id}`
     },
 
+    AcademicRegistration:{
+      AcademicRegistrationSearch : 'university/academic-registration/search',
+      AcademicRegistrationRegister :'university/academic-registration/register',
+    },
 
   },
 
