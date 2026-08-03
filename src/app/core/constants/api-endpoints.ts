@@ -84,7 +84,15 @@ export const ApiEndpoints = {
     SponsorshipMatrix: {
       GetMatrix: 'ngo/sponsorship-matrix',
       Toggle: 'ngo/sponsorship-matrix/toggle'
-    }
+    },
+
+    PanelUsers: {
+      Create: 'ngo/panel-users/create',
+      Update: (id: number) => `ngo/panel-users/update/${id}`,
+      Delete: (id: number) => `ngo/panel-users/delete/${id}`,
+      GetById: (id: number) => `ngo/panel-users/getById/${id}`,
+      Search: 'ngo/panel-users/search'
+    },
 
   },
 
@@ -137,9 +145,9 @@ export const ApiEndpoints = {
       Delete: (id: number) => `university/master-university/delete/${id}`
     },
 
-    AcademicRegistration:{
-      AcademicRegistrationSearch : 'university/academic-registration/search',
-      AcademicRegistrationRegister :'university/academic-registration/register',
+    AcademicRegistration: {
+      AcademicRegistrationSearch: 'university/academic-registration/search',
+      AcademicRegistrationRegister: 'university/academic-registration/register',
     },
 
   },
