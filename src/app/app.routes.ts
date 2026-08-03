@@ -43,6 +43,7 @@ import { HighSchoolSpecializations } from './features/ngo/high-school-specializa
 import { PreferencesSponsorshipMatrix } from './features/ngo/preferences-sponsorship-matrix/preferences-sponsorship-matrix';
 import { MarketingAdministrativeFee } from './features/ngo/marketing-administrative-fee/marketing-administrative-fee';
 import { AcademicRegistration } from './features/university/academic-registration/academic-registration';
+import { FailingCoreCases } from './features/ngo/failing-core-cases/failing-core-cases';
 
 export const routes: Routes = [
 
@@ -153,6 +154,10 @@ export const routes: Routes = [
             {
                 path: 'school-accreditation-detail/:schoolId',
                 component: SchoolAccreditationDetail
+            },
+            {
+                path: 'failing-core-cases',
+                component: FailingCoreCases
             },
             {
                 path: 'ngo-students',
