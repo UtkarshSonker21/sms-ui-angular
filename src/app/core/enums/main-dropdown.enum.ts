@@ -12,4 +12,5 @@ export enum MainDropdown {
     Religion = 11,
     AssessmentLevel = 12,
     FinancialNeedStatus = 13,
+    Saluation = 14,
 }
