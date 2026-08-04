@@ -59,7 +59,16 @@ export const ApiEndpoints = {
       Create: 'superadmin/master-currency/create',
       Update: (id: number) => `superadmin/master-currency/update/${id}`,
       Delete: (id: number) => `superadmin/master-currency/delete/${id}`
-    }
+    },
+
+    UsersRole: {
+      Create: 'superadmin/users-role/create',
+      Update: (id: number) => `superadmin/users-role/update/${id}`,
+      Delete: (id: number) => `superadmin/users-role/delete/${id}`,
+      GetById: (id: number) => `superadmin/users-role/getById/${id}`,
+      Search: 'superadmin/users-role/search',
+      GetByModules: 'superadmin/users-role/get-by-modules'
+    },
 
   },
 
