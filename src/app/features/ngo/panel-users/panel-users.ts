@@ -13,6 +13,10 @@ import { MasterDropDownRequest } from '../../../core/models/super-admin/master-d
 import { MasterCountryService } from '../../../core/services/superadmin/master-country.service';
 import { MasterCountryRequest } from '../../../core/models/super-admin/master-country/master-country-request.model';
 import { MasterCountryFilter } from '../../../core/models/super-admin/master-country/master-country-filter.model';
+import { MasterUsersRoleService } from '../../../core/services/superadmin/master-users-roles.service';
+import { UsersRoleLookupModel } from '../../../core/models/super-admin/master-users-role/users-role-lookup.model';
+import { UsersRoleByModulesRequestModel } from '../../../core/models/super-admin/master-users-role/users-role-by-modules-request.model';
+import { StaffType } from '../../../core/enums/staff-type.enum';
 
 import { HelperMethods } from '../../../core/helpers/helper-methods';
 import { DisableAutocompleteDirective } from '../../../shared/directives/disable-autocomplete.directive';
@@ -40,6 +44,7 @@ export class PanelUsers implements OnInit {
   private panelUserService = inject(PanelUserService);
   private masterDropdownService = inject(MasterDropDownService);
   private countryService = inject(MasterCountryService);
+  private masterUsersRoleService = inject(MasterUsersRoleService);
   private notification = inject(NotificationService);
   private router = inject(Router);
 
@@ -58,12 +63,8 @@ export class PanelUsers implements OnInit {
   // Filter
   filter = new PanelUserFilterModel();
 
-  // Roles Static List
-  roles = [
-    { id: 2, name: 'Committee', staffType: 2 },
-    { id: 5, name: 'Marketing', staffType: 5 },
-    { id: 6, name: 'Finance', staffType: 6 }
-  ];
+  // Roles List
+  roles: UsersRoleLookupModel[] = [];
 
   selectedRoleFilter: string = 'all';
   selectedStatusFilter: string = 'all';
@@ -104,6 +105,24 @@ export class PanelUsers implements OnInit {
     this.loadGenders();
     this.loadSalutations();
     this.loadCountries();
+    this.loadRoles();
+  }
+
+  loadRoles(): void {
+    const request: UsersRoleByModulesRequestModel = {
+      moduleIds: [
+        StaffType.Ngo,
+        StaffType.Marketing,
+        StaffType.Finance
+      ]
+    };
+    this.masterUsersRoleService.getUsersRolesByModules(request).subscribe({
+      next: (response) => {
+        if (response.success && response.result) {
+          this.roles = response.result;
+        }
+      }
+    });
   }
 
   loadCountries(): void {
@@ -207,7 +226,8 @@ export class PanelUsers implements OnInit {
     } else {
       const id = Number(this.selectedRoleFilter);
       this.filter.roleId = id;
-      this.filter.staffType = id;
+      const selectedRole = this.roles.find(r => r.roleId === id);
+      this.filter.staffType = selectedRole ? selectedRole.moduleId : undefined;
     }
     this.filter.pageNumber = 1;
     this.loadData();
@@ -217,8 +237,8 @@ export class PanelUsers implements OnInit {
     if (this.selectedRoleFilter === 'all') {
       return 'All roles';
     }
-    const role = this.roles.find(x => x.id === Number(this.selectedRoleFilter));
-    return role ? role.name : 'All roles';
+    const role = this.roles.find(x => x.roleId === Number(this.selectedRoleFilter));
+    return role ? role.roleName || '' : 'All roles';
   }
 
   toggleStatusFilterDropdown(event: Event): void {
@@ -364,14 +384,20 @@ export class PanelUsers implements OnInit {
   }
 
   selectRoleOption(roleId: number): void {
-    this.tempUserModel.roleId = roleId;
-    this.tempUserModel.staffType = roleId;
+    const selectedRole = this.roles.find(r => r.roleId === roleId);
+    if (selectedRole) {
+      this.tempUserModel.roleId = selectedRole.roleId;
+      this.tempUserModel.staffType = selectedRole.moduleId;
+    } else {
+      this.tempUserModel.roleId = 0;
+      this.tempUserModel.staffType = 0;
+    }
     this.isRoleDropdownOpen = false;
   }
 
   getSelectedRoleName(): string {
-    const r = this.roles.find(x => x.id === this.tempUserModel.roleId);
-    return r ? r.name : '';
+    const r = this.roles.find(x => x.roleId === this.tempUserModel.roleId);
+    return r ? r.roleName || '' : '';
   }
 
   togglePhoneDropdown(event: Event): void {

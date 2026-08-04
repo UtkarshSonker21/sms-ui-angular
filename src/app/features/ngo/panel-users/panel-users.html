@@ -80,8 +80,8 @@
                 All roles
             </div>
             <div class="da-select-option" *ngFor="let role of roles"
-                [class.selected]="selectedRoleFilter === role.id.toString()" (click)="selectRoleFilterOption(role.id)">
-                {{ role.name }}
+                [class.selected]="selectedRoleFilter === role.roleId.toString()" (click)="selectRoleFilterOption(role.roleId)">
+                {{ role.roleName }}
             </div>
         </div>
     </div>
@@ -339,9 +339,9 @@
                                     Select Role...
                                 </div>
                                 <div class="da-select-option" *ngFor="let role of roles"
-                                    [class.selected]="tempUserModel.roleId === role.id"
-                                    (click)="selectRoleOption(role.id)">
-                                    {{ role.name }}
+                                    [class.selected]="tempUserModel.roleId === role.roleId"
+                                    (click)="selectRoleOption(role.roleId)">
+                                    {{ role.roleName }}
                                 </div>
                             </div>
                         </div>
