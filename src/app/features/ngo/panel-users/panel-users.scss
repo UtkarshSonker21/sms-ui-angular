@@ -167,6 +167,127 @@
   min-height: 0 !important;
   padding: 24px !important;
 
+  .modal-form-row {
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+    margin-bottom: 2px !important;
+
+    &:hover {
+      background: transparent !important;
+    }
+  }
+
+  /* Country Code + Phone Number Unified Input Group */
+  .phone-input-group {
+    display: flex !important;
+    align-items: stretch !important;
+    width: 100% !important;
+    height: 34px !important;
+    border: 1px solid var(--da-border, #d8dde6) !important;
+    border-radius: var(--da-radius-sm, 6px) !important;
+    background: var(--da-white, #ffffff) !important;
+    transition: border-color 0.15s, box-shadow 0.15s !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
+
+    &:hover {
+      border-color: var(--da-border-strong, #bdbdbd) !important;
+    }
+
+    &:focus-within {
+      border-color: var(--da-green, #2C9942) !important;
+      box-shadow: 0 0 0 3px rgba(44,153,66,0.12) !important;
+    }
+
+    .multi-select {
+      position: relative !important;
+      border: none !important;
+      box-shadow: none !important;
+      background: transparent !important;
+      width: 120px !important;
+      max-width: 120px !important;
+      flex-shrink: 0 !important;
+      height: 100% !important;
+      border-radius: 0 !important;
+      border-right: 1px solid var(--da-border, #d8dde6) !important;
+      padding: 0 10px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      cursor: pointer !important;
+      outline: none !important;
+
+      .ms-display {
+        overflow: hidden !important;
+        white-space: nowrap !important;
+        text-overflow: ellipsis !important;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+        color: var(--da-text-2) !important;
+      }
+
+      .ms-chevron {
+        font-size: 9px !important;
+        color: var(--da-muted) !important;
+        flex-shrink: 0 !important;
+        margin-left: 4px !important;
+      }
+
+      .ms-panel {
+        position: absolute !important;
+        left: -1px !important;
+        top: 100% !important;
+        margin-top: 4px !important;
+        width: 280px !important;
+        max-height: 200px !important;
+        overflow-y: auto !important;
+        background: var(--da-white, #ffffff) !important;
+        border: 1px solid var(--da-border, #d8dde6) !important;
+        border-radius: var(--da-radius-sm, 6px) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+        z-index: 1000 !important;
+        padding: 4px !important;
+
+        .ms-option {
+          padding: 8px 10px !important;
+          font-size: 12.5px !important;
+          cursor: pointer !important;
+          transition: background-color 0.15s ease !important;
+          border-radius: var(--da-radius-sm, 4px) !important;
+          color: var(--da-text-2) !important;
+          text-align: left !important;
+          display: flex !important;
+          justify-content: space-between !important;
+          align-items: center !important;
+
+          &:hover {
+            background-color: var(--da-green-50, #f6fcf8) !important;
+            color: var(--da-green-800, #2C9942) !important;
+          }
+
+          &.checked {
+            background-color: #D1FADF !important;
+            color: #027A48 !important;
+            font-weight: 600 !important;
+          }
+        }
+      }
+    }
+
+    .phone-number-input {
+      border: none !important;
+      box-shadow: none !important;
+      background: transparent !important;
+      height: 100% !important;
+      flex: 1 !important;
+      box-sizing: border-box !important;
+      padding: 6px 10px !important;
+      font-size: 13px !important;
+      color: var(--da-text) !important;
+      outline: none !important;
+    }
+  }
+
   .da-select {
     width: 100% !important;
     min-width: 100% !important;

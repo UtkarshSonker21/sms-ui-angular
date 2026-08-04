@@ -7,6 +7,12 @@ import { NotificationService } from '../../../core/services/common/notification.
 import { PanelUserService } from '../../../core/services/ngo/panel-users.service';
 import { PanelUserRequestModel } from '../../../core/models/ngo/panel-users/panel-user-request.model';
 import { PanelUserFilterModel } from '../../../core/models/ngo/panel-users/panel-user-filter.dto';
+import { MasterDropDownService } from '../../../core/services/superadmin/master-dropdown.service';
+import { MainDropdown } from '../../../core/enums/main-dropdown.enum';
+import { MasterDropDownRequest } from '../../../core/models/super-admin/master-dropdown/master-dropdown-request.model';
+import { MasterCountryService } from '../../../core/services/superadmin/master-country.service';
+import { MasterCountryRequest } from '../../../core/models/super-admin/master-country/master-country-request.model';
+import { MasterCountryFilter } from '../../../core/models/super-admin/master-country/master-country-filter.model';
 
 import { HelperMethods } from '../../../core/helpers/helper-methods';
 import { DisableAutocompleteDirective } from '../../../shared/directives/disable-autocomplete.directive';
@@ -28,9 +34,12 @@ export class PanelUsers implements OnInit {
     this.isRoleDropdownOpen = false;
     this.isRoleFilterDropdownOpen = false;
     this.isStatusFilterDropdownOpen = false;
+    this.isPhoneDropdownOpen = false;
   }
 
   private panelUserService = inject(PanelUserService);
+  private masterDropdownService = inject(MasterDropDownService);
+  private countryService = inject(MasterCountryService);
   private notification = inject(NotificationService);
   private router = inject(Router);
 
@@ -67,9 +76,17 @@ export class PanelUsers implements OnInit {
   isSalutationDropdownOpen = false;
   isGenderDropdownOpen = false;
   isRoleDropdownOpen = false;
+  isPhoneDropdownOpen = false;
 
-  salutations: string[] = ['Mr.', 'Ms.', 'Dr.', 'Eng.'];
-  genders: string[] = ['Male', 'Female'];
+  // saluatation and gender
+  salutations: string[] = [];
+  genders: MasterDropDownRequest[] = [];
+  countries: MasterCountryRequest[] = [];
+
+  // Phone input states
+  PhoneCountryId: number | null = null;
+  PhoneCountryCode = '';
+  PhoneNumber = '';
 
   // Modal Dialogs
   showUserModal = false;
@@ -84,6 +101,42 @@ export class PanelUsers implements OnInit {
     this.filter.pageNumber = 1;
     this.filter.pageSize = 25;
     this.loadData();
+    this.loadGenders();
+    this.loadSalutations();
+    this.loadCountries();
+  }
+
+  loadCountries(): void {
+    const countryFilter = new MasterCountryFilter();
+    countryFilter.pageNumber = 1;
+    countryFilter.pageSize = 1000;
+    this.countryService.getMasterCountries(countryFilter).subscribe({
+      next: (response) => {
+        if (response.success && response.result) {
+          this.countries = response.result.items;
+        }
+      }
+    });
+  }
+
+  loadGenders(): void {
+    this.masterDropdownService.getByParentId(MainDropdown.Gender).subscribe({
+      next: (response) => {
+        if (response.success && response.result) {
+          this.genders = response.result;
+        }
+      }
+    });
+  }
+
+  loadSalutations(): void {
+    this.masterDropdownService.getByParentId(MainDropdown.Saluation).subscribe({
+      next: (response) => {
+        if (response.success && response.result) {
+          this.salutations = response.result.map(x => x.displayText);
+        }
+      }
+    });
   }
 
   loadData(): void {
@@ -244,13 +297,17 @@ export class PanelUsers implements OnInit {
     this.tempUserModel.staffId = undefined;
     this.tempUserModel.staffType = 0;
     this.tempUserModel.roleId = 0;
-    this.tempUserModel.gender = '';
+    this.tempUserModel.gender = null;
     this.tempUserModel.staffSalutation = '';
     this.tempUserModel.isActive = true;
     this.modalErrorMessage = '';
     this.isSalutationDropdownOpen = false;
     this.isGenderDropdownOpen = false;
     this.isRoleDropdownOpen = false;
+    this.isPhoneDropdownOpen = false;
+    this.PhoneCountryId = null;
+    this.PhoneCountryCode = '';
+    this.PhoneNumber = '';
     this.showUserModal = true;
   }
 
@@ -260,6 +317,8 @@ export class PanelUsers implements OnInit {
     this.isSalutationDropdownOpen = false;
     this.isGenderDropdownOpen = false;
     this.isRoleDropdownOpen = false;
+    this.isPhoneDropdownOpen = false;
+    this.parsePhone(this.tempUserModel.mobileNumber);
     this.showUserModal = true;
   }
 
@@ -268,6 +327,7 @@ export class PanelUsers implements OnInit {
     this.isSalutationDropdownOpen = !this.isSalutationDropdownOpen;
     this.isGenderDropdownOpen = false;
     this.isRoleDropdownOpen = false;
+    this.isPhoneDropdownOpen = false;
   }
 
   selectSalutationOption(option: string): void {
@@ -280,11 +340,19 @@ export class PanelUsers implements OnInit {
     this.isGenderDropdownOpen = !this.isGenderDropdownOpen;
     this.isSalutationDropdownOpen = false;
     this.isRoleDropdownOpen = false;
+    this.isPhoneDropdownOpen = false;
   }
 
-  selectGenderOption(option: string): void {
-    this.tempUserModel.gender = option;
+  selectGenderOption(uniqueId: number | null): void {
+    this.tempUserModel.gender = uniqueId;
     this.isGenderDropdownOpen = false;
+  }
+
+  getSelectedGenderName(): string {
+    const genderId = this.tempUserModel.gender;
+    if (!genderId) return 'Select...';
+    const g = this.genders.find(x => x.uniqueId === genderId);
+    return g ? g.displayText : 'Select...';
   }
 
   toggleRoleDropdown(event: Event): void {
@@ -292,6 +360,7 @@ export class PanelUsers implements OnInit {
     this.isRoleDropdownOpen = !this.isRoleDropdownOpen;
     this.isSalutationDropdownOpen = false;
     this.isGenderDropdownOpen = false;
+    this.isPhoneDropdownOpen = false;
   }
 
   selectRoleOption(roleId: number): void {
@@ -305,12 +374,67 @@ export class PanelUsers implements OnInit {
     return r ? r.name : '';
   }
 
+  togglePhoneDropdown(event: Event): void {
+    event.stopPropagation();
+    this.isPhoneDropdownOpen = !this.isPhoneDropdownOpen;
+    this.isSalutationDropdownOpen = false;
+    this.isGenderDropdownOpen = false;
+    this.isRoleDropdownOpen = false;
+  }
+
+  selectPhoneCountry(c: MasterCountryRequest): void {
+    this.PhoneCountryId = c.countryId || null;
+    this.PhoneCountryCode = c.countryIsdCode?.toString() || '';
+    this.isPhoneDropdownOpen = false;
+  }
+
+  getPhoneCountryName(): string {
+    const found = this.countries.find(c => c.countryId === this.PhoneCountryId);
+    return found ? `+${found.countryIsdCode}` : 'Select Code...';
+  }
+
+  parsePhone(phone?: string): void {
+    if (!phone) {
+      this.PhoneCountryId = null;
+      this.PhoneCountryCode = '';
+      this.PhoneNumber = '';
+      return;
+    }
+    const matchingCountry = this.countries.find(c => {
+      if (!c.countryIsdCode) return false;
+      const code = '+' + c.countryIsdCode;
+      return phone.startsWith(code);
+    });
+
+    if (matchingCountry) {
+      this.PhoneCountryId = matchingCountry.countryId || null;
+      this.PhoneCountryCode = matchingCountry.countryIsdCode?.toString() || '';
+      const codeStr = '+' + this.PhoneCountryCode;
+      this.PhoneNumber = phone.substring(codeStr.length);
+    } else {
+      this.PhoneCountryId = null;
+      this.PhoneCountryCode = '';
+      this.PhoneNumber = phone;
+    }
+  }
+
+  applyPhoneBeforeSave(): void {
+    if (this.PhoneCountryCode && this.PhoneNumber) {
+      const prefix = this.PhoneCountryCode.startsWith('+') ? this.PhoneCountryCode : '+' + this.PhoneCountryCode;
+      this.tempUserModel.mobileNumber = `${prefix}${this.PhoneNumber.replace(/\D/g, '')}`;
+    } else {
+      this.tempUserModel.mobileNumber = this.PhoneNumber || '';
+    }
+  }
+
   saveUser(form: NgForm): void {
     if (form.invalid || !this.tempUserModel.roleId || this.tempUserModel.roleId === 0) {
       form.control.markAllAsTouched();
       return;
     }
 
+    this.applyPhoneBeforeSave();
+    this.tempUserModel.recoveryEmail = this.tempUserModel.officialEmail ? this.tempUserModel.officialEmail.trim().toLowerCase() : '';
     this.isSaving = true;
     this.modalErrorMessage = '';
 

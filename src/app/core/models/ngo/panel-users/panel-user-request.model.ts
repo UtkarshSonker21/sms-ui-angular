@@ -16,7 +16,7 @@ export class PanelUserRequestModel {
   // Response Only
   fullName?: string;
 
-  gender: string = '';
+  gender: number | null = null;
 
   // Contact Information
   officialEmail: string = '';
