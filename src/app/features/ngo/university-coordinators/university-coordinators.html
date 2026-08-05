@@ -5,17 +5,17 @@
             <span class="sep">/</span>
             Administration
             <span class="sep">/</span>
-            <span class="text-muted">Panel Users</span>
+            <span class="text-muted">University Coordinators</span>
         </div>
-        <h2 class="page-title">Panel Users</h2>
+        <h2 class="page-title">University Coordinators</h2>
         <p class="page-sub">
-            Create, edit and disable internal DA panel accounts — Committee, Finance, and Marketing roles. Each user
-            signs in with an email and password and lands on their role’s dashboard.
+            Create, edit and disable university coordinators. Each user
+            signs in with an email and password and lands on their assigned university dashboards.
         </p>
     </div>
     <div class="page-actions">
         <button type="button" class="btn btn-p" (click)="openAddUserModal()">
-            <i class="fas fa-plus btn-icon"></i> Add Panel User
+            <i class="fas fa-plus btn-icon"></i> Add Coordinator
         </button>
     </div>
 </div>
@@ -24,24 +24,12 @@
     <div class="kpi">
         <div class="kpi-l">Total users</div>
         <div class="kpi-v">{{ kpiTotal }}</div>
-        <div class="kpi-d muted">Internal panel accounts</div>
+        <div class="kpi-d muted">Internal accounts</div>
     </div>
     <div class="kpi">
         <div class="kpi-l">Active</div>
         <div class="kpi-v">{{ kpiActive }}</div>
         <div class="kpi-d muted">Can sign in right now</div>
-    </div>
-    <div class="kpi">
-        <div class="kpi-l">Committee</div>
-        <div class="kpi-v">{{ kpiCommittee }}</div>
-        <div class="kpi-d muted">Oversight & accreditation</div>
-    </div>
-    <div class="kpi">
-        <div class="kpi-l">Finance / Marketing</div>
-        <div class="kpi-v">
-            <span>{{ kpiFinance }}</span> · <span>{{ kpiMarketing }}</span>
-        </div>
-        <div class="kpi-d muted">Finance · Marketing accounts</div>
     </div>
 </div>
 
@@ -86,41 +74,37 @@
         </div>
     </div>
 
-    <!-- Status Filter Dropdown -->
-    <!-- <div class="da-select" [class.da-select-open]="isStatusFilterDropdownOpen" tabindex="0"
+    <!-- University Filter Dropdown -->
+    <div class="da-select" [class.da-select-open]="isUniversityFilterDropdownOpen" tabindex="0"
         (click)="$event.stopPropagation()">
-        <div class="da-select-control" (click)="toggleStatusFilterDropdown($event)">
-            <div class="ms-display" [class.has-selection]="selectedStatusFilter !== 'all'"
+        <div class="da-select-control" (click)="toggleUniversityFilterDropdown($event)">
+            <div class="ms-display" [class.has-selection]="selectedUniversityFilter !== 'all'"
                 style="display: flex; align-items: center; flex: 1;">
-                <ng-container *ngIf="selectedStatusFilter !== 'all'; else noStatusSelected">
-                    <span class="ms-chip" style="margin: 0;">
-                        {{ getSelectedStatusFilterName() }}
+                <ng-container *ngIf="selectedUniversityFilter !== 'all'; else noUniversitySelected">
+                    <span class="ms-chip" style="margin: 0; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block;">
+                        {{ getSelectedUniversityFilterName() }}
                         <span class="ms-chip-x"
-                            (click)="selectStatusFilterOption('all'); $event.stopPropagation()">×</span>
+                            (click)="selectUniversityFilterOption('all'); $event.stopPropagation()">×</span>
                     </span>
                 </ng-container>
-                <ng-template #noStatusSelected>
-                    <span class="da-select-value" style="font-size: 13px;">All statuses</span>
+                <ng-template #noUniversitySelected>
+                    <span class="da-select-value" style="font-size: 13px;">All universities</span>
                 </ng-template>
             </div>
             <i class="fas da-select-arrow"
-                [ngClass]="isStatusFilterDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                [ngClass]="isUniversityFilterDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
         </div>
-        <div class="da-select-menu" *ngIf="isStatusFilterDropdownOpen">
-            <div class="da-select-option" [class.selected]="selectedStatusFilter === 'all'"
-                (click)="selectStatusFilterOption('all')">
-                All statuses
+        <div class="da-select-menu" *ngIf="isUniversityFilterDropdownOpen" style="max-height: 250px; overflow-y: auto;">
+            <div class="da-select-option" [class.selected]="selectedUniversityFilter === 'all'"
+                (click)="selectUniversityFilterOption('all')">
+                All universities
             </div>
-            <div class="da-select-option" [class.selected]="selectedStatusFilter === 'active'"
-                (click)="selectStatusFilterOption('active')">
-                Active
-            </div>
-            <div class="da-select-option" [class.selected]="selectedStatusFilter === 'disabled'"
-                (click)="selectStatusFilterOption('disabled')">
-                Disabled
+            <div class="da-select-option" *ngFor="let uni of masterUniversities"
+                [class.selected]="selectedUniversityFilter === uni.registrationId?.toString()" (click)="selectUniversityFilterOption(uni.registrationId)">
+                {{ uni.universityName }}
             </div>
         </div>
-    </div> -->
+    </div>
 
     <div class="filter-count"
         style="margin-inline-start: auto; font-size: 12.5px; color: var(--da-muted); font-weight: 500;">
@@ -172,7 +156,7 @@
 
             <tr *ngIf="users.length === 0">
                 <td colspan="5" class="courses-empty" style="text-align: center; padding: 42px 20px;">
-                    <div style="font-size: 15px; font-weight: 600; color: var(--da-black);">No Panel Users Found</div>
+                    <div style="font-size: 15px; font-weight: 600; color: var(--da-black);">No Coordinators Found</div>
                     <div style="font-size: 13px; color: var(--da-text-2); margin-top: 4px;">Adjust your search or
                         filters to find what you are looking for.</div>
                 </td>
@@ -225,9 +209,8 @@
     <div class="modal-card">
         <div class="modal-head">
             <div>
-                <div class="modal-title">{{ tempUserModel.staffId ? 'Edit Panel User' : 'Add Panel User' }}</div>
-                <div class="modal-sub">The user signs in with their official email and is routed to the panel for the
-                    selected role.</div>
+                <div class="modal-title">{{ tempUserModel.staffId ? 'Edit Coordinator' : 'Add Coordinator' }}</div>
+                <div class="modal-sub">The user signs in with their official email and is routed to the panel for their assigned universities.</div>
             </div>
             <button type="button" class="modal-close" (click)="showUserModal = false">
                 <i class="fas fa-times"></i>
@@ -322,7 +305,7 @@
                     </div>
                 </div>
 
-                <!-- Row 3: Role & Account Status -->
+                <!-- Row 3: Role & Status -->
                 <div class="modal-form-row">
                     <div class="field" style="grid-column: span 2;">
                         <label class="field-label required-label">Role</label>
@@ -353,19 +336,38 @@
                             Role is required.
                         </div>
                     </div>
-
-                    <!-- <div class="field">
-                        <label class="field-label">Account status</label>
-                        <div class="pill-group">
-                            <button type="button" class="pill-opt" [class.on-active]="tempUserModel.isActive"
-                                (click)="tempUserModel.isActive = true">Active</button>
-                            <button type="button" class="pill-opt" [class.on-disabled]="!tempUserModel.isActive"
-                                (click)="tempUserModel.isActive = false">Disabled</button>
-                        </div>
-                    </div> -->
                 </div>
 
-                <!-- Row 4: Official Email & Personal Email  -->
+                <!-- Row 4: Universities Multi-Select -->
+                <div class="modal-form-row">
+                    <div class="field" style="grid-column: span 2;" (click)="$event.stopPropagation()">
+                        <label class="field-label required-label">Assigned Universities</label>
+                        <div class="multi-select" [class.open]="isUniversitiesDropdownOpen" id="uni-multi-select" (click)="toggleUniversitiesDropdown($event)" tabindex="0">
+                            <div class="ms-display" [class.has-selection]="tempUserModel.universityIds.length > 0">
+                                <span *ngIf="tempUserModel.universityIds.length === 0">Select universities...</span>
+                                <ng-container *ngIf="tempUserModel.universityIds.length > 0">
+                                    <span class="ms-chip" *ngFor="let id of tempUserModel.universityIds">
+                                        {{ getUniversityName(id) }}
+                                        <span class="ms-chip-x" (click)="$event.stopPropagation(); removeUniversity(id)">×</span>
+                                    </span>
+                                </ng-container>
+                            </div>
+                            <i class="fas ms-chevron" [ngClass]="isUniversitiesDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                            <div class="ms-panel" *ngIf="isUniversitiesDropdownOpen" style="display: block; max-height: 200px; overflow-y: auto;">
+                                <div class="ms-option" *ngFor="let uni of masterUniversities" [class.checked]="isUniversitySelected(uni.registrationId!)" (click)="toggleUniversity(uni.registrationId!); $event.stopPropagation()">
+                                    <input type="checkbox" [checked]="isUniversitySelected(uni.registrationId!)" style="pointer-events: none;" />
+                                    <span>{{ uni.universityName}}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" name="assignedUniversities" [ngModel]="tempUserModel.universityIds.length > 0 ? 'valid' : ''" required #universitiesModel="ngModel">
+                        <div class="validation-error" *ngIf="(universitiesModel.touched || userForm.submitted) && universitiesModel.errors?.['required']">
+                            Assigned Universities is required.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 5: Official Email & Recovery Email  -->
                 <div class="modal-form-row">
                     <div class="field">
                         <label class="field-label required-label">Official Email</label>
@@ -383,18 +385,22 @@
                     </div>
 
                     <div class="field">
-                        <label class="field-label">Personal Email</label>
-                        <input type="email" name="personalEmail" class="field-input num-ltr"
-                            placeholder="personal@example.com" email [(ngModel)]="tempUserModel.personalEmail"
-                            #personalEmailModel="ngModel" dir="ltr">
+                        <label class="field-label required-label">Recovery Email</label>
+                        <input type="email" name="recoveryEmail" class="field-input num-ltr"
+                            placeholder="recovery@example.com" required email [(ngModel)]="tempUserModel.recoveryEmail"
+                            #recoveryEmailModel="ngModel" dir="ltr">
                         <div class="validation-error"
-                            *ngIf="(personalEmailModel.touched || userForm.submitted) && personalEmailModel.errors?.['email']">
+                            *ngIf="(recoveryEmailModel.touched || userForm.submitted) && recoveryEmailModel.errors?.['required']">
+                            Recovery Email is required.
+                        </div>
+                        <div class="validation-error"
+                            *ngIf="(recoveryEmailModel.touched || userForm.submitted) && recoveryEmailModel.errors?.['email']">
                             Please enter a valid email.
                         </div>
                     </div>
                 </div>
 
-                <!-- Row 5: Mobile Number -->
+                <!-- Row 6: Mobile Number -->
                 <div class="modal-form-row" (click)="$event.stopPropagation()">
                     <div class="field" style="grid-column: span 2;">
                         <label class="field-label">Mobile Number</label>
@@ -420,7 +426,7 @@
                     </div>
                 </div>
 
-                <!-- Row 6: Remarks -->
+                <!-- Row 7: Remarks -->
                 <div class="modal-form-row">
                     <div class="field" style="grid-column: span 2;">
                         <label class="field-label">Remarks</label>
@@ -448,8 +454,8 @@
     <div class="modal-card" style="max-width: 400px;">
         <div class="modal-head">
             <div>
-                <div class="modal-title">Delete Panel User</div>
-                <div class="modal-sub">Are you sure you want to delete this panel user? This action cannot be undone.
+                <div class="modal-title">Delete Coordinator</div>
+                <div class="modal-sub">Are you sure you want to delete this coordinator? This action cannot be undone.
                 </div>
             </div>
             <button type="button" class="modal-close" (click)="showDeleteModal = false">

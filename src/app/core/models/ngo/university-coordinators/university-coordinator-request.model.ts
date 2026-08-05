@@ -1,22 +1,21 @@
-export class PanelUserRequestModel {
-
-  // Staff (null/0 = Create, >0 = Update)
+export class UniversityCoordinatorRequestModel {
+  // Staff
   staffId?: number;
-
-  // Login
   loginId?: number;
 
   staffType: number = 0;
+
+  // University Mapping
+  universityIds: number[] = [];
+  universityNames: string[] = [];
 
   // Personal Information
   staffSalutation: string = '';
   staffFirstName: string = '';
   staffLastName: string = '';
-
-  // Response Only
   fullName?: string;
 
-  gender: number | null = null;
+  gender: number = 0;
 
   // Contact Information
   officialEmail: string = '';
@@ -28,24 +27,21 @@ export class PanelUserRequestModel {
 
   // Role
   roleId: number = 0;
-
-  // Response Only
   roleName?: string;
 
+  // Login
   loginName?: string;
 
-  // Status
-  isActive: boolean = true;
-  
-  isDisabled: boolean = true;
+  //status
+  isActive:boolean = true;
 
-  // Audit Information (Response Only)
+  // Audit
   createdDate?: Date;
   createdBy?: number;
 
   updatedDate?: Date;
   updatedBy?: number;
 
+  // Response Only
   isDefaultRole: boolean = false;
-  
 }

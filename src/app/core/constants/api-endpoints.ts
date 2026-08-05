@@ -97,11 +97,20 @@ export const ApiEndpoints = {
 
     PanelUsers: {
       Create: 'ngo/panel-users/create',
-      Update: (id: number) => `ngo/panel-users/update/${id}`,
-      Delete: (id: number) => `ngo/panel-users/delete/${id}`,
-      GetById: (id: number) => `ngo/panel-users/getById/${id}`,
+      Update: (staffId: number) => `ngo/panel-users/update/${staffId}`,
+      Delete: (staffId: number) => `ngo/panel-users/delete/${staffId}`,
+      GetById: (staffId: number) => `ngo/panel-users/getById/${staffId}`,
       Search: 'ngo/panel-users/search'
     },
+
+    UniversityCoordinator: {
+      Search: 'ngo/university-coordinators/search',
+      GetById: (staffId: number) => `ngo/university-coordinators/getById/${staffId}`,
+      Create: 'ngo/university-coordinators/create',
+      Update: (staffId: number) => `ngo/university-coordinators/update/${staffId}`,
+      Delete: (staffId: number) => `ngo/university-coordinators/delete/${staffId}`,
+    },
+
 
   },
 
