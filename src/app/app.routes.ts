@@ -45,6 +45,7 @@ import { MarketingAdministrativeFee } from './features/ngo/marketing-administrat
 import { AcademicRegistration } from './features/university/academic-registration/academic-registration';
 import { FailingCoreCases } from './features/ngo/failing-core-cases/failing-core-cases';
 import { PanelUsers } from './features/ngo/panel-users/panel-users';
+import { UniversityCoordinators } from './features/ngo/university-coordinators/university-coordinators';
 
 export const routes: Routes = [
 
@@ -171,6 +172,10 @@ export const routes: Routes = [
             {
                 path: 'panel-users',
                 component: PanelUsers
+            },
+            {
+                path: 'university-coordinators',
+                component: UniversityCoordinators
             },
             {
                 path: 'preferences-countries',
