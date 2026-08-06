@@ -111,6 +111,14 @@ export const ApiEndpoints = {
       Delete: (staffId: number) => `ngo/university-coordinators/delete/${staffId}`,
     },
 
+    SchoolCoordinator: {
+      Search: 'ngo/school-coordinators/search',
+      GetById: (staffId: number) => `ngo/school-coordinators/getById/${staffId}`,
+      Create: 'ngo/school-coordinators/create',
+      Update: (staffId: number) => `ngo/school-coordinators/update/${staffId}`,
+      Delete: (staffId: number) => `ngo/school-coordinators/delete/${staffId}`
+    },
+
 
   },
 
@@ -177,7 +185,8 @@ export const ApiEndpoints = {
       GetById: (id: number) => `school/master-school/getById/${id}`,
       Create: 'school/master-school/create',
       Update: (id: number) => `school/master-school/update/${id}`,
-      Delete: (id: number) => `school/master-school/delete/${id}`
+      Delete: (id: number) => `school/master-school/delete/${id}`,
+      GetSchoolsByCountryIds: 'school/master-school/getSchoolsByCountryIds',
     },
 
     Student: {

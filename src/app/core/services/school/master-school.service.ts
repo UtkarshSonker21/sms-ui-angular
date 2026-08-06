@@ -7,6 +7,8 @@ import { PagedResult } from '../../models/common/response/paged-result.model';
 
 import { MasterSchoolFilter } from '../../models/school/master-school/master-school-filter.model';
 import { MasterSchoolRequest } from '../../models/school/master-school/master-school-request.model';
+import { SchoolByCountryRequest } from '../../models/school/master-school/school-by-country-request.model';
+import { SchoolLookup } from '../../models/school/master-school/school-lookup.model';
 
 
 
@@ -52,4 +54,14 @@ export class MasterSchoolService {
     }
 
 
+
+    getSchoolsByCountryIds(request: SchoolByCountryRequest) {
+        return this.api.post<ApiResponse<SchoolLookup[]>>(
+            ApiEndpoints.School.MasterSchool.GetSchoolsByCountryIds,
+            request
+        );
+    }
+
+
+    
 }
