@@ -125,7 +125,7 @@ export const ApiEndpoints = {
     },
 
     Faculties: {
-      FacultyPrograms: (universityId: number) => `university/faculties/faculty-programs/${universityId}`,
+      FacultyPrograms: `university/faculties/faculty-programs`,
       Search: 'university/faculties/search',
       GetById: (id: number) => `university/faculties/getById/${id}`,
       Create: 'university/faculties/create',

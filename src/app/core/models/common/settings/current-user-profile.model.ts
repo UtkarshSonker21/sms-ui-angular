@@ -1,11 +1,14 @@
 // core/models/auth/current-user-profile.model.ts
 
 import { StaffType } from "../../../enums/staff-type.enum";
+import { AvailableRole } from "./available-role.model";
 
 export class CurrentUserProfile {
 
     loginId!: number;
     loginName!: string;
+
+    availableRoles: AvailableRole[] = [];
 
     currentRoleId!: number;
     currentRoleName!: string;
@@ -15,8 +18,11 @@ export class CurrentUserProfile {
 
     staffType!: StaffType;
 
-    universityId?: number;
-    schoolId?: number;
+    // universityId?: number;
+    // schoolId?: number;
+
+    universityIds: number[] = [];
+    schoolIds: number[] = [];
 
     organizationName!: string;
 
@@ -44,4 +50,5 @@ export class CurrentUserProfile {
     defaultCurrencyCode!: string;
     defaultCurrencyName!: string;
     defaultCurrencySymbol!: string;
+
 }

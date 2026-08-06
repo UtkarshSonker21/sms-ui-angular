@@ -1,9 +1,9 @@
-export interface AvailableRole {
-  roleId: number;
-  roleName: string;
+export class AvailableRole {
+    roleId!: number;
+    roleName!: string;
 
-  moduleId: number;
-  moduleName: string;
+    moduleId!: number;
+    moduleName!: string;
 
-  isDefault: boolean;
+    isDefault!: boolean;
 }

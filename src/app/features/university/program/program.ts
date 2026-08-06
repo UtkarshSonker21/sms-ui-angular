@@ -102,7 +102,7 @@ export class Program implements OnInit {
       next: (response) => {
         if (response.success && response.result) {
           this.program = response.result;
-          
+
           if (this.program.facultyId && this.program.facultyId > 0) {
             this.getCourses();
           }
@@ -654,8 +654,12 @@ export class Program implements OnInit {
     }
 
     const user = this.currentUserProfileService.getCurrentUserProfile();
-    if (user && user.universityId) {
-      this.program.universityId = user.universityId;
+    // if (user && user.universityId) {
+    //   this.program.universityId = user.universityId;
+    // }
+
+    if (user?.universityIds?.length) {
+      this.program.universityId = user.universityIds[0];
     }
 
     const request = (this.isEditMode || (this.program.programId && this.program.programId > 0))

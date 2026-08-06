@@ -43,20 +43,20 @@ export class Faculties implements OnInit {
     const user = this.currentUserProfileService.getCurrentUserProfile();
     this.currentStaffType = user?.staffType;
 
-    if (
-      this.currentStaffType === StaffType.University &&
-      user?.universityId
-    ) {
-      this.loadFacultyPrograms(user.universityId);
-    }
+    // if (this.currentStaffType === StaffType.University && user?.universityId)
+    // {
+    //   this.loadFacultyPrograms(user.universityId);
+    // }
+
+    this.loadFacultyPrograms();
   }
 
 
   dashboardData: FacultyProgramsDashboard = new FacultyProgramsDashboard();
 
-  loadFacultyPrograms(universityId: number): void {
+  loadFacultyPrograms(): void {
 
-    this.facultyService.getFacultyPrograms(universityId).subscribe({
+    this.facultyService.getFacultyPrograms().subscribe({
 
       next: (response) => {
         if (response.success && response.result) {
@@ -120,8 +120,12 @@ export class Faculties implements OnInit {
     }
 
     const user = this.currentUserProfileService.getCurrentUserProfile();
-    if (user?.universityId) {
-      this.tempFacultyModel.universityId = user.universityId;
+    // if (user?.universityId) {
+    //   this.tempFacultyModel.universityId = user.universityId;
+    // }
+
+    if (user?.universityIds?.length) {
+      this.tempFacultyModel.universityId = user.universityIds[0];
     }
 
     const request = this.tempFacultyModel.facultyId
@@ -133,9 +137,10 @@ export class Faculties implements OnInit {
         if (response.success) {
           this.notification.success(this.tempFacultyModel.facultyId ? 'Faculty updated successfully' : 'Faculty created successfully');
           this.showFacultyModal = false;
-          if (user?.universityId) {
-            this.loadFacultyPrograms(user.universityId);
-          }
+          // if (user?.universityId) {
+          //   this.loadFacultyPrograms(user.universityId);
+          // }
+          this.loadFacultyPrograms();
         } else {
           this.modalErrorMessage = response.message || 'Failed to save faculty';
           this.notification.error(response.message || 'Failed to save faculty');

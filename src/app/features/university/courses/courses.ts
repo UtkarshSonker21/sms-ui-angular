@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, HostListener} from '@angular/core';
+import { Component, inject, OnInit, HostListener } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { NgForm } from '@angular/forms';
@@ -268,8 +268,12 @@ export class Courses implements OnInit {
     }
 
     const user = this.currentUserProfileService.getCurrentUserProfile();
-    if (user?.universityId) {
-      this.tempCourseModel.universityId = user.universityId;
+    // if (user?.universityId) {
+    //   this.tempCourseModel.universityId = user.universityId;
+    // }
+
+    if (user?.universityIds?.length) {
+      this.tempCourseModel.universityId = user.universityIds[0];
     }
 
     const request = this.tempCourseModel.courseId
@@ -308,19 +312,19 @@ export class Courses implements OnInit {
 
     this.courseService.deleteCourse(this.courseToDelete.courseId).subscribe({
 
-        next: () => {
-          this.notification.success('Course deleted successfully');
-          this.showDeleteModal = false;
-          this.loadData();
-        },
+      next: () => {
+        this.notification.success('Course deleted successfully');
+        this.showDeleteModal = false;
+        this.loadData();
+      },
 
-        error: err => {
-          if (HelperMethods.isBusinessError(err)) {
-            this.modalErrorMessage = HelperMethods.getApiErrorMessage(err);
-          }
+      error: err => {
+        if (HelperMethods.isBusinessError(err)) {
+          this.modalErrorMessage = HelperMethods.getApiErrorMessage(err);
         }
+      }
 
-      });
+    });
   }
 
 
