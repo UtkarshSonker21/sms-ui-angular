@@ -16,11 +16,12 @@ export class FacultyService {
 
   private readonly api = inject(ApiService);
 
-  getFacultyPrograms(universityId: number) {
+  getFacultyPrograms() {
     return this.api.get<ApiResponse<FacultyProgramsDashboard>>(
-      ApiEndpoints.University.Faculties.FacultyPrograms(universityId)
+      ApiEndpoints.University.Faculties.FacultyPrograms
     );
   }
+
 
   getFaculties(filter: FacultyFilter) {
     return this.api.post<ApiResponse<PagedResult<FacultyRequest>>>(
@@ -54,5 +55,6 @@ export class FacultyService {
       ApiEndpoints.University.Faculties.Delete(id)
     );
   }
+
 
 }
