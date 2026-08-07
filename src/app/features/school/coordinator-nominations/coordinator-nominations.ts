@@ -138,7 +138,7 @@ export class CoordinatorNominations implements OnInit {
     // Filter by coordinator's nominated students only
     const currentUser = this.currentUserProfileService.getCurrentUserProfile();
     if (currentUser && currentUser.loginId) {
-      this.filter.createdBy = currentUser.loginId;
+      this.filter.myNominations = currentUser.loginId;
     }
 
     this.studentService.getStudents(this.filter).subscribe({
