@@ -34,56 +34,56 @@
   /* Success theme overrides */
   &.snackbar-success {
     .mdc-snackbar__surface {
-      background-color: #ECFDF3 !important;
-      border: 1px solid #86EFAC !important;
+      background-color: #338d4f !important;
+      border: none !important;
     }
     .mdc-snackbar__label {
-      color: #166534 !important;
+      color: #ffffff !important;
     }
     .mat-mdc-snack-bar-action {
-      color: #166534 !important;
+      color: #ffffff !important;
     }
   }
 
   /* Error theme overrides */
   &.snackbar-error {
     .mdc-snackbar__surface {
-      background-color: #FEF2F2 !important;
-      border: 1px solid #d33e3e !important;
+      background-color: #D32F2F !important;
+      border: none !important;
     }
     .mdc-snackbar__label {
-      color: #991B1B !important;
+      color: #ffffff !important;
     }
     .mat-mdc-snack-bar-action {
-      color: #991B1B !important;
+      color: #ffffff !important;
     }
   }
 
   /* Warning theme overrides */
   &.snackbar-warning {
     .mdc-snackbar__surface {
-      background-color: #FFF8E1 !important;
-      border: 1px solid #FCD34D !important;
+      background-color: #f3a633 !important;
+      border: none !important;
     }
     .mdc-snackbar__label {
-      color: #92400E !important;
+      color: #ffffff !important;
     }
     .mat-mdc-snack-bar-action {
-      color: #92400E !important;
+      color: #ffffff !important;
     }
   }
 
   /* Info theme overrides */
   &.snackbar-info {
     .mdc-snackbar__surface {
-      background-color: #EFF6FF !important;
-      border: 1px solid #93C5FD !important;
+      background-color: #1774e5 !important;
+      border: none !important;
     }
     .mdc-snackbar__label {
-      color: #1D4ED8 !important;
+      color: #ffffff !important;
     }
     .mat-mdc-snack-bar-action {
-      color: #1D4ED8 !important;
+      color: #ffffff !important;
     }
   }
 
@@ -485,4 +485,14 @@
 }
 .chip-awarded-rejected {
   @extend .chip-awarding-rejected;
+}
+
+/* Angular Material Tooltip Global Typography Customization (MDC) */
+.mat-mdc-tooltip .mdc-tooltip__surface {
+  font-family: inherit !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  line-height: 1.4 !important;
+  letter-spacing: 0.2px !important;
+  -webkit-font-smoothing: antialiased !important;
 }
