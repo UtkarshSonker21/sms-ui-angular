@@ -39,7 +39,7 @@ export class StudntFilter extends BaseFilter {
 
     
     // for coordinator nominations
-    createdBy? : number;
+    myNominations? : number;
     facultyId? : number;
     universityId? : number;
     programId? : number;

@@ -72,7 +72,7 @@ export class SchoolDashboard implements OnInit {
     
     const currentUser = this.currentUserProfileService.getCurrentUserProfile();
     if (currentUser) {
-      filter.createdBy = currentUser.loginId;
+      filter.myNominations = currentUser.loginId;
     }
 
     this.studentService.getStudents(filter).subscribe({
