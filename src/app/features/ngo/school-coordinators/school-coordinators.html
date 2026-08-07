@@ -5,12 +5,12 @@
             <span class="sep">/</span>
             Administration
             <span class="sep">/</span>
-            <span class="text-muted">University Coordinators</span>
+            <span class="text-muted">School Coordinators</span>
         </div>
-        <h2 class="page-title">University Coordinators</h2>
+        <h2 class="page-title">School Coordinators</h2>
         <p class="page-sub">
-            Create, edit and disable university coordinators. Each user
-            signs in with an email and password and lands on their assigned university dashboards.
+            Create, edit and disable school coordinators. Each user
+            signs in with an email and password and lands on their assigned school dashboards.
         </p>
     </div>
     <div class="page-actions">
@@ -70,38 +70,6 @@
             <div class="da-select-option" *ngFor="let role of roles"
                 [class.selected]="selectedRoleFilter === role.roleId.toString()" (click)="selectRoleFilterOption(role.roleId)">
                 {{ role.roleName }}
-            </div>
-        </div>
-    </div>
-
-    <!-- University Filter Dropdown -->
-    <div class="da-select" [class.da-select-open]="isUniversityFilterDropdownOpen" tabindex="0"
-        (click)="$event.stopPropagation()">
-        <div class="da-select-control" (click)="toggleUniversityFilterDropdown($event)">
-            <div class="ms-display" [class.has-selection]="selectedUniversityFilter !== 'all'"
-                style="display: flex; align-items: center; flex: 1;">
-                <ng-container *ngIf="selectedUniversityFilter !== 'all'; else noUniversitySelected">
-                    <span class="ms-chip" style="margin: 0; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block;">
-                        {{ getSelectedUniversityFilterName() }}
-                        <span class="ms-chip-x"
-                            (click)="selectUniversityFilterOption('all'); $event.stopPropagation()">×</span>
-                    </span>
-                </ng-container>
-                <ng-template #noUniversitySelected>
-                    <span class="da-select-value" style="font-size: 13px;">All universities</span>
-                </ng-template>
-            </div>
-            <i class="fas da-select-arrow"
-                [ngClass]="isUniversityFilterDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-        </div>
-        <div class="da-select-menu" *ngIf="isUniversityFilterDropdownOpen" style="max-height: 250px; overflow-y: auto;">
-            <div class="da-select-option" [class.selected]="selectedUniversityFilter === 'all'"
-                (click)="selectUniversityFilterOption('all')">
-                All universities
-            </div>
-            <div class="da-select-option" *ngFor="let uni of masterUniversities"
-                [class.selected]="selectedUniversityFilter === uni.registrationId?.toString()" (click)="selectUniversityFilterOption(uni.registrationId)">
-                {{ uni.universityName }}
             </div>
         </div>
     </div>
@@ -209,8 +177,8 @@
     <div class="modal-card">
         <div class="modal-head">
             <div>
-                <div class="modal-title">{{ tempUserModel.staffId ? 'Edit University Coordinator' : 'Add University Coordinator' }}</div>
-                <div class="modal-sub">The user signs in with their official email and is routed to the panel for their assigned universities.</div>
+                <div class="modal-title">{{ tempUserModel.staffId ? 'Edit School Coordinator' : 'Add School Coordinator' }}</div>
+                <div class="modal-sub">The coordinator signs in with their official email and is routed to the panel for their assigned schools. Login credentials are generated automatically.</div>
             </div>
             <button type="button" class="modal-close" (click)="showUserModal = false">
                 <i class="fas fa-times"></i>
@@ -338,31 +306,31 @@
                     </div>
                 </div>
 
-                <!-- Row 4: Universities Multi-Select -->
+                <!-- Row 4: Countries Multi-Select -->
                 <div class="modal-form-row">
                     <div class="field" style="grid-column: span 2;" (click)="$event.stopPropagation()">
-                        <label class="field-label required-label">Assigned Universities</label>
-                        <div class="multi-select" [class.open]="isUniversitiesDropdownOpen" id="uni-multi-select" (click)="toggleUniversitiesDropdown($event)" tabindex="0">
-                            <div class="ms-display" [class.has-selection]="tempUserModel.universityIds.length > 0">
-                                <span *ngIf="tempUserModel.universityIds.length === 0">Select universities...</span>
-                                <ng-container *ngIf="tempUserModel.universityIds.length > 0">
-                                    <span class="ms-chip" *ngFor="let id of tempUserModel.universityIds">
-                                        {{ getUniversityName(id) }}
-                                        <span class="ms-chip-x" (click)="$event.stopPropagation(); removeUniversity(id)">×</span>
+                        <label class="field-label required-label">Countries Overseen</label>
+                        <div class="multi-select" [class.open]="isCountriesDropdownOpen" id="country-multi-select" (click)="toggleCountriesDropdown($event)" tabindex="0">
+                            <div class="ms-display" [class.has-selection]="selectedCountryIds.length > 0">
+                                <span *ngIf="selectedCountryIds.length === 0">Select countries...</span>
+                                <ng-container *ngIf="selectedCountryIds.length > 0">
+                                    <span class="ms-chip" *ngFor="let id of selectedCountryIds">
+                                        {{ getCountryName(id) }}
+                                        <span class="ms-chip-x" (click)="$event.stopPropagation(); removeCountry(id)">×</span>
                                     </span>
                                 </ng-container>
                             </div>
-                            <i class="fas ms-chevron" [ngClass]="isUniversitiesDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-                            <div class="ms-panel" *ngIf="isUniversitiesDropdownOpen" style="display: block; max-height: 200px; overflow-y: auto;">
-                                <div class="ms-option" *ngFor="let uni of masterUniversities" [class.checked]="isUniversitySelected(uni.registrationId!)" (click)="toggleUniversity(uni.registrationId!); $event.stopPropagation()">
-                                    <input type="checkbox" [checked]="isUniversitySelected(uni.registrationId!)" style="pointer-events: none;" />
-                                    <span>{{ uni.universityName}}</span>
+                            <i class="fas ms-chevron" [ngClass]="isCountriesDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                            <div class="ms-panel" *ngIf="isCountriesDropdownOpen" style="display: block; max-height: 200px; overflow-y: auto;">
+                                <div class="ms-option" *ngFor="let c of countries" [class.checked]="isCountrySelected(c.countryId!)" (click)="toggleCountry(c.countryId!); $event.stopPropagation()">
+                                    <input type="checkbox" [checked]="isCountrySelected(c.countryId!)" style="pointer-events: none;" />
+                                    <span>{{ c.countryName}}</span>
                                 </div>
                             </div>
                         </div>
-                        <input type="hidden" name="assignedUniversities" [ngModel]="tempUserModel.universityIds.length > 0 ? 'valid' : ''" required #universitiesModel="ngModel">
-                        <div class="validation-error" *ngIf="(universitiesModel.touched || userForm.submitted) && universitiesModel.errors?.['required']">
-                            Assigned Universities is required.
+                        <input type="hidden" name="assignedCountries" [ngModel]="selectedCountryIds.length > 0 ? 'valid' : ''" required #countriesModel="ngModel">
+                        <div class="validation-error" *ngIf="(countriesModel.touched || userForm.submitted) && countriesModel.errors?.['required']">
+                            Countries Overseen is required.
                         </div>
                     </div>
                 </div>
@@ -399,6 +367,8 @@
                         </div>
                     </div>
                 </div>
+                
+
 
                 <!-- Row 6: Mobile Number -->
                 <div class="modal-form-row" (click)="$event.stopPropagation()">

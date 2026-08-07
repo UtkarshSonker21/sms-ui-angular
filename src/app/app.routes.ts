@@ -46,6 +46,7 @@ import { AcademicRegistration } from './features/university/academic-registratio
 import { FailingCoreCases } from './features/ngo/failing-core-cases/failing-core-cases';
 import { PanelUsers } from './features/ngo/panel-users/panel-users';
 import { UniversityCoordinators } from './features/ngo/university-coordinators/university-coordinators';
+import { SchoolCoordinators } from './features/ngo/school-coordinators/school-coordinators';
 
 export const routes: Routes = [
 
@@ -176,6 +177,10 @@ export const routes: Routes = [
             {
                 path: 'university-coordinators',
                 component: UniversityCoordinators
+            },
+            {
+                path: 'school-coordinators',
+                component: SchoolCoordinators
             },
             {
                 path: 'preferences-countries',

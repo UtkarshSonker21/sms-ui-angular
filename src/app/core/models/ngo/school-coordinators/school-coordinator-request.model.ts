@@ -13,6 +13,8 @@ export class SchoolCoordinatorRequestModel {
 
     // Response Only
     schoolNames: string[] = [];
+    countryIds: number[] = [];
+    countryNames: string[] = [];
 
     // Personal Information
     staffSalutation: string = '';
@@ -51,4 +53,6 @@ export class SchoolCoordinatorRequestModel {
 
     // Response Only
     isDefaultRole: boolean = false;
+
+
 }
