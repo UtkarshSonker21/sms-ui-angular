@@ -1,1 +1,92 @@
-<p>dashboard works!</p>
+<div class="dashboard-page">
+  
+  <!-- 1. Page Header -->
+  <div class="page-head">
+    <div>
+      <h1 class="page-title">Welcome — SuperAdmin Dashboard</h1>
+      <div class="page-sub">System-wide overview of programs, universities, schools, and staff.</div>
+    </div>
+  </div>
+
+  <!-- 3. Error State -->
+  <div class="dashboard-error" *ngIf="hasError">
+    <div class="empty-state">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+      <p>Failed to load dashboard data. Please try again later.</p>
+    </div>
+  </div>
+
+  <!-- 4. Dashboard Content -->
+  <ng-container *ngIf="!hasError">
+    <!-- Statistics Cards Grid -->
+    <div class="kpi-grid">
+      <div class="kpi" *ngFor="let stat of kpiCards">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <div>
+            <div class="kpi-l">{{ stat.title }}</div>
+            <div class="kpi-v">{{ stat.value }}</div>
+          </div>
+          <div class="kpi-icon" [ngClass]="stat.type">
+            <i [class]="stat.icon"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Staff Table Card -->
+    <div class="card mb-4">
+      <div class="card-head">
+        <div>
+          <h2 class="card-title">Top Staff</h2>
+          <div class="card-sub">Recently registered staff members across the system.</div>
+        </div>
+        <a class="view-all-link" (click)="navigateToStaffManagement()">View all &rarr;</a>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive" *ngIf="topStaffList.length; else noStaffFound">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Staff</th>
+                <th>Staff Type</th>
+                <th>Official Email</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let staff of topStaffList">
+                <td>
+                  <div class="staff-name">
+                    {{ staff.staffSalutation }} {{ staff.staffFirstName }} {{ staff.staffLastName }}
+                  </div>
+                </td>
+                <td>
+                  <span class="staff-type-label">
+                    {{ getStaffTypeDisplayName(staff.staffType) }}
+                  </span>
+                </td>
+                <td>
+                  <span class="staff-email">
+                    {{ staff.officialEmail }}
+                  </span>
+                </td>
+                <td>
+                  <span class="chip" [class.chip-active]="staff.isActive" [class.chip-disabled]="!staff.isActive">
+                    {{ staff.isActive ? 'Active' : 'Disabled' }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ng-template #noStaffFound>
+          <div class="empty-state">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8 M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <p>No staff records found in the system.</p>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </ng-container>
+
+</div>
