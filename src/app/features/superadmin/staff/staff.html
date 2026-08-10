@@ -1,0 +1,493 @@
+<div class="page-head">
+    <div>
+        <div class="crumb">
+            <a href="#">Dashboard</a>
+            <span class="sep">/</span>
+            Administration
+            <span class="sep">/</span>
+            <span class="text-muted">Staff Management</span>
+        </div>
+        <h2 class="page-title">Staff Management</h2>
+        <p class="page-sub">
+            Maintain and manage staff master records. Staff roles and access rights are maintained separately.
+        </p>
+    </div>
+    <div class="page-actions">
+        <button type="button" class="btn btn-p" (click)="openAddStaffModal()">
+            <i class="fas fa-plus btn-icon"></i> Add Staff
+        </button>
+    </div>
+</div>
+
+<div class="filters"
+    style="display: flex; gap: 10px; align-items: center; padding: 12px 14px; background: var(--da-surface, #ffffff); border: 1px solid var(--da-border, #e0e0e0); border-radius: var(--da-radius, 8px); margin-bottom: 16px; flex-wrap: wrap; overflow: visible; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+    <div class="search-container" style="flex: 1; max-width: 320px;">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" class="search-input" placeholder="Search by name, email..." [(ngModel)]="searchText"
+            (keydown)="handleKeyDown($event)">
+        <i class="fas fa-times clear-icon" *ngIf="searchText" (click)="clearSearch()"></i>
+    </div>
+
+    <!-- Staff Type Filter Dropdown -->
+    <div class="da-select" [class.da-select-open]="isStaffTypeFilterDropdownOpen" tabindex="0"
+        (click)="$event.stopPropagation()">
+        <div class="da-select-control" (click)="toggleStaffTypeFilterDropdown($event)">
+            <div class="ms-display" [class.has-selection]="selectedStaffTypeFilter !== 'all'"
+                style="display: flex; align-items: center; flex: 1;">
+                <ng-container *ngIf="selectedStaffTypeFilter !== 'all'; else noStaffTypeSelected">
+                    <span class="ms-chip" style="margin: 0;">
+                        {{ getSelectedStaffTypeFilterName() }}
+                        <span class="ms-chip-x"
+                            (click)="selectStaffTypeFilterOption('all'); $event.stopPropagation()">×</span>
+                    </span>
+                </ng-container>
+                <ng-template #noStaffTypeSelected>
+                    <span class="da-select-value" style="font-size: 13px;">All staff types</span>
+                </ng-template>
+            </div>
+            <i class="fas da-select-arrow"
+                [ngClass]="isStaffTypeFilterDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+        </div>
+        <div class="da-select-menu" *ngIf="isStaffTypeFilterDropdownOpen">
+            <div class="da-select-option" [class.selected]="selectedStaffTypeFilter === 'all'"
+                (click)="selectStaffTypeFilterOption('all')">
+                All staff types
+            </div>
+            <div class="da-select-option" *ngFor="let st of staffTypes"
+                [class.selected]="selectedStaffTypeFilter === st.value.toString()" (click)="selectStaffTypeFilterOption(st.value)">
+                {{ st.label }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Country Filter Dropdown -->
+    <div class="da-select" [class.da-select-open]="isCountryFilterDropdownOpen" tabindex="0"
+        (click)="$event.stopPropagation()">
+        <div class="da-select-control" (click)="toggleCountryFilterDropdown($event)">
+            <div class="ms-display" [class.has-selection]="selectedCountryFilter !== 'all'"
+                style="display: flex; align-items: center; flex: 1;">
+                <ng-container *ngIf="selectedCountryFilter !== 'all'; else noCountrySelected">
+                    <span class="ms-chip" style="margin: 0;">
+                        {{ getSelectedCountryFilterName() }}
+                        <span class="ms-chip-x"
+                            (click)="selectCountryFilterOption('all'); $event.stopPropagation()">×</span>
+                    </span>
+                </ng-container>
+                <ng-template #noCountrySelected>
+                    <span class="da-select-value" style="font-size: 13px;">All countries</span>
+                </ng-template>
+            </div>
+            <i class="fas da-select-arrow"
+                [ngClass]="isCountryFilterDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+        </div>
+        <div class="da-select-menu" *ngIf="isCountryFilterDropdownOpen">
+            <div class="da-select-option" [class.selected]="selectedCountryFilter === 'all'"
+                (click)="selectCountryFilterOption('all')">
+                All countries
+            </div>
+            <div class="da-select-option" *ngFor="let c of countries"
+                [class.selected]="selectedCountryFilter === c.countryId?.toString()" (click)="selectCountryFilterOption(c.countryId!)">
+                {{ c.countryName }}
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="filter-count"
+        style="margin-inline-start: auto; font-size: 12.5px; color: var(--da-muted); font-weight: 500;">
+        {{ totalRecords }} shown
+    </div>
+</div>
+
+<div class="card"
+    style="border-radius: var(--da-radius); overflow: visible; margin-bottom: 20px; border: 1px solid var(--da-border, #e0e0e0); background: var(--da-surface, #ffffff); box-shadow: 0 10px 40px rgba(5,5,5,0.04);">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Staff</th>
+                <th style="width: 180px;">Staff Type</th>
+                <th style="width: 160px;">Mobile Number</th>
+                <th style="width: 160px;">Country</th>
+                <th style="width: 100px; text-align: center !important;">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let s of staffs">
+                <td>
+                    <div style="font-size: 13.5px; font-weight: 600; color: var(--da-black);">
+                        {{ s.staffSalutation }} {{ s.staffFirstName }} {{ s.staffLastName }}
+                    </div>
+                    <div class="pu-email">
+                        {{ s.officialEmail }}
+                    </div>
+                </td>
+                <td>
+                    <span style="font-size: 13px; font-weight: 500; color: var(--da-text-2);">
+                        {{ getStaffTypeDisplayName(s.staffType) }}
+                    </span>
+                </td>
+                <td>
+                    <span style="font-size: 13px; color: var(--da-text-2);">
+                        {{ s.mobileNumber || '-' }}
+                    </span>
+                </td>
+                <td>
+                    <span style="font-size: 13px; color: var(--da-text-2);">
+                        {{ s.permCountryName || '-' }}
+                    </span>
+                </td>
+                <td class="row-actions" style="text-align: center !important;">
+                    <button type="button" class="icon-btn" title="Edit" (click)="openEditStaffModal(s)">
+                        <i class="far fa-edit"></i>
+                    </button>
+                    <button type="button" class="icon-btn icon-btn-danger" title="Delete"
+                        (click)="openDeleteStaffModal(s)">
+                        <i class="far fa-trash-alt"></i>
+                    </button>
+                </td>
+            </tr>
+
+            <tr *ngIf="staffs.length === 0">
+                <td colspan="5" class="courses-empty" style="text-align: center; padding: 42px 20px;">
+                    <div style="font-size: 15px; font-weight: 600; color: var(--da-black);">No Staff Found</div>
+                    <div style="font-size: 13px; color: var(--da-text-2); margin-top: 4px;">Adjust your search or
+                        filters to find what you are looking for.</div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Pagination Footer -->
+    <div class="pagination-footer"
+        style="padding: 12px 20px; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="text-muted" style="font-size: 13px; font-weight: 500;">Show</span>
+            <div class="custom-dropdown" [class.open]="isPageSizeDropdownOpen" [class.open-up]="true" tabindex="0"
+                (click)="$event.stopPropagation()">
+                <div class="dropdown-trigger" (click)="togglePageSizeDropdown($event)">
+                    <span class="dropdown-value">{{ filter.pageSize }}</span>
+                    <i class="fas" [ngClass]="isPageSizeDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                </div>
+                <div class="dropdown-menu" *ngIf="isPageSizeDropdownOpen">
+                    <div class="dropdown-item" *ngFor="let size of [25, 50, 100, 500]"
+                        [class.selected]="size === filter.pageSize" (click)="selectPageSize(size)">
+                        {{ size }}
+                    </div>
+                </div>
+            </div>
+            <span class="text-muted" style="font-size: 13px; font-weight: 500;">entries</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 13px; color: var(--da-text-2);">
+                Page <strong style="font-weight: 700; color: var(--da-black);">{{ filter.pageNumber }}</strong> of
+                <strong style="font-weight: 700; color: var(--da-black);">{{ totalPages }}</strong>
+            </span>
+
+            <div style="display: flex; gap: 6px;">
+                <button type="button" class="icon-btn btn-pagination" [disabled]="isPreviousDisabled"
+                    (click)="previousPage()">
+                    <i class="fas fa-chevron-left" style="font-size: 11px;"></i>
+                </button>
+                <button type="button" class="icon-btn btn-pagination" [disabled]="isNextDisabled" (click)="nextPage()">
+                    <i class="fas fa-chevron-right" style="font-size: 11px;"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add / Edit Staff Modal -->
+<div class="modal-backdrop" *ngIf="showUserModal">
+    <div class="modal-card" style="max-width: 650px;">
+        <div class="modal-head">
+            <div>
+                <div class="modal-title">{{ tempStaffModel.staffId ? 'Edit Staff' : 'Add Staff' }}</div>
+                <div class="modal-sub">Fill in the staff personal, contact and address master details.</div>
+            </div>
+            <button type="button" class="modal-close" (click)="showUserModal = false">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form #staffForm="ngForm" (ngSubmit)="saveStaff(staffForm)" novalidate appDisableAutocomplete>
+            <div class="modal-body">
+                <div class="modal-error" *ngIf="modalErrorMessage">{{ modalErrorMessage }}</div>
+
+                <!-- Row 1: Staff Type & Salutation -->
+                <div class="modal-form-row">
+                    <div class="field">
+                        <label class="field-label required-label">Staff Type</label>
+                        <div class="da-select" [class.da-select-open]="isStaffTypeDropdownOpen" tabindex="0"
+                            (click)="$event.stopPropagation()">
+                            <div class="da-select-control" (click)="toggleStaffTypeDropdown($event)">
+                                <span class="da-select-value">{{ getSelectedStaffTypeName() }}</span>
+                                <i class="fas da-select-arrow"
+                                    [ngClass]="isStaffTypeDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                            </div>
+                            <div class="da-select-menu" *ngIf="isStaffTypeDropdownOpen">
+                                <div class="da-select-option" [class.selected]="tempStaffModel.staffType === 0"
+                                    (click)="selectStaffTypeOption(0)">
+                                    Select Staff Type...
+                                </div>
+                                <div class="da-select-option" *ngFor="let st of staffTypes"
+                                    [class.selected]="tempStaffModel.staffType === st.value"
+                                    (click)="selectStaffTypeOption(st.value)">
+                                    {{ st.label }}
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" name="staffType" [ngModel]="tempStaffModel.staffType === 0 ? '' : tempStaffModel.staffType" required
+                            #staffTypeModel="ngModel">
+                        <div class="validation-error"
+                            *ngIf="(staffTypeModel.touched || staffForm.submitted) && (tempStaffModel.staffType === 0 || staffTypeModel.errors?.['required'])">
+                            Staff Type is required.
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label required-label">Salutation</label>
+                        <div class="da-select" [class.da-select-open]="isSalutationDropdownOpen" tabindex="0"
+                            (click)="$event.stopPropagation()">
+                            <div class="da-select-control" (click)="toggleSalutationDropdown($event)">
+                                <span class="da-select-value">{{ tempStaffModel.staffSalutation || 'Select...' }}</span>
+                                <i class="fas da-select-arrow"
+                                    [ngClass]="isSalutationDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                            </div>
+                            <div class="da-select-menu" *ngIf="isSalutationDropdownOpen">
+                                <div class="da-select-option" [class.selected]="tempStaffModel.staffSalutation === ''"
+                                    (click)="selectSalutationOption('')">
+                                    Select...
+                                </div>
+                                <div class="da-select-option" *ngFor="let opt of salutations"
+                                    [class.selected]="tempStaffModel.staffSalutation === opt"
+                                    (click)="selectSalutationOption(opt)">
+                                    {{ opt }}
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" name="staffSalutation" [ngModel]="tempStaffModel.staffSalutation" required
+                            #salutationModel="ngModel">
+                        <div class="validation-error"
+                            *ngIf="(salutationModel.touched || staffForm.submitted) && salutationModel.errors?.['required']">
+                            Salutation is required.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 2: First Name & Last Name -->
+                <div class="modal-form-row">
+                    <div class="field">
+                        <label class="field-label required-label">First Name</label>
+                        <input type="text" name="staffFirstName" class="field-input" placeholder="First Name" required
+                            maxlength="100" [(ngModel)]="tempStaffModel.staffFirstName" #firstNameModel="ngModel">
+                        <div class="validation-error"
+                            *ngIf="(firstNameModel.touched || staffForm.submitted) && firstNameModel.errors?.['required']">
+                            First Name is required.
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label required-label">Last Name</label>
+                        <input type="text" name="staffLastName" class="field-input" placeholder="Last Name" required
+                            maxlength="100" [(ngModel)]="tempStaffModel.staffLastName" #lastNameModel="ngModel">
+                        <div class="validation-error"
+                            *ngIf="(lastNameModel.touched || staffForm.submitted) && lastNameModel.errors?.['required']">
+                            Last Name is required.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 3: Gender & Country -->
+                <div class="modal-form-row">
+                    <div class="field">
+                        <label class="field-label required-label">Gender</label>
+                        <div class="da-select" [class.da-select-open]="isGenderDropdownOpen" tabindex="0"
+                            (click)="$event.stopPropagation()">
+                            <div class="da-select-control" (click)="toggleGenderDropdown($event)">
+                                <span class="da-select-value">{{ getSelectedGenderName() }}</span>
+                                <i class="fas da-select-arrow"
+                                    [ngClass]="isGenderDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                            </div>
+                            <div class="da-select-menu" *ngIf="isGenderDropdownOpen">
+                                <div class="da-select-option" [class.selected]="tempStaffModel.gender === 0"
+                                    (click)="selectGenderOption(0)">
+                                    Select...
+                                </div>
+                                <div class="da-select-option" *ngFor="let opt of genders"
+                                    [class.selected]="tempStaffModel.gender === opt.uniqueId"
+                                    (click)="selectGenderOption(opt.uniqueId ?? 0)">
+                                    {{ opt.displayText }}
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" name="gender" [ngModel]="tempStaffModel.gender === 0 ? '' : tempStaffModel.gender" required
+                            #genderModel="ngModel">
+                        <div class="validation-error"
+                            *ngIf="(genderModel.touched || staffForm.submitted) && (tempStaffModel.gender === 0 || genderModel.errors?.['required'])">
+                            Gender is required.
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label">Country</label>
+                        <div class="da-select" [class.da-select-open]="isCountryDropdownOpen" tabindex="0"
+                            (click)="$event.stopPropagation()">
+                            <div class="da-select-control" (click)="toggleCountryDropdown($event)">
+                                <span class="da-select-value">{{ getSelectedCountryName() }}</span>
+                                <i class="fas da-select-arrow"
+                                    [ngClass]="isCountryDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                            </div>
+                            <div class="da-select-menu" *ngIf="isCountryDropdownOpen">
+                                <div class="da-select-option" [class.selected]="!tempStaffModel.permCountryId"
+                                    (click)="selectCountryOption(undefined)">
+                                    Select Country...
+                                </div>
+                                <div class="da-select-option" *ngFor="let c of countries"
+                                    [class.selected]="tempStaffModel.permCountryId === c.countryId"
+                                    (click)="selectCountryOption(c.countryId)">
+                                    {{ c.countryName }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 4: Address & City -->
+                <div class="modal-form-row">
+                    <div class="field" style="grid-column: span 2;">
+                        <label class="field-label">Permanent Address</label>
+                        <input type="text" name="permAddress" class="field-input" placeholder="Line 1 Address"
+                            maxlength="250" [(ngModel)]="tempStaffModel.permAddress">
+                    </div>
+                </div>
+
+                <div class="modal-form-row">
+                    <div class="field">
+                        <label class="field-label">City</label>
+                        <input type="text" name="permCity" class="field-input" placeholder="City Name"
+                            maxlength="100" [(ngModel)]="tempStaffModel.permCity">
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label">State</label>
+                        <input type="text" name="permState" class="field-input" placeholder="State/Province"
+                            maxlength="100" [(ngModel)]="tempStaffModel.permState">
+                    </div>
+                </div>
+
+                <!-- Row 5: Zip Code & Mobile Code/Number -->
+                <div class="modal-form-row" (click)="$event.stopPropagation()">
+                    <div class="field">
+                        <label class="field-label">Zip Code</label>
+                        <input type="text" name="permZipCode" class="field-input" placeholder="Postal Code"
+                            maxlength="20" [(ngModel)]="tempStaffModel.permZipCode">
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label">Mobile Number</label>
+                        <div class="phone-input-group">
+                            <div class="multi-select" [class.open]="isPhoneDropdownOpen" (click)="togglePhoneDropdown($event)"
+                                tabindex="0">
+                                <div class="ms-display" [class.has-selection]="PhoneCountryId !== null">
+                                    <span>{{ PhoneCountryId ? getPhoneCountryName() : 'Select Code...' }}</span>
+                                </div>
+                                <i class="fas ms-chevron"
+                                    [ngClass]="isPhoneDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                                <div class="ms-panel" *ngIf="isPhoneDropdownOpen" (click)="$event.stopPropagation()">
+                                    <div *ngFor="let c of countries" class="ms-option"
+                                        [class.checked]="PhoneCountryCode === c.countryIsdCode?.toString()"
+                                        (click)="selectPhoneCountry(c); $event.stopPropagation()">
+                                        <span>{{ c.countryName }} (+{{ c.countryIsdCode }})</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="text" name="mobileNumber" class="field-input phone-number-input num-ltr" placeholder="55554444"
+                                [(ngModel)]="PhoneNumber" dir="ltr">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 6: Official Email & Personal Email -->
+                <div class="modal-form-row">
+                    <div class="field">
+                        <label class="field-label required-label">Official Email</label>
+                        <input type="email" name="officialEmail" class="field-input num-ltr"
+                            placeholder="name@directaid.example" required email maxlength="100"
+                            [(ngModel)]="tempStaffModel.officialEmail" #officialEmailModel="ngModel" dir="ltr">
+                        <div class="validation-error"
+                            *ngIf="(officialEmailModel.touched || staffForm.submitted) && officialEmailModel.errors?.['required']">
+                            Official Email is required.
+                        </div>
+                        <div class="validation-error"
+                            *ngIf="(officialEmailModel.touched || staffForm.submitted) && officialEmailModel.errors?.['email']">
+                            Please enter a valid email.
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label">Personal Email</label>
+                        <input type="email" name="personalEmail" class="field-input num-ltr"
+                            placeholder="personal@example.com" email maxlength="100" [(ngModel)]="tempStaffModel.personalEmail"
+                            #personalEmailModel="ngModel" dir="ltr">
+                        <div class="validation-error"
+                            *ngIf="(personalEmailModel.touched || staffForm.submitted) && personalEmailModel.errors?.['email']">
+                            Please enter a valid email.
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Row 7: Remarks -->
+                <div class="modal-form-row">
+                    <div class="field" style="grid-column: span 2;">
+                        <label class="field-label">Remarks</label>
+                        <textarea name="remarks" class="field-input" placeholder="Add remarks or notes..."
+                            [(ngModel)]="tempStaffModel.remarks" rows="2" style="resize: vertical;" maxlength="500"></textarea>
+                    </div>
+                </div>
+
+
+            </div>
+
+            <div class="modal-foot">
+                <button type="button" class="btn btn-g" (click)="showUserModal = false"
+                    [disabled]="isSaving">Cancel</button>
+                <button type="submit" class="btn btn-p" [disabled]="isSaving || staffForm.invalid">
+                    <span *ngIf="isSaving"><i class="fas fa-spinner fa-spin"
+                            style="margin-right: 6px;"></i>Saving...</span>
+                    <span *ngIf="!isSaving">Save</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-backdrop" *ngIf="showDeleteModal">
+    <div class="modal-card" style="max-width: 400px;">
+        <div class="modal-head">
+            <div>
+                <div class="modal-title">Delete Staff</div>
+                <div class="modal-sub">Are you sure you want to delete this staff member? This action cannot be undone.
+                </div>
+            </div>
+            <button type="button" class="modal-close" (click)="showDeleteModal = false">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body" *ngIf="staffToDelete">
+            <div style="font-weight: 600; font-size: 14px; color: var(--da-black);">
+                {{ staffToDelete.staffSalutation }} {{ staffToDelete.staffFirstName }} {{ staffToDelete.staffLastName }}
+            </div>
+            <div style="font-size: 12.5px; color: var(--da-muted); margin-top: 2px;">
+                {{ staffToDelete.officialEmail }}
+            </div>
+        </div>
+        <div class="modal-foot">
+            <button type="button" class="btn btn-g" (click)="showDeleteModal = false">Cancel</button>
+            <button type="button" class="btn btn-danger-custom" (click)="confirmDeleteStaff()">Delete</button>
+        </div>
+    </div>
+</div>
