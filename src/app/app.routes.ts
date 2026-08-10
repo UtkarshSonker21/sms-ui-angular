@@ -47,6 +47,8 @@ import { FailingCoreCases } from './features/ngo/failing-core-cases/failing-core
 import { PanelUsers } from './features/ngo/panel-users/panel-users';
 import { UniversityCoordinators } from './features/ngo/university-coordinators/university-coordinators';
 import { SchoolCoordinators } from './features/ngo/school-coordinators/school-coordinators';
+import { Staff } from './features/superadmin/staff/staff';
+import { Menus } from './features/superadmin/menus/menus';
 
 export const routes: Routes = [
 
@@ -130,6 +132,16 @@ export const routes: Routes = [
             {
                 path: 'marketing-dashboard',
                 component: MarketingDashboard
+            },
+
+            // superadmin components
+            {
+                path: 'staff',
+                component: Staff
+            },
+            {
+                path: 'menus',
+                component: Menus
             },
 
 

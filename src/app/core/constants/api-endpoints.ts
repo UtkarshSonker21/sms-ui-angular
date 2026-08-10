@@ -70,6 +70,14 @@ export const ApiEndpoints = {
       GetByModules: 'superadmin/users-role/get-by-modules'
     },
 
+    Staff: {
+      Create: 'common/staff/create',
+      Update: (staffId: number) => `common/staff/update/${staffId}`,
+      Delete: (staffId: number) => `common/staff/delete/${staffId}`,
+      GetById: (staffId: number) => `common/staff/getById/${staffId}`,
+      Search: 'common/staff/search'
+    },
+
   },
 
   Ngo: {
