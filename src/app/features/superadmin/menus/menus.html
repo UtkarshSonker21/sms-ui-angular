@@ -1,1 +1,361 @@
-<p>menus works!</p>
+<div class="page-head">
+    <div>
+        <div class="crumb">
+            <a href="#">Dashboard</a>
+            <span class="sep">/</span>
+            Administration
+            <span class="sep">/</span>
+            <span class="text-muted">Menus</span>
+        </div>
+        <h2 class="page-title">Menus</h2>
+        <p class="page-sub">
+            Configure system navigation menus, page paths, ordering sequence, and user module mappings.
+        </p>
+    </div>
+    <div class="page-actions">
+        <button type="button" class="btn btn-p" (click)="openAddMenuModal()">
+            <i class="fas fa-plus btn-icon"></i> Add Menu
+        </button>
+    </div>
+</div>
+
+<div class="filters"
+    style="display: flex; gap: 10px; align-items: center; padding: 12px 14px; background: var(--da-surface, #ffffff); border: 1px solid var(--da-border, #e0e0e0); border-radius: var(--da-radius, 8px); margin-bottom: 16px; flex-wrap: wrap; overflow: visible; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+    <div class="search-container" style="flex: 1; max-width: 320px;">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" class="search-input" placeholder="Search by heading or path..." [(ngModel)]="searchText"
+            (keydown)="handleKeyDown($event)">
+        <i class="fas fa-times clear-icon" *ngIf="searchText" (click)="clearSearch()"></i>
+    </div>
+
+    <!-- Module Filter Dropdown -->
+    <div class="da-select" [class.da-select-open]="isModuleFilterDropdownOpen" tabindex="0"
+        (click)="$event.stopPropagation()">
+        <div class="da-select-control" (click)="toggleModuleFilterDropdown($event)">
+            <div class="ms-display" [class.has-selection]="selectedModuleFilter !== 'all'"
+                style="display: flex; align-items: center; flex: 1;">
+                <ng-container *ngIf="selectedModuleFilter !== 'all'; else noModuleSelected">
+                    <span class="ms-chip" style="margin: 0;">
+                        {{ getSelectedModuleFilterName() }}
+                        <span class="ms-chip-x"
+                            (click)="selectModuleFilterOption('all'); $event.stopPropagation()">×</span>
+                    </span>
+                </ng-container>
+                <ng-template #noModuleSelected>
+                    <span class="da-select-value" style="font-size: 13px;">All modules</span>
+                </ng-template>
+            </div>
+            <i class="fas da-select-arrow"
+                [ngClass]="isModuleFilterDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+        </div>
+        <div class="da-select-menu" *ngIf="isModuleFilterDropdownOpen">
+            <div class="da-select-option" [class.selected]="selectedModuleFilter === 'all'"
+                (click)="selectModuleFilterOption('all')">
+                All modules
+            </div>
+            <div class="da-select-option" *ngFor="let m of modules"
+                [class.selected]="selectedModuleFilter === m.moduleId.toString()" (click)="selectModuleFilterOption(m.moduleId)">
+                {{ m.moduleName }}
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="filter-count"
+        style="margin-inline-start: auto; font-size: 12.5px; color: var(--da-muted); font-weight: 500;">
+        {{ totalRecords }} shown
+    </div>
+</div>
+
+<div class="card"
+    style="border-radius: var(--da-radius); overflow: visible; margin-bottom: 20px; border: 1px solid var(--da-border, #e0e0e0); background: var(--da-surface, #ffffff); box-shadow: 0 10px 40px rgba(5,5,5,0.04);">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Page Heading</th>
+                <th style="width: 140px;">Module</th>
+                <th style="width: 140px;">Parent Menu</th>
+                <th>Page Path</th>
+                <th style="width: 100px;">View</th>
+                <th style="width: 100px; text-align: center !important;">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let m of menusList">
+                <td>
+                    <div [style.padding-left.px]="(m.levelNo || 0) * 20">
+                        <div style="font-size: 13.5px; font-weight: 600; color: var(--da-black);">
+                            {{ m.pageHeading }}
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <span style="font-size: 13px; font-weight: 500; color: var(--da-text-2);">
+                        {{ m.moduleName || '-' }}
+                    </span>
+                </td>
+                <td>
+                    <span style="font-size: 13px; color: var(--da-text-2);">
+                        {{ m.parentName || '-' }}
+                    </span>
+                </td>
+                <td>
+                    <span style="font-size: 13px; color: var(--da-text-2); font-family: monospace;">
+                        {{ m.pagePath || '-' }}
+                    </span>
+                </td>
+                <td>
+                    <span class="chip" [ngClass]="m.isView ? 'chip-registered' : 'pu-chip-disabled'">
+                        {{ m.isView ? 'Visible' : 'Hidden' }}
+                    </span>
+                </td>
+                <td class="row-actions" style="text-align: center !important;">
+                    <button type="button" class="icon-btn" title="Edit" (click)="openEditMenuModal(m)">
+                        <i class="far fa-edit"></i>
+                    </button>
+                    <button type="button" class="icon-btn icon-btn-danger" title="Delete"
+                        (click)="openDeleteMenuModal(m)">
+                        <i class="far fa-trash-alt"></i>
+                    </button>
+                </td>
+            </tr>
+
+            <tr *ngIf="menusList.length === 0">
+                <td colspan="6" class="courses-empty" style="text-align: center; padding: 42px 20px;">
+                    <div style="font-size: 15px; font-weight: 600; color: var(--da-black);">No Menus Found</div>
+                    <div style="font-size: 13px; color: var(--da-text-2); margin-top: 4px;">Adjust your search or
+                        filters to find what you are looking for.</div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Pagination Footer -->
+    <div class="pagination-footer"
+        style="padding: 12px 20px; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="text-muted" style="font-size: 13px; font-weight: 500;">Show</span>
+            <div class="custom-dropdown" [class.open]="isPageSizeDropdownOpen" [class.open-up]="true" tabindex="0"
+                (click)="$event.stopPropagation()">
+                <div class="dropdown-trigger" (click)="togglePageSizeDropdown($event)">
+                    <span class="dropdown-value">{{ filter.pageSize }}</span>
+                    <i class="fas" [ngClass]="isPageSizeDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                </div>
+                <div class="dropdown-menu" *ngIf="isPageSizeDropdownOpen">
+                    <div class="dropdown-item" *ngFor="let size of [25, 50, 100, 500]"
+                        [class.selected]="size === filter.pageSize" (click)="selectPageSize(size)">
+                        {{ size }}
+                    </div>
+                </div>
+            </div>
+            <span class="text-muted" style="font-size: 13px; font-weight: 500;">entries</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 13px; color: var(--da-text-2);">
+                Page <strong style="font-weight: 700; color: var(--da-black);">{{ filter.pageNumber }}</strong> of
+                <strong style="font-weight: 700; color: var(--da-black);">{{ totalPages }}</strong>
+            </span>
+
+            <div style="display: flex; gap: 6px;">
+                <button type="button" class="icon-btn btn-pagination" [disabled]="isPreviousDisabled"
+                    (click)="previousPage()">
+                    <i class="fas fa-chevron-left" style="font-size: 11px;"></i>
+                </button>
+                <button type="button" class="icon-btn btn-pagination" [disabled]="isNextDisabled" (click)="nextPage()">
+                    <i class="fas fa-chevron-right" style="font-size: 11px;"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add / Edit Menu Modal -->
+<div class="modal-backdrop" *ngIf="showMenuModal">
+    <div class="modal-card" style="max-width: 650px;">
+        <div class="modal-head">
+            <div>
+                <div class="modal-title">{{ tempMenuModel.menuLinkId ? 'Edit Menu' : 'Add Menu' }}</div>
+                <div class="modal-sub">Configure the page link, path details, module parent hierarchy and sequence.</div>
+            </div>
+            <button type="button" class="modal-close" (click)="showMenuModal = false">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form #menuForm="ngForm" (ngSubmit)="saveMenu(menuForm)" novalidate appDisableAutocomplete>
+            <div class="modal-body">
+                <div class="modal-error" *ngIf="modalErrorMessage">{{ modalErrorMessage }}</div>
+
+                <!-- Row 1: Module & Page Heading -->
+                <div class="modal-form-row">
+                    <div class="field">
+                        <label class="field-label required-label">User Module</label>
+                        <div class="da-select" [class.da-select-open]="isModuleDropdownOpen" tabindex="0"
+                            (click)="$event.stopPropagation()">
+                            <div class="da-select-control" (click)="toggleModuleDropdown($event)">
+                                <span class="da-select-value">{{ getSelectedModuleName() }}</span>
+                                <i class="fas da-select-arrow"
+                                    [ngClass]="isModuleDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                            </div>
+                            <div class="da-select-menu" *ngIf="isModuleDropdownOpen">
+                                <div class="da-select-option" [class.selected]="tempMenuModel.moduleId === 0"
+                                    (click)="selectModuleOption(0)">
+                                    Select Module...
+                                </div>
+                                <div class="da-select-option" *ngFor="let m of modules"
+                                    [class.selected]="tempMenuModel.moduleId === m.moduleId"
+                                    (click)="selectModuleOption(m.moduleId)">
+                                    {{ m.moduleName }}
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" name="moduleId" [ngModel]="tempMenuModel.moduleId === 0 ? '' : tempMenuModel.moduleId" required
+                            #moduleIdModel="ngModel">
+                        <div class="validation-error"
+                            *ngIf="(moduleIdModel.touched || menuForm.submitted) && (tempMenuModel.moduleId === 0 || moduleIdModel.errors?.['required'])">
+                            User Module is required.
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label required-label">Page Heading</label>
+                        <input type="text" name="pageHeading" class="field-input" placeholder="e.g. Panel Users" required
+                            maxlength="100" [(ngModel)]="tempMenuModel.pageHeading" #pageHeadingModel="ngModel">
+                        <div class="validation-error"
+                            *ngIf="(pageHeadingModel.touched || menuForm.submitted) && pageHeadingModel.errors?.['required']">
+                            Page Heading is required.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 2: Parent Menu & Page Path -->
+                <div class="modal-form-row">
+                    <div class="field">
+                        <label class="field-label">Parent Menu</label>
+                        <div class="da-select" [class.da-select-open]="isParentDropdownOpen" tabindex="0"
+                            (click)="$event.stopPropagation()">
+                            <div class="da-select-control" (click)="toggleParentDropdown($event)">
+                                <span class="da-select-value">{{ getSelectedParentName() }}</span>
+                                <i class="fas da-select-arrow"
+                                    [ngClass]="isParentDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                            </div>
+                            <div class="da-select-menu" *ngIf="isParentDropdownOpen">
+                                <div class="da-select-option" [class.selected]="!tempMenuModel.parentId"
+                                    (click)="selectParentOption(undefined)">
+                                    No Parent (Top Level)
+                                </div>
+                                <div class="da-select-option" *ngFor="let p of filteredParentMenus"
+                                    [class.selected]="tempMenuModel.parentId === p.menuLinkId"
+                                    (click)="selectParentOption(p.menuLinkId)"
+                                    [style.padding-left.px]="(p.levelNo || 0) * 16 + 12">
+                                    {{ p.pageHeading }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label required-label">Page Path</label>
+                        <input type="text" name="pagePath" class="field-input" placeholder="e.g. ngo/panel-users" required
+                            maxlength="200" [(ngModel)]="tempMenuModel.pagePath" #pagePathModel="ngModel">
+                        <div class="validation-error"
+                            *ngIf="(pagePathModel.touched || menuForm.submitted) && pagePathModel.errors?.['required']">
+                            Page Path is required.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 3: Actual Name & Icon -->
+                <div class="modal-form-row">
+                    <div class="field">
+                        <label class="field-label required-label">Actual Name</label>
+                        <input type="text" name="actualName" class="field-input" placeholder="e.g. panel-users" required
+                            maxlength="100" [(ngModel)]="tempMenuModel.actualName" #actualNameModel="ngModel">
+                        <div class="validation-error"
+                            *ngIf="(actualNameModel.touched || menuForm.submitted) && actualNameModel.errors?.['required']">
+                            Actual Name is required.
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label">Icon Class (FontAwesome)</label>
+                        <input type="text" name="icon" class="field-input" placeholder="e.g. fas fa-users"
+                            maxlength="50" [(ngModel)]="tempMenuModel.icon">
+                    </div>
+                </div>
+
+                <!-- Row 4: Level No & Sequence No -->
+                <div class="modal-form-row">
+                    <div class="field">
+                        <label class="field-label">Level Number (Calculated)</label>
+                        <input type="number" name="levelNo" class="field-input" [ngModel]="tempMenuModel.levelNo" readonly disabled style="background-color: var(--da-surface); color: var(--da-muted); border-color: var(--da-border); cursor: not-allowed;">
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label required-label">Sequence Number</label>
+                        <input type="number" name="sequenceNo" class="field-input" placeholder="e.g. 1, 2, 3" required
+                            [(ngModel)]="tempMenuModel.sequenceNo" #sequenceNoModel="ngModel" min="0">
+                        <div class="validation-error"
+                            *ngIf="(sequenceNoModel.touched || menuForm.submitted) && sequenceNoModel.errors?.['required']">
+                            Sequence Number is required.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 5: View Visibility & Active Status -->
+                <div class="modal-form-row">
+                    <div class="field">
+                        <label class="field-label">Menu Visibility</label>
+                        <div class="pill-group">
+                            <button type="button" class="pill-opt" [class.on-active]="tempMenuModel.isView"
+                                (click)="tempMenuModel.isView = true">Yes</button>
+                            <button type="button" class="pill-opt" [class.on-disabled]="!tempMenuModel.isView"
+                                (click)="tempMenuModel.isView = false">No</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="modal-foot">
+                <button type="button" class="btn btn-g" (click)="showMenuModal = false"
+                    [disabled]="isSaving">Cancel</button>
+                <button type="submit" class="btn btn-p" [disabled]="isSaving || menuForm.invalid">
+                    <span *ngIf="isSaving"><i class="fas fa-spinner fa-spin"
+                            style="margin-right: 6px;"></i>Saving...</span>
+                    <span *ngIf="!isSaving">Save</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-backdrop" *ngIf="showDeleteModal">
+    <div class="modal-card" style="max-width: 400px;">
+        <div class="modal-head">
+            <div>
+                <div class="modal-title">Delete Menu</div>
+                <div class="modal-sub">Are you sure you want to delete this menu link? This action cannot be undone.
+                </div>
+            </div>
+            <button type="button" class="modal-close" (click)="showDeleteModal = false">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body" *ngIf="menuToDelete">
+            <div style="font-weight: 600; font-size: 14px; color: var(--da-black);">
+                {{ menuToDelete.pageHeading }}
+            </div>
+            <div style="font-size: 12.5px; color: var(--da-muted); margin-top: 2px; font-family: monospace;">
+                {{ menuToDelete.pagePath }}
+            </div>
+        </div>
+        <div class="modal-foot">
+            <button type="button" class="btn btn-g" (click)="showDeleteModal = false">Cancel</button>
+            <button type="button" class="btn btn-danger-custom" (click)="confirmDeleteMenu()">Delete</button>
+        </div>
+    </div>
+</div>

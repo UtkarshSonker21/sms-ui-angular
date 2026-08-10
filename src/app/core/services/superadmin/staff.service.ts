@@ -27,7 +27,6 @@ export class StaffService {
         );
     }
 
-
     addStaff(model: StaffRequestModel) {
         return this.api.post<ApiResponse<void>>(
             ApiEndpoints.SuperAdmin.Staff.Create,
@@ -47,6 +46,5 @@ export class StaffService {
             ApiEndpoints.SuperAdmin.Staff.Delete(id)
         );
     }
-
 
 }
