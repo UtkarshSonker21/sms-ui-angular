@@ -55,6 +55,7 @@ export class Menus implements OnInit {
   // Master Lists
   modules: UsersModule[] = [];
   parentMenusList: UsersMenuRequestModel[] = []; // Potential parent menus
+  filteredParentMenus: UsersMenuRequestModel[] = []; // Filtered parents displayed in dropdown
 
   // Modal Dialogs
   showMenuModal = false;
@@ -102,6 +103,7 @@ export class Menus implements OnInit {
         if (response.success && response.result) {
           // List of potential parent menus
           this.parentMenusList = response.result.items;
+          this.updateFilteredParents();
         }
       }
     });
@@ -120,9 +122,9 @@ export class Menus implements OnInit {
     });
   }
 
-  get filteredParentMenus(): UsersMenuRequestModel[] {
+  updateFilteredParents(): void {
     const currentModuleId = this.tempMenuModel.moduleId;
-    return this.parentMenusList.filter(p => {
+    this.filteredParentMenus = this.parentMenusList.filter(p => {
       const isSelf = p.menuLinkId === this.tempMenuModel.menuLinkId;
       if (isSelf) return false;
       
@@ -261,6 +263,7 @@ export class Menus implements OnInit {
     this.originalParentId = undefined;
     this.originalSequenceNo = undefined;
     this.showMenuModal = true;
+    this.updateFilteredParents();
     this.recalculateSequence();
   }
 
@@ -276,6 +279,7 @@ export class Menus implements OnInit {
           this.modalErrorMessage = '';
           this.isModuleDropdownOpen = false;
           this.isParentDropdownOpen = false;
+          this.updateFilteredParents();
           this.showMenuModal = true;
         } else {
           this.notification.error(response.message || 'Failed to load menu details.');
@@ -300,6 +304,7 @@ export class Menus implements OnInit {
     }
     this.tempMenuModel.moduleId = moduleId;
     this.isModuleDropdownOpen = false;
+    this.updateFilteredParents();
   }
 
   getSelectedModuleName(): string {
