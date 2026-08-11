@@ -50,6 +50,7 @@ import { SchoolCoordinators } from './features/ngo/school-coordinators/school-co
 import { Staff } from './features/superadmin/staff/staff';
 import { Menus } from './features/superadmin/menus/menus';
 import { UsersRole } from './features/superadmin/users-role/users-role';
+import { UsersRoleAssignment } from './features/superadmin/users-role-assignment/users-role-assignment';
 
 export const routes: Routes = [
 
@@ -147,6 +148,10 @@ export const routes: Routes = [
             {
                 path: 'users-role',
                 component: UsersRole
+            },
+            {
+                path: 'users-role-assignments',
+                component: UsersRoleAssignment
             },
 
 

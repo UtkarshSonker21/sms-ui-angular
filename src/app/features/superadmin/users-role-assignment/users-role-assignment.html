@@ -1,0 +1,174 @@
+<div class="page-head">
+    <div>
+        <div class="crumb">
+            <a href="#">Dashboard</a>
+            <span class="sep">/</span>
+            Administration
+            <span class="sep">/</span>
+            Access Control
+            <span class="sep">/</span>
+            <span class="text-muted">Role Assignments</span>
+        </div>
+        <h2 class="page-title">Role Assignments</h2>
+        <p class="page-sub">
+            Manage user role assignments and access.
+        </p>
+    </div>
+    <div class="page-actions">
+        <!-- Save button at the top as well for convenience, or only at bottom -->
+        <button type="button" class="btn btn-p" (click)="saveAssignments()" [disabled]="isSaving || !selectedLoginId">
+            <span *ngIf="isSaving"><i class="fas fa-spinner fa-spin" style="margin-right: 6px;"></i>Saving...</span>
+            <span *ngIf="!isSaving"><i class="fas fa-save btn-icon"></i> Save Assignments</span>
+        </button>
+    </div>
+</div>
+
+<div class="filters"
+    style="display: flex; gap: 10px; align-items: center; padding: 12px 14px; background: var(--da-surface, #ffffff); border: 1px solid var(--da-border, #e0e0e0); border-radius: var(--da-radius, 8px); margin-bottom: 16px; flex-wrap: wrap; overflow: visible; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+    
+    <div style="font-weight: 600; font-size: 13.5px; color: var(--da-black);">
+        User / Login <span style="color: var(--da-danger);">*</span>
+    </div>
+
+    <!-- User Dropdown -->
+    <div class="da-select" [class.da-select-open]="isUserDropdownOpen" tabindex="0"
+        (click)="$event.stopPropagation()" style="flex: 1; max-width: 320px;">
+        <div class="da-select-control" (click)="toggleUserDropdown($event)">
+            <div class="ms-display" [class.has-selection]="selectedLoginId !== null"
+                style="display: flex; align-items: center; flex: 1;">
+                <ng-container *ngIf="selectedLoginId !== null; else noUserSelected">
+                    <span class="ms-chip" style="margin: 0;">
+                        {{ getSelectedUserName() }}
+                        <span class="ms-chip-x"
+                            (click)="selectUserOption(null); $event.stopPropagation()">×</span>
+                    </span>
+                </ng-container>
+                <ng-template #noUserSelected>
+                    <span class="da-select-value" style="font-size: 13px;">Select User...</span>
+                </ng-template>
+            </div>
+            <i class="fas da-select-arrow"
+                [ngClass]="isUserDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+        </div>
+        <div class="da-select-menu" *ngIf="isUserDropdownOpen">
+            <div class="da-select-option" [class.selected]="selectedLoginId === null"
+                (click)="selectUserOption(null)">
+                Select User...
+            </div>
+            <div class="da-select-option" *ngFor="let u of users"
+                [class.selected]="selectedLoginId === u.loginId" (click)="selectUserOption(u.loginId!)">
+                {{ u.loginName }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<ng-container *ngIf="selectedLoginId !== null">
+    <div class="filters"
+        style="display: flex; gap: 10px; align-items: center; padding: 12px 14px; background: var(--da-surface, #ffffff); border: 1px solid var(--da-border, #e0e0e0); border-radius: var(--da-radius, 8px); margin-bottom: 16px; flex-wrap: wrap; overflow: visible; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <div class="search-container" style="flex: 1; max-width: 320px;">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-input" placeholder="Search roles..." [(ngModel)]="searchText"
+                (keydown)="handleKeyDown($event)">
+            <i class="fas fa-times clear-icon" *ngIf="searchText" (click)="clearSearch()"></i>
+        </div>
+
+        <div class="filter-count"
+            style="margin-inline-start: auto; font-size: 12.5px; color: var(--da-muted); font-weight: 500;">
+            {{ totalRecords }} shown
+        </div>
+    </div>
+
+    <div class="card"
+        style="border-radius: var(--da-radius); overflow: visible; margin-bottom: 20px; border: 1px solid var(--da-border, #e0e0e0); background: var(--da-surface, #ffffff); box-shadow: 0 10px 40px rgba(5,5,5,0.04);">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th style="width: 80px; text-align: center;">Select</th>
+                    <th>Role Name</th>
+                    <th style="width: 200px;">Module</th>
+                    <th style="width: 100px; text-align: center;">Default</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let a of assignmentsList">
+                    <td style="text-align: center;">
+                        <input type="checkbox" [(ngModel)]="a.isMapped" (change)="onMappedChange(a)" style="cursor: pointer; width: 16px; height: 16px;">
+                    </td>
+                    <td>
+                        <div style="font-size: 13.5px; font-weight: 600; color: var(--da-black);">
+                            {{ a.roleName }}
+                        </div>
+                    </td>
+                    <td>
+                        <span style="font-size: 13px; font-weight: 500; color: var(--da-text-2);">
+                            {{ a.module || '-' }}
+                        </span>
+                    </td>
+                    <td style="text-align: center;">
+                        <input type="radio" 
+                            name="defaultRoleGroup"
+                            [checked]="a.isDefault" 
+                            [disabled]="!a.isMapped"
+                            (change)="setDefaultRole(a)"
+                            style="cursor: pointer; width: 16px; height: 16px;">
+                    </td>
+                </tr>
+
+                <tr *ngIf="assignmentsList.length === 0">
+                    <td colspan="4" class="courses-empty" style="text-align: center; padding: 42px 20px;">
+                        <div style="font-size: 15px; font-weight: 600; color: var(--da-black);">No roles found for this user.</div>
+                        <div style="font-size: 13px; color: var(--da-text-2); margin-top: 4px;">Adjust your search or
+                            filters to find what you are looking for.</div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Pagination Footer -->
+        <div class="pagination-footer"
+            style="padding: 12px 20px; display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="text-muted" style="font-size: 13px; font-weight: 500;">Show</span>
+                <div class="custom-dropdown" [class.open]="isPageSizeDropdownOpen" [class.open-up]="true" tabindex="0"
+                    (click)="$event.stopPropagation()">
+                    <div class="dropdown-trigger" (click)="togglePageSizeDropdown($event)">
+                        <span class="dropdown-value">{{ filter.pageSize }}</span>
+                        <i class="fas" [ngClass]="isPageSizeDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                    </div>
+                    <div class="dropdown-menu" *ngIf="isPageSizeDropdownOpen">
+                        <div class="dropdown-item" *ngFor="let size of [25, 50, 100, 500]"
+                            [class.selected]="size === filter.pageSize" (click)="selectPageSize(size)">
+                            {{ size }}
+                        </div>
+                    </div>
+                </div>
+                <span class="text-muted" style="font-size: 13px; font-weight: 500;">entries</span>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 13px; color: var(--da-text-2);">
+                    Page <strong style="font-weight: 700; color: var(--da-black);">{{ filter.pageNumber }}</strong> of
+                    <strong style="font-weight: 700; color: var(--da-black);">{{ totalPages }}</strong>
+                </span>
+
+                <div style="display: flex; gap: 6px;">
+                    <button type="button" class="icon-btn btn-pagination" [disabled]="isPreviousDisabled"
+                        (click)="previousPage()">
+                        <i class="fas fa-chevron-left" style="font-size: 11px;"></i>
+                    </button>
+                    <button type="button" class="icon-btn btn-pagination" [disabled]="isNextDisabled" (click)="nextPage()">
+                        <i class="fas fa-chevron-right" style="font-size: 11px;"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</ng-container>
+
+<ng-container *ngIf="selectedLoginId === null">
+    <div class="card" style="border-radius: var(--da-radius); overflow: visible; margin-bottom: 20px; border: 1px solid var(--da-border, #e0e0e0); background: var(--da-surface, #ffffff); box-shadow: 0 10px 40px rgba(5,5,5,0.04); text-align: center; padding: 60px 20px;">
+        <div style="font-size: 16px; font-weight: 600; color: var(--da-black);">Select a user to manage role assignments.</div>
+        <div style="font-size: 13px; color: var(--da-text-2); margin-top: 6px;">Please choose a user from the dropdown above to continue.</div>
+    </div>
+</ng-container>
