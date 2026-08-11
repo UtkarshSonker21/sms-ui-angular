@@ -82,7 +82,7 @@ export const ApiEndpoints = {
       Search: 'superadmin/users-menu/search',
       GetById: (menuLinkId: number) => `superadmin/users-menu/getById/${menuLinkId}`,
       Create: 'superadmin/users-menu/create',
-      Update: (menuLinkId: number) =>  `superadmin/users-menu/update/${menuLinkId}`,
+      Update: (menuLinkId: number) => `superadmin/users-menu/update/${menuLinkId}`,
       Delete: (menuLinkId: number) => `superadmin/users-menu/delete/${menuLinkId}`
     },
 

@@ -4,10 +4,10 @@ import { ApiService } from '../common/api.service';
 import { ApiEndpoints } from '../../../core/constants/api-endpoints';
 import { ApiResponse } from '../../models/common/response/api-response.model';
 import { PagedResult } from '../../models/common/response/paged-result.model';
-import { UsersRoleByModulesRequestModel } from '../../models/super-admin/master-users-role/users-role-by-modules-request.model';
-import { UsersRoleFilterModel } from '../../models/super-admin/master-users-role/users-role-filter.model';
-import { UsersRoleLookupModel } from '../../models/super-admin/master-users-role/users-role-lookup.model';
-import { UsersRoleRequestModel } from '../../models/super-admin/master-users-role/users-role-request.model';
+import { UsersRoleByModulesRequestModel } from '../../models/super-admin/users-role/users-role-by-modules-request.model';
+import { UsersRoleFilterModel } from '../../models/super-admin/users-role/users-role-filter.model';
+import { UsersRoleLookupModel } from '../../models/super-admin/users-role/users-role-lookup.model';
+import { UsersRoleRequestModel } from '../../models/super-admin/users-role/users-role-request.model';
 
 
 @Injectable({

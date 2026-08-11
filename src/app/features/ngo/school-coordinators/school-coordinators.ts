@@ -14,8 +14,8 @@ import { MasterCountryService } from '../../../core/services/superadmin/master-c
 import { MasterCountryRequest } from '../../../core/models/super-admin/master-country/master-country-request.model';
 import { MasterCountryFilter } from '../../../core/models/super-admin/master-country/master-country-filter.model';
 import { MasterUsersRoleService } from '../../../core/services/superadmin/master-users-roles.service';
-import { UsersRoleLookupModel } from '../../../core/models/super-admin/master-users-role/users-role-lookup.model';
-import { UsersRoleByModulesRequestModel } from '../../../core/models/super-admin/master-users-role/users-role-by-modules-request.model';
+import { UsersRoleLookupModel } from '../../../core/models/super-admin/users-role/users-role-lookup.model';
+import { UsersRoleByModulesRequestModel } from '../../../core/models/super-admin/users-role/users-role-by-modules-request.model';
 import { StaffType } from '../../../core/enums/staff-type.enum';
 import { MasterSchoolService } from '../../../core/services/school/master-school.service';
 import { SchoolByCountryRequest } from '../../../core/models/school/master-school/school-by-country-request.model';
