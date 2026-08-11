@@ -1,0 +1,189 @@
+<div class="page-head">
+    <div>
+        <div class="crumb">
+            <a href="#">Dashboard</a>
+            <span class="sep">/</span>
+            Administration
+            <span class="sep">/</span>
+            Access Control
+            <span class="sep">/</span>
+            <span class="text-muted">Role Permissions</span>
+        </div>
+        <h2 class="page-title">Role Permissions</h2>
+        <p class="page-sub">
+            Manage role-based page permissions.
+        </p>
+    </div>
+    <div class="page-actions">
+        <button type="button" class="btn btn-p" (click)="savePermissions()" [disabled]="isSaving || !selectedRoleId || permissions.length === 0">
+            <span *ngIf="isSaving"><i class="fas fa-spinner fa-spin" style="margin-right: 6px;"></i>Saving...</span>
+            <span *ngIf="!isSaving"><i class="fas fa-save btn-icon"></i> Save Permissions</span>
+        </button>
+    </div>
+</div>
+
+<div class="filters"
+    style="display: flex; gap: 16px; align-items: center; padding: 12px 14px; background: var(--da-surface, #ffffff); border: 1px solid var(--da-border, #e0e0e0); border-radius: var(--da-radius, 8px); margin-bottom: 20px; flex-wrap: wrap; overflow: visible; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+    
+    <!-- Module Filter -->
+    <div style="flex: 1; max-width: 320px; display: flex; align-items: center; gap: 10px;">
+        <div style="font-weight: 600; font-size: 13.5px; color: var(--da-black); white-space: nowrap;">
+            Module <span style="color: var(--da-danger);">*</span>
+        </div>
+        <div class="da-select" [class.da-select-open]="isModuleDropdownOpen" tabindex="0"
+            (click)="$event.stopPropagation()" style="flex: 1;">
+            <div class="da-select-control" (click)="toggleModuleDropdown($event)">
+                <div class="ms-display" [class.has-selection]="selectedModuleId !== null"
+                    style="display: flex; align-items: center; flex: 1;">
+                    <ng-container *ngIf="selectedModuleId !== null; else noModuleSelected">
+                        <span class="ms-chip" style="margin: 0;">
+                            {{ getSelectedModuleName() }}
+                            <span class="ms-chip-x"
+                                (click)="selectModule(null); $event.stopPropagation()">×</span>
+                        </span>
+                    </ng-container>
+                    <ng-template #noModuleSelected>
+                        <span class="da-select-value" style="font-size: 13px;">Select Module...</span>
+                    </ng-template>
+                </div>
+                <i class="fas da-select-arrow"
+                    [ngClass]="isModuleDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+            </div>
+            <div class="da-select-menu" *ngIf="isModuleDropdownOpen">
+                <div class="da-select-option" [class.selected]="selectedModuleId === null"
+                    (click)="selectModule(null)">
+                    Select Module...
+                </div>
+                <div class="da-select-option" *ngFor="let m of modules"
+                    [class.selected]="selectedModuleId === m.moduleId" (click)="selectModule(m.moduleId!)">
+                    {{ m.moduleName }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Role Filter -->
+    <div style="flex: 1; max-width: 320px; display: flex; align-items: center; gap: 10px;">
+        <div style="font-weight: 600; font-size: 13.5px; color: var(--da-black); white-space: nowrap;">
+            Role <span style="color: var(--da-danger);">*</span>
+        </div>
+        <div class="da-select" [class.da-select-open]="isRoleDropdownOpen" tabindex="0"
+            [class.disabled]="!selectedModuleId"
+            (click)="$event.stopPropagation()" style="flex: 1;">
+            <div class="da-select-control" (click)="toggleRoleDropdown($event)" [style.opacity]="selectedModuleId ? '1' : '0.6'" [style.cursor]="selectedModuleId ? 'pointer' : 'not-allowed'">
+                <div class="ms-display" [class.has-selection]="selectedRoleId !== null"
+                    style="display: flex; align-items: center; flex: 1;">
+                    <ng-container *ngIf="selectedRoleId !== null; else noRoleSelected">
+                        <span class="ms-chip" style="margin: 0;">
+                            {{ getSelectedRoleName() }}
+                            <span class="ms-chip-x"
+                                (click)="selectRole(null); $event.stopPropagation()">×</span>
+                        </span>
+                    </ng-container>
+                    <ng-template #noRoleSelected>
+                        <span class="da-select-value" style="font-size: 13px;">Select Role...</span>
+                    </ng-template>
+                </div>
+                <i class="fas da-select-arrow"
+                    [ngClass]="isRoleDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+            </div>
+            <div class="da-select-menu" *ngIf="isRoleDropdownOpen">
+                <div class="da-select-option" [class.selected]="selectedRoleId === null"
+                    (click)="selectRole(null)">
+                    Select Role...
+                </div>
+                <div class="da-select-option" *ngFor="let r of roles"
+                    [class.selected]="selectedRoleId === r.roleId" (click)="selectRole(r.roleId!)">
+                    {{ r.roleName }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<ng-container *ngIf="selectedRoleId !== null">
+    <div class="card"
+        style="border-radius: var(--da-radius); overflow: visible; margin-bottom: 20px; border: 1px solid var(--da-border, #e0e0e0); background: var(--da-surface, #ffffff); box-shadow: 0 10px 40px rgba(5,5,5,0.04);">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Page</th>
+                    <th style="width: 150px;">Module</th>
+                    <th style="width: 80px; text-align: center;">
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                            <span>View</span>
+                            <input type="checkbox" [(ngModel)]="allViewChecked" style="cursor: pointer; width: 14px; height: 14px; margin: 0;">
+                        </div>
+                    </th>
+                    <th style="width: 80px; text-align: center;">
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                            <span>Insert</span>
+                            <input type="checkbox" [(ngModel)]="allInsertChecked" style="cursor: pointer; width: 14px; height: 14px; margin: 0;">
+                        </div>
+                    </th>
+                    <th style="width: 80px; text-align: center;">
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                            <span>Update</span>
+                            <input type="checkbox" [(ngModel)]="allUpdateChecked" style="cursor: pointer; width: 14px; height: 14px; margin: 0;">
+                        </div>
+                    </th>
+                    <th style="width: 80px; text-align: center;">
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                            <span>Delete</span>
+                            <input type="checkbox" [(ngModel)]="allDeleteChecked" style="cursor: pointer; width: 14px; height: 14px; margin: 0;">
+                        </div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let p of permissions" [ngStyle]="{'background': p.levelNo === 0 ? 'var(--da-bg-1, #f9fafb)' : 'inherit'}">
+                    <td>
+                        <div [style.padding-left.px]="(p.levelNo || 0) * 20" style="display: flex; align-items: center; gap: 8px;">
+                            <i *ngIf="p.levelNo === 0" class="fas fa-folder text-muted" style="font-size: 13px;"></i>
+                            <i *ngIf="(p.levelNo || 0) > 0" class="fas fa-file-alt text-muted" style="font-size: 13px; opacity: 0.6;"></i>
+                            <div style="display: flex; align-items: baseline; gap: 8px;">
+                                <div style="font-size: 13.5px; font-weight: 600; color: var(--da-black);">
+                                    {{ p.pageHeading }}
+                                </div>
+                                <div *ngIf="p.pagePath && p.pagePath !== '#' && p.levelNo !== 0" style="font-size: 11.5px; color: var(--da-muted);">
+                                    {{ p.pagePath }}
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span style="font-size: 13px; font-weight: 500; color: var(--da-text-2);">
+                            {{ p.module || '-' }}
+                        </span>
+                    </td>
+                    <td style="text-align: center;">
+                        <input type="checkbox" [(ngModel)]="p.viewPer" style="cursor: pointer; width: 16px; height: 16px;">
+                    </td>
+                    <td style="text-align: center;">
+                        <input type="checkbox" [(ngModel)]="p.insertPer" style="cursor: pointer; width: 16px; height: 16px;">
+                    </td>
+                    <td style="text-align: center;">
+                        <input type="checkbox" [(ngModel)]="p.updatePer" style="cursor: pointer; width: 16px; height: 16px;">
+                    </td>
+                    <td style="text-align: center;">
+                        <input type="checkbox" [(ngModel)]="p.deletePer" style="cursor: pointer; width: 16px; height: 16px;">
+                    </td>
+                </tr>
+
+                <tr *ngIf="permissions.length === 0">
+                    <td colspan="6" class="courses-empty" style="text-align: center; padding: 42px 20px;">
+                        <div style="font-size: 15px; font-weight: 600; color: var(--da-black);">No permissions found.</div>
+                        <div style="font-size: 13px; color: var(--da-text-2); margin-top: 4px;">This role currently has no assignable permissions for the selected module.</div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</ng-container>
+
+<ng-container *ngIf="selectedRoleId === null">
+    <div class="card" style="border-radius: var(--da-radius); overflow: visible; margin-bottom: 20px; border: 1px solid var(--da-border, #e0e0e0); background: var(--da-surface, #ffffff); box-shadow: 0 10px 40px rgba(5,5,5,0.04); text-align: center; padding: 60px 20px;">
+        <div style="font-size: 16px; font-weight: 600; color: var(--da-black);">Select a role to manage permissions.</div>
+        <div style="font-size: 13px; color: var(--da-text-2); margin-top: 6px;">Please choose a module and a role from the dropdowns above to continue.</div>
+    </div>
+</ng-container>
