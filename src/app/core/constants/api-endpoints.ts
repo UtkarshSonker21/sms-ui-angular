@@ -61,15 +61,6 @@ export const ApiEndpoints = {
       Delete: (id: number) => `superadmin/master-currency/delete/${id}`
     },
 
-    UsersRole: {
-      Create: 'superadmin/users-role/create',
-      Update: (id: number) => `superadmin/users-role/update/${id}`,
-      Delete: (id: number) => `superadmin/users-role/delete/${id}`,
-      GetById: (id: number) => `superadmin/users-role/getById/${id}`,
-      Search: 'superadmin/users-role/search',
-      GetByModules: 'superadmin/users-role/get-by-modules'
-    },
-
     Staff: {
       Create: 'common/staff/create',
       Update: (staffId: number) => `common/staff/update/${staffId}`,
@@ -84,6 +75,26 @@ export const ApiEndpoints = {
       Create: 'superadmin/users-menu/create',
       Update: (menuLinkId: number) => `superadmin/users-menu/update/${menuLinkId}`,
       Delete: (menuLinkId: number) => `superadmin/users-menu/delete/${menuLinkId}`
+    },
+
+    UsersRole: {
+      Create: 'superadmin/users-role/create',
+      Update: (id: number) => `superadmin/users-role/update/${id}`,
+      Delete: (id: number) => `superadmin/users-role/delete/${id}`,
+      GetById: (id: number) => `superadmin/users-role/getById/${id}`,
+      Search: 'superadmin/users-role/search',
+      GetByModules: 'superadmin/users-role/get-by-modules'
+    },
+
+
+    UsersRoleAssignment: {
+      Search: 'superadmin/users-role-assignment/login-roles',
+      Save: 'superadmin/users-role-assignment/bulk-save'
+    },
+
+    UsersLogin: {
+      GetById: (id: number) => `superadmin/users-login/getById/${id}`,
+      Search: `superadmin/users-login/search`
     },
 
   },
