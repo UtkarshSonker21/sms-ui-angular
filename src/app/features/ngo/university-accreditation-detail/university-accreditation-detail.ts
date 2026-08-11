@@ -147,7 +147,7 @@ export class UniversityAccreditationDetail implements OnInit {
       next: (response) => {
         if (response.success) {
           this.notification.success('Accreditation decision updated successfully.');
-          this.loadUniversity(this.university.registrationId!);
+          this.loadUniversity(this.university.universityId!);
         } else {
           this.notification.error(response.message || 'Failed to update decision.');
         }

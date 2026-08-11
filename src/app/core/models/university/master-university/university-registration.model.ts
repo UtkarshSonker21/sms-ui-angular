@@ -1,6 +1,6 @@
 export class MasterUniversityRequest {
 
-  registrationId?: number;
+  universityId?: number;
 
   // University Information
   universityName: string = '';

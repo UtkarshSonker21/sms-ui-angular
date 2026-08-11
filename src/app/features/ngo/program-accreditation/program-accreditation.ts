@@ -195,7 +195,7 @@ export class ProgramAccreditation implements OnInit {
 
   getSelectedUniversityName(): string {
     if (this.selectedUniversityId === 0) return 'All Universities';
-    const found = this.universities.find(u => u.registrationId === this.selectedUniversityId);
+    const found = this.universities.find(u => u.universityId === this.selectedUniversityId);
     return found ? found.universityName || 'All Universities' : 'All Universities';
   }
 
