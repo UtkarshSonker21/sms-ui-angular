@@ -51,6 +51,7 @@ import { Staff } from './features/superadmin/staff/staff';
 import { Menus } from './features/superadmin/menus/menus';
 import { UsersRole } from './features/superadmin/users-role/users-role';
 import { UsersRoleAssignment } from './features/superadmin/users-role-assignment/users-role-assignment';
+import { UsersRolePermission } from './features/superadmin/users-role-permission/users-role-permission';
 
 export const routes: Routes = [
 
@@ -152,6 +153,10 @@ export const routes: Routes = [
             {
                 path: 'users-role-assignments',
                 component: UsersRoleAssignment
+            },
+            {
+                path: 'users-role-permissions',
+                component: UsersRolePermission
             },
 
 

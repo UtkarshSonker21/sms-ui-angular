@@ -88,14 +88,19 @@ export const ApiEndpoints = {
 
 
     UsersRoleAssignment: {
-      Search: 'superadmin/users-role-assignment/login-roles',
-      Save: 'superadmin/users-role-assignment/bulk-save'
+      GetRoleAssignments: 'superadmin/users-role-assignment/login-roles',
+      BulkSave: 'superadmin/users-role-assignment/bulk-save'
     },
 
     UsersLogin: {
       GetById: (id: number) => `superadmin/users-login/getById/${id}`,
       Search: `superadmin/users-login/search`
     },
+
+    UsersRolePermission: {
+      GetRolePermissions: 'superadmin/users-role-permission/role-permissions',
+      BulkSave: 'superadmin/users-role-permission/role-permissions/bulk-save'
+    }
 
   },
 

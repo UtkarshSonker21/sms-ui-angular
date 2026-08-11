@@ -17,7 +17,7 @@ export class UsersRoleAssignmentService {
     // -------- SEARCH / GET ALL --------
     getRoleAssignments(filter: UsersRoleAssignmentFilterModel) {
         return this.api.post<ApiResponse<PagedResult<UsersRoleAssignmentModel>>>(
-            ApiEndpoints.SuperAdmin.UsersRoleAssignment.Search,
+            ApiEndpoints.SuperAdmin.UsersRoleAssignment.GetRoleAssignments,
             filter
         );
     }
@@ -25,7 +25,7 @@ export class UsersRoleAssignmentService {
     // -------- BULK SAVE --------
     saveRoleAssignments(model: UsersRoleAssignmentSaveModel) {
         return this.api.post<ApiResponse<void>>(
-            ApiEndpoints.SuperAdmin.UsersRoleAssignment.Save,
+            ApiEndpoints.SuperAdmin.UsersRoleAssignment.BulkSave,
             model
         );
     }
