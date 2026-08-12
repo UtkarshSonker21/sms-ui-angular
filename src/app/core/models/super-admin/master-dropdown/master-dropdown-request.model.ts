@@ -8,21 +8,14 @@ export class MasterDropDownRequest {
 
   displaySequence?: number;
 
-  noSeats?: number;
-
   isActive: boolean = true;
 
-  isEditable: boolean = false;
+  // Audit
+  createdDate?: Date;
+  createdBy?: number;
+  createdByName?: string;
 
-  isShow: boolean = true;
-
-  createdBy?: string;
-
-  createdDate?: Date | string;
-
-  moduleId?: number;
-
-  // Response Only
-  moduleName?: string;
-
+  updatedDate?: Date;
+  updatedBy?: number;
+  updatedByName?: string;
 }
