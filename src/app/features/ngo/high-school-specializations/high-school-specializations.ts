@@ -159,8 +159,6 @@ export class HighSchoolSpecializations implements OnInit {
     // Handle values programmatically as requested
     this.tempSpecializationModel.parentId = MainDropdown.HighSchoolDivision;
     this.tempSpecializationModel.isActive = true;
-    this.tempSpecializationModel.isShow = true;
-    this.tempSpecializationModel.isEditable = false;
 
     const request = this.tempSpecializationModel.uniqueId
       ? this.dropdownService.updateMasterDropDown(this.tempSpecializationModel)

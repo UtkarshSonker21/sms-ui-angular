@@ -22,7 +22,7 @@ import { DisableAutocompleteDirective } from '../../../shared/directives/disable
 @Component({
   selector: 'app-users-role-permission',
   standalone: true,
-  imports: [CommonModule, FormsModule, DisableAutocompleteDirective],
+  imports: [CommonModule, FormsModule],
   templateUrl: './users-role-permission.html',
   styleUrl: './users-role-permission.scss',
 })

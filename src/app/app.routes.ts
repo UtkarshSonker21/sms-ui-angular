@@ -55,6 +55,8 @@ import { UsersRolePermission } from './features/superadmin/users-role-permission
 import { GeneralSetting } from './features/superadmin/general-setting/general-setting';
 import { MasterCountry } from './features/superadmin/master-country/master-country';
 import { MasterCurrency } from './features/superadmin/master-currency/master-currency';
+import { MasterDropdown } from './features/superadmin/master-dropdown/master-dropdown';
+import { MasterDropdownValues } from './features/superadmin/master-dropdown-values/master-dropdown-values';
 
 export const routes: Routes = [
 
@@ -173,7 +175,16 @@ export const routes: Routes = [
                 path: 'currencies',
                 component: MasterCurrency
             },
+            {
+                path: 'dropdown-lists',
+                component: MasterDropdown
+            },
+            {
+                path: 'dropdown-lists/value/:id/:dropdownName',
+                component: MasterDropdownValues
+            },
 
+            
 
             // ngo components
             {
