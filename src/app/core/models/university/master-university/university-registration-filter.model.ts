@@ -2,7 +2,7 @@ import { BaseFilter } from "../../common/filter/base-filter.model";
 
 export class MasterUniversityFilter extends BaseFilter {
 
-  registrationId?: number;
+  universityId?: number;
 
   universityName?: string;
 

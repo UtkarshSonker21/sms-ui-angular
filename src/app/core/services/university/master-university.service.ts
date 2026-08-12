@@ -39,7 +39,7 @@ export class MasterUniversityService {
 
     updateMasterUniversity(model: MasterUniversityRequest) {
         return this.api.put<ApiResponse<void>>(
-            ApiEndpoints.University.MasterUniversity.Update(model.registrationId!),
+            ApiEndpoints.University.MasterUniversity.Update(model.universityId!),
             model
         );
     }

@@ -277,7 +277,7 @@ export class UniversityCoordinators implements OnInit {
     if (this.selectedUniversityFilter === 'all') {
       return 'All universities';
     }
-    const uni = this.masterUniversities.find(x => x.registrationId === Number(this.selectedUniversityFilter));
+    const uni = this.masterUniversities.find(x => x.universityId === Number(this.selectedUniversityFilter));
     return uni ? uni.universityName || '' : 'All universities';
   }
 
@@ -462,7 +462,7 @@ export class UniversityCoordinators implements OnInit {
   }
 
   getUniversityName(id: number): string {
-    const uni = this.masterUniversities.find(x => x.registrationId === id);
+    const uni = this.masterUniversities.find(x => x.universityId === id);
     return uni ? uni.universityName || '' : 'Unknown';
   }
 

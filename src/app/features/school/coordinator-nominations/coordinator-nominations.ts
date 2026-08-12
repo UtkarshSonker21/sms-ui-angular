@@ -240,7 +240,7 @@ export class CoordinatorNominations implements OnInit {
   }
 
   getSelectedUniversityName(): string {
-    const u = this.universities.find(x => x.registrationId === this.selectedUniversity);
+    const u = this.universities.find(x => x.universityId === this.selectedUniversity);
     return u ? u.universityName : '';
   }
 
