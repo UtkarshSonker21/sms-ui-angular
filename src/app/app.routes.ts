@@ -52,6 +52,7 @@ import { Menus } from './features/superadmin/menus/menus';
 import { UsersRole } from './features/superadmin/users-role/users-role';
 import { UsersRoleAssignment } from './features/superadmin/users-role-assignment/users-role-assignment';
 import { UsersRolePermission } from './features/superadmin/users-role-permission/users-role-permission';
+import { GeneralSetting } from './features/superadmin/general-setting/general-setting';
 
 export const routes: Routes = [
 
@@ -157,6 +158,14 @@ export const routes: Routes = [
             {
                 path: 'users-role-permissions',
                 component: UsersRolePermission
+            },
+            {
+                path: 'general-settings',
+                component: GeneralSetting
+            },
+            {
+                path: 'countries',
+                component: GeneralSetting
             },
 
 

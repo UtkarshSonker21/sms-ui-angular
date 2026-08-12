@@ -98,9 +98,17 @@ export const ApiEndpoints = {
     },
 
     UsersRolePermission: {
-      GetRolePermissions: 'superadmin/users-role-permission/role-permissions',
-      BulkSave: 'superadmin/users-role-permission/role-permissions/bulk-save'
-    }
+      GetRolePermissions: 'superadmin/users-role-permission/search',
+      BulkSave: 'superadmin/users-role-permission/bulk-save'
+    },
+
+    GeneralSettings: {
+      Create: 'superadmin/general-settings/create',
+      Update: (id: number) => `superadmin/general-settings/update/${id}`,
+      Delete: (id: number) => `superadmin/general-settings/delete/${id}`,
+      GetById: (id: number) => `superadmin/general-settings/getById/${id}`,
+      Search: 'superadmin/general-settings/search'
+    },
 
   },
 

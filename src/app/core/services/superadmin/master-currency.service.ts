@@ -16,6 +16,7 @@ import { MasterCurrencyRequest } from '../../models/super-admin/master-currency/
 export class MasterCurrencyService {
 
     private readonly api = inject(ApiService);
+    
     getMasterCurrencies(filter: MasterCurrencyFilter) {
         return this.api.post<ApiResponse<PagedResult<MasterCurrencyRequest>>>(
             ApiEndpoints.SuperAdmin.MasterCurrency.Search,
