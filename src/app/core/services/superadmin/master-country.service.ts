@@ -49,11 +49,5 @@ export class MasterCountryService {
         );
     }
 
-    // getCountryWiseSchoolCount(filter: MasterCountryFilter) {
-    //     return this.api.post<ApiResponse<PagedResult<CountrySchoolCount>>>(
-    //         ApiEndpoints.SuperAdmin.MasterCountry.CountrySchoolCount,
-    //         filter
-    //     );
-    // }
 
 }

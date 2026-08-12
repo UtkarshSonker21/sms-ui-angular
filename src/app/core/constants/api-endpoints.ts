@@ -49,8 +49,7 @@ export const ApiEndpoints = {
       GetById: (id: number) => `superadmin/master-country/getById/${id}`,
       Create: 'superadmin/master-country/create',
       Update: (id: number) => `superadmin/master-country/update/${id}`,
-      Delete: (id: number) => `superadmin/master-country/delete/${id}`,
-      CountrySchoolCount: 'superadmin/master-country/country-schools'
+      Delete: (id: number) => `superadmin/master-country/delete/${id}`
     },
 
     MasterCurrency: {
