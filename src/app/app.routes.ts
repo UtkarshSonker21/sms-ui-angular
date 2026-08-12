@@ -54,6 +54,7 @@ import { UsersRoleAssignment } from './features/superadmin/users-role-assignment
 import { UsersRolePermission } from './features/superadmin/users-role-permission/users-role-permission';
 import { GeneralSetting } from './features/superadmin/general-setting/general-setting';
 import { MasterCountry } from './features/superadmin/master-country/master-country';
+import { MasterCurrency } from './features/superadmin/master-currency/master-currency';
 
 export const routes: Routes = [
 
@@ -167,6 +168,10 @@ export const routes: Routes = [
             {
                 path: 'countries',
                 component: MasterCountry
+            },
+            {
+                path: 'currencies',
+                component: MasterCurrency
             },
 
 

@@ -3,7 +3,17 @@ export class MasterCurrencyRequest {
   currencyName: string = '';
   currencyCode: string = '';
   currencySymbol: string = '';
-  currencyFracUnit?: string;
+  countryId?: number;
+  countryName?: string;
+  
   isActive: boolean = true;
-  createdDate: Date = new Date();
+
+  // Audit
+  createdDate?: Date;
+  createdBy?: number;
+  createdByName?: string;
+
+  updatedDate?: Date;
+  updatedBy?: number;
+  updatedByName?: string;
 }
