@@ -7,12 +7,12 @@ export class GeneralSettingModel {
 
   isActive: boolean = true;
 
-  createdDate: Date | null = null;
-  createdBy: number = 0;
+  // Audit
+  createdDate?: Date;
+  createdBy?: number;
+  createdByName?: string;
 
-  updatedDate: Date | null = null;
-  updatedBy: number | null = null;
-
-  createdByName: string | null = null;
-  updatedByName: string | null = null;
+  updatedDate?: Date;
+  updatedBy?: number;
+  updatedByName?: string;
 }
