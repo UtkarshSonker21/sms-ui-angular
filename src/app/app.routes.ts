@@ -57,6 +57,7 @@ import { MasterCountry } from './features/superadmin/master-country/master-count
 import { MasterCurrency } from './features/superadmin/master-currency/master-currency';
 import { MasterDropdown } from './features/superadmin/master-dropdown/master-dropdown';
 import { MasterDropdownValues } from './features/superadmin/master-dropdown-values/master-dropdown-values';
+import { Languages } from './features/superadmin/languages/languages';
 
 export const routes: Routes = [
 
@@ -182,6 +183,10 @@ export const routes: Routes = [
             {
                 path: 'dropdown-lists/value/:id/:dropdownName',
                 component: MasterDropdownValues
+            },
+            {
+                path: 'languages',
+                component: Languages
             },
 
             

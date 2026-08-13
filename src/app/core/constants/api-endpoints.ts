@@ -109,6 +109,14 @@ export const ApiEndpoints = {
       Search: 'superadmin/general-settings/search'
     },
 
+    Language: {
+      Search: 'superadmin/languages/search',
+      GetById: (id: number) => `superadmin/languages/getById/${id}`,
+      Create: 'superadmin/languages/create',
+      Update: (id: number) => `superadmin/languages/update/${id}`,
+      Delete: (id: number) => `superadmin/languages/delete/${id}`
+    },
+
   },
 
   Ngo: {
