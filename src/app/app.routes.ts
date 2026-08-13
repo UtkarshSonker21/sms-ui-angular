@@ -59,6 +59,7 @@ import { MasterDropdown } from './features/superadmin/master-dropdown/master-dro
 import { MasterDropdownValues } from './features/superadmin/master-dropdown-values/master-dropdown-values';
 import { Languages } from './features/superadmin/languages/languages';
 import { Labels } from './features/superadmin/labels/labels';
+import { LanguageTranslations } from './features/superadmin/language-translations/language-translations';
 
 export const routes: Routes = [
 
@@ -192,6 +193,10 @@ export const routes: Routes = [
             {
                 path: 'labels',
                 component: Labels
+            },
+            {
+                path: 'labels-translations',
+                component: LanguageTranslations
             },
 
             
