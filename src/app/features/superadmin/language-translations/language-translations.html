@@ -1,0 +1,252 @@
+<div class="page-head">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <div class="crumb">
+                <a href="#">Dashboard</a>
+                <span class="sep">/</span>
+                Administration
+                <span class="sep">/</span>
+                <span class="text-muted">Language Translations</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <h2 class="page-title" style="margin: 0;">Language Translations</h2>
+                <div style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 6px;">
+                    <i class="fas fa-info-circle" style="font-size: 11px;"></i>
+                    Click any translation value to add or edit it.
+                </div>
+            </div>
+            <p class="page-sub" style="margin-top: 4px;">
+                Manage translations for system labels across active languages.
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="filters"
+    style="display: flex; gap: 10px; align-items: center; padding: 12px 14px; background: var(--da-surface, #ffffff); border: 1px solid var(--da-border, #e0e0e0); border-radius: var(--da-radius, 8px); margin-bottom: 16px; flex-wrap: wrap; overflow: visible; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+    
+    <div class="search-container" style="flex: 1; max-width: 320px;">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" class="search-input" placeholder="Search by key or value..." [(ngModel)]="searchText"
+            (keydown)="handleKeyDown($event)">
+        <i class="fas fa-times clear-icon" *ngIf="searchText" (click)="clearSearch()"></i>
+    </div>
+
+    <!-- Module Filter -->
+    <div class="da-select" [class.da-select-open]="isFilterModuleDropdownOpen" tabindex="0"
+        (click)="$event.stopPropagation()" style="width: 240px; margin-bottom: 0;">
+        <div class="da-select-control" (click)="toggleFilterModuleDropdown($event)">
+            <span class="da-select-value">{{ getFilterModuleSelectionText() }}</span>
+            <i class="fas da-select-arrow"
+                [ngClass]="isFilterModuleDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+        </div>
+        <div class="da-select-menu" *ngIf="isFilterModuleDropdownOpen">
+            <div class="da-select-option" [class.selected]="!filter.moduleId"
+                (click)="selectFilterModuleOption(null)">
+                All Modules
+            </div>
+            <div class="da-select-option" *ngFor="let m of modules"
+                [class.selected]="filter.moduleId === m.moduleId"
+                (click)="selectFilterModuleOption(m.moduleId)">
+                {{ m.moduleName }}
+            </div>
+        </div>
+    </div>
+
+    <div class="filter-count"
+        style="margin-inline-start: auto; font-size: 12.5px; color: var(--da-muted); font-weight: 500;">
+        {{ totalRecords }} shown
+    </div>
+</div>
+
+<div class="card"
+    style="border-radius: var(--da-radius); overflow: auto; margin-bottom: 20px; border: 1px solid var(--da-border, #e0e0e0); background: var(--da-surface, #ffffff); box-shadow: 0 10px 40px rgba(5,5,5,0.04);">
+    <table class="table" style="min-width: 800px;">
+        <thead>
+            <tr>
+                <th style="width: 250px; position: sticky; left: 0; background: var(--da-surface); z-index: 2;">Label Key</th>
+                <th style="width: 250px; position: sticky; left: 250px; background: var(--da-surface); z-index: 2;">English / Master</th>
+                <th *ngFor="let lang of dynamicLanguages" style="min-width: 250px;">{{ lang.languageName }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let item of managementList">
+                <td style="position: sticky; left: 0; background: var(--da-surface); z-index: 1;">
+                    <div style="font-size: 13.5px; font-weight: 600; color: var(--da-black);">
+                        {{ item.labelKey }}
+                    </div>
+                </td>
+                <td style="position: sticky; left: 250px; background: var(--da-surface); z-index: 1;">
+                    <span style="font-size: 13px; color: var(--da-text-2);">
+                        {{ item.englishMasterValue }}
+                    </span>
+                </td>
+                <td *ngFor="let trans of item.translations" style="padding: 4px;">
+                    <div style="padding: 8px 12px; cursor: pointer; transition: all 0.15s ease; border: 1px solid transparent; border-radius: 6px; display: flex; align-items: center;"
+                        (click)="openTranslationModal(item, trans)"
+                        onmouseover="this.style.backgroundColor='#f8fafc'; this.style.borderColor='#e2e8f0';" 
+                        onmouseout="this.style.backgroundColor='transparent'; this.style.borderColor='transparent';">
+                        
+                        <div *ngIf="trans.translationId" style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-check" style="color: var(--da-success); font-size: 12px;"></i>
+                            <span style="font-size: 13.5px; color: var(--da-black); font-weight: 500;">{{ trans.value }}</span>
+                        </div>
+
+                        <div *ngIf="!trans.translationId" style="display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-plus" style="color: #6366f1; font-size: 11px;"></i>
+                            <span style="font-size: 12.5px; color: #6366f1; font-weight: 500;">Add translation</span>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+
+            <tr *ngIf="managementList.length === 0">
+                <td [attr.colspan]="2 + dynamicLanguages.length" class="courses-empty" style="text-align: center; padding: 42px 20px;">
+                    <div style="font-size: 15px; font-weight: 600; color: var(--da-black);">No Labels Found</div>
+                    <div style="font-size: 13px; color: var(--da-text-2); margin-top: 4px;">Adjust your search or
+                        filters to find what you are looking for.</div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Pagination Footer -->
+    <div class="pagination-footer"
+        style="padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; left: 0;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="text-muted" style="font-size: 13px; font-weight: 500;">Show</span>
+            <div class="custom-dropdown" [class.open]="isPageSizeDropdownOpen" [class.open-up]="true" tabindex="0"
+                (click)="$event.stopPropagation()">
+                <div class="dropdown-trigger" (click)="togglePageSizeDropdown($event)">
+                    <span class="dropdown-value">{{ filter.pageSize }}</span>
+                    <i class="fas" [ngClass]="isPageSizeDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                </div>
+                <div class="dropdown-menu" *ngIf="isPageSizeDropdownOpen">
+                    <div class="dropdown-item" *ngFor="let size of [25, 50, 100, 500]"
+                        [class.selected]="size === filter.pageSize" (click)="selectPageSize(size)">
+                        {{ size }}
+                    </div>
+                </div>
+            </div>
+            <span class="text-muted" style="font-size: 13px; font-weight: 500;">entries</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 13px; color: var(--da-text-2);">
+                Page <strong style="font-weight: 700; color: var(--da-black);">{{ filter.pageNumber }}</strong> of
+                <strong style="font-weight: 700; color: var(--da-black);">{{ totalPages }}</strong>
+            </span>
+
+            <div style="display: flex; gap: 6px;">
+                <button type="button" class="icon-btn btn-pagination" [disabled]="isPreviousDisabled"
+                    (click)="previousPage()">
+                    <i class="fas fa-chevron-left" style="font-size: 11px;"></i>
+                </button>
+                <button type="button" class="icon-btn btn-pagination" [disabled]="isNextDisabled" (click)="nextPage()">
+                    <i class="fas fa-chevron-right" style="font-size: 11px;"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add / Edit Translation Modal -->
+<div class="modal-backdrop" *ngIf="showTranslationModal">
+    <div class="modal-card" style="max-width: 550px;">
+        <div class="modal-head">
+            <div>
+                <div class="modal-title">{{ tempTranslationModel.translationId ? 'Edit Translation' : 'Add Translation' }}</div>
+                <div class="modal-sub">Provide the translation for the selected language.</div>
+            </div>
+            <button type="button" class="modal-close" (click)="showTranslationModal = false">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form #translationForm="ngForm" (ngSubmit)="saveTranslation(translationForm)" novalidate appDisableAutocomplete>
+            <div class="modal-body">
+                <div class="modal-error" *ngIf="modalErrorMessage">{{ modalErrorMessage }}</div>
+
+                <div class="modal-form-row">
+                    <div class="field" style="grid-column: span 2;">
+                        <label class="field-label">Label Key</label>
+                        <input type="text" class="field-input" disabled [value]="tempTranslationModel.labelKey" style="background: #f9fafb;">
+                    </div>
+                </div>
+
+                <div class="modal-form-row">
+                    <div class="field" style="grid-column: span 2;">
+                        <label class="field-label">English / Master Value</label>
+                        <textarea class="field-input" disabled style="background: #f9fafb; min-height: 60px; resize: none; padding-top: 8px;">{{ englishMasterValue }}</textarea>
+                    </div>
+                </div>
+
+                <div class="modal-form-row">
+                    <div class="field" style="grid-column: span 2;">
+                        <label class="field-label">Language</label>
+                        <input type="text" class="field-input" disabled [value]="tempTranslationModel.languageName" style="background: #f9fafb;">
+                    </div>
+                </div>
+
+                <div class="modal-form-row">
+                    <div class="field" style="grid-column: span 2;">
+                        <label class="field-label required-label">Translation Value</label>
+                        <textarea name="labelValue" class="field-input" placeholder="Enter translation..." required
+                            maxlength="2000" [(ngModel)]="tempTranslationModel.labelValue" #labelValueModel="ngModel"
+                            style="min-height: 80px; resize: vertical; padding-top: 8px;"></textarea>
+                        <div class="validation-error"
+                            *ngIf="(labelValueModel.touched || translationForm.submitted) && labelValueModel.errors?.['required']">
+                            Translation Value is required.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-foot" style="justify-content: space-between;">
+                <div>
+                    <button type="button" class="btn btn-danger-custom" *ngIf="tempTranslationModel.translationId"
+                        (click)="openDeleteModal()">
+                        <i class="far fa-trash-alt btn-icon"></i> Delete
+                    </button>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button type="button" class="btn btn-g" (click)="showTranslationModal = false"
+                        [disabled]="isSaving">Cancel</button>
+                    <button type="submit" class="btn btn-p" [disabled]="isSaving || translationForm.invalid">
+                        <span *ngIf="isSaving"><i class="fas fa-spinner fa-spin"
+                                style="margin-right: 6px;"></i>Saving...</span>
+                        <span *ngIf="!isSaving">Save</span>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-backdrop" *ngIf="showDeleteModal">
+    <div class="modal-card" style="max-width: 400px;">
+        <div class="modal-head">
+            <div>
+                <div class="modal-title">Delete Translation</div>
+                <div class="modal-sub">Are you sure you want to delete this translation? This action cannot be undone.
+                </div>
+            </div>
+            <button type="button" class="modal-close" (click)="cancelDelete()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div style="font-weight: 600; font-size: 14px; color: var(--da-black);">
+                {{ tempTranslationModel.labelKey }}
+            </div>
+            <div style="font-size: 12.5px; color: var(--da-muted); margin-top: 2px;">
+                Language: {{ tempTranslationModel.languageName }}
+            </div>
+        </div>
+        <div class="modal-foot">
+            <button type="button" class="btn btn-g" (click)="cancelDelete()">Cancel</button>
+            <button type="button" class="btn btn-danger-custom" (click)="confirmDeleteTranslation()">Delete</button>
+        </div>
+    </div>
+</div>

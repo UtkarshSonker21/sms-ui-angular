@@ -13,6 +13,8 @@ import { UsersModule } from '../../../core/models/common/settings/users-module.m
 import { HelperMethods } from '../../../core/helpers/helper-methods';
 import { DisableAutocompleteDirective } from '../../../shared/directives/disable-autocomplete.directive';
 
+import { MenuService } from '../../../core/services/common/menu.service';
+
 @Component({
   selector: 'app-menus',
   standalone: true,
@@ -34,6 +36,7 @@ export class Menus implements OnInit {
   private commonService = inject(CommonService);
   private notification = inject(NotificationService);
   private router = inject(Router);
+  private menuService = inject(MenuService);
 
   // Table Data
   menusList: UsersMenuRequestModel[] = [];
@@ -389,6 +392,7 @@ export class Menus implements OnInit {
         this.loadData();
         this.loadParentMenus(); // Reload potential parents lists
         this.loadAllMenus(); // Reload sequence counting list
+        this.menuService.reloadMenus(); // Refresh sidebar menu
       },
       error: (err) => {
         this.isSaving = false;
@@ -419,6 +423,7 @@ export class Menus implements OnInit {
         this.loadData();
         this.loadParentMenus(); // Reload potential parents lists
         this.loadAllMenus(); // Reload sequence counting list
+        this.menuService.reloadMenus(); // Refresh sidebar menu
       },
       error: () => {
         this.showDeleteModal = false;
