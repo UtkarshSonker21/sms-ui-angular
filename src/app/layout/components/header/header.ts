@@ -8,11 +8,13 @@ import { CurrentUserProfileService } from '../../../core/services/common/current
 import { AuthService } from '../../../core/services/common/auth.service';
 import { AppRoutes } from '../../../core/constants/app-routes';
 import { NotificationService } from '../../../core/services/common/notification.service';
-import { LanguageCode } from '../../../core/enums/language-code.enum';
 import { StorageService } from '../../../core/services/common/storage.service';
 import { LOCAL_STORAGE_KEYS } from '../../../core/constants/local-storage-keys';
 import { AvailableRole } from '../../../core/models/common/settings/available-role.model';
 import { MenuService } from '../../../core/services/common/menu.service';
+import { LanguageService } from '../../../core/services/superadmin/language.service';
+import { LocalizationService } from '../../../core/services/superadmin/localization.service';
+import { LanguageFilterModel } from '../../../core/models/super-admin/language/language-filter.model';
 
 import { DisableAutocompleteDirective } from '../../../shared/directives/disable-autocomplete.directive';
 
@@ -33,6 +35,8 @@ export class Header implements OnInit {
   private storageService = inject(StorageService);
   private elementRef = inject(ElementRef);
   private menuService = inject(MenuService);
+  private languageService = inject(LanguageService);
+  private localizationService = inject(LocalizationService);
 
   currentUser: CurrentUserProfile = new CurrentUserProfile();
   availableRoles: AvailableRole[] = [];
@@ -40,19 +44,41 @@ export class Header implements OnInit {
   isProfileDropdownOpen = false;
   isLanguageDropdownOpen = false;
   isRolesSectionExpanded = false;
-  selectedLanguage: LanguageCode = LanguageCode.En;
+  selectedLanguage: string = '';
+
+  languages: any[] = [];
 
   ngOnInit(): void {
     this.currentUser = this.currentUserProfileService.getCurrentUserProfile();
     this.availableRoles = this.storageService.getItem<AvailableRole[]>(LOCAL_STORAGE_KEYS.USER.AVAILABLE_ROLES) || [];
+    this.loadLanguages();
   }
 
+  loadLanguages(): void {
+    const filter = new LanguageFilterModel();
+    filter.pageNumber = 1;
+    filter.pageSize = 100;
+    
+    this.languageService.getLanguages(filter).subscribe({
+      next: (response) => {
+        if (response.success && response.result && response.result.items.length > 0) {
+          this.languages = response.result.items.map(lang => ({
+            code: lang.languageCode,
+            name: lang.languageName
+          }));
 
-  readonly languages = [
-    { code: LanguageCode.En, name: 'English' },
-    { code: LanguageCode.Ar, name: 'Arabic' }
-  ];
-
+          const savedLang = localStorage.getItem('selectedLanguage');
+          if (savedLang && this.languages.some(l => l.code === savedLang)) {
+            this.selectedLanguage = savedLang;
+          } else {
+            this.selectedLanguage = this.languages[0].code;
+            localStorage.setItem('selectedLanguage', this.selectedLanguage);
+          }
+          this.localizationService.loadTranslations(this.selectedLanguage).subscribe();
+        }
+      }
+    });
+  }
 
   get userInitials(): string {
     if (!this.currentUser) return 'U';
@@ -124,8 +150,10 @@ export class Header implements OnInit {
     });
   }
 
-  changeLanguage(language: LanguageCode): void {
-    // Method created and left empty per instructions.
+  changeLanguage(languageCode: string): void {
+    this.selectedLanguage = languageCode;
+    localStorage.setItem('selectedLanguage', languageCode);
+    this.localizationService.loadTranslations(languageCode).subscribe();
   }
 
   openNotifications(): void {
@@ -143,7 +171,6 @@ export class Header implements OnInit {
   goBackToLogin(): void {
     this.router.navigate([AppRoutes.Common.Login]);
   }
-
 
 }
 

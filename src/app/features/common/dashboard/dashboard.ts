@@ -16,6 +16,8 @@ import { StaffService } from '../../../core/services/superadmin/staff.service';
 import { StaffFilterModel } from '../../../core/models/super-admin/staff/staff-filter.model';
 import { StaffRequestModel } from '../../../core/models/super-admin/staff/staff-request.model';
 import { StaffType } from '../../../core/enums/staff-type.enum';
+import { LocalizationService } from '../../../core/services/superadmin/localization.service';
+import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 
 export interface DashboardKpiCard {
   title: string;
@@ -27,7 +29,7 @@ export interface DashboardKpiCard {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })
