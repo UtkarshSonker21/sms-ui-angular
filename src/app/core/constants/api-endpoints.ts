@@ -117,6 +117,14 @@ export const ApiEndpoints = {
       Delete: (id: number) => `superadmin/languages/delete/${id}`
     },
 
+    Labels: {
+      Search: 'superadmin/labels/search',
+      GetById: (id: number) => `superadmin/labels/getById/${id}`,
+      Create: 'superadmin/labels/create',
+      Update: (id: number) => `superadmin/labels/update/${id}`,
+      Delete: (id: number) => `superadmin/labels/delete/${id}`
+    },
+
   },
 
   Ngo: {
