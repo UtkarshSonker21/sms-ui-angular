@@ -85,7 +85,7 @@
       <div class="da-select-option" [class.selected]="selectedUniversityId === 0" (click)="selectUniversity(0)">
         All Universities
       </div>
-      <div class="da-select-option" *ngFor="let uni of universities" [class.selected]="selectedUniversityId === uni.registrationId" (click)="selectUniversity(uni.registrationId!)">
+      <div class="da-select-option" *ngFor="let uni of universities" [class.selected]="selectedUniversityId === uni.universityId" (click)="selectUniversity(uni.universityId!)">
         {{ uni.universityName }}
       </div>
     </div>
@@ -180,7 +180,7 @@
         </td>
         <td style="text-align: center !important;">
           <a class="btn btn-t" (click)="viewProgram(prog.programId!)">
-            View &rarr;
+            Review &rarr;
           </a>
         </td>
       </tr>

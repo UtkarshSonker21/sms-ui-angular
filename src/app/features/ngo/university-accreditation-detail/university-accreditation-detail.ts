@@ -13,6 +13,9 @@ import { MasterCountryFilter } from '../../../core/models/super-admin/master-cou
 
 import { AccreditationStatus } from '../../../core/enums/accreditation-status.enum';
 import { AppRoutes } from '../../../core/constants/app-routes';
+import { AccreditationService } from '../../../core/services/ngo/accreditation.service';
+import { UniversityAccreditationModel } from '../../../core/models/ngo/accreditation/university-accreditation.model';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-university-accreditation-detail',
@@ -33,6 +36,7 @@ export class UniversityAccreditationDetail implements OnInit {
   private universityService = inject(MasterUniversityService);
   private countryService = inject(MasterCountryService);
   private notification = inject(NotificationService);
+  private accreditationService = inject(AccreditationService);
 
   university = new MasterUniversityRequest();
   selectedStatus = AccreditationStatus.Pending;
@@ -122,10 +126,10 @@ export class UniversityAccreditationDetail implements OnInit {
 
   getBadgeClass(status?: number): string {
     switch (status) {
-      case AccreditationStatus.Pending:   return 'badge-pending';
+      case AccreditationStatus.Pending: return 'badge-pending';
       case AccreditationStatus.Accredited: return 'badge-accredited';
-      case AccreditationStatus.Rejected:  return 'badge-rejected';
-      default:                            return 'badge-pending';
+      case AccreditationStatus.Rejected: return 'badge-rejected';
+      default: return 'badge-pending';
     }
   }
 
@@ -135,15 +139,14 @@ export class UniversityAccreditationDetail implements OnInit {
   }
 
   updateDecision(): void {
-    this.university.accreditationStatus = this.selectedStatus;
-    this.university.committeeComment = this.comment;
-    if (this.selectedStatus !== AccreditationStatus.Pending) {
-      this.university.accreditationDate = new Date().toISOString().slice(0, 10);
-    } else {
-      this.university.accreditationDate = undefined;
-    }
 
-    this.universityService.updateMasterUniversity(this.university).subscribe({
+    const payload = new UniversityAccreditationModel();
+    payload.universityId = this.university.universityId!;
+    payload.accreditationStatus = this.selectedStatus;
+    payload.committeeComment = this.comment;
+    payload.updatedBy = 0; // backend/current-user handling if applicable
+
+    this.accreditationService.accreditUniversity(payload).subscribe({
       next: (response) => {
         if (response.success) {
           this.notification.success('Accreditation decision updated successfully.');
@@ -152,8 +155,14 @@ export class UniversityAccreditationDetail implements OnInit {
           this.notification.error(response.message || 'Failed to update decision.');
         }
       },
-      error: () => {
-        this.notification.error('Failed to update accreditation decision.');
+      error: (error: HttpErrorResponse) => {
+        const message =
+          error?.error?.message ||
+          error?.error?.Message ||
+          error?.message ||
+          'Failed to update accreditation decision.';
+
+        this.notification.error(message);
       }
     });
   }
