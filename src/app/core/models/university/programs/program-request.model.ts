@@ -25,8 +25,11 @@ export class ProgramRequest {
 
   isDraft: boolean = false;
 
+  // Accreditation
   accreditationStatus?: number;
-
+  accreditationBy?: number;
+  accreditationByName?: string;
+  accreditationDate?: string;
   committeeComment?: string;
 
   submittedDate?: Date | string;

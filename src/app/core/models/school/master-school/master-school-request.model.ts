@@ -57,7 +57,7 @@ export class MasterSchoolRequest {
   studentSequenceNumber: number = 1;
 
   // Accreditation
-  accreditationStatus: number = 1;
+  accreditationStatus?: number;
   accreditationBy?: number;
   accreditationByName?: string;
   accreditationDate?: string;
@@ -67,6 +67,7 @@ export class MasterSchoolRequest {
   isDraft: boolean = true;
   isActive: boolean = true;
   createdDate?: string;
+  updatedDate?: string;
 
   // Response Only
   totalStudents: number = 0;

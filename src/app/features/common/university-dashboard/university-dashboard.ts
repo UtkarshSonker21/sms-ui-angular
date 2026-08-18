@@ -1,6 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
+
+import { StudentProgramService } from '../../../core/services/school/student-program.service';
+import { StudentProgramApplicationFilter } from '../../../core/models/school/student-program-application/student-program-application-filter.model';
+import { StudentProgramApplication } from '../../../core/models/school/student-program-application/student-program-application.model';
+import { StudentStatusService } from '../../../core/services/common/student-status.service';
+import { StudentStatusEnum } from '../../../core/enums/student-application-status.enum';
+import { HelperMethods } from '../../../core/helpers/helper-methods';
+import { NotificationService } from '../../../core/services/common/notification.service';
+import { CurrentUserProfileService } from '../../../core/services/common/current-user-profile.service';
 
 export interface DashboardStat {
   title: string;
@@ -9,17 +18,6 @@ export interface DashboardStat {
   type: 'success' | 'info' | 'primary' | 'warning';
   icon: string;
   subtextClass?: string;
-}
-
-export interface RecentApplication {
-  avatar: string;
-  studentName: string;
-  studentId: string;
-  programName: string;
-  faculty: string;
-  status: 'Acceptance in process' | 'Acceptance accepted' | 'Awarded' | 'Acceptance rejected';
-  statusClass: string;
-  time: string;
 }
 
 export interface UpcomingDeadline {
@@ -38,48 +36,93 @@ export interface UpcomingDeadline {
   styleUrl: './university-dashboard.scss',
 })
 export class UniversityDashboard implements OnInit {
-  welcomeMessage = 'Welcome back — Simad University';
+  welcomeMessage = '';
   subtitleMessage = 'Fall 2025/2026 · Registration closes in 14 days';
 
   dashboardStats: DashboardStat[] = [];
-  recentApplications: RecentApplication[] = [];
+  recentApplications: StudentProgramApplication[] = [];
   upcomingDeadlines: UpcomingDeadline[] = [];
 
+  isLoading = true;
+
+  private studentService = inject(StudentProgramService);
+  private studentStatusService = inject(StudentStatusService);
+  private notification = inject(NotificationService);
+  private router = inject(Router);
+  private currentUserProfileService = inject(CurrentUserProfileService);
+
   ngOnInit(): void {
-    this.loadStats();
-    this.loadRecentApplications();
+    const profile = this.currentUserProfileService.getCurrentUserProfile();
+    const name = profile.fullName || 'User';
+    this.welcomeMessage = `Welcome — ${name}`;
+
+    this.loadData();
     this.loadUpcomingDeadlines();
   }
 
-  loadStats(): void {
+  loadData(): void {
+    this.isLoading = true;
+    const filter = new StudentProgramApplicationFilter();
+    filter.pageNumber = 1;
+    filter.pageSize = 1000; // Large enough to calculate dashboard stats
+
+    this.studentService.search(filter).subscribe({
+      next: (response) => {
+        this.isLoading = false;
+        if (response.success && response.result) {
+          const items = response.result.items;
+          const totalRecords = response.result.totalCount;
+          this.calculateKPIs(items, totalRecords);
+          this.processRecentApplications(items);
+        } else {
+          this.dashboardStats = this.getEmptyStats();
+          this.recentApplications = [];
+          this.notification.warning(response.message || 'Failed to load dashboard data');
+        }
+      },
+      error: () => {
+        this.isLoading = false;
+        this.dashboardStats = this.getEmptyStats();
+        this.recentApplications = [];
+        this.notification.error('Failed to load dashboard data.');
+      }
+    });
+  }
+
+  calculateKPIs(items: StudentProgramApplication[], totalRecords: number): void {
+    const total = totalRecords;
+    const inProcess = items.filter(s => s.applicationStatusName?.toLowerCase().includes('in process')).length;
+    const sponsored = items.filter(s => s.applicationStatusName === 'Sponsored').length;
+    const registered = items.filter(s => s.applicationStatusName === 'Registered').length;
+
     this.dashboardStats = [
       {
-        title: 'SPONSORED STUDENTS',
-        value: '120',
-        subtext: '↑ 8 this month',
-        type: 'success',
+        title: 'TOTAL STUDENTS',
+        value: total.toString(),
+        subtext: 'All applications',
+        type: 'primary',
         icon: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8 M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75'
       },
       {
-        title: 'APPLICATIONS UNDER REVIEW',
-        value: '24',
-        subtext: '12 need decision',
+        title: 'IN PROCESS',
+        value: inProcess.toString(),
+        subtext: 'Acceptance pending',
         type: 'info',
         icon: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M16 13H8 M16 17H8 M10 9H9H8',
         subtextClass: 'muted'
       },
       {
-        title: 'REGISTERED STUDENTS',
-        value: '85',
-        subtext: '69% of eligible',
-        type: 'primary',
+        title: 'SPONSORED',
+        value: sponsored.toString(),
+        subtext: 'Approved sponsorships',
+        type: 'success',
         icon: 'M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z',
         subtextClass: 'muted'
       },
       {
-        title: 'OUTSTANDING PAYMENTS',
-        value: '8,400',
-        subtext: 'SOS · uncollected',
+        title: 'REGISTERED',
+        value: registered.toString(),
+        subtext: 'Fully registered',
         type: 'warning',
         icon: 'M12 1v22 M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6',
         subtextClass: 'neg'
@@ -87,74 +130,53 @@ export class UniversityDashboard implements OnInit {
     ];
   }
 
-  loadRecentApplications(): void {
-    this.recentApplications = [
-      {
-        avatar: 'A1',
-        studentName: 'Student A',
-        studentId: 'ID: 2024-0647',
-        programName: 'General Medicine',
-        faculty: 'Faculty of Medicine',
-        status: 'Acceptance in process',
-        statusClass: 'chip-pending',
-        time: '2 hours ago'
-      },
-      {
-        avatar: 'B2',
-        studentName: 'Student B',
-        studentId: 'ID: 2024-0823',
-        programName: 'Mechanical Engineering',
-        faculty: 'Faculty of Engineering',
-        status: 'Acceptance accepted',
-        statusClass: 'chip-accepted',
-        time: '5 hours ago'
-      },
-      {
-        avatar: 'C3',
-        studentName: 'Student C',
-        studentId: 'ID: 2024-0901',
-        programName: 'Pharmacy',
-        faculty: 'Faculty of Pharmacy',
-        status: 'Awarded',
-        statusClass: 'chip-awarded',
-        time: 'Yesterday'
-      },
-      {
-        avatar: 'D4',
-        studentName: 'Student D',
-        studentId: 'ID: 2024-0765',
-        programName: 'Accounting',
-        faculty: 'Faculty of Business',
-        status: 'Acceptance rejected',
-        statusClass: 'chip-rejected',
-        time: '2 days ago'
-      }
+  processRecentApplications(items: StudentProgramApplication[]): void {
+    const sorted = [...items].sort((a, b) => {
+      const dateA = a.actionDate ? new Date(a.actionDate).getTime() : 0;
+      const dateB = b.actionDate ? new Date(b.actionDate).getTime() : 0;
+      return dateB - dateA;
+    });
+    this.recentApplications = sorted.slice(0, 5);
+  }
+
+  getEmptyStats(): DashboardStat[] {
+    return [
+      { title: 'TOTAL STUDENTS', value: '0', subtext: 'All applications', type: 'primary', icon: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8 M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75' },
+      { title: 'IN PROCESS', value: '0', subtext: 'Acceptance pending', type: 'info', icon: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M16 13H8 M16 17H8 M10 9H9H8', subtextClass: 'muted' },
+      { title: 'SPONSORED', value: '0', subtext: 'Approved sponsorships', type: 'success', icon: 'M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z', subtextClass: 'muted' },
+      { title: 'REGISTERED', value: '0', subtext: 'Fully registered', type: 'warning', icon: 'M12 1v22 M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6', subtextClass: 'neg' }
     ];
   }
 
   loadUpcomingDeadlines(): void {
-    this.upcomingDeadlines = [
-      {
-        month: 'NOV',
-        date: '14',
-        title: 'Registration closes',
-        subtitle: 'Semester 1 — all programs',
-        type: 'info'
-      },
-      {
-        month: 'NOV',
-        date: '22',
-        title: 'Submit prior semester results',
-        subtitle: 'Spring 2024/2025 grades',
-        type: 'warning'
-      },
-      {
-        month: 'DEC',
-        date: '03',
-        title: 'Payment report to Direct Aid',
-        subtitle: 'Q4 reconciliation',
-        type: 'danger'
-      }
-    ];
+    this.upcomingDeadlines = [];
+  }
+
+  getStatusBadgeClass(student: StudentProgramApplication): string {
+    return this.studentStatusService.getBadgeClass(
+      student.applicationStatusId ?? StudentStatusEnum.Draft
+    );
+  }
+
+  getPhotoUrl(path?: string): string {
+    return HelperMethods.getFileUrl(path);
+  }
+
+  photoErrors = new Set<number>();
+  handlePhotoError(studentId: number): void {
+    if (studentId) {
+      this.photoErrors.add(studentId);
+    }
+  }
+
+  hasPhotoError(studentId: number): boolean {
+    return this.photoErrors.has(studentId);
+  }
+
+  viewStudent(studentId: number): void {
+    const student = this.recentApplications.find(x => x.studentId === studentId);
+    if (student) {
+      this.router.navigate(['/university-student-details', student.applicationId]);
+    }
   }
 }

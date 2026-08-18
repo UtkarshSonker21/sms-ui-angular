@@ -16,6 +16,9 @@ import { MasterDropDownRequest } from '../../../core/models/super-admin/master-d
 import { MainDropdown } from '../../../core/enums/main-dropdown.enum';
 import { AppRoutes } from '../../../core/constants/app-routes';
 import { AccreditationStatus } from '../../../core/enums/accreditation-status.enum';
+import { AccreditationService } from '../../../core/services/ngo/accreditation.service';
+import { SchoolAccreditationModel } from '../../../core/models/ngo/accreditation/school-accreditation.model';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-school-accreditation-detail',
@@ -37,6 +40,7 @@ export class SchoolAccreditationDetail implements OnInit {
   private countryService = inject(MasterCountryService);
   private dropdownService = inject(MasterDropDownService);
   private notification = inject(NotificationService);
+  private accreditationService = inject(AccreditationService);
 
   school = new MasterSchoolRequest();
   selectedStatus = 1; // 1 = Pending, 2 = Accredited (Accepted), 3 = Rejected
@@ -167,15 +171,14 @@ export class SchoolAccreditationDetail implements OnInit {
   }
 
   updateDecision(): void {
-    this.school.accreditationStatus = this.selectedStatus;
-    this.school.committeeComment = this.comment;
-    if (this.selectedStatus !== 1) {
-      this.school.accreditationDate = new Date().toISOString().slice(0, 10);
-    } else {
-      this.school.accreditationDate = undefined;
-    }
 
-    this.schoolService.updateMasterSchool(this.school).subscribe({
+    const payload = new SchoolAccreditationModel();
+    payload.schoolId = this.school.schoolId!;
+    payload.accreditationStatus = this.selectedStatus;
+    payload.committeeComment = this.comment;
+    payload.updatedBy = 0; // backend/current-user handling if applicable
+
+    this.accreditationService.accreditSchool(payload).subscribe({
       next: (response) => {
         if (response.success) {
           this.notification.success('Accreditation decision updated successfully.');
@@ -184,8 +187,14 @@ export class SchoolAccreditationDetail implements OnInit {
           this.notification.error(response.message || 'Failed to update decision.');
         }
       },
-      error: () => {
-        this.notification.error('Failed to update accreditation decision.');
+      error: (error: HttpErrorResponse) => {
+        const message =
+          error?.error?.message ||
+          error?.error?.Message ||
+          error?.message ||
+          'Failed to update accreditation decision.';
+
+        this.notification.error(message);
       }
     });
   }

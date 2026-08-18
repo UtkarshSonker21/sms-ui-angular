@@ -135,12 +135,18 @@ export const ApiEndpoints = {
     },
 
     Localization: {
-      GetTranslations: (languageCode:string) => `localization/${languageCode}`
+      GetTranslations: (languageCode: string) => `localization/${languageCode}`
     }
 
   },
 
   Ngo: {
+
+    Accreditation: {
+      AccreditSchool: 'ngo/accreditation/school',
+      AccreditUniversity: 'ngo/accreditation/university',
+      AccreditProgram: 'ngo/accreditation/program'
+    },
 
     SponsorshipTypes: {
       Search: 'ngo/sponsorship-types/search',

@@ -60,10 +60,11 @@ export class MasterUniversityRequest {
   externalGrants?: string;
   notes?: string;
 
-  // Accreditation Workflow
-  accreditationStatus: number = 1;
+  // Accreditation
+  accreditationStatus?: number;
   accreditationBy?: number;
-  accreditationDate?: Date | string;
+  accreditationByName?: string;
+  accreditationDate?: string;
   committeeComment?: string;
 
   // System

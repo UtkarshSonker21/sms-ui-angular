@@ -100,7 +100,7 @@
                 All universities
             </div>
             <div class="da-select-option" *ngFor="let uni of masterUniversities"
-                [class.selected]="selectedUniversityFilter === uni.registrationId?.toString()" (click)="selectUniversityFilterOption(uni.registrationId)">
+                [class.selected]="selectedUniversityFilter === uni.universityId?.toString()" (click)="selectUniversityFilterOption(uni.universityId)">
                 {{ uni.universityName }}
             </div>
         </div>
@@ -354,8 +354,8 @@
                             </div>
                             <i class="fas ms-chevron" [ngClass]="isUniversitiesDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
                             <div class="ms-panel" *ngIf="isUniversitiesDropdownOpen" style="display: block; max-height: 200px; overflow-y: auto;">
-                                <div class="ms-option" *ngFor="let uni of masterUniversities" [class.checked]="isUniversitySelected(uni.registrationId!)" (click)="toggleUniversity(uni.registrationId!); $event.stopPropagation()">
-                                    <input type="checkbox" [checked]="isUniversitySelected(uni.registrationId!)" style="pointer-events: none;" />
+                                <div class="ms-option" *ngFor="let uni of masterUniversities" [class.checked]="isUniversitySelected(uni.universityId!)" (click)="toggleUniversity(uni.universityId!); $event.stopPropagation()">
+                                    <input type="checkbox" [checked]="isUniversitySelected(uni.universityId!)" style="pointer-events: none;" />
                                     <span>{{ uni.universityName}}</span>
                                 </div>
                             </div>

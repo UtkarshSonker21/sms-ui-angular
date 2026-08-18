@@ -9,6 +9,9 @@ import { ProgramRequest } from '../../../core/models/university/programs/program
 import { ProgramCourse } from '../../../core/models/university/programs/program-course.model';
 import { AppRoutes } from '../../../core/constants/app-routes';
 import { AccreditationStatus } from '../../../core/enums/accreditation-status.enum';
+import { ProgramAccreditationModel } from '../../../core/models/ngo/accreditation/program-accreditation.model';
+import { AccreditationService } from '../../../core/services/ngo/accreditation.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-program-accreditation-detail',
@@ -27,6 +30,7 @@ export class ProgramAccreditationDetail implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private programService = inject(ProgramService);
+  private accreditationService = inject(AccreditationService);
   private notification = inject(NotificationService);
 
   program = new ProgramRequest();
@@ -117,10 +121,15 @@ export class ProgramAccreditationDetail implements OnInit {
   }
 
   updateDecision(): void {
-    this.program.accreditationStatus = this.selectedStatus;
-    this.program.committeeComment = this.comment;
 
-    this.programService.updateProgram(this.program).subscribe({
+    const payload = new ProgramAccreditationModel();
+
+    payload.programId = this.program.programId!;
+    payload.accreditationStatus = this.selectedStatus;
+    payload.committeeComment = this.comment;
+    payload.updatedBy = 0; // backend/current-user handling if applicable
+
+    this.accreditationService.accreditProgram(payload).subscribe({
       next: (response) => {
         if (response.success) {
           this.notification.success('Accreditation decision updated successfully.');
@@ -129,8 +138,14 @@ export class ProgramAccreditationDetail implements OnInit {
           this.notification.error(response.message || 'Failed to update decision.');
         }
       },
-      error: () => {
-        this.notification.error('Failed to update accreditation decision.');
+      error: (error: HttpErrorResponse) => {
+        const message =
+          error?.error?.message ||
+          error?.error?.Message ||
+          error?.message ||
+          'Failed to update accreditation decision.';
+
+        this.notification.error(message);
       }
     });
   }

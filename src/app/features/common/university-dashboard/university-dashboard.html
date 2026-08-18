@@ -27,40 +27,59 @@
           <h2 class="card-title">Recent Applications</h2>
           <div class="card-sub">Updated just now</div>
         </div>
-        <a [routerLink]="['/university-applications']" class="view-all-link">View all &rarr;</a>
+        <a [routerLink]="['/university-students']" class="view-all-link">View all &rarr;</a>
       </div>
       <div class="card-body">
         <div class="table-responsive">
           <table class="table">
             <thead>
               <tr>
-                <th>Student</th>
-                <th>Program</th>
-                <th>Status</th>
-                <th>Last Update</th>
+                <th style="width: 30%;">Student</th>
+                <th style="width: 25%;">Program</th>
+                <th style="width: 15%;">Status</th>
+                <th style="width: 15%;">Last Update</th>
+                <th style="width: 10%;">Action</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody [class.loading]="isLoading">
               <tr *ngFor="let app of recentApplications">
                 <td>
-                  <div class="student-info">
-                    <div class="avatar" [attr.data-name]="app.avatar">{{ app.avatar }}</div>
-                    <div>
-                      <div class="student-name">{{ app.studentName }}</div>
-                      <div class="student-id">{{ app.studentId }}</div>
-                    </div>
+                  <div style="display: flex; align-items: center; gap: 12px;">
+                      <img *ngIf="app.photoPath && !hasPhotoError(app.studentId!)" [src]="getPhotoUrl(app.photoPath)" (error)="handlePhotoError(app.studentId!)" class="profile-photo" alt="Photo" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
+                      <div *ngIf="!app.photoPath || hasPhotoError(app.studentId!)" style="width: 36px; height: 36px; border-radius: 50%; background: var(--da-green); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 13px; font-weight: 600;">
+                          {{ app.fullName ? app.fullName.charAt(0).toUpperCase() : '?' }}
+                      </div>
+                      <div>
+                          <div style="font-size: 13.5px; font-weight: 600; color: var(--da-black);">
+                              {{ app.fullName }}
+                          </div>
+                          <div style="font-size: 12.5px; color: var(--da-green); margin-top: 1.5px;">
+                              ID: {{ app.studentCode || '-' }}
+                          </div>
+                      </div>
                   </div>
                 </td>
                 <td>
-                  <div class="program-name">{{ app.programName }}</div>
-                  <div class="faculty-name">{{ app.faculty }}</div>
+                  <div class="program-name">{{ app.programName || '-' }}</div>
+                  <div class="faculty-name">{{ app.facultyName || app.universityName || '' }}</div>
                 </td>
                 <td>
-                  <span class="chip" [ngClass]="app.statusClass">
-                    {{ app.status }}
+                  <span class="chip {{ getStatusBadgeClass(app) }}">
+                    {{ app.applicationStatusName }}
                   </span>
                 </td>
-                <td class="time-col">{{ app.time }}</td>
+                <td class="time-col">{{ app.actionDate ? (app.actionDate | date: 'dd MMM yyyy') : 'N/A' }}</td>
+                <td>
+                    <button type="button" class="btn btn-g" style="padding: 4px 10px; font-size: 12px; height: 28px;" (click)="viewStudent(app.studentId)">
+                        Review
+                    </button>
+                </td>
+              </tr>
+              <tr *ngIf="recentApplications.length === 0 && !isLoading">
+                  <td colspan="5" style="text-align: center; padding: 42px 20px;">
+                      <div style="font-size: 15px; font-weight: 600; color: var(--da-black);">No applications found</div>
+                      <div style="font-size: 13px; color: var(--da-text-2); margin-top: 4px;">There are no recent applications to display.</div>
+                  </td>
               </tr>
             </tbody>
           </table>
@@ -77,7 +96,7 @@
         </div>
       </div>
       <div class="card-body">
-        <div class="deadline-list">
+        <div class="deadline-list" *ngIf="upcomingDeadlines.length > 0; else noDeadlines">
           <div class="deadline-item" *ngFor="let item of upcomingDeadlines">
             <div class="deadline-calendar" [ngClass]="item.type">
               <span class="cal-month">{{ item.month }}</span>
@@ -89,6 +108,15 @@
             </div>
           </div>
         </div>
+        <ng-template #noDeadlines>
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 20px; text-align: center; height: 100%; min-height: 200px;">
+                <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--da-bg-subtle, #f5f5f5); display: flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                    <i class="far fa-calendar-check" style="font-size: 20px; color: var(--da-text-2, #6b7280);"></i>
+                </div>
+                <div style="font-size: 15px; font-weight: 600; color: var(--da-black);">No upcoming deadlines</div>
+                <div style="font-size: 13px; color: var(--da-text-2); margin-top: 4px;">There are currently no deadlines to display.</div>
+            </div>
+        </ng-template>
       </div>
     </div>
 
