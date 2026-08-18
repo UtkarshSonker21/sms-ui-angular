@@ -81,7 +81,7 @@
             <div class="ms-display" [class.has-selection]="selectedUniversityFilter !== 'all'"
                 style="display: flex; align-items: center; flex: 1;">
                 <ng-container *ngIf="selectedUniversityFilter !== 'all'; else noUniversitySelected">
-                    <span class="ms-chip" style="margin: 0; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block;">
+                    <span class="ms-chip" style="margin: 0;">
                         {{ getSelectedUniversityFilterName() }}
                         <span class="ms-chip-x"
                             (click)="selectUniversityFilterOption('all'); $event.stopPropagation()">×</span>
@@ -94,7 +94,7 @@
             <i class="fas da-select-arrow"
                 [ngClass]="isUniversityFilterDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
         </div>
-        <div class="da-select-menu" *ngIf="isUniversityFilterDropdownOpen" style="max-height: 250px; overflow-y: auto;">
+        <div class="da-select-menu" *ngIf="isUniversityFilterDropdownOpen">
             <div class="da-select-option" [class.selected]="selectedUniversityFilter === 'all'"
                 (click)="selectUniversityFilterOption('all')">
                 All universities

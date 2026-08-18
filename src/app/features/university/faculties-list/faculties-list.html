@@ -1,0 +1,176 @@
+<div class="page-head">
+    <div>
+        <div class="crumb">
+            <a href="#">Home</a>
+            <span class="sep">/</span>
+            <span class="text-muted">Faculties</span>
+        </div>
+        <h2 class="page-title">Faculties List</h2>
+        <p class="page-sub">
+            A list of faculties in your university. These are used to group programs and courses.
+        </p>
+    </div>
+    <div class="page-actions" style="display: flex; gap: 10px;">
+        <button type="button" class="btn btn-g" (click)="goBack()">
+            <i class="fas fa-arrow-left btn-icon"></i> Back
+        </button>
+    </div>
+</div>
+
+<div class="filters">
+    <div class="search-container">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" class="search-input" placeholder="Search by code or name..." [(ngModel)]="searchText"
+            (keydown)="handleKeyDown($event)">
+        <i class="fas fa-times clear-icon" *ngIf="searchText" (click)="clearSearch()"></i>
+    </div>
+
+    <div class="filter-count">
+        {{ totalRecords }} faculties
+    </div>
+</div>
+
+<div class="card"
+    style="border-radius: var(--da-radius); overflow: visible; margin-bottom: 20px; border: 1px solid var(--da-border, #e0e0e0); background: var(--da-surface, #ffffff); box-shadow: 0 10px 40px rgba(5,5,5,0.04);">
+    <table class="table">
+        <thead>
+            <tr>
+                <th style="width: 25%;">Code</th>
+                <th style="width: 60%;">Faculty Name</th>
+                <th style="width: 15%; text-align: center !important;">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let faculty of faculties">
+                <td class="course-code-cell">
+                    <span class="chip chip-registered course-code-badge">{{ faculty.facultyCode || '-' }}</span>
+                </td>
+                <td>
+                    <div class="course-name-primary"
+                        style="font-size: 13.5px; font-weight: 600; color: var(--da-black);">
+                        {{ faculty.facultyName }}
+                    </div>
+                </td>
+                <td class="row-actions" style="text-align: center !important;">
+                    <button type="button" class="icon-btn" title="Edit" (click)="openEditFacultyModal(faculty)">
+                        <i class="far fa-edit"></i>
+                    </button>
+                    <button type="button" class="icon-btn icon-btn-danger" title="Delete"
+                        (click)="openDeleteFacultyModal(faculty)">
+                        <i class="far fa-trash-alt"></i>
+                    </button>
+                </td>
+            </tr>
+
+            <tr *ngIf="faculties.length === 0">
+                <td colspan="3" class="courses-empty">
+                    No Faculties Found
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="pagination-footer">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="text-muted" style="font-size: 13px; font-weight: 500;">Show</span>
+            <div class="custom-dropdown" [class.open]="isPageSizeDropdownOpen" [class.open-up]="true" tabindex="0">
+                <div class="dropdown-trigger" (click)="togglePageSizeDropdown($event)">
+                    <span class="dropdown-value">{{ filter.pageSize }}</span>
+                    <i class="fas" [ngClass]="isPageSizeDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                </div>
+                <div class="dropdown-menu" *ngIf="isPageSizeDropdownOpen">
+                    <div class="dropdown-item" *ngFor="let size of [25, 50, 100, 500]"
+                        [class.selected]="size === filter.pageSize" (click)="selectPageSize(size)">
+                        {{ size }}
+                    </div>
+                </div>
+            </div>
+            <span class="text-muted" style="font-size: 13px; font-weight: 500;">entries</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 13px; color: var(--da-text-2);">
+                Page <strong style="font-weight: 700; color: var(--da-black);">{{ filter.pageNumber }}</strong> of
+                <strong style="font-weight: 700; color: var(--da-black);">{{ totalPages || 1 }}</strong>
+            </span>
+
+            <div style="display: flex; gap: 6px;">
+                <button type="button" class="icon-btn btn-pagination" [disabled]="isPreviousDisabled"
+                    (click)="previousPage()">
+                    <i class="fas fa-chevron-left" style="font-size: 11px;"></i>
+                </button>
+                <button type="button" class="icon-btn btn-pagination" [disabled]="isNextDisabled" (click)="nextPage()">
+                    <i class="fas fa-chevron-right" style="font-size: 11px;"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add / Edit Faculty Modal -->
+<div class="modal-backdrop" *ngIf="showFacultyModal">
+    <div class="modal-card">
+        <div class="modal-head">
+            <div>
+                <div class="modal-title">{{ tempFacultyModel.facultyId ? 'Edit Faculty' : 'Add New Faculty' }}</div>
+                <div class="modal-sub">Create a faculty to host academic programs. Programs added under it will require DA Committee accreditation before becoming visible.</div>
+            </div>
+            <button type="button" class="modal-close" (click)="showFacultyModal = false">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form #facultyForm="ngForm" (ngSubmit)="saveFaculty(facultyForm)" novalidate>
+            <div class="modal-body">
+                <div class="modal-error" *ngIf="modalErrorMessage">{{ modalErrorMessage }}</div>
+                
+                <div class="modal-form-row" style="margin-bottom: 16px;">
+                    <div class="field">
+                        <label class="field-label required-label">FACULTY NAME</label>
+                        <input type="text" name="facultyName" class="field-input" placeholder="e.g. Faculty of Medicine" required
+                               [(ngModel)]="tempFacultyModel.facultyName" #facultyNameModel="ngModel" appDisableAutocomplete>
+                        <div class="validation-error" *ngIf="facultyNameModel.touched && facultyNameModel.errors?.['required']">
+                            Faculty Name is required.
+                        </div>
+                    </div>
+                    
+                    <div class="field">
+                        <label class="field-label">FACULTY CODE</label>
+                        <input type="text" name="facultyCode" class="field-input" placeholder="e.g. MED"
+                               [(ngModel)]="tempFacultyModel.facultyCode" appDisableAutocomplete>
+                        <div class="form-hint">2–4 uppercase letters. Used as prefix for program codes.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-foot">
+                <button type="button" class="btn btn-g" (click)="showFacultyModal = false">Cancel</button>
+                <button type="submit" class="btn btn-p">{{ tempFacultyModel.facultyId ? 'Update Faculty' : 'Create Faculty' }}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-backdrop" *ngIf="showDeleteModal">
+    <div class="modal-card" style="max-width: 400px;">
+        <div class="modal-head">
+            <div>
+                <div class="modal-title">Delete Faculty</div>
+                <div class="modal-sub">Are you sure you want to delete this faculty? This action cannot be undone.</div>
+            </div>
+            <button type="button" class="modal-close" (click)="showDeleteModal = false">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body" *ngIf="facultyToDelete">
+            <div style="font-weight: 600; font-size: 14px; color: var(--da-black);">
+                {{ facultyToDelete.facultyCode ? facultyToDelete.facultyCode + ' - ' : '' }}{{ facultyToDelete.facultyName }}
+            </div>
+        </div>
+        <div class="modal-foot">
+            <button type="button" class="btn btn-g" (click)="showDeleteModal = false">Cancel</button>
+            <button type="button" class="btn btn-danger-custom" (click)="confirmDeleteFaculty()">Delete</button>
+        </div>
+    </div>
+</div>

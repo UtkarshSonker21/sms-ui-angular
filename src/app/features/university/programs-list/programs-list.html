@@ -1,0 +1,171 @@
+<div class="page-head">
+    <div>
+        <div class="crumb">
+            <a href="#">Home</a>
+            <span class="sep">/</span>
+            <span class="text-muted">Programs</span>
+        </div>
+        <h2 class="page-title">Programs List</h2>
+        <p class="page-sub">
+            A list of academic programs offered by the university.
+        </p>
+    </div>
+    <div class="page-actions" style="display: flex; gap: 10px;">
+        <button type="button" class="btn btn-g" (click)="goBack()">
+            <i class="fas fa-arrow-left btn-icon"></i> Back
+        </button>
+    </div>
+</div>
+
+<div class="filters">
+    <div class="search-container">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" class="search-input" placeholder="Search by code or name..." [(ngModel)]="searchText"
+            (keydown)="handleKeyDown($event)">
+        <i class="fas fa-times clear-icon" *ngIf="searchText" (click)="clearSearch()"></i>
+    </div>
+    <div class="da-select" [class.da-select-open]="isFacultyDropdownOpen" tabindex="0">
+        <div class="da-select-control" (click)="toggleFacultyDropdown($event)" style="padding: 0 12px 0 6px;">
+            <div class="ms-display" [class.has-selection]="selectedFaculty !== 0"
+                style="display: flex; align-items: center; flex: 1;">
+                <ng-container *ngIf="selectedFaculty !== 0; else noFacultySelected">
+                    <span class="ms-chip" style="margin: 0;">
+                        {{ getSelectedFacultyName() }}
+                        <span class="ms-chip-x" (click)="clearFacultySelection($event)">×</span>
+                    </span>
+                </ng-container>
+                <ng-template #noFacultySelected>
+                    <span class="da-select-value" style="font-size: 13px; margin-left: 6px;">All Faculties</span>
+                </ng-template>
+            </div>
+            <i class="fas da-select-arrow" [ngClass]="isFacultyDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+        </div>
+        <div class="da-select-menu" *ngIf="isFacultyDropdownOpen">
+            <div class="da-select-option" [class.selected]="selectedFaculty === 0" (click)="selectFacultyOption(0)">
+                All Faculties
+            </div>
+            <div class="da-select-option" *ngFor="let faculty of faculties"
+                [class.selected]="selectedFaculty === faculty.facultyId"
+                (click)="selectFacultyOption(faculty.facultyId)">
+                {{ faculty.facultyName }}
+            </div>
+        </div>
+    </div>
+
+    <div class="filter-count">
+        {{ totalRecords }} programs
+    </div>
+</div>
+
+<div class="card"
+    style="border-radius: var(--da-radius); overflow: visible; margin-bottom: 20px; border: 1px solid var(--da-border, #e0e0e0); background: var(--da-surface, #ffffff); box-shadow: 0 10px 40px rgba(5,5,5,0.04);">
+    <table class="table">
+        <thead>
+            <tr>
+                <th style="width: 15%;">Code</th>
+                <th style="width: 45%;">Program Name</th>
+                <th style="width: 25%;">Faculty</th>
+                <th style="width: 15%; text-align: center !important;">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let program of programs">
+                <td class="course-code-cell">
+                    <span class="chip chip-registered course-code-badge">{{ program.programCode || '-' }}</span>
+                </td>
+                <td>
+                    <div class="course-name-primary"
+                        style="font-size: 13.5px; font-weight: 600; color: var(--da-black);">
+                        {{ program.programName }}
+                    </div>
+                    <div class="course-name-alt text-muted" style="font-size: 11px; margin-top: 2px;" *ngIf="program.degreeName">
+                        {{ program.degreeName }}
+                    </div>
+                </td>
+                <td>
+                    <div class="scope-cell">
+                        <span class="chip chip-sponsored scope-chip scope-fac" *ngIf="program.facultyName">
+                            {{ program.facultyName }}
+                        </span>
+                    </div>
+                </td>
+                <td class="row-actions" style="text-align: center !important;">
+                    <button type="button" class="icon-btn" title="Edit" (click)="openEditProgram(program)">
+                        <i class="far fa-edit"></i>
+                    </button>
+                    <button type="button" class="icon-btn icon-btn-danger" title="Delete"
+                        (click)="openDeleteProgramModal(program)">
+                        <i class="far fa-trash-alt"></i>
+                    </button>
+                </td>
+            </tr>
+
+            <tr *ngIf="programs.length === 0">
+                <td colspan="4" class="courses-empty">
+                    No Programs Found
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="pagination-footer">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="text-muted" style="font-size: 13px; font-weight: 500;">Show</span>
+            <div class="custom-dropdown" [class.open]="isPageSizeDropdownOpen" [class.open-up]="true" tabindex="0">
+                <div class="dropdown-trigger" (click)="togglePageSizeDropdown($event)">
+                    <span class="dropdown-value">{{ filter.pageSize }}</span>
+                    <i class="fas" [ngClass]="isPageSizeDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                </div>
+                <div class="dropdown-menu" *ngIf="isPageSizeDropdownOpen">
+                    <div class="dropdown-item" *ngFor="let size of [25, 50, 100, 500]"
+                        [class.selected]="size === filter.pageSize" (click)="selectPageSize(size)">
+                        {{ size }}
+                    </div>
+                </div>
+            </div>
+            <span class="text-muted" style="font-size: 13px; font-weight: 500;">entries</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 13px; color: var(--da-text-2);">
+                Page <strong style="font-weight: 700; color: var(--da-black);">{{ filter.pageNumber }}</strong> of
+                <strong style="font-weight: 700; color: var(--da-black);">{{ totalPages || 1 }}</strong>
+            </span>
+
+            <div style="display: flex; gap: 6px;">
+                <button type="button" class="icon-btn btn-pagination" [disabled]="isPreviousDisabled"
+                    (click)="previousPage()">
+                    <i class="fas fa-chevron-left" style="font-size: 11px;"></i>
+                </button>
+                <button type="button" class="icon-btn btn-pagination" [disabled]="isNextDisabled" (click)="nextPage()">
+                    <i class="fas fa-chevron-right" style="font-size: 11px;"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-backdrop" *ngIf="showDeleteModal">
+    <div class="modal-card" style="max-width: 400px;">
+        <div class="modal-head">
+            <div>
+                <div class="modal-title">Delete Program</div>
+                <div class="modal-sub">Are you sure you want to delete this program? This action cannot be undone.</div>
+            </div>
+            <button type="button" class="modal-close" (click)="showDeleteModal = false">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body" *ngIf="programToDelete">
+            <div class="modal-error" *ngIf="modalErrorMessage">{{ modalErrorMessage }}</div>
+            <div style="font-weight: 600; font-size: 14px; color: var(--da-black);">
+                {{ programToDelete.programCode ? programToDelete.programCode + ' - ' : '' }}{{ programToDelete.programName }}
+            </div>
+        </div>
+        <div class="modal-foot">
+            <button type="button" class="btn btn-g" (click)="showDeleteModal = false">Cancel</button>
+            <button type="button" class="btn btn-danger-custom" (click)="confirmDeleteProgram()">Delete</button>
+        </div>
+    </div>
+</div>
