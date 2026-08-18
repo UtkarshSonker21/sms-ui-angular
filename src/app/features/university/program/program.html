@@ -239,7 +239,7 @@
               </div>
               <div class="ms-panel" *ngIf="isAddDocDropdownOpen" style="display: block; max-height: 200px; overflow-y: auto; text-align: start;">
                 <ng-container *ngIf="getAvailableDocumentTypes().length > 0; else allDocsAdded">
-                  <div class="ms-option" *ngFor="let docType of getAvailableDocumentTypes()" (click)="addDocument(docType)">
+                  <div class="ms-option" *ngFor="let docType of getAvailableDocumentTypes()" (click)="addDocument(docType); $event.stopPropagation()">
                     <span>{{ docType.documentName }}</span>
                   </div>
                 </ng-container>

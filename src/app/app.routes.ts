@@ -60,6 +60,8 @@ import { MasterDropdownValues } from './features/superadmin/master-dropdown-valu
 import { Languages } from './features/superadmin/languages/languages';
 import { Labels } from './features/superadmin/labels/labels';
 import { LanguageTranslations } from './features/superadmin/language-translations/language-translations';
+import { FacultiesList } from './features/university/faculties-list/faculties-list';
+import { ProgramsList } from './features/university/programs-list/programs-list';
 
 export const routes: Routes = [
 
@@ -199,7 +201,7 @@ export const routes: Routes = [
                 component: LanguageTranslations
             },
 
-            
+
 
             // ngo components
             {
@@ -277,6 +279,14 @@ export const routes: Routes = [
             {
                 path: 'faculties',
                 component: Faculties
+            },
+            {
+                path: 'faculty-list',
+                component: FacultiesList
+            },
+            {
+                path: 'program-list',
+                component: ProgramsList
             },
             {
                 path: 'programs',

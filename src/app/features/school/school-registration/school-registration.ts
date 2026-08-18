@@ -19,6 +19,7 @@ import { MasterSchoolService } from '../../../core/services/school/master-school
 import { MasterDropDownRequest } from '../../../core/models/super-admin/master-dropdown/master-dropdown-request.model';
 import { MainDropdown } from '../../../core/enums/main-dropdown.enum';
 import { MasterDropDownService } from '../../../core/services/superadmin/master-dropdown.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-school-registration',
@@ -476,8 +477,14 @@ export class SchoolRegistration implements OnInit {
           this.notification.error(response.message);
         }
       },
-      error: (err) => {
-        this.notification.error(err.message || 'An error occurred during registration.');
+      error: (error: HttpErrorResponse) => {
+        const message =
+          error?.error?.message ||
+          error?.error?.Message ||
+          error?.message ||
+          'An error occurred during registration.';
+
+        this.notification.error(message);
       }
     });
   }

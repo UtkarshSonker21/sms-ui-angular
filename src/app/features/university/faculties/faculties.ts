@@ -87,6 +87,14 @@ export class Faculties implements OnInit {
   }
 
 
+  viewAllFaculties(): void {
+    this.router.navigate([AppRoutes.University.FacultyList]);
+  }
+
+  viewAllPrograms(): void {
+    this.router.navigate([AppRoutes.University.ProgramList]);
+  }
+
   addProgram(): void {
     this.router.navigate([AppRoutes.University.Programs]);
   }

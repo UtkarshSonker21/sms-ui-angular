@@ -28,6 +28,7 @@ import { DisableAutocompleteDirective } from '../../../shared/directives/disable
 import { MasterDropDownService } from '../../../core/services/superadmin/master-dropdown.service';
 import { MasterDropDownRequest } from '../../../core/models/super-admin/master-dropdown/master-dropdown-request.model';
 import { MainDropdown } from '../../../core/enums/main-dropdown.enum';
+import { HttpErrorResponse } from '@angular/common/http';
 
 
 
@@ -501,8 +502,17 @@ export class Program implements OnInit {
         if (response.success && response.result) {
           this.courses = response.result.items;
         } else {
-          this.notification.warning(response.message);
+          if (filter.facultyId && response.message === 'Data not found') {
+            this.courses = [];
+            this.notification.warning('No courses are mapped to the selected faculty.');
+          } else {
+            this.notification.warning(response.message);
+          }
         }
+      },
+      error: () => {
+        this.courses = [];
+        this.notification.error('Unable to load courses. Please try again.');
       }
     });
   }
@@ -675,8 +685,14 @@ export class Program implements OnInit {
           this.notification.error(response.message || 'Failed to save program.');
         }
       },
-      error: (err) => {
-        this.notification.error('An error occurred while saving the program.');
+      error: (error: HttpErrorResponse) => {
+        const message =
+          error?.error?.message ||
+          error?.error?.Message ||
+          error?.message ||
+          'An error occurred while saving the program.';
+
+        this.notification.error(message);
       }
     });
   }

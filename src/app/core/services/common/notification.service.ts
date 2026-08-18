@@ -7,7 +7,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 export class NotificationService {
   private snackBar = inject(MatSnackBar);
 
-  success(message: string, action: string = 'Success', duration: number = 3000): void {
+  success(message: string, action: string = 'Success', duration: number = 5000): void {
     this.snackBar.open(message, action, {
       duration: duration,
       horizontalPosition: 'right',
@@ -16,7 +16,7 @@ export class NotificationService {
     });
   }
 
-  error(message: string, action: string = 'Error', duration: number = 3000): void {
+  error(message: string, action: string = 'Error', duration: number = 6000): void {
     this.snackBar.open(message, action, {
       duration: duration,
       horizontalPosition: 'right',
@@ -25,7 +25,7 @@ export class NotificationService {
     });
   }
 
-  warning(message: string, action: string = 'Warning', duration: number = 3000): void {
+  warning(message: string, action: string = 'Warning', duration: number = 6000): void {
     this.snackBar.open(message, action, {
       duration: duration,
       horizontalPosition: 'right',
@@ -34,7 +34,7 @@ export class NotificationService {
     });
   }
 
-  info(message: string, action: string = 'Info', duration: number = 3000): void {
+  info(message: string, action: string = 'Info', duration: number = 5000): void {
     this.snackBar.open(message, action, {
       duration: duration,
       horizontalPosition: 'right',

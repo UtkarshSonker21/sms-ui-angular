@@ -38,9 +38,12 @@ export const AppRoutes = {
 
     Courses: 'course-list',
     Faculties: 'faculties',
+    FacultyList:'faculty-list',
 
     Programs: 'programs',
     ProgramDetail: 'programs-detail',
+    ProgramList:'program-list',
+
   },
 
   School: {
