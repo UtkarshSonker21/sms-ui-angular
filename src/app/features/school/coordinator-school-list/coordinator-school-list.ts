@@ -9,11 +9,12 @@ import { MasterSchoolRequest } from '../../../core/models/school/master-school/m
 import { MasterSchoolFilter } from '../../../core/models/school/master-school/master-school-filter.model';
 import { AccreditationStatus } from '../../../core/enums/accreditation-status.enum';
 import { DisableAutocompleteDirective } from '../../../shared/directives/disable-autocomplete.directive';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-coordinator-school-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, DisableAutocompleteDirective, RouterModule],
+  imports: [CommonModule, FormsModule, DisableAutocompleteDirective, RouterModule, MatTooltipModule],
   templateUrl: './coordinator-school-list.html',
   styleUrl: './coordinator-school-list.scss',
 })
@@ -41,12 +42,12 @@ export class CoordinatorSchoolList implements OnInit {
 
   // Tabs
   activeTab: number | string = 'all';
-  
+
   // Filter
   filter: MasterSchoolFilter = new MasterSchoolFilter();
 
   isPageSizeDropdownOpen = false;
-  
+
   accreditationStatusEnum = AccreditationStatus;
 
   ngOnInit(): void {
@@ -57,6 +58,7 @@ export class CoordinatorSchoolList implements OnInit {
 
   loadData(): void {
     this.filter.isActive = true;
+    this.filter.mySchools = true;
     this.schoolService.getMasterSchools(this.filter).subscribe({
       next: (response) => {
         if (response.success && response.result) {
@@ -84,14 +86,12 @@ export class CoordinatorSchoolList implements OnInit {
 
   // --- Search & Filters ---
   applySearch(): void {
-    this.filter.schoolName = this.searchText.trim() || undefined;
     this.filter.pageNumber = 1;
     this.loadData();
   }
 
   clearSearch(): void {
     this.searchText = '';
-    this.filter.schoolName = undefined;
     this.filter.pageNumber = 1;
     this.loadData();
   }
@@ -111,7 +111,7 @@ export class CoordinatorSchoolList implements OnInit {
 
   // --- Status Badge Helper ---
   getStatusBadgeClass(school: MasterSchoolRequest): string {
-    switch(school.accreditationStatus) {
+    switch (school.accreditationStatus) {
       case AccreditationStatus.Accredited: return 'chip-registered';
       case AccreditationStatus.Pending: return 'chip-acceptance-process';
       case AccreditationStatus.Rejected: return 'chip-acceptance-rejected';
@@ -120,8 +120,8 @@ export class CoordinatorSchoolList implements OnInit {
   }
 
   getStatusName(school: MasterSchoolRequest): string {
-    switch(school.accreditationStatus) {
-      case AccreditationStatus.Accredited: return 'Accepted';
+    switch (school.accreditationStatus) {
+      case AccreditationStatus.Accredited: return 'Accredited';
       case AccreditationStatus.Pending: return 'Pending';
       case AccreditationStatus.Rejected: return 'Rejected';
       default: return 'Draft';
@@ -169,6 +169,33 @@ export class CoordinatorSchoolList implements OnInit {
 
   exportList(): void {
     this.notification.info('Export functionality coming soon.');
+  }
+
+
+  isEdited(school: MasterSchoolRequest): boolean {
+    // Enable Edit only when accreditation status is 0
+    return (school.accreditationStatus === 0 && school.isDraft === false);
+  }
+
+
+  getEditTooltip(school: MasterSchoolRequest): string {
+    if (school.isDraft) {
+      return 'Draft schools cannot be edited.';
+    }
+
+    if (school.accreditationStatus === 2) {
+      return 'Accredited schools cannot be edited.';
+    }
+
+    if (school.accreditationStatus === 1) {
+      return 'School is currently under review.';
+    }
+
+    if (school.accreditationStatus === 3) {
+      return 'Rejected school can be edited.';
+    }
+
+    return '';
   }
 
 }

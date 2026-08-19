@@ -74,8 +74,8 @@
             </div>
             <div class="da-select-option" 
                  *ngFor="let university of universities"
-                 [class.selected]="selectedUniversity === university.registrationId"
-                 (click)="selectUniversityOption(university.registrationId!)">
+                 [class.selected]="selectedUniversity === university.universityId"
+                 (click)="selectUniversityOption(university.universityId!)">
                 {{ university.universityName }}
             </div>
         </div>

@@ -4,8 +4,6 @@ export class MasterUniversityFilter extends BaseFilter {
 
   universityId?: number;
 
-  universityName?: string;
-
   countryId?: number;
 
   universityTypeId?: number;
@@ -14,18 +12,6 @@ export class MasterUniversityFilter extends BaseFilter {
 
   accreditationStatus?: number;
 
-  accreditationBy?: number;
-
-  isDraft?: boolean;
 
   isActive?: boolean;
-
-  createdFrom?: Date;
-
-  createdTo?: Date;
-
-  accreditationFrom?: Date;
-
-  accreditationTo?: Date;
-
 }

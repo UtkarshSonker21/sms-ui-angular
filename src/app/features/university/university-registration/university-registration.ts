@@ -13,6 +13,8 @@ import { MasterCountryRequest } from '../../../core/models/super-admin/master-co
 import { MasterCountryFilter } from '../../../core/models/super-admin/master-country/master-country-filter.model';
 import { MasterUniversityService } from '../../../core/services/university/master-university.service';
 import { AppRoutes } from '../../../core/constants/app-routes';
+import { HttpErrorResponse } from '@angular/common/http';
+import { AccreditationStatus } from '../../../core/enums/accreditation-status.enum';
 
 @Component({
   selector: 'app-university-registration',
@@ -307,6 +309,7 @@ export class UniversityRegistration implements OnInit {
 
     this.university.isDraft = false;
     this.university.isActive = true;
+    this.university.accreditationStatus = AccreditationStatus.Pending;
 
     this.masterUniversityService.addMasterUniversity(this.university).subscribe({
       next: (response) => {
@@ -317,8 +320,14 @@ export class UniversityRegistration implements OnInit {
           this.notification.error(response.message);
         }
       },
-      error: (err) => {
-        this.notification.error(err.message || 'An error occurred during registration.');
+      error: (error: HttpErrorResponse) => {
+        const message =
+          error?.error?.message ||
+          error?.error?.Message ||
+          error?.message ||
+          'An error occurred during registration.';
+
+        this.notification.error(message);
       }
     });
   }

@@ -20,6 +20,7 @@ import { MasterDropDownRequest } from '../../../core/models/super-admin/master-d
 import { MainDropdown } from '../../../core/enums/main-dropdown.enum';
 import { MasterDropDownService } from '../../../core/services/superadmin/master-dropdown.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { AccreditationStatus } from '../../../core/enums/accreditation-status.enum';
 
 @Component({
   selector: 'app-school-registration',
@@ -467,6 +468,7 @@ export class SchoolRegistration implements OnInit {
 
     this.school.isActive = true;
     this.school.isDraft = false;
+    this.school.accreditationStatus = AccreditationStatus.Pending;
 
     this.masterSchoolService.addMasterSchool(this.school).subscribe({
       next: (response) => {

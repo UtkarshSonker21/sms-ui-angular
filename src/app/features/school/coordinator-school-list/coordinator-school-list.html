@@ -65,38 +65,39 @@
     <div class="search-container">
         <i class="fas fa-search search-icon"></i>
         <input type="text" class="search-input" placeholder="Search by School Name or Number..."
-               [(ngModel)]="searchText" (keydown)="handleKeyDown($event)">
+            [(ngModel)]="searchText" (keydown)="handleKeyDown($event)">
         <i class="fas fa-times clear-icon" *ngIf="searchText" (click)="clearSearch()"></i>
     </div>
-    
+
     <div class="filter-count">
         {{ totalRecords }} schools
     </div>
 </div>
 
-<div class="card" style="border-radius: var(--da-radius); overflow: visible; margin-bottom: 20px; border: 1px solid var(--da-border, #e0e0e0); background: var(--da-surface, #ffffff); box-shadow: 0 10px 40px rgba(5,5,5,0.04);">
+<div class="card"
+    style="border-radius: var(--da-radius); overflow: visible; margin-bottom: 20px; border: 1px solid var(--da-border, #e0e0e0); background: var(--da-surface, #ffffff); box-shadow: 0 10px 40px rgba(5,5,5,0.04);">
     <table class="table">
         <thead>
-              <tr>
-                  <th style="width: 30%;">School</th>
-                  <th style="width: 20%;">Country / Area</th>
-                  <th style="width: 15%;">Status</th>
-                  <th style="width: 20%;">Last Updated</th>
-                  <th style="width: 15%; text-align: center !important;">Action</th>
-              </tr>
+            <tr>
+                <th style="width: 30%;">School</th>
+                <th style="width: 20%;">Country / Area</th>
+                <th style="width: 15%;">Status</th>
+                <th style="width: 20%;">Last Updated</th>
+                <th style="width: 15%; text-align: center !important;">Action</th>
+            </tr>
         </thead>
         <tbody>
             <tr *ngFor="let school of schools">
-                  <td>
-                      <div>
-                          <div style="font-size: 13.5px; font-weight: 600; color: var(--da-black);">
-                              {{ school.schoolName }}
-                          </div>
-                          <div style="font-size: 12.5px; color: var(--da-green); margin-top: 1.5px;">
-                              School Code: {{ school.schoolNumber || '-' }}
-                          </div>
-                      </div>
-                  </td>
+                <td>
+                    <div>
+                        <div style="font-size: 13.5px; font-weight: 600; color: var(--da-black);">
+                            {{ school.schoolName }}
+                        </div>
+                        <div style="font-size: 12.5px; color: var(--da-green); margin-top: 1.5px;">
+                            School Code: {{ school.schoolNumber || '-' }}
+                        </div>
+                    </div>
+                </td>
                 <td>
                     <div style="font-size: 12.5px; color: var(--da-text);">
                         {{ school.countryName || '-' }}
@@ -105,32 +106,38 @@
                         {{ school.area || 'No Area' }}
                     </div>
                 </td>
-                  <td>
-                      <span class="chip {{ getStatusBadgeClass(school) }}" style="font-size: 11px;">
-                          {{ getStatusName(school) }}
-                      </span>
-                  </td>
-                  <td>
-                      <div style="font-size: 12.5px; color: var(--da-text);">
-                          {{ school.createdDate | date:'mediumDate' }}
-                      </div>
-                  </td>
+                <td>
+                    <span class="chip {{ getStatusBadgeClass(school) }}" style="font-size: 11px;">
+                        {{ getStatusName(school) }}
+                    </span>
+                </td>
+                <td>
+                    <div style="font-size: 12.5px; color: var(--da-text);">
+                        {{ school.createdDate | date:'mediumDate' }}
+                    </div>
+                </td>
                 <td style="text-align: center;">
-                    <button type="button" class="btn btn-g" style="padding: 4px 10px; font-size: 12px; height: 28px;" [routerLink]="['/coordinator-school-registration', school.schoolId]">
-                        Edit
-                    </button>
+                    <span  [matTooltip]="getEditTooltip(school)" matTooltipPosition="right">
+                        <button type="button" class="btn btn-g"
+                            style="padding: 4px 10px; font-size: 12px; height: 28px;"
+                            [routerLink]="['/coordinator-school-registration', school.schoolId]"
+                            [disabled]="!isEdited(school)">
+                            Edit
+                        </button>
+                    </span>
                 </td>
             </tr>
-            
+
             <tr *ngIf="schools.length === 0">
                 <td colspan="5" style="text-align: center; padding: 42px 20px;">
                     <div style="font-size: 15px; font-weight: 600; color: var(--da-black);">No schools found</div>
-                    <div style="font-size: 13px; color: var(--da-text-2); margin-top: 4px;">Adjust your search or filter to find what you're looking for.</div>
+                    <div style="font-size: 13px; color: var(--da-text-2); margin-top: 4px;">Adjust your search or filter
+                        to find what you're looking for.</div>
                 </td>
             </tr>
         </tbody>
     </table>
-    
+
     <div class="pagination-footer">
         <div style="display: flex; align-items: center; gap: 8px;">
             <span class="text-muted" style="font-size: 13px; font-weight: 500;">Show</span>
@@ -140,24 +147,24 @@
                     <i class="fas" [ngClass]="isPageSizeDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
                 </div>
                 <div class="dropdown-menu" *ngIf="isPageSizeDropdownOpen">
-                    <div class="dropdown-item" 
-                         *ngFor="let size of [25, 50, 100, 500]"
-                         [class.selected]="size === filter.pageSize"
-                         (click)="selectPageSize(size)">
+                    <div class="dropdown-item" *ngFor="let size of [25, 50, 100, 500]"
+                        [class.selected]="size === filter.pageSize" (click)="selectPageSize(size)">
                         {{ size }}
                     </div>
                 </div>
             </div>
             <span class="text-muted" style="font-size: 13px; font-weight: 500;">entries</span>
         </div>
-        
+
         <div style="display: flex; align-items: center; gap: 12px;">
             <span style="font-size: 13px; color: var(--da-text-2);">
-                Page <strong style="font-weight: 700; color: var(--da-black);">{{ filter.pageNumber }}</strong> of <strong style="font-weight: 700; color: var(--da-black);">{{ totalPages || 1 }}</strong>
+                Page <strong style="font-weight: 700; color: var(--da-black);">{{ filter.pageNumber }}</strong> of
+                <strong style="font-weight: 700; color: var(--da-black);">{{ totalPages || 1 }}</strong>
             </span>
-            
+
             <div style="display: flex; gap: 6px;">
-                <button type="button" class="icon-btn btn-pagination" [disabled]="isPreviousDisabled" (click)="previousPage()">
+                <button type="button" class="icon-btn btn-pagination" [disabled]="isPreviousDisabled"
+                    (click)="previousPage()">
                     <i class="fas fa-chevron-left" style="font-size: 11px;"></i>
                 </button>
                 <button type="button" class="icon-btn btn-pagination" [disabled]="isNextDisabled" (click)="nextPage()">
