@@ -120,11 +120,11 @@ export class Students implements OnInit {
   uploadingDocs = new Set<number>();
   uniqueFaculties: string[] = [];
   uniqueUniversities: string[] = [];
-  
+
   searchCandidateProgram = '';
   selectedFaculty = '';
   selectedUniversity = '';
-  
+
   isProgramFacultyOpen = false;
   isProgramUniversityOpen = false;
   isApplying = false;
@@ -160,11 +160,11 @@ export class Students implements OnInit {
 
   loadAllLookups(): void {
     this.isLoading = true;
-    
+
     const countryFilter = new MasterCountryFilter();
     countryFilter.pageNumber = 1;
     countryFilter.pageSize = 1000;
-    
+
     const schoolFilter = new MasterSchoolFilter();
     schoolFilter.pageNumber = 1;
     schoolFilter.pageSize = 1000;
@@ -241,7 +241,7 @@ export class Students implements OnInit {
   }
 
   // Dropdown Utility logic
-  
+
   // Phone Selection
   togglePhoneDropdown(event: Event): void {
     event.stopPropagation();
@@ -375,7 +375,7 @@ export class Students implements OnInit {
   }
 
 
-  
+
   // Candidate Programs Logic
   loadCandidatePrograms(): void {
     if (!this.student.studentId) return;
@@ -391,10 +391,10 @@ export class Students implements OnInit {
           this.candidatePrograms = res.result;
           this.hasActiveApplication = this.candidatePrograms.some(p => p.applicationId && p.applicationStatus !== undefined);
           this.activeTab = this.hasActiveApplication ? 'current' : 'available';
-          
+
           this.uniqueFaculties = [...new Set(this.candidatePrograms.map(p => p.facultyName).filter(f => f))];
           this.uniqueUniversities = [...new Set(this.candidatePrograms.map(p => p.universityName).filter(u => u))];
-          
+
           this.filterCandidatePrograms();
 
           const activeApp = this.candidatePrograms.find(p => p.applicationId && p.applicationStatus !== undefined);
@@ -430,7 +430,7 @@ export class Students implements OnInit {
 
     if (this.searchCandidateProgram) {
       const term = this.searchCandidateProgram.toLowerCase();
-      filtered = filtered.filter(p => 
+      filtered = filtered.filter(p =>
         (p.programName && p.programName.toLowerCase().includes(term)) ||
         (p.programCode && p.programCode.toLowerCase().includes(term))
       );
@@ -491,23 +491,31 @@ export class Students implements OnInit {
 
   confirmApply(): void {
     if (!this.selectedApplyProgram || this.isApplying || this.hasActiveApplication) return;
-    
+
     this.isApplying = true;
     const req = new ApplyRequest();
     req.programId = this.selectedApplyProgram.programId;
-    
+
     this.studentProgramService.apply(this.student.studentId!, req).subscribe({
       next: (res) => {
         if (res.success && res.result) {
           this.selectedApplyProgram!.applicationId = res.result;
           this.selectedApplyProgram!.applicationStatus = StudentStatusEnum.Draft;
           this.selectedApplyProgram!.applicationStatusName = 'Draft';
+
           this.hasActiveApplication = true;
+
+          // Reload student so updated IsDraft value is reflected in the UI
+          this.loadStudent(this.student.studentId!);
+
           this.activeTab = 'current';
+
           // Auto expand the row after draft is created so they can upload
           this.expandedProgramId = null; // Reset first so toggle expands it
           this.toggleProgramExpand(this.selectedApplyProgram!);
+
           this.closeApplyModal();
+
         } else {
           this.notification.error(res.message || 'Failed to create draft application.');
         }
@@ -522,15 +530,15 @@ export class Students implements OnInit {
 
   submitProgramApplication(programId: number): void {
     if (this.isApplying) return;
-    
+
     const prog = this.candidatePrograms.find(p => p.programId === programId);
     if (!prog || !prog.applicationId) return;
-    
+
     if (!this.canApply(prog)) {
       this.notification.error('Please upload all required documents before submitting this program.');
       return;
     }
-    
+
     this.confirmDialog.confirm({
       title: 'Submit Application',
       message: 'Are you sure you want to submit this application?\nOnce submitted, you will not be able to modify the application or uploaded documents.',
@@ -551,6 +559,8 @@ export class Students implements OnInit {
         if (res.success) {
           this.notification.success('Successfully applied for program.');
           this.loadCandidatePrograms(); // Reload to get updated application ID and status
+          // Reload student so updated IsDraft value is reflected in the UI
+          this.loadStudent(this.student.studentId!);
         } else {
           this.notification.error(res.message || 'Failed to submit application.');
         }
@@ -585,6 +595,8 @@ export class Students implements OnInit {
             this.expandedProgramId = null;
             this.hasActiveApplication = false;
             this.loadCandidatePrograms();
+            // Reload student so updated IsDraft value is reflected in the UI
+            this.loadStudent(this.student.studentId!);
           } else {
             this.notification.error(res.message || 'Failed to cancel application.');
           }
@@ -605,10 +617,10 @@ export class Students implements OnInit {
       this.expandedProgramId = null;
       return;
     }
-    
+
     this.expandedProgramId = prog.programId;
     this.expandedProgramDocuments = [];
-    
+
     if (prog.applicationId) {
       this.isDocumentsLoading = true;
       this.studentProgramService.getDocuments(prog.applicationId).subscribe({
@@ -638,8 +650,8 @@ export class Students implements OnInit {
 
   getUploadedRequiredDocsCount(prog: CandidateProgram): number {
     if (!prog.requiredDocuments || !this.activeApplicationDocuments.length) return 0;
-    return prog.requiredDocuments.filter(d => 
-      d.isRequired && 
+    return prog.requiredDocuments.filter(d =>
+      d.isRequired &&
       this.activeApplicationDocuments.some(ad => ad.documentTypeId === d.documentTypeId)
     ).length;
   }
@@ -659,17 +671,17 @@ export class Students implements OnInit {
 
   saveDiscussionRemark(): void {
     if (!this.currentDiscussionDocTypeId) return;
-    
+
     let existingDoc = this.activeApplicationDocuments.find(d => d.documentTypeId === this.currentDiscussionDocTypeId);
     if (existingDoc) {
       existingDoc.reviewerRemark = this.currentDiscussionRemark;
     } else {
       this.activeApplicationDocuments.push({
-         documentTypeId: this.currentDiscussionDocTypeId,
-         reviewerRemark: this.currentDiscussionRemark
+        documentTypeId: this.currentDiscussionDocTypeId,
+        reviewerRemark: this.currentDiscussionRemark
       } as any);
     }
-    
+
     this.notification.success('Remark saved successfully.');
     this.closeDiscussionModal();
   }
@@ -879,9 +891,9 @@ export class Students implements OnInit {
   validateRequiredDocuments(): boolean {
     const activeApp = this.candidatePrograms.find(p => p.applicationId && p.applicationStatus !== undefined);
     if (!activeApp) return true; // No active application, nothing to block
-    
+
     const missingDocs: string[] = [];
-    
+
     if (activeApp.requiredDocuments) {
       activeApp.requiredDocuments.forEach(doc => {
         if (doc.isRequired) {
@@ -892,7 +904,7 @@ export class Students implements OnInit {
         }
       });
     }
-    
+
     if (missingDocs.length > 0) {
       this.notification.warning(`The following required documents are missing: ${missingDocs.join(', ')}. Please upload them before continuing.`);
       return false;
@@ -908,9 +920,9 @@ export class Students implements OnInit {
       return;
     }
 
-    if (!this.validateRequiredDocuments()) {
-      return;
-    }
+    // if (!this.validateRequiredDocuments()) {
+    //   return;
+    // }
 
     this.student.isDraft = false;
     this.submitForm();
@@ -993,6 +1005,7 @@ export class Students implements OnInit {
         }
       });
     }
+
   }
 
   cancel(): void {
@@ -1031,6 +1044,13 @@ export class Students implements OnInit {
   }
 
 
+  isDraftVisible(): boolean {
+    // Always show Save Draft on new student
+    if (!this.isEditMode)
+      return true;
 
-  
+    // Hide Save Draft once student is no longer a draft
+    return this.student.isDraft === true;
+  }
+
 }

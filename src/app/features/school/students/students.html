@@ -1080,7 +1080,7 @@
       <div style="flex: 1;"></div>
       <button type="button" class="btn btn-g" (click)="cancel()">Cancel</button>
 
-      <button type="button" class="btn btn-faculties-outline" (click)="saveDraft()" [disabled]="isSaving">
+      <button *ngIf="!isLoading && isDraftVisible()" type="button" class="btn btn-faculties-outline" (click)="saveDraft()" [disabled]="isSaving">
         <span *ngIf="!isSaving">Save Draft</span>
         <span *ngIf="isSaving">Saving...</span>
       </button>

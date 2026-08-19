@@ -104,7 +104,6 @@ export class CoordinatorNominations implements OnInit {
     uFilter.pageNumber = 1;
     uFilter.pageSize = 1000;
     uFilter.isActive = true;
-    uFilter.isDraft = false;
     this.universityService.getMasterUniversities(uFilter).subscribe({
       next: (res) => {
         if (res.success && res.result) {
