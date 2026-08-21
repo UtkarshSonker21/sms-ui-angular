@@ -44,7 +44,8 @@
           <label class="field-label">Personal photo</label>
           <div class="photo-uploader">
             <div class="ph-img" *ngIf="student.photoPath && !photoError">
-              <img [src]="getPhotoUrl(student.photoPath)" (error)="handlePhotoError()" alt="Preview" style="width: 100%; height: 100%; object-fit: cover;">
+              <img [src]="getPhotoUrl(student.photoPath)" (error)="handlePhotoError()" alt="Preview"
+                style="width: 100%; height: 100%; object-fit: cover;">
             </div>
             <div class="ph-img" id="ph-initials" *ngIf="!student.photoPath || photoError">
               {{ student.firstName ? student.firstName.charAt(0).toUpperCase() : 'S' }}{{ student.lastName ?
@@ -53,13 +54,15 @@
             <div class="ph-meta">
               <div class="ph-hint">PNG or JPG · square image preferred · max 2MB</div>
             </div>
-            <label class="btn btn-sm btn-faculties-outline btn-info-outline" style="cursor: pointer; margin: 0;" *ngIf="!student.photoPath">
+            <label class="btn btn-sm btn-faculties-outline btn-info-outline" style="cursor: pointer; margin: 0;"
+              *ngIf="!student.photoPath">
               Upload Photo
               <input type="file" name="photo" accept="image/*" hidden (change)="onPhotoSelected($event)">
             </label>
-            <button type="button" class="btn btn-sm btn-faculties-outline btn-danger-outline" (click)="removePhoto($event)" *ngIf="student.photoPath">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                stroke-width="2" style="margin-right: 4px; display: inline-block; vertical-align: middle;">
+            <button type="button" class="btn btn-sm btn-faculties-outline btn-danger-outline"
+              (click)="removePhoto($event)" *ngIf="student.photoPath">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                style="margin-right: 4px; display: inline-block; vertical-align: middle;">
                 <polyline points="3 6 5 6 21 6" />
                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
               </svg>
@@ -73,34 +76,63 @@
             <label class="field-label">First name <span class="required">*</span></label>
             <input type="text" class="field-input" name="firstName" placeholder="First name"
               [(ngModel)]="student.firstName" required #firstNameModel="ngModel"
-              [class.invalid]="(firstNameModel.touched || studentForm.submitted) && firstNameModel.invalid">
+              [class.invalid]="(firstNameModel.touched || studentForm.submitted) && firstNameModel.invalid"
+              [pattern]="validationPatterns.name">
             <div class="validation-error"
-              *ngIf="(firstNameModel.touched || studentForm.submitted) && firstNameModel.invalid">First name is
+              *ngIf="(firstNameModel.touched || studentForm.submitted) && firstNameModel.errors?.['required']">First
+              name is
               required.</div>
+            <div class="validation-error"
+              *ngIf="(firstNameModel.touched || studentForm.submitted) && firstNameModel.errors?.['pattern']">
+              Please enter a valid name. Only letters and single spaces between words are allowed.
+            </div>
           </div>
           <div class="field">
             <label class="field-label">Second name</label>
             <input type="text" class="field-input" name="secondName" placeholder="Second name"
-              [(ngModel)]="student.secondName">
+              [(ngModel)]="student.secondName" #secondNameModel="ngModel" [pattern]="validationPatterns.name"
+              [class.invalid]="(secondNameModel.touched || studentForm.submitted) && secondNameModel.invalid">
+            <div class="validation-error"
+              *ngIf="(secondNameModel.touched || studentForm.submitted) && secondNameModel.errors?.['pattern']">
+              Please enter a valid name. Only letters and single spaces between words are allowed.
+            </div>
           </div>
+
           <div class="field">
             <label class="field-label">Third name</label>
             <input type="text" class="field-input" name="thirdName" placeholder="Third name"
-              [(ngModel)]="student.thirdName">
+              [(ngModel)]="student.thirdName" #thirdNameModel="ngModel" [pattern]="validationPatterns.name"
+              [class.invalid]="(thirdNameModel.touched || studentForm.submitted) && thirdNameModel.invalid">
+            <div class="validation-error"
+              *ngIf="(thirdNameModel.touched || studentForm.submitted) && thirdNameModel.errors?.['pattern']">
+              Please enter a valid name. Only letters and single spaces between words are allowed.
+            </div>
           </div>
+
           <div class="field">
             <label class="field-label">Last name (family) <span class="required">*</span></label>
             <input type="text" class="field-input" name="lastName" placeholder="Family name"
               [(ngModel)]="student.lastName" required #lastNameModel="ngModel"
-              [class.invalid]="(lastNameModel.touched || studentForm.submitted) && lastNameModel.invalid">
+              [class.invalid]="(lastNameModel.touched || studentForm.submitted) && lastNameModel.invalid"
+              [pattern]="validationPatterns.name">
             <div class="validation-error"
-              *ngIf="(lastNameModel.touched || studentForm.submitted) && lastNameModel.invalid">Last name is required.
+              *ngIf="(lastNameModel.touched || studentForm.submitted) && lastNameModel.errors?.['required']">Last name
+              is required.
+            </div>
+            <div class="validation-error"
+              *ngIf="(lastNameModel.touched || studentForm.submitted) && lastNameModel.errors?.['pattern']">
+              Please enter a valid name. Only letters and single spaces between words are allowed.
             </div>
           </div>
           <div class="field">
             <label class="field-label">Mother's name</label>
             <input type="text" class="field-input" name="motherName" placeholder="Mother's full name"
-              [(ngModel)]="student.motherName">
+              [(ngModel)]="student.motherName" #motherNameModel="ngModel" [pattern]="validationPatterns.name"
+              [class.invalid]="(motherNameModel.touched || studentForm.submitted) && motherNameModel.invalid">
+            <div class="validation-error"
+              *ngIf="(motherNameModel.touched || studentForm.submitted) && motherNameModel.errors?.['pattern']">
+              Please enter a valid name. Only letters and single spaces between words are allowed.
+            </div>
           </div>
           <div class="field">
             <label class="field-label">Date of birth</label>
@@ -298,13 +330,33 @@
                 </div>
               </div>
               <input type="text" name="studentPhoneNumber" class="field-input phone-number-input" placeholder="55554444"
-                [(ngModel)]="PhoneNumber">
+                [(ngModel)]="PhoneNumber" #mobilePhoneModel="ngModel" [appPhoneValidator]="PhoneCountryCode"
+                [phoneCodeModel]="phoneCodeModel">
+            </div>
+            <input type="hidden" name="phoneCountryCode" [ngModel]="PhoneCountryCode ? PhoneCountryCode : ''"
+              #phoneCodeModel="ngModel">
+            <div class="validation-error"
+              *ngIf="(phoneCodeModel.touched || studentForm.submitted) && !phoneCodeModel.valid">
+              Phone Code is required.
+            </div>
+            <div class="validation-error"
+              *ngIf="(mobilePhoneModel.touched || studentForm.submitted) && mobilePhoneModel.errors?.['required']">
+              Phone number is required.
+            </div>
+            <div class="validation-error"
+              *ngIf="(mobilePhoneModel.touched || studentForm.submitted) && mobilePhoneModel.errors?.['pattern']">
+              Please enter a valid phone number.
             </div>
           </div>
           <div class="field">
             <label class="field-label">Email</label>
-            <input type="email" class="field-input" name="email" placeholder="Email address"
-              [(ngModel)]="student.email">
+            <input type="email" class="field-input" name="email" placeholder="Email address" [(ngModel)]="student.email"
+              #emailModel="ngModel" [pattern]="validationPatterns.email"
+              [class.invalid]="(emailModel.touched || studentForm.submitted) && emailModel.invalid">
+            <div class="validation-error"
+              *ngIf="(emailModel.touched || studentForm.submitted) && emailModel.errors?.['pattern']">
+              Please enter a valid email address.
+            </div>
           </div>
         </div>
       </div>
@@ -567,7 +619,8 @@
           <div class="field field-span-2" style="margin-top: 12px;" *ngIf="isEditMode">
             <label class="field-label">Recommendation Letter</label>
             <div class="form-hint" style="margin-bottom: 8px; font-size: 11.5px;">
-              Letter from school principal or relevant authority supporting the nomination. PDF preferred; clear scans of signed paper letters are accepted.
+              Letter from school principal or relevant authority supporting the nomination. PDF preferred; clear scans
+              of signed paper letters are accepted.
             </div>
             <div class="file-row" *ngIf="student.recommendationLetterPath">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -577,14 +630,15 @@
                 <line x1="16" y1="17" x2="8" y2="17" />
                 <polyline points="10 9 9 9 8 9" />
               </svg>
-              <span class="badge" style="background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 12px; font-size: 11px; margin-left: 8px;">
+              <span class="badge"
+                style="background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 12px; font-size: 11px; margin-left: 8px;">
                 Uploaded
               </span>
               <div style="flex: 1;"></div>
               <button type="button" class="btn btn-sm btn-faculties-outline btn-info-outline" style="margin-right: 8px;"
                 (click)="previewRecommendation($event)">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                  stroke-width="2" style="margin-right: 4px; display: inline-block; vertical-align: middle;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  style="margin-right: 4px; display: inline-block; vertical-align: middle;">
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                   <circle cx="12" cy="12" r="3" />
                 </svg>
@@ -592,8 +646,8 @@
               </button>
               <button type="button" class="btn btn-sm btn-faculties-outline btn-danger-outline"
                 (click)="removeRecommendation($event)">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                  stroke-width="2" style="margin-right: 4px; display: inline-block; vertical-align: middle;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  style="margin-right: 4px; display: inline-block; vertical-align: middle;">
                   <polyline points="3 6 5 6 21 6" />
                   <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                 </svg>
@@ -642,14 +696,17 @@
       </div>
       <div class="form-section-body">
 
-        <div class="alert" style="margin-bottom: 20px; background: #eff6ff; border: 1px solid #bfdbfe; padding: 12px 16px; border-radius: 6px;">
+        <div class="alert"
+          style="margin-bottom: 20px; background: #eff6ff; border: 1px solid #bfdbfe; padding: 12px 16px; border-radius: 6px;">
           <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 2px;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" stroke-width="2" style="flex-shrink: 0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" stroke-width="2"
+              style="flex-shrink: 0;">
               <circle cx="12" cy="12" r="10"></circle>
               <line x1="12" y1="16" x2="12" y2="12"></line>
               <line x1="12" y1="8" x2="12.01" y2="8"></line>
             </svg>
-            <div style="color: #1e40af; font-weight: 600; font-size: 14px; line-height: 1.5;">Apply to one program at a time. Cancel the current application before applying to a different program.</div>
+            <div style="color: #1e40af; font-weight: 600; font-size: 14px; line-height: 1.5;">Apply to one program at a
+              time. Cancel the current application before applying to a different program.</div>
           </div>
           <!-- <div style="color: #1d4ed8; font-size: 14px; line-height: 1.5;">
             Cancel the current application before applying to a different program.
@@ -657,17 +714,16 @@
         </div>
 
         <!-- Tabs -->
-        <div style="display: flex; gap: 24px; border-bottom: 1px solid var(--da-border); margin-bottom: 24px; padding-bottom: 0;">
-          <div 
-            (click)="activeTab = 'current'"
+        <div
+          style="display: flex; gap: 24px; border-bottom: 1px solid var(--da-border); margin-bottom: 24px; padding-bottom: 0;">
+          <div (click)="activeTab = 'current'"
             [style.color]="activeTab === 'current' ? 'var(--da-primary)' : 'var(--da-muted)'"
             [style.font-weight]="activeTab === 'current' ? '600' : '400'"
             [style.border-bottom]="activeTab === 'current' ? '2px solid var(--da-primary)' : '2px solid transparent'"
             style="font-size: 15px; padding-bottom: 12px; cursor: pointer; transition: all 0.2s; margin-bottom: -1px;">
             Current Application
           </div>
-          <div 
-            (click)="activeTab = 'available'"
+          <div (click)="activeTab = 'available'"
             [style.color]="activeTab === 'available' ? 'var(--da-primary)' : 'var(--da-muted)'"
             [style.font-weight]="activeTab === 'available' ? '600' : '400'"
             [style.border-bottom]="activeTab === 'available' ? '2px solid var(--da-primary)' : '2px solid transparent'"
@@ -677,7 +733,8 @@
         </div>
 
         <!-- Filters (Only show in available tab) -->
-        <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr; margin-bottom: 24px;" *ngIf="activeTab === 'available'">
+        <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr; margin-bottom: 24px;"
+          *ngIf="activeTab === 'available'">
           <div class="field">
             <label class="field-label">Search</label>
             <input type="text" class="field-input" placeholder="Program name or code..."
@@ -747,8 +804,7 @@
         <ng-template #programCardTemplate let-prog="prog">
           <div
             style="padding: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;"
-            [style.cursor]="prog.applicationId ? 'pointer' : 'default'"
-            (click)="toggleProgramExpand(prog)">
+            [style.cursor]="prog.applicationId ? 'pointer' : 'default'" (click)="toggleProgramExpand(prog)">
 
             <!-- Left Side -->
             <div style="display: flex; align-items: center; gap: 16px; flex: 1; min-width: 300px;">
@@ -764,7 +820,8 @@
                   style="margin: 0 0 4px 0; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
                   {{ prog.programName }}
                   <span class="badge" *ngIf="prog.applicationStatusName"
-                    style="background: var(--da-primary); color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px;">Status: {{
+                    style="background: var(--da-primary); color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px;">Status:
+                    {{
                     prog.applicationStatusName }}</span>
                 </h4>
                 <div style="color: var(--da-muted); font-size: 13px; margin-bottom: 4px;">{{ prog.programCode }}</div>
@@ -809,11 +866,12 @@
 
           <div *ngIf="expandedProgramId === prog.programId && prog.applicationId"
             style="border-top: 1px solid var(--da-border); padding: 16px; background: var(--da-surface-1);">
-            
+
             <!-- Information Banner (Non-editable application status info) -->
-            <div *ngIf="!isApplicationEditable(prog)" 
-                 style="margin-bottom: 16px; display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: var(--da-info-bg, #eff6ff); border: 1px solid var(--da-info-border, #bfdbfe); border-radius: 6px; color: var(--da-info, #2563eb); font-size: 13px;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0;">
+            <div *ngIf="!isApplicationEditable(prog)"
+              style="margin-bottom: 16px; display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: var(--da-info-bg, #eff6ff); border: 1px solid var(--da-info-border, #bfdbfe); border-radius: 6px; color: var(--da-info, #2563eb); font-size: 13px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                style="flex-shrink: 0;">
                 <circle cx="12" cy="12" r="10" />
                 <line x1="12" y1="16" x2="12" y2="12" />
                 <line x1="12" y1="8" x2="12.01" y2="8" />
@@ -832,12 +890,14 @@
             <div *ngIf="!isDocumentsLoading">
               <div *ngIf="!prog.requiredDocuments || prog.requiredDocuments.length === 0"
                 style="padding: 16px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
-                <div style="width: 48px; height: 48px; border-radius: 50%; background: #dcfce7; display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
+                <div
+                  style="width: 48px; height: 48px; border-radius: 50%; background: #dcfce7; display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2">
                     <polyline points="20 6 9 17 4 12"></polyline>
                   </svg>
                 </div>
-                <h5 style="margin: 0 0 8px 0; font-size: 15px; font-weight: 600; color: var(--da-text);">No Documents Required</h5>
+                <h5 style="margin: 0 0 8px 0; font-size: 15px; font-weight: 600; color: var(--da-text);">No Documents
+                  Required</h5>
                 <div style="color: var(--da-muted); font-size: 13px; line-height: 1.5;">
                   This program does not require any supporting documents.<br>
                   You can submit your application immediately.
@@ -869,8 +929,7 @@
                   <div
                     style="display: flex; align-items: center; gap: 4px; color: var(--da-muted); font-size: 12px; cursor: pointer;"
                     (click)="openDiscussionModal(doc.documentTypeId); $event.stopPropagation()">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                      stroke-width="2">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                     </svg>
                     {{ getDiscussionCount(doc.documentTypeId) }}
@@ -904,17 +963,18 @@
                     *ngIf="getUploadedDocStatus(doc.documentTypeId) === 'Uploaded' && !uploadingDocs.has(doc.documentTypeId)">
                     <button type="button" class="btn btn-sm btn-faculties-outline btn-info-outline"
                       (click)="previewDocument(doc.documentTypeId); $event.stopPropagation()">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2" style="margin-right: 4px;">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        style="margin-right: 4px;">
                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                         <circle cx="12" cy="12" r="3" />
                       </svg>
                       Preview
                     </button>
-                    <button type="button" class="btn btn-sm btn-faculties-outline btn-danger-outline" *ngIf="isApplicationEditable(prog)"
+                    <button type="button" class="btn btn-sm btn-faculties-outline btn-danger-outline"
+                      *ngIf="isApplicationEditable(prog)"
                       (click)="removeDocument(doc, prog.applicationId!); $event.stopPropagation()">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2" style="margin-right: 4px;">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        style="margin-right: 4px;">
                         <polyline points="3 6 5 6 21 6" />
                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                       </svg>
@@ -957,14 +1017,13 @@
               <!-- Action Buttons -->
               <div style="display: flex; justify-content: space-between; align-items: center;">
                 <!-- Left Side: Cancel Application -->
-                <button type="button" class="btn btn-faculties-outline btn-danger-outline"
-                  [disabled]="isApplying" (click)="cancelApplication(prog.applicationId)">
+                <button type="button" class="btn btn-faculties-outline btn-danger-outline" [disabled]="isApplying"
+                  (click)="cancelApplication(prog.applicationId)">
                   Cancel Application
                 </button>
 
                 <!-- Right Side: Submit Application -->
-                <button type="button" class="btn btn-p"
-                  [disabled]="isApplying || !canApply(prog)"
+                <button type="button" class="btn btn-p" [disabled]="isApplying || !canApply(prog)"
                   (click)="submitProgramApplication(prog.programId)">
                   Submit Application
                 </button>
@@ -978,17 +1037,20 @@
           <div *ngIf="activeCandidateProgram">
             <div class="card"
               style="border: 2px solid var(--da-primary); border-radius: 6px; background: white; overflow: hidden; margin-bottom: 32px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);">
-              <ng-container *ngTemplateOutlet="programCardTemplate; context: { prog: activeCandidateProgram }"></ng-container>
+              <ng-container
+                *ngTemplateOutlet="programCardTemplate; context: { prog: activeCandidateProgram }"></ng-container>
             </div>
           </div>
-          <div *ngIf="!activeCandidateProgram" style="padding: 40px; text-align: center; color: var(--da-muted); border: 1px dashed var(--da-border); border-radius: 6px; margin-bottom: 32px;">
+          <div *ngIf="!activeCandidateProgram"
+            style="padding: 40px; text-align: center; color: var(--da-muted); border: 1px dashed var(--da-border); border-radius: 6px; margin-bottom: 32px;">
             No current application found. Switch to the "Other Available Programs" tab to browse and apply.
           </div>
         </div>
 
         <!-- Available Programs Content -->
         <div *ngIf="activeTab === 'available'">
-          <div *ngIf="availableCandidatePrograms.length > 0" style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 32px;">
+          <div *ngIf="availableCandidatePrograms.length > 0"
+            style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 32px;">
             <div class="card" *ngFor="let prog of availableCandidatePrograms"
               style="border: 1px solid var(--da-border); border-radius: 6px; background: white; overflow: hidden;">
               <ng-container *ngTemplateOutlet="programCardTemplate; context: { prog: prog }"></ng-container>
@@ -1060,7 +1122,7 @@
                 -->
               </div>
             </div>
-            
+
             <div class="student-history-time">
               <strong class="student-history-date">{{ item.createdDate | date:'dd MMM yyyy' }}</strong>
               <span>{{ item.createdDate | date:'hh:mm a' }}</span>
@@ -1080,7 +1142,8 @@
       <div style="flex: 1;"></div>
       <button type="button" class="btn btn-g" (click)="cancel()">Cancel</button>
 
-      <button *ngIf="!isLoading && isDraftVisible()" type="button" class="btn btn-faculties-outline" (click)="saveDraft()" [disabled]="isSaving">
+      <button *ngIf="!isLoading && isDraftVisible()" type="button" class="btn btn-faculties-outline"
+        (click)="saveDraft()" [disabled]="isSaving">
         <span *ngIf="!isSaving">Save Draft</span>
         <span *ngIf="isSaving">Saving...</span>
       </button>
@@ -1157,12 +1220,14 @@
       </div>
       <div *ngIf="!selectedApplyProgram.requiredDocuments || selectedApplyProgram.requiredDocuments.length === 0"
         style="padding: 32px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
-        <div style="width: 48px; height: 48px; border-radius: 50%; background: #dcfce7; display: flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+        <div
+          style="width: 48px; height: 48px; border-radius: 50%; background: #dcfce7; display: flex; align-items: center; justify-content: center; margin-bottom: 16px;">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2">
             <polyline points="20 6 9 17 4 12"></polyline>
           </svg>
         </div>
-        <h5 style="margin: 0 0 8px 0; font-size: 15px; font-weight: 600; color: var(--da-text);">No Documents Required</h5>
+        <h5 style="margin: 0 0 8px 0; font-size: 15px; font-weight: 600; color: var(--da-text);">No Documents Required
+        </h5>
         <div style="color: var(--da-muted); font-size: 13px; line-height: 1.5;">
           This program does not require any supporting documents.<br>
           You can proceed directly with creating your draft application.

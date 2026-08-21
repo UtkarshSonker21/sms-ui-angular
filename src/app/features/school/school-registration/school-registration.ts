@@ -21,10 +21,12 @@ import { MainDropdown } from '../../../core/enums/main-dropdown.enum';
 import { MasterDropDownService } from '../../../core/services/superadmin/master-dropdown.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AccreditationStatus } from '../../../core/enums/accreditation-status.enum';
+import { ValidationPatterns } from '../../../core/constants/validation-patterns';
+import { PhoneValidatorDirective } from '../../../shared/directives/phone-validator.directive';
 
 @Component({
   selector: 'app-school-registration',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PhoneValidatorDirective],
   templateUrl: './school-registration.html',
   styleUrl: './school-registration.scss',
 })
@@ -38,7 +40,8 @@ export class SchoolRegistration implements OnInit {
   private masterDropDownService = inject(MasterDropDownService);
   private router = inject(Router);
   school: MasterSchoolRequest = new MasterSchoolRequest();
-  
+  validationPatterns = ValidationPatterns;
+
   isCoordinatorMode = false;
 
   // Accordion & Stepper state

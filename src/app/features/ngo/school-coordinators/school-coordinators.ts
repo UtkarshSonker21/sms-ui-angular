@@ -22,15 +22,19 @@ import { SchoolByCountryRequest } from '../../../core/models/school/master-schoo
 
 import { HelperMethods } from '../../../core/helpers/helper-methods';
 import { DisableAutocompleteDirective } from '../../../shared/directives/disable-autocomplete.directive';
+import { ValidationPatterns } from '../../../core/constants/validation-patterns';
+import { PhoneValidatorDirective } from '../../../shared/directives/phone-validator.directive';
 
 @Component({
   selector: 'app-school-coordinators',
   standalone: true,
-  imports: [CommonModule, FormsModule, DisableAutocompleteDirective],
+  imports: [CommonModule, FormsModule, DisableAutocompleteDirective, PhoneValidatorDirective],
   templateUrl: './school-coordinators.html',
   styleUrl: './school-coordinators.scss',
 })
 export class SchoolCoordinators implements OnInit {
+
+  validationPatterns = ValidationPatterns;
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
@@ -484,11 +488,7 @@ export class SchoolCoordinators implements OnInit {
     }
 
     this.applyPhoneBeforeSave();
-    if (this.tempUserModel.recoveryEmail) {
-      this.tempUserModel.recoveryEmail = this.tempUserModel.recoveryEmail.trim().toLowerCase();
-    }
-    
-    
+    this.applyPhoneBeforeSave();this.tempUserModel.recoveryEmail = this.tempUserModel.officialEmail ? this.tempUserModel.officialEmail.trim().toLowerCase() : '';
     this.isSaving = true;
     this.modalErrorMessage = '';
 

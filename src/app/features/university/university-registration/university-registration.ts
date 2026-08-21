@@ -15,10 +15,12 @@ import { MasterUniversityService } from '../../../core/services/university/maste
 import { AppRoutes } from '../../../core/constants/app-routes';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AccreditationStatus } from '../../../core/enums/accreditation-status.enum';
+import { ValidationPatterns } from '../../../core/constants/validation-patterns';
+import { PhoneValidatorDirective } from '../../../shared/directives/phone-validator.directive';
 
 @Component({
   selector: 'app-university-registration',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PhoneValidatorDirective],
   templateUrl: './university-registration.html',
   styleUrl: './university-registration.scss',
 })
@@ -31,6 +33,7 @@ export class UniversityRegistration implements OnInit {
   private router = inject(Router);
 
   university: MasterUniversityRequest = new MasterUniversityRequest();
+  validationPatterns = ValidationPatterns;
   countries: MasterCountryRequest[] = [];
   universityType: MasterDropDownRequest[] = [];
   studentGenders: MasterDropDownRequest[] = [];

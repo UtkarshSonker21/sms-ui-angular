@@ -272,10 +272,14 @@
                     <div class="field">
                         <label class="field-label required-label">First Name</label>
                         <input type="text" name="staffFirstName" class="field-input" placeholder="First Name" required
-                            [(ngModel)]="tempUserModel.staffFirstName" #firstNameModel="ngModel">
+                            [(ngModel)]="tempUserModel.staffFirstName" #firstNameModel="ngModel" [pattern]="validationPatterns.name">
                         <div class="validation-error"
                             *ngIf="(firstNameModel.touched || userForm.submitted) && firstNameModel.errors?.['required']">
                             First Name is required.
+                        </div>
+                        <div class="validation-error"
+                            *ngIf="(firstNameModel.touched || userForm.submitted) && firstNameModel.errors?.['pattern']">
+                            Please enter a valid name. Only letters and single spaces between words are allowed.
                         </div>
                     </div>
                 </div>
@@ -285,10 +289,14 @@
                     <div class="field">
                         <label class="field-label required-label">Last Name</label>
                         <input type="text" name="staffLastName" class="field-input" placeholder="Last Name" required
-                            [(ngModel)]="tempUserModel.staffLastName" #lastNameModel="ngModel">
+                            [(ngModel)]="tempUserModel.staffLastName" #lastNameModel="ngModel" [pattern]="validationPatterns.name">
                         <div class="validation-error"
                             *ngIf="(lastNameModel.touched || userForm.submitted) && lastNameModel.errors?.['required']">
                             Last Name is required.
+                        </div>
+                        <div class="validation-error"
+                            *ngIf="(lastNameModel.touched || userForm.submitted) && lastNameModel.errors?.['pattern']">
+                            Please enter a valid name. Only letters and single spaces between words are allowed.
                         </div>
                     </div>
 
@@ -370,26 +378,26 @@
                     <div class="field">
                         <label class="field-label required-label">Official Email</label>
                         <input type="email" name="officialEmail" class="field-input num-ltr"
-                            placeholder="name@directaid.example" required email
-                            [(ngModel)]="tempUserModel.officialEmail" #officialEmailModel="ngModel" dir="ltr">
+                            placeholder="name@directaid.example" required
+                            [(ngModel)]="tempUserModel.officialEmail" #officialEmailModel="ngModel" [pattern]="validationPatterns.email" dir="ltr">
                         <div class="validation-error"
                             *ngIf="(officialEmailModel.touched || userForm.submitted) && officialEmailModel.errors?.['required']">
                             Official Email is required.
                         </div>
                         <div class="validation-error"
-                            *ngIf="(officialEmailModel.touched || userForm.submitted) && officialEmailModel.errors?.['email']">
-                            Please enter a valid email.
+                            *ngIf="(officialEmailModel.touched || userForm.submitted) && officialEmailModel.errors?.['pattern']">
+                            Please enter a valid email address.
                         </div>
                     </div>
 
                     <div class="field">
                         <label class="field-label">Personal Email</label>
                         <input type="email" name="personalEmail" class="field-input num-ltr"
-                            placeholder="personal@example.com" email [(ngModel)]="tempUserModel.personalEmail"
-                            #personalEmailModel="ngModel" dir="ltr">
+                            placeholder="personal@example.com" [(ngModel)]="tempUserModel.personalEmail"
+                            #personalEmailModel="ngModel" [pattern]="validationPatterns.email" dir="ltr">
                         <div class="validation-error"
-                            *ngIf="(personalEmailModel.touched || userForm.submitted) && personalEmailModel.errors?.['email']">
-                            Please enter a valid email.
+                            *ngIf="(personalEmailModel.touched || userForm.submitted) && personalEmailModel.errors?.['pattern']">
+                            Please enter a valid email address.
                         </div>
                     </div>
                 </div>
@@ -415,7 +423,17 @@
                                 </div>
                             </div>
                             <input type="text" name="mobileNumber" class="field-input phone-number-input num-ltr" placeholder="55554444"
-                                [(ngModel)]="PhoneNumber" dir="ltr">
+                                [(ngModel)]="PhoneNumber" dir="ltr" #mobilePhoneModel="ngModel" [appPhoneValidator]="PhoneCountryCode" [phoneCodeModel]="phoneCodeModel">
+                        </div>
+                        <input type="hidden" name="phoneCountryCode" [ngModel]="PhoneCountryCode ? PhoneCountryCode : ''" #phoneCodeModel="ngModel">
+                        <div class="validation-error" *ngIf="(phoneCodeModel.touched || userForm.submitted) && !phoneCodeModel.valid">
+                            Phone Code is required.
+                        </div>
+                        <div class="validation-error" *ngIf="(mobilePhoneModel.touched || userForm.submitted) && mobilePhoneModel.errors?.['required']">
+                            Phone number is required.
+                        </div>
+                        <div class="validation-error" *ngIf="(mobilePhoneModel.touched || userForm.submitted) && mobilePhoneModel.errors?.['pattern']">
+                            Please enter a valid phone number.
                         </div>
                     </div>
                 </div>
