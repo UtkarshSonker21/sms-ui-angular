@@ -430,21 +430,27 @@
                       </div>
                     </div>
                   </div>
-                  <input type="text" name="localPhoneNumber" class="field-input phone-number-input" placeholder="22448888" [(ngModel)]="localPhoneNumber" required #localPhoneModel="ngModel">
+                  <input type="text" name="localPhoneNumber" class="field-input phone-number-input" placeholder="22448888" [(ngModel)]="localPhoneNumber" required #localPhoneModel="ngModel" [appPhoneValidator]="selectedIsdCode" [phoneCodeModel]="phoneCodeModel">
                 </div>
                 <input type="hidden" name="phoneCountryCode" [ngModel]="selectedIsdCode ? selectedIsdCode : ''" required #phoneCodeModel="ngModel">
                 <div class="validation-error" *ngIf="(phoneCodeModel.touched || regForm.submitted) && !phoneCodeModel.valid">
                   Phone Code is required.
                 </div>
-                <div class="validation-error" *ngIf="(localPhoneModel.touched || regForm.submitted) && !localPhoneModel.valid">
+                <div class="validation-error" *ngIf="(localPhoneModel.touched || regForm.submitted) && localPhoneModel.errors?.['required']">
                   Phone number is required.
+                </div>
+                <div class="validation-error" *ngIf="(localPhoneModel.touched || regForm.submitted) && localPhoneModel.errors?.['pattern']">
+                  Please enter a valid phone number.
                 </div>
               </div>
 
               <div class="field">
                 <label class="field-label">Email Address</label>
                 <input type="email" name="emailId" class="field-input" placeholder="e.g. info@school.edu"
-                       [(ngModel)]="school.emailId">
+                       [(ngModel)]="school.emailId" #emailIdModel="ngModel" [pattern]="validationPatterns.email">
+                <div class="validation-error" *ngIf="(emailIdModel.touched || regForm.submitted) && emailIdModel.errors?.['pattern']">
+                  Please enter a valid email address.
+                </div>
               </div>
             </div>
           </div>
@@ -468,7 +474,10 @@
               <div class="field field-span-2">
                 <label class="field-label">Principal Name</label>
                 <input type="text" name="principalName" class="field-input" placeholder="e.g. Dr. Ahmed Mahmoud"
-                       [(ngModel)]="school.principalName">
+                       [(ngModel)]="school.principalName" #principalNameModel="ngModel" [pattern]="validationPatterns.name">
+                <div class="validation-error" *ngIf="(principalNameModel.touched || regForm.submitted) && principalNameModel.errors?.['pattern']">
+                  Please enter a valid name. Only letters and single spaces between words are allowed.
+                </div>
               </div>
 
               <!-- Principal Phone -->
@@ -486,21 +495,27 @@
                       </div>
                     </div>
                   </div>
-                  <input type="text" name="principalPhoneNumber" class="field-input phone-number-input" placeholder="99998888" [(ngModel)]="PrincipalPhoneNumber" required #principalPhoneModel="ngModel">
+                  <input type="text" name="principalPhoneNumber" class="field-input phone-number-input" placeholder="99998888" [(ngModel)]="PrincipalPhoneNumber" required #principalPhoneModel="ngModel" [appPhoneValidator]="PrincipalCountryCode" [phoneCodeModel]="principalCodeModel">
                 </div>
                 <input type="hidden" name="principalCountryCode" [ngModel]="PrincipalCountryCode ? PrincipalCountryCode : ''" required #principalCodeModel="ngModel">
                 <div class="validation-error" *ngIf="(principalCodeModel.touched || regForm.submitted) && !principalCodeModel.valid">
                   Phone Code is required.
                 </div>
-                <div class="validation-error" *ngIf="(principalPhoneModel.touched || regForm.submitted) && !principalPhoneModel.valid">
+                <div class="validation-error" *ngIf="(principalPhoneModel.touched || regForm.submitted) && principalPhoneModel.errors?.['required']">
                   Phone number is required.
+                </div>
+                <div class="validation-error" *ngIf="(principalPhoneModel.touched || regForm.submitted) && principalPhoneModel.errors?.['pattern']">
+                  Please enter a valid phone number.
                 </div>
               </div>
 
               <div class="field">
                 <label class="field-label">Principal Email</label>
                 <input type="email" name="principalEmail" class="field-input" placeholder="e.g. principal@school.edu"
-                       [(ngModel)]="school.principalEmail">
+                       [(ngModel)]="school.principalEmail" #principalEmailModel="ngModel" [pattern]="validationPatterns.email">
+                <div class="validation-error" *ngIf="(principalEmailModel.touched || regForm.submitted) && principalEmailModel.errors?.['pattern']">
+                  Please enter a valid email address.
+                </div>
               </div>
             </div>
           </div>
@@ -524,7 +539,10 @@
               <div class="field field-span-2">
                 <label class="field-label">Coordinator Name</label>
                 <input type="text" name="schoolCoordinatorName" class="field-input" placeholder="e.g. Mr. Bilal Salem"
-                       [(ngModel)]="school.schoolCoordinatorName">
+                       [(ngModel)]="school.schoolCoordinatorName" #schoolCoordinatorNameModel="ngModel" [pattern]="validationPatterns.name">
+                <div class="validation-error" *ngIf="(schoolCoordinatorNameModel.touched || regForm.submitted) && schoolCoordinatorNameModel.errors?.['pattern']">
+                  Please enter a valid name. Only letters and single spaces between words are allowed.
+                </div>
               </div>
 
               <!-- Coordinator Phone -->
@@ -542,21 +560,27 @@
                       </div>
                     </div>
                   </div>
-                  <input type="text" name="coordinatorPhoneNumber" class="field-input phone-number-input" placeholder="55554444" [(ngModel)]="CoordinatorPhoneNumber" required #coordinatorPhoneModel="ngModel">
+                  <input type="text" name="coordinatorPhoneNumber" class="field-input phone-number-input" placeholder="55554444" [(ngModel)]="CoordinatorPhoneNumber" required #coordinatorPhoneModel="ngModel" [appPhoneValidator]="CoordinatorCountryCode" [phoneCodeModel]="coordinatorCodeModel">
                 </div>
                 <input type="hidden" name="coordinatorCountryCode" [ngModel]="CoordinatorCountryCode ? CoordinatorCountryCode : ''" required #coordinatorCodeModel="ngModel">
                 <div class="validation-error" *ngIf="(coordinatorCodeModel.touched || regForm.submitted) && !coordinatorCodeModel.valid">
                   Phone Code is required.
                 </div>
-                <div class="validation-error" *ngIf="(coordinatorPhoneModel.touched || regForm.submitted) && !coordinatorPhoneModel.valid">
+                <div class="validation-error" *ngIf="(coordinatorPhoneModel.touched || regForm.submitted) && coordinatorPhoneModel.errors?.['required']">
                   Phone number is required.
+                </div>
+                <div class="validation-error" *ngIf="(coordinatorPhoneModel.touched || regForm.submitted) && coordinatorPhoneModel.errors?.['pattern']">
+                  Please enter a valid phone number.
                 </div>
               </div>
 
               <div class="field">
                 <label class="field-label">Coordinator Email</label>
                 <input type="email" name="schoolCoordinatorEmail" class="field-input" placeholder="e.g. coordinator@school.edu"
-                       [(ngModel)]="school.schoolCoordinatorEmail">
+                       [(ngModel)]="school.schoolCoordinatorEmail" #schoolCoordinatorEmailModel="ngModel" [pattern]="validationPatterns.email">
+                <div class="validation-error" *ngIf="(schoolCoordinatorEmailModel.touched || regForm.submitted) && schoolCoordinatorEmailModel.errors?.['pattern']">
+                  Please enter a valid email address.
+                </div>
               </div>
             </div>
           </div>

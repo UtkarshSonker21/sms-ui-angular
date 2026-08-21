@@ -28,17 +28,19 @@ import { ApplyRequest } from '../../../core/models/school/student-program-applic
 import { UploadDocumentRequest } from '../../../core/models/school/student-program-application/upload-document-request.model';
 import { StudentStatusEnum } from '../../../core/enums/student-application-status.enum';
 import { StudentStatusService } from '../../../core/services/common/student-status.service';
-
-
+import { ValidationPatterns } from '../../../core/constants/validation-patterns';
+import { PhoneValidatorDirective } from '../../../shared/directives/phone-validator.directive';
 
 @Component({
   selector: 'app-students',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PhoneValidatorDirective],
   templateUrl: './students.html',
   styleUrl: './students.scss',
 })
 export class Students implements OnInit {
+
+  validationPatterns = ValidationPatterns;
 
   activeSection: number = 1;
   isPhoneDropdownOpen = false;

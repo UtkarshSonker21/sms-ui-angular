@@ -20,15 +20,19 @@ import { StaffType } from '../../../core/enums/staff-type.enum';
 
 import { HelperMethods } from '../../../core/helpers/helper-methods';
 import { DisableAutocompleteDirective } from '../../../shared/directives/disable-autocomplete.directive';
+import { ValidationPatterns } from '../../../core/constants/validation-patterns';
+import { PhoneValidatorDirective } from '../../../shared/directives/phone-validator.directive';
 
 @Component({
   selector: 'app-panel-users',
   standalone: true,
-  imports: [CommonModule, FormsModule, DisableAutocompleteDirective],
+  imports: [CommonModule, FormsModule, DisableAutocompleteDirective, PhoneValidatorDirective],
   templateUrl: './panel-users.html',
   styleUrl: './panel-users.scss',
 })
 export class PanelUsers implements OnInit {
+
+  validationPatterns = ValidationPatterns;
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {

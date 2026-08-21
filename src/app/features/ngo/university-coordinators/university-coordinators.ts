@@ -23,15 +23,19 @@ import { MasterUniversityFilter } from '../../../core/models/university/master-u
 
 import { HelperMethods } from '../../../core/helpers/helper-methods';
 import { DisableAutocompleteDirective } from '../../../shared/directives/disable-autocomplete.directive';
+import { ValidationPatterns } from '../../../core/constants/validation-patterns';
+import { PhoneValidatorDirective } from '../../../shared/directives/phone-validator.directive';
 
 @Component({
   selector: 'app-university-coordinators',
   standalone: true,
-  imports: [CommonModule, FormsModule, DisableAutocompleteDirective],
+  imports: [CommonModule, FormsModule, DisableAutocompleteDirective, PhoneValidatorDirective],
   templateUrl: './university-coordinators.html',
   styleUrl: './university-coordinators.scss',
 })
 export class UniversityCoordinators implements OnInit {
+
+  validationPatterns = ValidationPatterns;
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
@@ -528,12 +532,7 @@ export class UniversityCoordinators implements OnInit {
     }
 
     this.applyPhoneBeforeSave();
-    // Use the explicit recovery email field value provided in the form
-    // In panel-users it was set programmatically, but here we require it explicitly.
-    if (this.tempUserModel.recoveryEmail) {
-      this.tempUserModel.recoveryEmail = this.tempUserModel.recoveryEmail.trim().toLowerCase();
-    }
-    
+    this.tempUserModel.recoveryEmail = this.tempUserModel.officialEmail ? this.tempUserModel.officialEmail.trim().toLowerCase() : '';
     this.isSaving = true;
     this.modalErrorMessage = '';
 
