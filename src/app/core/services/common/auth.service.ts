@@ -138,44 +138,9 @@ export class AuthService {
             new Date(loginResponse.expiry).getTime()
         );
 
-        // User
-        this.storageService.setItem(
-            LOCAL_STORAGE_KEYS.USER.LOGIN_ID,
-            loginResponse.loginId
-        );
+        // used to store user values 
+        // this.storeLegacyUserData(loginResponse);
 
-        this.storageService.setItem(
-            LOCAL_STORAGE_KEYS.USER.LOGIN_NAME,
-            loginResponse.loginName
-        );
-
-        // Module
-        this.storageService.setItem(
-            LOCAL_STORAGE_KEYS.USER.MODULE_ID,
-            loginResponse.moduleId
-        );
-
-        this.storageService.setItem(
-            LOCAL_STORAGE_KEYS.USER.MODULE_NAME,
-            loginResponse.moduleName
-        );
-
-        // Role
-        this.storageService.setItem(
-            LOCAL_STORAGE_KEYS.USER.CURRENT_ROLE_ID,
-            loginResponse.currentRoleId
-        );
-
-        this.storageService.setItem(
-            LOCAL_STORAGE_KEYS.USER.CURRENT_ROLE_NAME,
-            loginResponse.currentRoleName
-        );
-
-        // Roles List
-        this.storageService.setItem(
-            LOCAL_STORAGE_KEYS.USER.AVAILABLE_ROLES,
-            loginResponse.availableRoles
-        );
     }
 
     public loadCurrentUser(): void {
@@ -190,7 +155,7 @@ export class AuthService {
         );
     }
 
-    
+
     public navigateAfterLogin(user: CurrentUserProfile): void {
 
         switch (user.staffType) {
@@ -253,5 +218,48 @@ export class AuthService {
         return this.storageService.getToken();
     }
 
+
+    private storeLegacyUserData(loginResponse: LoginResponse): void {
+
+        // User
+        this.storageService.setItem(
+            LOCAL_STORAGE_KEYS.USER.LOGIN_ID,
+            loginResponse.loginId
+        );
+
+        this.storageService.setItem(
+            LOCAL_STORAGE_KEYS.USER.LOGIN_NAME,
+            loginResponse.loginName
+        );
+
+        // Module
+        this.storageService.setItem(
+            LOCAL_STORAGE_KEYS.USER.MODULE_ID,
+            loginResponse.moduleId
+        );
+
+        this.storageService.setItem(
+            LOCAL_STORAGE_KEYS.USER.MODULE_NAME,
+            loginResponse.moduleName
+        );
+
+        // Role
+        this.storageService.setItem(
+            LOCAL_STORAGE_KEYS.USER.CURRENT_ROLE_ID,
+            loginResponse.currentRoleId
+        );
+
+        this.storageService.setItem(
+            LOCAL_STORAGE_KEYS.USER.CURRENT_ROLE_NAME,
+            loginResponse.currentRoleName
+        );
+
+        // Available Roles
+        this.storageService.setItem(
+            LOCAL_STORAGE_KEYS.USER.AVAILABLE_ROLES,
+            loginResponse.availableRoles
+        );
+    }
+    
 
 }
