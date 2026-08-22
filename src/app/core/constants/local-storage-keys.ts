@@ -17,7 +17,10 @@ export const LOCAL_STORAGE_KEYS = {
     CURRENT_ROLE_ID: 'CurrentRoleId',
     CURRENT_ROLE_NAME: 'CurrentRoleName',
 
-    AVAILABLE_ROLES: 'AvailableRoles'
+    AVAILABLE_ROLES: 'AvailableRoles',
+
+    CURRENT_USER : 'CurrentUser',
+    
   },
 
   APP: {

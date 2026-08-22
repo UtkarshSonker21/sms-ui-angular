@@ -101,6 +101,11 @@ export class StorageService {
   // AUTH DATA
   // ==========================
 
+  clear(): void {
+    localStorage.clear();
+    sessionStorage.clear();
+  }
+
   clearAuthData(): void {
 
     this.removeToken();
@@ -108,6 +113,17 @@ export class StorageService {
     this.removeItem(
       LOCAL_STORAGE_KEYS.AUTH.TOKEN_EXPIRY
     );
+
+    this.removeItem(
+      LOCAL_STORAGE_KEYS.USER.CURRENT_USER
+    );
+
+    // used to clear user profile
+    // this.clearLegacyUserData();
+
+  }
+
+  private clearLegacyUserData(): void {
 
     this.removeItem(
       LOCAL_STORAGE_KEYS.USER.LOGIN_ID
@@ -137,13 +153,5 @@ export class StorageService {
       LOCAL_STORAGE_KEYS.USER.AVAILABLE_ROLES
     );
   }
-
-  
-  clear(): void {
-    localStorage.clear();
-    sessionStorage.clear();
-  }
-
-
 
 }
