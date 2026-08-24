@@ -20,12 +20,6 @@ export class CurrentUserProfileService {
 
     setCurrentUserProfile(profile: CurrentUserProfile): void {
         this.currentUserProfile = profile;
-
-        // persist entire profile
-        this.storageService.setItem(
-            LOCAL_STORAGE_KEYS.USER.CURRENT_USER,
-            profile
-        );
     }
 
     getCurrentUserProfile(): CurrentUserProfile {
@@ -35,18 +29,13 @@ export class CurrentUserProfileService {
     clear(): void {
         this.currentUserProfile = null;
 
-        // remove persisted profile
-        this.storageService.removeItem(
-            LOCAL_STORAGE_KEYS.USER.CURRENT_USER
-        );
+        // remove current user profile
+        this.storageService.removeCurrentUser();
     }
 
     private loadFromStorage(): void {
         
-        const storedProfile =
-            this.storageService.getItem<CurrentUserProfile>(
-                LOCAL_STORAGE_KEYS.USER.CURRENT_USER
-            );
+        const storedProfile = this.storageService.getCurrentUser<CurrentUserProfile>();
 
         if (storedProfile) {
             this.currentUserProfile = storedProfile;

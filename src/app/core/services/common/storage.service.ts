@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { LOCAL_STORAGE_KEYS } from '../../constants/local-storage-keys';
+import { CurrentUserProfile } from '../../models/common/settings/current-user-profile.model';
 
 
 @Injectable({
@@ -70,6 +71,119 @@ export class StorageService {
   }
 
 
+  
+  // ==========================
+  // CURRENT USER METHODS
+  // ==========================
+
+  // Remember Me = TRUE → localStorage
+  setCurrentUserPersistent(profile: CurrentUserProfile): void {
+    localStorage.setItem(
+      LOCAL_STORAGE_KEYS.USER.CURRENT_USER,
+      JSON.stringify(profile)
+    );
+
+    sessionStorage.removeItem(
+      LOCAL_STORAGE_KEYS.USER.CURRENT_USER
+    );
+  }
+
+  // Remember Me = FALSE → sessionStorage
+  setCurrentUserSession(profile: CurrentUserProfile): void {
+    sessionStorage.setItem(
+      LOCAL_STORAGE_KEYS.USER.CURRENT_USER,
+      JSON.stringify(profile)
+    );
+
+    localStorage.removeItem(
+      LOCAL_STORAGE_KEYS.USER.CURRENT_USER
+    );
+  }
+
+  getCurrentUser<T>(): T | null {
+    const sessionUser = sessionStorage.getItem(
+      LOCAL_STORAGE_KEYS.USER.CURRENT_USER
+    );
+
+    if (sessionUser) {
+      return JSON.parse(sessionUser);
+    }
+
+    const localUser = localStorage.getItem(
+      LOCAL_STORAGE_KEYS.USER.CURRENT_USER
+    );
+
+    return localUser ? JSON.parse(localUser) : null;
+  }
+
+  removeCurrentUser(): void {
+    localStorage.removeItem(
+      LOCAL_STORAGE_KEYS.USER.CURRENT_USER
+    );
+
+    sessionStorage.removeItem(
+      LOCAL_STORAGE_KEYS.USER.CURRENT_USER
+    );
+  }
+
+
+
+  // ==========================
+  // TOKEN EXPIRY METHODS
+  // ==========================
+
+  // Remember Me = TRUE → localStorage
+  setTokenExpiryPersistent(expiry: number): void {
+    localStorage.setItem(
+      LOCAL_STORAGE_KEYS.AUTH.TOKEN_EXPIRY,
+      expiry.toString()
+    );
+
+    sessionStorage.removeItem(
+      LOCAL_STORAGE_KEYS.AUTH.TOKEN_EXPIRY
+    );
+  }
+
+  // Remember Me = FALSE → sessionStorage
+  setTokenExpirySession(expiry: number): void {
+    sessionStorage.setItem(
+      LOCAL_STORAGE_KEYS.AUTH.TOKEN_EXPIRY,
+      expiry.toString()
+    );
+
+    localStorage.removeItem(
+      LOCAL_STORAGE_KEYS.AUTH.TOKEN_EXPIRY
+    );
+  }
+
+  getTokenExpiry(): number | null {
+    const sessionExpiry = sessionStorage.getItem(
+      LOCAL_STORAGE_KEYS.AUTH.TOKEN_EXPIRY
+    );
+
+    if (sessionExpiry) {
+      return Number(sessionExpiry);
+    }
+
+    const localExpiry = localStorage.getItem(
+      LOCAL_STORAGE_KEYS.AUTH.TOKEN_EXPIRY
+    );
+
+    return localExpiry ? Number(localExpiry) : null;
+  }
+
+  removeTokenExpiry(): void {
+    localStorage.removeItem(
+      LOCAL_STORAGE_KEYS.AUTH.TOKEN_EXPIRY
+    );
+
+    sessionStorage.removeItem(
+      LOCAL_STORAGE_KEYS.AUTH.TOKEN_EXPIRY
+    );
+  }
+
+
+
   // ==========================
   // GENERIC STORAGE
   // ==========================
@@ -97,8 +211,21 @@ export class StorageService {
     localStorage.removeItem(key);
   }
 
+
+
   // ==========================
   // AUTH DATA
+  // ==========================
+
+  clearAuthData(): void {
+    this.removeToken();
+    this.removeTokenExpiry();
+    this.removeCurrentUser();
+  }
+
+
+  // ==========================
+  // CLEAR ALL STORAGE
   // ==========================
 
   clear(): void {
@@ -106,52 +233,6 @@ export class StorageService {
     sessionStorage.clear();
   }
 
-  clearAuthData(): void {
 
-    this.removeToken();
-
-    this.removeItem(
-      LOCAL_STORAGE_KEYS.AUTH.TOKEN_EXPIRY
-    );
-
-    this.removeItem(
-      LOCAL_STORAGE_KEYS.USER.CURRENT_USER
-    );
-
-    // used to clear user profile
-    // this.clearLegacyUserData();
-
-  }
-
-  private clearLegacyUserData(): void {
-
-    this.removeItem(
-      LOCAL_STORAGE_KEYS.USER.LOGIN_ID
-    );
-
-    this.removeItem(
-      LOCAL_STORAGE_KEYS.USER.LOGIN_NAME
-    );
-
-    this.removeItem(
-      LOCAL_STORAGE_KEYS.USER.MODULE_ID
-    );
-
-    this.removeItem(
-      LOCAL_STORAGE_KEYS.USER.MODULE_NAME
-    );
-
-    this.removeItem(
-      LOCAL_STORAGE_KEYS.USER.CURRENT_ROLE_ID
-    );
-
-    this.removeItem(
-      LOCAL_STORAGE_KEYS.USER.CURRENT_ROLE_NAME
-    );
-
-    this.removeItem(
-      LOCAL_STORAGE_KEYS.USER.AVAILABLE_ROLES
-    );
-  }
 
 }
