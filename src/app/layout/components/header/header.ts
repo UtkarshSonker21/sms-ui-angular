@@ -144,7 +144,7 @@ export class Header implements OnInit {
         // Role switching is temporary.
         // Always save in session storage (rememberMe = false).
         this.authService.saveLoginData(response.result, false);
-        this.authService.loadCurrentUser();
+        this.authService.loadCurrentUser(false);
 
       },
     });

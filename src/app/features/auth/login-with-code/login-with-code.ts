@@ -97,7 +97,7 @@ export class LoginWithCode {
 
         this.authService.saveLoginData(response.result, true);
 
-        this.authService.loadCurrentUser();
+        this.authService.loadCurrentUser(true);
 
       },
 

@@ -118,43 +118,58 @@ export class AuthService {
 
     public saveLoginData(loginResponse: LoginResponse, rememberMe: boolean): void {
 
-        // Token
         if (rememberMe) {
 
+            // Token
             this.storageService.setTokenPersistent(
                 loginResponse.token
             );
 
+            // Expiry
+            this.storageService.setTokenExpiryPersistent(
+                new Date(loginResponse.expiry).getTime()
+            );
+
         } else {
 
+            // token
             this.storageService.setTokenSession(
                 loginResponse.token
             );
+
+            // Expiry
+            this.storageService.setTokenExpirySession(
+                new Date(loginResponse.expiry).getTime()
+            );
         }
-
-        // Expiry
-        this.storageService.setItem(
-            LOCAL_STORAGE_KEYS.AUTH.TOKEN_EXPIRY,
-            new Date(loginResponse.expiry).getTime()
-        );
-
-        // used to store user values 
-        // this.storeLegacyUserData(loginResponse);
-
     }
 
-    public loadCurrentUser(): void {
+    public loadCurrentUser(rememberMe: boolean): void {
 
         this.getMyProfile().subscribe(
             response => {
                 if (response.success && response.result) {
+
+                    // store users in session 
+                    if (rememberMe) {
+                        this.storageService.setCurrentUserPersistent(
+                            response.result
+                        );
+                    } else {
+                        this.storageService.setCurrentUserSession(
+                            response.result
+                        );
+                    }
+
+                    // load users in memory 
                     this.currentUserProfileService.setCurrentUserProfile(response.result);
+
+                    // navigation after login 
                     this.navigateAfterLogin(response.result);
                 }
             }
         );
     }
-
 
     public navigateAfterLogin(user: CurrentUserProfile): void {
 
@@ -188,6 +203,22 @@ export class AuthService {
         //this.router.navigate([AppRoutes.Common.Dashboard]);
     }
 
+
+    public handleApplicationStartup(): void {
+
+        if (!this.isUserLoggedIn()) {
+            return;
+        }
+
+        const currentUser = this.currentUserProfileService.getCurrentUserProfile();
+
+        if (!currentUser?.staffType) {
+            return;
+        }
+
+        this.navigateAfterLogin(currentUser);
+    }
+
     // private helper methods 
 
     private finishLogout(): void {
@@ -201,11 +232,7 @@ export class AuthService {
 
     private isTokenExpired(): boolean {
 
-        const expiry = Number(
-            this.storageService.getItem(
-                LOCAL_STORAGE_KEYS.AUTH.TOKEN_EXPIRY
-            )
-        );
+        const expiry = this.storageService.getTokenExpiry();
 
         if (!expiry) {
             return true;
@@ -218,48 +245,5 @@ export class AuthService {
         return this.storageService.getToken();
     }
 
-
-    private storeLegacyUserData(loginResponse: LoginResponse): void {
-
-        // User
-        this.storageService.setItem(
-            LOCAL_STORAGE_KEYS.USER.LOGIN_ID,
-            loginResponse.loginId
-        );
-
-        this.storageService.setItem(
-            LOCAL_STORAGE_KEYS.USER.LOGIN_NAME,
-            loginResponse.loginName
-        );
-
-        // Module
-        this.storageService.setItem(
-            LOCAL_STORAGE_KEYS.USER.MODULE_ID,
-            loginResponse.moduleId
-        );
-
-        this.storageService.setItem(
-            LOCAL_STORAGE_KEYS.USER.MODULE_NAME,
-            loginResponse.moduleName
-        );
-
-        // Role
-        this.storageService.setItem(
-            LOCAL_STORAGE_KEYS.USER.CURRENT_ROLE_ID,
-            loginResponse.currentRoleId
-        );
-
-        this.storageService.setItem(
-            LOCAL_STORAGE_KEYS.USER.CURRENT_ROLE_NAME,
-            loginResponse.currentRoleName
-        );
-
-        // Available Roles
-        this.storageService.setItem(
-            LOCAL_STORAGE_KEYS.USER.AVAILABLE_ROLES,
-            loginResponse.availableRoles
-        );
-    }
-    
 
 }

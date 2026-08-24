@@ -65,7 +65,7 @@ export class Login {
         );
 
         // load current user
-        this.authService.loadCurrentUser();
+        this.authService.loadCurrentUser(this.loginRequest.rememberMe);
 
         // load base currency
 
