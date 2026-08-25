@@ -12,6 +12,7 @@ import { UserIdentifier } from '../../../core/models/auth/user-identifier.model'
 import { VerifyOtp } from '../../../core/models/auth/verify-otp.model';
 
 import { DisableAutocompleteDirective } from '../../../shared/directives/disable-autocomplete.directive';
+import { ValidationPatterns } from '../../../core/constants/validation-patterns';
 
 @Component({
   selector: 'app-login-with-code',
@@ -25,9 +26,9 @@ export class LoginWithCode {
   private authService = inject(AuthService);
   private notification = inject(NotificationService);
   private router = inject(Router);
-  private cdr = inject(ChangeDetectorRef);
 
   userIdentifier: UserIdentifier = new UserIdentifier();
+  validationPatterns = ValidationPatterns;
 
   isBusy = false;
   submitted = false;
@@ -46,9 +47,7 @@ export class LoginWithCode {
     this.authService.loginWithCode(this.userIdentifier).subscribe({
 
       next: response => {
-
         this.isBusy = false;
-        this.cdr.detectChanges();
 
         if (!response.success || !response.result) {
           this.notification.error(response.message);
@@ -59,7 +58,11 @@ export class LoginWithCode {
         this.showOtp = true;   // Show OTP field
 
       },
-
+      error: error => {
+        if (this.notification.handleBusinessError(error)) {
+          return;
+        }
+      }
     });
     this.isBusy = false;
 
@@ -86,7 +89,6 @@ export class LoginWithCode {
       next: response => {
 
         this.isBusy = false;
-        this.cdr.detectChanges();
 
         if (!response.success || !response.result) {
           this.notification.error(response.message);
@@ -94,13 +96,14 @@ export class LoginWithCode {
         }
 
         this.notification.success(response.message);
-
         this.authService.saveLoginData(response.result, true);
-
         this.authService.loadCurrentUser(true);
-
       },
-
+      error: error => {
+        if (this.notification.handleBusinessError(error)) {
+          return;
+        }
+      }
     });
 
   }

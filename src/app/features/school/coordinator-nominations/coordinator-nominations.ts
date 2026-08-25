@@ -80,7 +80,7 @@ export class CoordinatorNominations implements OnInit {
   // Dropdown States & Data
   universities: MasterUniversityRequest[] = [];
   faculties: FacultyRequest[] = [];
-  
+
   statusOptions = this.studentStatusService.getStatusOptions(SCHOOL_STATUS_IDS);
 
   selectedUniversity: number = 0;
@@ -102,12 +102,26 @@ export class CoordinatorNominations implements OnInit {
   getUniversities(): void {
     const uFilter = new MasterUniversityFilter();
     uFilter.pageNumber = 1;
-    uFilter.pageSize = 1000;
+    uFilter.pageSize = 0;
     uFilter.isActive = true;
     this.universityService.getMasterUniversities(uFilter).subscribe({
       next: (res) => {
         if (res.success && res.result) {
           this.universities = res.result.items;
+
+          if (!this.universities.length) {
+            this.notification.warning(
+              'No universities are available.'
+            );
+          }
+          return;
+        }
+        this.universities = [];
+      },
+      error: (error) => {
+        this.universities = [];
+        if (this.notification.handleBusinessError(error)) {
+          return;
         }
       }
     });
@@ -116,13 +130,28 @@ export class CoordinatorNominations implements OnInit {
   getFaculties(universityId: number): void {
     const fFilter = new FacultyFilter();
     fFilter.pageNumber = 1;
-    fFilter.pageSize = 1000;
+    fFilter.pageSize = 0;
     fFilter.universityId = universityId;
     fFilter.isActive = true;
     this.facultyService.getFaculties(fFilter).subscribe({
       next: (res) => {
         if (res.success && res.result) {
           this.faculties = res.result.items;
+
+          if (!this.faculties.length) {
+            this.notification.warning(
+              'No faculties are available for the selected university.'
+            );
+          }
+
+          return;
+        }
+        this.faculties = [];
+      },
+      error: (error) => {
+        this.faculties = [];
+        if (this.notification.handleBusinessError(error)) {
+          return;
         }
       }
     });
@@ -146,14 +175,24 @@ export class CoordinatorNominations implements OnInit {
           this.students = response.result.items;
           this.totalRecords = response.result.totalCount;
           this.calculateKPIs(this.students);
-        } else {
-          this.students = [];
-          this.notification.warning(response.message);
+
+          if (!this.students.length) {
+            this.notification.warning(
+              'No nominations found for the selected filters.'
+            );
+          }
+          return;
         }
-      },
-      error: () => {
+
         this.students = [];
-        this.notification.error('Failed to load nominations.');
+        this.totalRecords = 0;
+      },
+      error: (error) => {
+        this.students = [];
+        this.totalRecords = 0;
+        if (this.notification.handleBusinessError(error)) {
+          return;
+        }
       }
     });
   }

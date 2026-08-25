@@ -221,23 +221,38 @@ export class Students implements OnInit {
     this.studentService.getStudentById(id).subscribe({
       next: (res) => {
         if (res.success && res.result) {
+
           this.student = res.result;
           this.parsePhone(this.student.phone);
+
           if (this.student.photoPath) {
             this.photoPreviewUrl = environment.apiUrl + this.student.photoPath;
           }
+
           this.loadCandidatePrograms();
           this.loadStudentHistory(id);
-        } else {
-          this.notification.error('Failed to load student details.');
-          this.router.navigate([AppRoutes.School.CoordinatorStudents]);
+
+          this.isLoading = false;
+          return;
+
         }
+
         this.isLoading = false;
-      },
-      error: () => {
-        this.isLoading = false;
-        this.notification.error('Failed to retrieve student details.');
+        this.notification.error('Student details could not be loaded.');
         this.router.navigate([AppRoutes.School.CoordinatorStudents]);
+      },
+      error: (error) => {
+        this.isLoading = false;
+        
+        if (this.notification.handleBusinessError(
+          error,
+          'Unable to load student details.'
+        )) {
+          this.router.navigate([
+            AppRoutes.School.CoordinatorStudents
+          ]);
+          return;
+        }
       }
     });
   }

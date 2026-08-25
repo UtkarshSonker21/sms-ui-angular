@@ -3,26 +3,21 @@ import { environment } from '../../../environments/environment';
 export class HelperMethods {
 
   //#region API Errors
-
   static isBusinessError(error: any): boolean {
     return error?.status === 400;
   }
 
   static getApiErrorMessage(error: any): string {
-
-    debugger;
-
     if (!error) {
       return 'Something went wrong.';
     }
 
     return (
-        error.error?.message ??
-        error.error?.Message ??
-        error.message ??
-        'Something went wrong.'
+      error.error?.message ??
+      error.error?.Message ??
+      error.message ??
+      'Something went wrong.'
     );
-    
   }
 
   //#endregion

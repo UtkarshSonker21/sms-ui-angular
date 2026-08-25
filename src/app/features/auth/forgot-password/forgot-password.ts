@@ -19,15 +19,13 @@ import { DisableAutocompleteDirective } from '../../../shared/directives/disable
 })
 export class ForgotPassword {
 
- private authService = inject(AuthService);
+  private authService = inject(AuthService);
   private notification = inject(NotificationService);
   private router = inject(Router);
-  private cdr = inject(ChangeDetectorRef);
 
-  userIdentifier : UserIdentifier = new UserIdentifier();
+  userIdentifier: UserIdentifier = new UserIdentifier();
 
   isBusy = false;
-
 
   submitted = false;
 
@@ -41,18 +39,19 @@ export class ForgotPassword {
     this.isBusy = true;
 
     this.authService.forgotUsername(this.userIdentifier).subscribe({
-
       next: response => {
-
         this.isBusy = false;
-        this.cdr.detectChanges();
 
         if (!response.success || !response.result) {
           return;
         }
         this.notification.success(response.message);
       },
-
+      error: error => {
+        if (this.notification.handleBusinessError(error)) {
+          return;
+        }
+      }
     });
 
   }

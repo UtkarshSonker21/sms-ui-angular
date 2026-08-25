@@ -65,14 +65,24 @@ export class CoordinatorSchoolList implements OnInit {
           this.schools = response.result.items;
           this.totalRecords = response.result.totalCount;
           this.calculateKPIs(this.schools);
-        } else {
-          this.schools = [];
-          this.notification.warning(response.message);
+
+          if (!this.schools.length) {
+            this.notification.warning(
+              'No schools found for the selected filters.'
+            );
+          }
+          
+          return;
         }
-      },
-      error: () => {
         this.schools = [];
-        this.notification.error('Failed to load schools.');
+        this.totalRecords = 0;
+      },
+      error: (error) => {
+        this.schools = [];
+        this.totalRecords = 0;
+        if (this.notification.handleBusinessError(error)) {
+          return;
+        }
       }
     });
   }

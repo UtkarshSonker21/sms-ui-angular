@@ -24,7 +24,6 @@ export class ResetPassword {
   private authService = inject(AuthService);
   private notification = inject(NotificationService);
   private router = inject(Router);
-  private cdr = inject(ChangeDetectorRef);
   private route = inject(ActivatedRoute);
 
   isBusy = false;
@@ -69,7 +68,6 @@ export class ResetPassword {
       next: response => {
 
         this.isBusy = false;
-        this.cdr.detectChanges();
 
         if (!response.success || !response.result) {
           this.notification.error(response.message);
@@ -78,6 +76,11 @@ export class ResetPassword {
 
         this.notification.success(response.message);
       },
+      error: error => {
+        if (this.notification.handleBusinessError(error)) {
+          return;
+        }
+      }
 
     });
 

@@ -41,38 +41,34 @@
                         <label class="field-label required-label">
                             Email Address
                         </label>
-
                         <div class="input-group">
-
                             <i class="fas fa-envelope"></i>
-
-                            <input type="text" name="emailOrUsername" [(ngModel)]="userIdentifier.emailOrUsername"
+                            <input type="email" name="emailOrUsername" [(ngModel)]="userIdentifier.emailOrUsername"
                                 #emailOrUsername="ngModel" required autocomplete="off"
-                                placeholder="Enter registered email">
-
+                                placeholder="Enter registered email" [pattern]="validationPatterns.email">
                         </div>
-
                         <div class="validation-error"
-                            *ngIf="emailOrUsername.invalid && (emailOrUsername.touched || submitted)">
+                            *ngIf="emailOrUsername.errors?.['required'] && (emailOrUsername.touched || submitted)">
                             Email is required.
+                        </div>
+                        <div class="validation-error"
+                            *ngIf="emailOrUsername.errors?.['pattern'] && (emailOrUsername.touched || submitted)">
+                            Please enter a valid email address.
                         </div>
                     </div>
 
                     <button type="submit" class="btn btn-p mt-4" [disabled]="sendCodeForm.invalid || isBusy">
-
                         <span *ngIf="!isBusy">
                             SEND CODE
                         </span>
-
                         <span *ngIf="isBusy">
                             <i class="fas fa-spinner fa-spin me-2"></i>
                             SENDING...
                         </span>
-
                     </button>
 
                 </ng-container>
-                
+
                 <!-- ===========================
                  STEP 2 : VERIFY OTP
                  ============================ -->

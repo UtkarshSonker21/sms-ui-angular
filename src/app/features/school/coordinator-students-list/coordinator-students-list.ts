@@ -103,11 +103,24 @@ export class CoordinatorStudentsList implements OnInit {
   getSchools(): void {
     const sFilter = new MasterSchoolFilter();
     sFilter.pageNumber = 1;
-    sFilter.pageSize = 1000;
+    sFilter.pageSize = 0;
     this.schoolService.getMasterSchools(sFilter).subscribe({
       next: (res) => {
         if (res.success && res.result) {
           this.schools = res.result.items;
+          if (!this.schools.length) {
+            this.notification.warning(
+              'No schools are available.'
+            );
+          }
+          return;
+        }
+        this.schools = [];
+      },
+      error: (error) => {
+        this.schools = [];
+        if (this.notification.handleBusinessError(error)) {
+          return;
         }
       }
     });
@@ -119,6 +132,20 @@ export class CoordinatorStudentsList implements OnInit {
       next: (res) => {
         if (res.success && res.result) {
           this.specializations = res.result;
+
+          if (!this.specializations.length) {
+            this.notification.warning(
+              'No specializations are available.'
+            );
+          }
+          return;
+        }
+        this.specializations = [];
+      },
+      error: (error) => {
+        this.specializations = [];
+        if (this.notification.handleBusinessError(error)) {
+          return;
         }
       }
     });
@@ -133,17 +160,28 @@ export class CoordinatorStudentsList implements OnInit {
     this.studentService.getStudents(this.filter).subscribe({
       next: (response) => {
         if (response.success && response.result) {
+
           this.students = response.result.items;
           this.totalRecords = response.result.totalCount;
           this.calculateKPIs(this.students);
-        } else {
-          this.students = [];
-          this.notification.warning(response.message);
+
+          if (!this.students.length) {
+            this.notification.warning(
+              'No students found for the selected filters.'
+            );
+          }
+          return;
         }
-      },
-      error: () => {
         this.students = [];
-        this.notification.error('Failed to load students.');
+        this.totalRecords = 0;
+      },
+      error: (error) => {
+        this.students = [];
+        this.totalRecords = 0;
+
+        if (this.notification.handleBusinessError(error)) {
+          return;
+        }
       }
     });
   }

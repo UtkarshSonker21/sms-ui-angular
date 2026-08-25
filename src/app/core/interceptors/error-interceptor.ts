@@ -6,7 +6,7 @@ import { catchError, throwError } from 'rxjs';
 
 import { NotificationService } from '../../core/services/common/notification.service';
 import { AuthService } from '../../core/services/common/auth.service';
-import { ApiEndpoints } from '../,,/../constants/api-endpoints';
+import { ApiEndpoints } from '../constants/api-endpoints';
 
 export const errorInterceptor: HttpInterceptorFn =
   (req, next) => {
@@ -30,7 +30,7 @@ export const errorInterceptor: HttpInterceptorFn =
 
       catchError(error => {
 
-        console.error('API Error:', error);
+        // console.error('API Error:', error);
 
         if (ignoredErrorEndpoints.some(endpoint => req.url.includes(endpoint))) {
           return throwError(() => error);

@@ -23,14 +23,11 @@ export class Login {
   private authService = inject(AuthService);
   private notification = inject(NotificationService);
   private router = inject(Router);
-  private cdr = inject(ChangeDetectorRef);
 
   loginRequest: LoginRequest = new LoginRequest();
 
   showPassword = false;
   isBusy = false;
-
-
 
 
   togglePassword(): void {
@@ -51,10 +48,8 @@ export class Login {
     this.authService.login(this.loginRequest).subscribe({
 
       next: response => {
-
         this.isBusy = false;
-        this.cdr.detectChanges();
-
+        
         if (!response.success || !response.result) {
           return;
         }
@@ -72,18 +67,14 @@ export class Login {
       },
 
       error: error => {
-
         this.isBusy = false;
-        this.cdr.detectChanges();
 
         if (error.status === 401) {
           this.notification.error('Invalid username or password.');
           return;
         }
-
         this.notification.error('Something went wrong.');
       }
-
     });
 
   }
