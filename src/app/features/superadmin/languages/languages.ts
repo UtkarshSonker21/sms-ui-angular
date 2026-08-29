@@ -64,10 +64,13 @@ export class Languages implements OnInit {
           this.notification.warning(response.message);
         }
       },
-      error: () => {
+      error: (error) => {
         this.languagesList = [];
         this.totalRecords = 0;
-        this.notification.error('Failed to load languages.');
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load languages.'
+        );
       }
     });
   }
@@ -159,8 +162,11 @@ export class Languages implements OnInit {
           this.notification.error(response.message || 'Failed to load language details.');
         }
       },
-      error: () => {
-        this.notification.error('Failed to load language details.');
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load language details.'
+        );
       }
     });
   }
@@ -185,13 +191,12 @@ export class Languages implements OnInit {
         this.showLanguageModal = false;
         this.loadData();
       },
-      error: (err) => {
+      error: (error) => {
         this.isSaving = false;
-        if (HelperMethods.isBusinessError(err)) {
-          this.modalErrorMessage = HelperMethods.getApiErrorMessage(err);
-        } else {
-          this.modalErrorMessage = 'An error occurred while saving the language.';
-        }
+        this.notification.handleBusinessError(
+          error,
+          'Failed to save language.'
+        );
       }
     });
   }
@@ -213,9 +218,12 @@ export class Languages implements OnInit {
         this.showDeleteModal = false;
         this.loadData();
       },
-      error: () => {
+      error: (error) => {
         this.showDeleteModal = false;
-        this.notification.error('Error occurred while deleting language.');
+        this.notification.handleBusinessError(
+          error,
+          'Failed to delete language.'
+        );
       }
     });
   }

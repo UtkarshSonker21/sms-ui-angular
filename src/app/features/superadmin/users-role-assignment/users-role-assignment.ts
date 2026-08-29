@@ -62,6 +62,12 @@ export class UsersRoleAssignment implements OnInit {
         if (response.success && response.result) {
           this.users = response.result.items;
         }
+      },
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load users.'
+        );
       }
     });
   }
@@ -86,10 +92,13 @@ export class UsersRoleAssignment implements OnInit {
           this.notification.warning(response.message);
         }
       },
-      error: () => {
+      error: (error) => {
         this.assignmentsList = [];
         this.totalRecords = 0;
-        this.notification.error('Failed to load role assignments.');
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load role assignments.'
+        );
       }
     });
   }
@@ -216,13 +225,12 @@ export class UsersRoleAssignment implements OnInit {
         this.notification.success('Role assignments saved successfully');
         this.loadData();
       },
-      error: (err) => {
+      error: (error) => {
         this.isSaving = false;
-        if (HelperMethods.isBusinessError(err)) {
-          this.notification.error(HelperMethods.getApiErrorMessage(err));
-        } else {
-          this.notification.error('An error occurred while saving assignments.');
-        }
+        this.notification.handleBusinessError(
+          error,
+          'Failed to save role assignments.'
+        );
       }
     });
   }

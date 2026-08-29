@@ -118,6 +118,12 @@ export class Staff implements OnInit {
         if (response.success && response.result) {
           this.countries = response.result.items;
         }
+      },
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load countries.'
+        );
       }
     });
   }
@@ -128,6 +134,12 @@ export class Staff implements OnInit {
         if (response.success && response.result) {
           this.genders = response.result;
         }
+      },
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load genders.'
+        );
       }
     });
   }
@@ -138,6 +150,12 @@ export class Staff implements OnInit {
         if (response.success && response.result) {
           this.salutations = response.result.map(x => x.displayText);
         }
+      },
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load salutations.'
+        );
       }
     });
   }
@@ -154,10 +172,13 @@ export class Staff implements OnInit {
           this.notification.warning(response.message);
         }
       },
-      error: () => {
+      error: (error) => {
         this.staffs = [];
         this.totalRecords = 0;
-        this.notification.error('Failed to load staff records.');
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load staff records.'
+        );
       }
     });
   }
@@ -319,8 +340,11 @@ export class Staff implements OnInit {
           this.notification.error(response.message || 'Failed to load staff details.');
         }
       },
-      error: () => {
-        this.notification.error('Failed to load staff details.');
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load staff details.'
+        );
       }
     });
   }
@@ -482,13 +506,12 @@ export class Staff implements OnInit {
         this.showUserModal = false;
         this.loadData();
       },
-      error: (err) => {
+      error: (error) => {
         this.isSaving = false;
-        if (HelperMethods.isBusinessError(err)) {
-          this.modalErrorMessage = HelperMethods.getApiErrorMessage(err);
-        } else {
-          this.modalErrorMessage = 'An error occurred while saving the staff member.';
-        }
+        this.notification.handleBusinessError(
+          error,
+          'Failed to save staff member.'
+        );
       }
     });
   }
@@ -510,9 +533,12 @@ export class Staff implements OnInit {
         this.showDeleteModal = false;
         this.loadData();
       },
-      error: () => {
+      error: (error) => {
         this.showDeleteModal = false;
-        this.notification.error('Error occurred while deleting staff member.');
+        this.notification.handleBusinessError(
+          error,
+          'Failed to delete staff member.'
+        );
       }
     });
   }

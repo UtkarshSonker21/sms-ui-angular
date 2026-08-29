@@ -64,10 +64,13 @@ export class GeneralSetting implements OnInit {
           this.notification.warning(response.message);
         }
       },
-      error: () => {
+      error: (error) => {
         this.settingsList = [];
         this.totalRecords = 0;
-        this.notification.error('Failed to load general settings.');
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load general settings.'
+        );
       }
     });
   }
@@ -155,8 +158,11 @@ export class GeneralSetting implements OnInit {
           this.notification.error(response.message || 'Failed to load setting details.');
         }
       },
-      error: () => {
-        this.notification.error('Failed to load setting details.');
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load setting details.'
+        );
       }
     });
   }
@@ -181,13 +187,12 @@ export class GeneralSetting implements OnInit {
         this.showSettingModal = false;
         this.loadData();
       },
-      error: (err) => {
+      error: (error) => {
         this.isSaving = false;
-        if (HelperMethods.isBusinessError(err)) {
-          this.modalErrorMessage = HelperMethods.getApiErrorMessage(err);
-        } else {
-          this.modalErrorMessage = 'An error occurred while saving the general setting.';
-        }
+        this.notification.handleBusinessError(
+          error,
+          'Failed to save general setting.'
+        );
       }
     });
   }
@@ -209,9 +214,12 @@ export class GeneralSetting implements OnInit {
         this.showDeleteModal = false;
         this.loadData();
       },
-      error: () => {
+      error: (error) => {
         this.showDeleteModal = false;
-        this.notification.error('Error occurred while deleting general setting.');
+        this.notification.handleBusinessError(
+          error,
+          'Failed to delete general setting.'
+        );
       }
     });
   }

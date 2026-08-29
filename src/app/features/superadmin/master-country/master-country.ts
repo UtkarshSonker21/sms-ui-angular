@@ -64,10 +64,13 @@ export class MasterCountry implements OnInit {
           this.notification.warning(response.message);
         }
       },
-      error: () => {
+      error: (error) => {
         this.countriesList = [];
         this.totalRecords = 0;
-        this.notification.error('Failed to load countries.');
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load countries.'
+        );
       }
     });
   }
@@ -155,8 +158,11 @@ export class MasterCountry implements OnInit {
           this.notification.error(response.message || 'Failed to load country details.');
         }
       },
-      error: () => {
-        this.notification.error('Failed to load country details.');
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load country details.'
+        );
       }
     });
   }
@@ -181,13 +187,12 @@ export class MasterCountry implements OnInit {
         this.showCountryModal = false;
         this.loadData();
       },
-      error: (err) => {
+      error: (error) => {
         this.isSaving = false;
-        if (HelperMethods.isBusinessError(err)) {
-          this.modalErrorMessage = HelperMethods.getApiErrorMessage(err);
-        } else {
-          this.modalErrorMessage = 'An error occurred while saving the country.';
-        }
+        this.notification.handleBusinessError(
+          error,
+          'Failed to save country.'
+        );
       }
     });
   }
@@ -209,9 +214,12 @@ export class MasterCountry implements OnInit {
         this.showDeleteModal = false;
         this.loadData();
       },
-      error: () => {
+      error: (error) => {
         this.showDeleteModal = false;
-        this.notification.error('Error occurred while deleting country.');
+        this.notification.handleBusinessError(
+          error,
+          'Failed to delete country.'
+        );
       }
     });
   }

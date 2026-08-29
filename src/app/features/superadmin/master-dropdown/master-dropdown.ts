@@ -67,10 +67,13 @@ export class MasterDropdown implements OnInit {
           this.notification.warning(response.message);
         }
       },
-      error: () => {
+      error: (error) => {
         this.dropdownsList = [];
         this.totalRecords = 0;
-        this.notification.error('Failed to load master dropdowns.');
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load master dropdowns.'
+        );
       }
     });
   }
@@ -158,8 +161,11 @@ export class MasterDropdown implements OnInit {
           this.notification.error(response.message || 'Failed to load dropdown details.');
         }
       },
-      error: () => {
-        this.notification.error('Failed to load dropdown details.');
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load dropdown details.'
+        );
       }
     });
   }
@@ -184,13 +190,12 @@ export class MasterDropdown implements OnInit {
         this.showDropdownModal = false;
         this.loadData();
       },
-      error: (err) => {
+      error: (error) => {
         this.isSaving = false;
-        if (HelperMethods.isBusinessError(err)) {
-          this.modalErrorMessage = HelperMethods.getApiErrorMessage(err);
-        } else {
-          this.modalErrorMessage = 'An error occurred while saving the dropdown.';
-        }
+        this.notification.handleBusinessError(
+          error,
+          'Failed to save dropdown.'
+        );
       }
     });
   }
@@ -212,9 +217,12 @@ export class MasterDropdown implements OnInit {
         this.showDeleteModal = false;
         this.loadData();
       },
-      error: () => {
+      error: (error) => {
         this.showDeleteModal = false;
-        this.notification.error('Error occurred while deleting dropdown.');
+        this.notification.handleBusinessError(
+          error,
+          'Failed to delete dropdown.'
+        );
       }
     });
   }

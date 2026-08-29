@@ -69,6 +69,12 @@ export class Labels implements OnInit {
         if (response.success && response.result) {
           this.modules = response.result;
         }
+      },
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load modules.'
+        );
       }
     });
   }
@@ -85,10 +91,13 @@ export class Labels implements OnInit {
           this.notification.warning(response.message);
         }
       },
-      error: () => {
+      error: (error) => {
         this.labelsList = [];
         this.totalRecords = 0;
-        this.notification.error('Failed to load labels.');
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load labels.'
+        );
       }
     });
   }
@@ -222,8 +231,11 @@ export class Labels implements OnInit {
           this.notification.error(response.message || 'Failed to load label details.');
         }
       },
-      error: () => {
-        this.notification.error('Failed to load label details.');
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load label details.'
+        );
       }
     });
   }
@@ -248,13 +260,12 @@ export class Labels implements OnInit {
         this.showLabelModal = false;
         this.loadData();
       },
-      error: (err) => {
+      error: (error) => {
         this.isSaving = false;
-        if (HelperMethods.isBusinessError(err)) {
-          this.modalErrorMessage = HelperMethods.getApiErrorMessage(err);
-        } else {
-          this.modalErrorMessage = 'An error occurred while saving the label.';
-        }
+        this.notification.handleBusinessError(
+          error,
+          'Failed to save label.'
+        );
       }
     });
   }
@@ -276,9 +287,12 @@ export class Labels implements OnInit {
         this.showDeleteModal = false;
         this.loadData();
       },
-      error: () => {
+      error: (error) => {
         this.showDeleteModal = false;
-        this.notification.error('Error occurred while deleting label.');
+        this.notification.handleBusinessError(
+          error,
+          'Failed to delete label.'
+        );
       }
     });
   }

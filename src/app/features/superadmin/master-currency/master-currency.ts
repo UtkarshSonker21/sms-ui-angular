@@ -71,6 +71,12 @@ export class MasterCurrency implements OnInit {
         if (response.success && response.result) {
           this.countries = response.result.items;
         }
+      },
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load countries.'
+        );
       }
     });
   }
@@ -87,10 +93,13 @@ export class MasterCurrency implements OnInit {
           this.notification.warning(response.message);
         }
       },
-      error: () => {
+      error: (error) => {
         this.currenciesList = [];
         this.totalRecords = 0;
-        this.notification.error('Failed to load currencies.');
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load currencies.'
+        );
       }
     });
   }
@@ -204,8 +213,11 @@ export class MasterCurrency implements OnInit {
           this.notification.error(response.message || 'Failed to load currency details.');
         }
       },
-      error: () => {
-        this.notification.error('Failed to load currency details.');
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load currency details.'
+        );
       }
     });
   }
@@ -230,13 +242,12 @@ export class MasterCurrency implements OnInit {
         this.showCurrencyModal = false;
         this.loadData();
       },
-      error: (err) => {
+      error: (error) => {
         this.isSaving = false;
-        if (HelperMethods.isBusinessError(err)) {
-          this.modalErrorMessage = HelperMethods.getApiErrorMessage(err);
-        } else {
-          this.modalErrorMessage = 'An error occurred while saving the currency.';
-        }
+        this.notification.handleBusinessError(
+          error,
+          'Failed to save currency.'
+        );
       }
     });
   }
@@ -258,9 +269,12 @@ export class MasterCurrency implements OnInit {
         this.showDeleteModal = false;
         this.loadData();
       },
-      error: () => {
+      error: (error) => {
         this.showDeleteModal = false;
-        this.notification.error('Error occurred while deleting currency.');
+        this.notification.handleBusinessError(
+          error,
+          'Failed to delete currency.'
+        );
       }
     });
   }

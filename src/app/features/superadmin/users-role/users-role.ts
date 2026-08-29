@@ -69,6 +69,12 @@ export class UsersRole implements OnInit {
         if (response.success && response.result) {
           this.modules = response.result;
         }
+      },
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load modules.'
+        );
       }
     });
   }
@@ -85,10 +91,13 @@ export class UsersRole implements OnInit {
           this.notification.warning(response.message);
         }
       },
-      error: () => {
+      error: (error) => {
         this.rolesList = [];
         this.totalRecords = 0;
-        this.notification.error('Failed to load role records.');
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load role records.'
+        );
       }
     });
   }
@@ -205,8 +214,11 @@ export class UsersRole implements OnInit {
           this.notification.error(response.message || 'Failed to load role details.');
         }
       },
-      error: () => {
-        this.notification.error('Failed to load role details.');
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load role details.'
+        );
       }
     });
   }
@@ -248,13 +260,12 @@ export class UsersRole implements OnInit {
         this.showRoleModal = false;
         this.loadData();
       },
-      error: (err) => {
+      error: (error) => {
         this.isSaving = false;
-        if (HelperMethods.isBusinessError(err)) {
-          this.modalErrorMessage = HelperMethods.getApiErrorMessage(err);
-        } else {
-          this.modalErrorMessage = 'An error occurred while saving the role.';
-        }
+        this.notification.handleBusinessError(
+          error,
+          'Failed to save role.'
+        );
       }
     });
   }
@@ -281,9 +292,12 @@ export class UsersRole implements OnInit {
         }
         this.loadData();
       },
-      error: () => {
+      error: (error) => {
         this.showDeleteModal = false;
-        this.notification.error('Error occurred while deleting role.');
+        this.notification.handleBusinessError(
+          error,
+          'Failed to delete role.'
+        );
       }
     });
   }
