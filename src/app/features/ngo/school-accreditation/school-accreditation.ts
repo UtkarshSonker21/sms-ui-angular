@@ -89,8 +89,12 @@ export class SchoolAccreditation implements OnInit {
         }
         this.loadData();
       },
-      error: () => {
+      error: (error) => {
         this.loadData();
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load countries.'
+        );
       }
     });
   }
@@ -115,6 +119,12 @@ export class SchoolAccreditation implements OnInit {
           this.schoolTypes = response.result;
           this.buildSchoolTypeMap();
         }
+      },
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load school types.'
+        );
       }
     });
   }
@@ -145,9 +155,12 @@ export class SchoolAccreditation implements OnInit {
           this.processSchoolsList([]);
         }
       },
-      error: () => {
+      error: (error) => {
         this.processSchoolsList([]);
-        this.notification.error('Failed to load school accreditation list.');
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load school accreditation list.'
+        );
       }
     });
   }

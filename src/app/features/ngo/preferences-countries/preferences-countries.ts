@@ -56,8 +56,12 @@ export class PreferencesCountries implements OnInit {
           this.notification.warning(response.message);
         }
       },
-      error: err => {
+      error: (error) => {
         this.countries = [];
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load countries.'
+        );
       }
     });
   }
@@ -158,10 +162,11 @@ export class PreferencesCountries implements OnInit {
         this.showCountryModal = false;
         this.loadData();
       },
-      error: err => {
-        if (HelperMethods.isBusinessError(err)) {
-          this.modalErrorMessage = HelperMethods.getApiErrorMessage(err);
-        }
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to save country.'
+        );
       }
     });
   }
@@ -185,10 +190,12 @@ export class PreferencesCountries implements OnInit {
           this.showDeleteModal = false;
           this.loadData();
         },
-        error: err => {
-          if (HelperMethods.isBusinessError(err)) {
-            this.modalErrorMessage = HelperMethods.getApiErrorMessage(err);
-          }
+        error: (error) => {
+          this.showDeleteModal = false;
+          this.notification.handleBusinessError(
+            error,
+            'Failed to delete country.'
+          );
         }
       });
   }

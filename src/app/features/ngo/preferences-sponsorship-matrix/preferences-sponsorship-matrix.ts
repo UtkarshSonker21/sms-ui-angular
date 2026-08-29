@@ -8,6 +8,7 @@ import { StudentCategoryService } from '../../../core/services/ngo/student-categ
 import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
 import { SponsorshipTypeRequest } from '../../../core/models/ngo/sponsorship-type/sponsorship-type-request.model';
 import { StudentCategoryRequest } from '../../../core/models/ngo/student-category/student-category.request.model';
+import { NotificationService } from '../../../core/services/common/notification.service';
 
 @Component({
   selector: 'app-preferences-sponsorship-matrix',
@@ -20,6 +21,7 @@ export class PreferencesSponsorshipMatrix implements OnInit {
   private readonly sponsorshipTypeService = inject(SponsorshipTypeService);
   private readonly studentCategoryService = inject(StudentCategoryService);
   private readonly confirmDialogService = inject(ConfirmDialogService);
+  private readonly notification = inject(NotificationService);
 
   matrixData: SponsorshipMatrix | null = null;
   searchText: string = '';
@@ -62,8 +64,11 @@ export class PreferencesSponsorshipMatrix implements OnInit {
           this.matrixData = res.result;
         }
       },
-      error: (err) => {
-        console.error('Error loading sponsorship matrix', err);
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load sponsorship matrix.'
+        );
       }
     });
   }
@@ -125,9 +130,12 @@ export class PreferencesSponsorshipMatrix implements OnInit {
         }
         this.loadingStates[key] = false;
       },
-      error: (err) => {
-        console.error('Error toggling mapping', err);
+      error: (error) => {
         this.loadingStates[key] = false;
+        this.notification.handleBusinessError(
+          error,
+          'Failed to update mapping.'
+        );
       }
     });
   }
@@ -141,6 +149,12 @@ export class PreferencesSponsorshipMatrix implements OnInit {
             this.editingSponsorship = res.result;
             this.showSponsorshipModal = true;
           }
+        },
+        error: (error) => {
+          this.notification.handleBusinessError(
+            error,
+            'Failed to load sponsorship type details.'
+          );
         }
       });
     } else {
@@ -161,6 +175,12 @@ export class PreferencesSponsorshipMatrix implements OnInit {
           this.showSponsorshipModal = false;
           this.loadMatrix();
         }
+      },
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to save sponsorship type.'
+        );
       }
     });
   }
@@ -176,6 +196,12 @@ export class PreferencesSponsorshipMatrix implements OnInit {
             if (res.success) {
               this.loadMatrix();
             }
+          },
+          error: (error) => {
+            this.notification.handleBusinessError(
+              error,
+              'Failed to delete sponsorship type.'
+            );
           }
         });
       }
@@ -191,6 +217,12 @@ export class PreferencesSponsorshipMatrix implements OnInit {
             this.editingCategory = res.result;
             this.showCategoryModal = true;
           }
+        },
+        error: (error) => {
+          this.notification.handleBusinessError(
+            error,
+            'Failed to load student category details.'
+          );
         }
       });
     } else {
@@ -210,6 +242,12 @@ export class PreferencesSponsorshipMatrix implements OnInit {
           this.showCategoryModal = false;
           this.loadMatrix();
         }
+      },
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to save student category.'
+        );
       }
     });
   }
@@ -225,6 +263,12 @@ export class PreferencesSponsorshipMatrix implements OnInit {
             if (res.success) {
               this.loadMatrix();
             }
+          },
+          error: (error) => {
+            this.notification.handleBusinessError(
+              error,
+              'Failed to delete student category.'
+            );
           }
         });
       }

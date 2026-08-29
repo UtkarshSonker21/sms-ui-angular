@@ -70,11 +70,15 @@ export class UniversityAccreditationDetail implements OnInit {
           this.loadUniversity(registrationId);
         }
       },
-      error: () => {
+      error: (error) => {
         const registrationId = Number(this.route.snapshot.params['registrationId']);
         if (registrationId) {
           this.loadUniversity(registrationId);
         }
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load countries.'
+        );
       }
     });
   }
@@ -104,9 +108,12 @@ export class UniversityAccreditationDetail implements OnInit {
           this.backToList();
         }
       },
-      error: () => {
-        this.notification.error('Failed to retrieve university details.');
+      error: (error) => {
         this.backToList();
+        this.notification.handleBusinessError(
+          error,
+          'Failed to retrieve university details.'
+        );
       }
     });
   }
@@ -155,14 +162,11 @@ export class UniversityAccreditationDetail implements OnInit {
           this.notification.error(response.message || 'Failed to update decision.');
         }
       },
-      error: (error: HttpErrorResponse) => {
-        const message =
-          error?.error?.message ||
-          error?.error?.Message ||
-          error?.message ||
-          'Failed to update accreditation decision.';
-
-        this.notification.error(message);
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to update accreditation decision.'
+        );
       }
     });
   }

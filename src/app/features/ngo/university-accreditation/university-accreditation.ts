@@ -81,8 +81,12 @@ export class UniversityAccreditation implements OnInit {
         }
         this.loadData();
       },
-      error: () => {
+      error: (error) => {
         this.loadData();
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load countries.'
+        );
       }
     });
   }
@@ -113,9 +117,12 @@ export class UniversityAccreditation implements OnInit {
           this.processUniversitiesList([]);
         }
       },
-      error: () => {
+      error: (error) => {
         this.processUniversitiesList([]);
-        this.notification.error('Failed to load university accreditation list.');
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load university accreditation list.'
+        );
       }
     });
   }

@@ -57,8 +57,12 @@ export class HighSchoolSpecializations implements OnInit {
           this.notification.warning(response.message);
         }
       },
-      error: err => {
+      error: (error) => {
         this.specializations = [];
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load specializations.'
+        );
       }
     });
   }
@@ -170,10 +174,11 @@ export class HighSchoolSpecializations implements OnInit {
         this.showSpecializationModal = false;
         this.loadData();
       },
-      error: err => {
-        if (HelperMethods.isBusinessError(err)) {
-          this.modalErrorMessage = HelperMethods.getApiErrorMessage(err);
-        }
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to save specialization.'
+        );
       }
     });
   }
@@ -197,10 +202,12 @@ export class HighSchoolSpecializations implements OnInit {
           this.showDeleteModal = false;
           this.loadData();
         },
-        error: err => {
-          if (HelperMethods.isBusinessError(err)) {
-            this.modalErrorMessage = HelperMethods.getApiErrorMessage(err);
-          }
+        error: (error) => {
+          this.showDeleteModal = false;
+          this.notification.handleBusinessError(
+            error,
+            'Failed to delete specialization.'
+          );
         }
       });
   }

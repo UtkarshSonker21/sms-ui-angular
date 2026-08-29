@@ -111,6 +111,12 @@ export class FailingCoreCases implements OnInit {
         if (res.success && res.result) {
           this.countries = res.result.items;
         }
+      },
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load countries.'
+        );
       }
     });
   }
@@ -126,6 +132,12 @@ export class FailingCoreCases implements OnInit {
         if (res.success && res.result) {
           this.universities = res.result.items;
         }
+      },
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load universities.'
+        );
       }
     });
   }
@@ -148,9 +160,12 @@ export class FailingCoreCases implements OnInit {
           this.notification.warning(response.message);
         }
       },
-      error: () => {
+      error: (error) => {
         this.students = [];
-        this.notification.error('Failed to load students.');
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load student cases.'
+        );
       }
     });
   }
