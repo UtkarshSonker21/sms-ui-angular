@@ -72,6 +72,12 @@ export class LanguageTranslations implements OnInit {
         if (response.success && response.result) {
           this.modules = response.result;
         }
+      },
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load modules.'
+        );
       }
     });
   }
@@ -100,11 +106,14 @@ export class LanguageTranslations implements OnInit {
           this.notification.warning(response.message);
         }
       },
-      error: () => {
+      error: (error) => {
         this.managementList = [];
         this.totalRecords = 0;
         this.dynamicLanguages = [];
-        this.notification.error('Failed to load translations.');
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load translations.'
+        );
       }
     });
   }
@@ -229,13 +238,12 @@ export class LanguageTranslations implements OnInit {
         this.showTranslationModal = false;
         this.loadData();
       },
-      error: (err) => {
+      error: (error) => {
         this.isSaving = false;
-        if (HelperMethods.isBusinessError(err)) {
-          this.modalErrorMessage = HelperMethods.getApiErrorMessage(err);
-        } else {
-          this.modalErrorMessage = 'An error occurred while saving the translation.';
-        }
+        this.notification.handleBusinessError(
+          error,
+          'Failed to save translation.'
+        );
       }
     });
   }
@@ -262,9 +270,12 @@ export class LanguageTranslations implements OnInit {
         this.showDeleteModal = false;
         this.loadData();
       },
-      error: () => {
+      error: (error) => {
         this.showDeleteModal = false;
-        this.notification.error('Error occurred while deleting translation.');
+        this.notification.handleBusinessError(
+          error,
+          'Failed to delete translation.'
+        );
       }
     });
   }

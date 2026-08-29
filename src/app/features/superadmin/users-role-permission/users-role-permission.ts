@@ -63,6 +63,12 @@ export class UsersRolePermission implements OnInit {
         if (res.success && res.result) {
           this.modules = res.result;
         }
+      },
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load modules.'
+        );
       }
     });
   }
@@ -106,6 +112,12 @@ export class UsersRolePermission implements OnInit {
         if (res.success && res.result) {
           this.roles = res.result.items;
         }
+      },
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load roles.'
+        );
       }
     });
   }
@@ -152,9 +164,12 @@ export class UsersRolePermission implements OnInit {
           this.notification.warning(res.message);
         }
       },
-      error: () => {
+      error: (error) => {
         this.permissions = [];
-        this.notification.error('Failed to load permissions.');
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load permissions.'
+        );
       }
     });
   }
@@ -217,13 +232,12 @@ export class UsersRolePermission implements OnInit {
           this.notification.warning(res.message);
         }
       },
-      error: (err) => {
+      error: (error) => {
         this.isSaving = false;
-        if (HelperMethods.isBusinessError(err)) {
-          this.notification.error(HelperMethods.getApiErrorMessage(err));
-        } else {
-          this.notification.error('An error occurred while saving permissions.');
-        }
+        this.notification.handleBusinessError(
+          error,
+          'Failed to save permissions.'
+        );
       }
     });
   }

@@ -92,6 +92,12 @@ export class Menus implements OnInit {
         if (response.success && response.result) {
           this.modules = response.result;
         }
+      },
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load modules.'
+        );
       }
     });
   }
@@ -108,6 +114,12 @@ export class Menus implements OnInit {
           this.parentMenusList = response.result.items;
           this.updateFilteredParents();
         }
+      },
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load parent menus.'
+        );
       }
     });
   }
@@ -121,6 +133,12 @@ export class Menus implements OnInit {
         if (response.success && response.result) {
           this.allMenusList = response.result.items;
         }
+      },
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load menus.'
+        );
       }
     });
   }
@@ -150,10 +168,13 @@ export class Menus implements OnInit {
           this.notification.warning(response.message);
         }
       },
-      error: () => {
+      error: (error) => {
         this.menusList = [];
         this.totalRecords = 0;
-        this.notification.error('Failed to load menu records.');
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load menu records.'
+        );
       }
     });
   }
@@ -288,8 +309,11 @@ export class Menus implements OnInit {
           this.notification.error(response.message || 'Failed to load menu details.');
         }
       },
-      error: () => {
-        this.notification.error('Failed to load menu details.');
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load menu details.'
+        );
       }
     });
   }
@@ -394,13 +418,12 @@ export class Menus implements OnInit {
         this.loadAllMenus(); // Reload sequence counting list
         this.menuService.reloadMenus(); // Refresh sidebar menu
       },
-      error: (err) => {
+      error: (error) => {
         this.isSaving = false;
-        if (HelperMethods.isBusinessError(err)) {
-          this.modalErrorMessage = HelperMethods.getApiErrorMessage(err);
-        } else {
-          this.modalErrorMessage = 'An error occurred while saving the menu.';
-        }
+        this.notification.handleBusinessError(
+          error,
+          'Failed to save menu.'
+        );
       }
     });
   }
@@ -425,9 +448,12 @@ export class Menus implements OnInit {
         this.loadAllMenus(); // Reload sequence counting list
         this.menuService.reloadMenus(); // Refresh sidebar menu
       },
-      error: () => {
+      error: (error) => {
         this.showDeleteModal = false;
-        this.notification.error('Error occurred while deleting menu.');
+        this.notification.handleBusinessError(
+          error,
+          'Failed to delete menu.'
+        );
       }
     });
   }
