@@ -80,9 +80,9 @@ export class UniversityStudents implements OnInit {
   // Dropdown States & Data
   faculties: FacultyRequest[] = [];
   programs: ProgramRequest[] = [];
-  
+
   statusOptions = this.studentStatusService.getStatusOptions(UNIVERSITY_STATUS_IDS);
-  
+
   selectedFaculty: number = 0;
   selectedProgram: number = 0;
   selectedStatus: number | null = null;
@@ -110,7 +110,19 @@ export class UniversityStudents implements OnInit {
       next: (res) => {
         if (res.success && res.result) {
           this.faculties = res.result.items;
+          return;
         }
+        this.faculties = [];
+        this.notification.warning(
+          res.message || 'Failed to load faculties.'
+        );
+      },
+      error: (error) => {
+        this.faculties = [];
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load faculties.'
+        );
       }
     });
   }
@@ -125,7 +137,19 @@ export class UniversityStudents implements OnInit {
       next: (res) => {
         if (res.success && res.result) {
           this.programs = res.result.items;
+          return;
         }
+        this.programs = [];
+        this.notification.warning(
+          res.message || 'Failed to load programs.'
+        );
+      },
+      error: (error) => {
+        this.programs = [];
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load programs.'
+        );
       }
     });
   }
@@ -143,14 +167,19 @@ export class UniversityStudents implements OnInit {
           this.students = response.result.items;
           this.totalRecords = response.result.totalCount;
           this.calculateKPIs(this.students);
-        } else {
-          this.students = [];
-          this.notification.warning(response.message);
+          return;
         }
-      },
-      error: () => {
         this.students = [];
-        this.notification.error('Failed to load students.');
+        this.notification.warning(
+          response.message || 'Failed to load students.'
+        );
+      },
+      error: (error) => {
+        this.students = [];
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load students.'
+        );
       }
     });
   }

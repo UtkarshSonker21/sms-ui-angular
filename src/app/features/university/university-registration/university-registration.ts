@@ -13,7 +13,6 @@ import { MasterCountryRequest } from '../../../core/models/super-admin/master-co
 import { MasterCountryFilter } from '../../../core/models/super-admin/master-country/master-country-filter.model';
 import { MasterUniversityService } from '../../../core/services/university/master-university.service';
 import { AppRoutes } from '../../../core/constants/app-routes';
-import { HttpErrorResponse } from '@angular/common/http';
 import { AccreditationStatus } from '../../../core/enums/accreditation-status.enum';
 import { ValidationPatterns } from '../../../core/constants/validation-patterns';
 import { PhoneValidatorDirective } from '../../../shared/directives/phone-validator.directive';
@@ -240,9 +239,18 @@ export class UniversityRegistration implements OnInit {
       next: (response) => {
         if (response.success && response.result) {
           this.countries = response.result.items;
-        } else {
-          this.notification.warning(response.message);
-        }
+          return;
+        } this.countries = [];
+        this.notification.warning(
+          response.message || 'Failed to load countries.'
+        );
+      },
+      error: (error) => {
+        this.countries = [];
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load countries.'
+        );
       }
     });
   }
@@ -254,9 +262,19 @@ export class UniversityRegistration implements OnInit {
         next: (response) => {
           if (response.success && response.result) {
             this.universityType = response.result;
-          } else {
-            this.notification.warning(response.message);
+            return;
           }
+          this.universityType = [];
+          this.notification.warning(
+            response.message || 'Failed to load university types.'
+          );
+        },
+        error: (error) => {
+          this.universityType = [];
+          this.notification.handleBusinessError(
+            error,
+            'Failed to load university types.'
+          );
         }
       });
   }
@@ -268,9 +286,19 @@ export class UniversityRegistration implements OnInit {
         next: (response) => {
           if (response.success && response.result) {
             this.studentGenders = response.result;
-          } else {
-            this.notification.warning(response.message);
+            return;
           }
+          this.studentGenders = [];
+          this.notification.warning(
+            response.message || 'Failed to load student genders.'
+          );
+        },
+        error: (error) => {
+          this.studentGenders = [];
+          this.notification.handleBusinessError(
+            error,
+            'Failed to load student genders.'
+          );
         }
       });
   }
@@ -319,18 +347,17 @@ export class UniversityRegistration implements OnInit {
         if (response.success) {
           this.notification.success(response.message || 'University registered successfully.');
           this.goToLogin();
-        } else {
-          this.notification.error(response.message);
+          return;
         }
+        this.notification.error(
+          response.message || 'Failed to register university.'
+        );
       },
-      error: (error: HttpErrorResponse) => {
-        const message =
-          error?.error?.message ||
-          error?.error?.Message ||
-          error?.message ||
-          'An error occurred during registration.';
-
-        this.notification.error(message);
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to register university.'
+        );
       }
     });
   }

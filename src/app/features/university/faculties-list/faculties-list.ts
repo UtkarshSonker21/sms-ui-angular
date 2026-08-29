@@ -55,11 +55,19 @@ export class FacultiesList implements OnInit {
         if (response.success && response.result) {
           this.faculties = response.result.items;
           this.totalRecords = response.result.totalCount;
-        } else {
-          this.faculties = [];
-          this.notification.warning(response.message);
-        }
+
+          return;
+        } 
+        this.faculties = [];
+        this.notification.warning(response.message || 'Failed to load faculties.');
       },
+      error: (error) => {
+        this.faculties = [];
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load faculties.'
+        );
+      }
     });
   }
 
@@ -152,15 +160,20 @@ export class FacultiesList implements OnInit {
       : this.facultyService.addFaculty(this.tempFacultyModel);
 
     request.subscribe({
-      next: () => {
-        this.notification.success(this.tempFacultyModel.facultyId ? 'Faculty updated successfully' : 'Faculty created successfully');
-        this.showFacultyModal = false;
-        this.loadData();
-      },
-      error: err => {
-        if (HelperMethods.isBusinessError(err)) {
-          this.modalErrorMessage = HelperMethods.getApiErrorMessage(err);
+      next: (response) => {
+        if (response.success) {
+          this.notification.success(this.tempFacultyModel.facultyId ? 'Faculty updated successfully' : 'Faculty created successfully');
+          this.showFacultyModal = false;
+          this.loadData();
+          return;
         }
+        this.notification.error(response.message || 'Failed to save faculty');
+      },
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to save faculty.'
+        );
       }
     });
   }
@@ -179,16 +192,24 @@ export class FacultiesList implements OnInit {
     }
 
     this.facultyService.deleteFaculty(this.facultyToDelete.facultyId).subscribe({
-      next: () => {
-        this.notification.success('Faculty deleted successfully');
-        this.showDeleteModal = false;
-        this.loadData();
-      },
-      error: err => {
-        if (HelperMethods.isBusinessError(err)) {
-          this.modalErrorMessage = HelperMethods.getApiErrorMessage(err);
+      next: (response) => {
+        if (response.success) {
+          this.notification.success('Faculty deleted successfully');
+          this.showDeleteModal = false;
+          this.loadData();
+
+          return;
         }
+        this.notification.error(response.message || 'Failed to delete faculty.');
+      },
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to delete faculty.'
+        );
       }
     });
   }
+
+
 }

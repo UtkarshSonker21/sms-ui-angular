@@ -501,18 +501,18 @@ export class SchoolRegistration implements OnInit {
         if (response.success) {
           this.notification.success(response.message || 'School registered successfully.');
           this.goToLogin();
-        } else {
-          this.notification.error(response.message);
-        }
-      },
-      error: (error: HttpErrorResponse) => {
-        const message =
-          error?.error?.message ||
-          error?.error?.Message ||
-          error?.message ||
-          'An error occurred during registration.';
 
-        this.notification.error(message);
+          return;
+        }
+
+        this.notification.error(
+          response.message || 'Unable to register school.'
+        );
+      },
+      error: (error) => {
+        if (this.notification.handleBusinessError(error)) {
+          return;
+        }
       }
     });
   }
