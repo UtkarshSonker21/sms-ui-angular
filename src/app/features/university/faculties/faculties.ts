@@ -61,11 +61,22 @@ export class Faculties implements OnInit {
       next: (response) => {
         if (response.success && response.result) {
           this.dashboardData = response.result;
-        } else {
-          this.dashboardData = new FacultyProgramsDashboard();
+          return;
+        }
+        this.dashboardData = new FacultyProgramsDashboard();
+
+        if (response.message) {
           this.notification.warning(response.message);
         }
       },
+      error: (error) => {
+        this.dashboardData = new FacultyProgramsDashboard();
+
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load faculty programs.'
+        );
+      }
 
     });
   }
@@ -128,9 +139,6 @@ export class Faculties implements OnInit {
     }
 
     const user = this.currentUserProfileService.getCurrentUserProfile();
-    // if (user?.universityId) {
-    //   this.tempFacultyModel.universityId = user.universityId;
-    // }
 
     if (user?.universityIds?.length) {
       this.tempFacultyModel.universityId = user.universityIds[0];
@@ -145,22 +153,17 @@ export class Faculties implements OnInit {
         if (response.success) {
           this.notification.success(this.tempFacultyModel.facultyId ? 'Faculty updated successfully' : 'Faculty created successfully');
           this.showFacultyModal = false;
-          // if (user?.universityId) {
-          //   this.loadFacultyPrograms(user.universityId);
-          // }
           this.loadFacultyPrograms();
-        } else {
-          this.modalErrorMessage = response.message || 'Failed to save faculty';
-          this.notification.error(response.message || 'Failed to save faculty');
+
+          return;
         }
+        this.notification.error(response.message || 'Failed to save faculty');
       },
-      error: (err) => {
-        if (HelperMethods.isBusinessError(err)) {
-          this.modalErrorMessage = HelperMethods.getApiErrorMessage(err);
-        } else {
-          this.modalErrorMessage = 'An unexpected error occurred.';
-        }
-        this.notification.error(this.modalErrorMessage);
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to save faculty.'
+        );
       }
     });
   }
@@ -175,13 +178,6 @@ export class Faculties implements OnInit {
     ]);
 
   }
-
-  // goToProgramDetail(programId: number): void {
-  //   this.router.navigate([
-  //     AppRoutes.University.ProgramDetail,
-  //     programId
-  //   ]);
-  // }
 
 
   getFacultyIconPath(name: string): string {

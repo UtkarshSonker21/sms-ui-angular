@@ -61,11 +61,18 @@ export class ProgramsList implements OnInit {
         if (response.success && response.result) {
           this.programs = response.result.items;
           this.totalRecords = response.result.totalCount;
-        } else {
-          this.programs = [];
-          this.notification.warning(response.message);
+          return;
         }
+        this.programs = [];
+        this.notification.warning(response.message || 'Failed to load programs.');
       },
+      error: (error) => {
+        this.programs = [];
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load programs.'
+        );
+      }
     });
   }
 
@@ -173,10 +180,18 @@ export class ProgramsList implements OnInit {
       next: (response) => {
         if (response.success && response.result) {
           this.faculties = response.result.items;
-        } else {
-          this.notification.warning(response.message);
+          return;
         }
+        this.faculties = [];
+        this.notification.warning(response.message || 'Failed to load faculties.');
       },
+      error: (error) => {
+        this.faculties = [];
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load faculties.'
+        );
+      }
     });
   }
 
@@ -200,15 +215,21 @@ export class ProgramsList implements OnInit {
     }
 
     this.programService.deleteProgram(this.programToDelete.programId).subscribe({
-      next: () => {
-        this.notification.success('Program deleted successfully');
-        this.showDeleteModal = false;
-        this.loadData();
-      },
-      error: err => {
-        if (HelperMethods.isBusinessError(err)) {
-          this.modalErrorMessage = HelperMethods.getApiErrorMessage(err);
+      next: (response) => {
+        if (response.success) {
+          this.notification.success('Program deleted successfully');
+          this.showDeleteModal = false;
+          this.loadData();
+
+          return;
         }
+        this.notification.error(response.message || 'Failed to delete progrma.');
+      },
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to delete program.'
+        );
       }
     });
   }

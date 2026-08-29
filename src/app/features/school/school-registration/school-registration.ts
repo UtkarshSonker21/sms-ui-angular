@@ -401,8 +401,20 @@ export class SchoolRegistration implements OnInit {
       next: (response) => {
         if (response.success && response.result) {
           this.countries = response.result.items;
-        } else {
-          this.notification.warning(response.message);
+
+          if (!this.countries.length) {
+            this.notification.warning(
+              'No countries are available.'
+            );
+          }
+          return;
+        }
+        this.countries = [];
+      },
+      error: (error) => {
+        this.countries = [];
+        if (this.notification.handleBusinessError(error)) {
+          return;
         }
       }
     });
@@ -418,8 +430,19 @@ export class SchoolRegistration implements OnInit {
       next: (response) => {
         if (response.success && response.result) {
           this.currencies = response.result.items;
-        } else {
-          this.notification.warning(response.message);
+          if (!this.currencies.length) {
+            this.notification.warning(
+              'No currencies are available.'
+            );
+          }
+          return;
+        }
+        this.currencies = [];
+      },
+      error: (error) => {
+        this.countries = [];
+        if (this.notification.handleBusinessError(error)) {
+          return;
         }
       }
     });
@@ -478,18 +501,18 @@ export class SchoolRegistration implements OnInit {
         if (response.success) {
           this.notification.success(response.message || 'School registered successfully.');
           this.goToLogin();
-        } else {
-          this.notification.error(response.message);
-        }
-      },
-      error: (error: HttpErrorResponse) => {
-        const message =
-          error?.error?.message ||
-          error?.error?.Message ||
-          error?.message ||
-          'An error occurred during registration.';
 
-        this.notification.error(message);
+          return;
+        }
+
+        this.notification.error(
+          response.message || 'Unable to register school.'
+        );
+      },
+      error: (error) => {
+        if (this.notification.handleBusinessError(error)) {
+          return;
+        }
       }
     });
   }
@@ -516,59 +539,103 @@ export class SchoolRegistration implements OnInit {
   schoolAccreditations: MasterDropDownRequest[] = [];
 
   getSchoolType(): void {
-    this.masterDropDownService
-      .getByParentId(MainDropdown.SchoolType)
-      .subscribe({
-        next: (response) => {
-          if (response.success && response.result) {
-            this.schoolType = response.result;
-          } else {
-            this.notification.warning(response.message);
+    this.masterDropDownService.getByParentId(MainDropdown.SchoolType).subscribe({
+      next: (response) => {
+        if (response.success && response.result) {
+          this.schoolType = response.result;
+          if (!this.schoolType.length) {
+            this.notification.warning(
+              'No school types are available.'
+            );
           }
+
+          return;
         }
-      });
+        this.schoolType = [];
+      },
+      error: (error) => {
+        this.schoolType = [];
+
+        if (this.notification.handleBusinessError(error)) {
+          return;
+        }
+      }
+    });
   }
 
   getSchoolStatus(): void {
-    this.masterDropDownService
-      .getByParentId(MainDropdown.SchoolStatus)
-      .subscribe({
-        next: (response) => {
-          if (response.success && response.result) {
-            this.schoolStatus = response.result;
-          } else {
-            this.notification.warning(response.message);
+    this.masterDropDownService.getByParentId(MainDropdown.SchoolStatus).subscribe({
+      next: (response) => {
+        if (response.success && response.result) {
+          this.schoolStatus = response.result;
+
+          if (!this.schoolStatus.length) {
+            this.notification.warning(
+              'No school statuses are available.'
+            );
           }
+          return;
         }
-      });
+        this.schoolStatus = [];
+      },
+      error: (error) => {
+        this.schoolStatus = [];
+
+        if (this.notification.handleBusinessError(error)) {
+          return;
+        }
+      }
+    });
   }
 
   getSchoolTeachingLanguages(): void {
-    this.masterDropDownService
-      .getByParentId(MainDropdown.SchoolTeachingLanguages)
-      .subscribe({
-        next: (response) => {
-          if (response.success && response.result) {
-            this.schoolTeachingLanguages = response.result;
-          } else {
-            this.notification.warning(response.message);
+    this.masterDropDownService.getByParentId(MainDropdown.SchoolTeachingLanguages).subscribe({
+      next: (response) => {
+        if (response.success && response.result) {
+          this.schoolTeachingLanguages = response.result;
+
+          if (!this.schoolTeachingLanguages.length) {
+            this.notification.warning(
+              'No teaching languages are available.'
+            );
           }
+          return;
         }
-      });
+        this.schoolTeachingLanguages = [];
+      },
+      error: (error) => {
+        this.schoolTeachingLanguages = [];
+
+        if (this.notification.handleBusinessError(error)) {
+          return;
+        }
+      }
+    });
   }
 
   getSchoolAccreditations(): void {
-    this.masterDropDownService
-      .getByParentId(MainDropdown.SchoolAccreditations)
-      .subscribe({
-        next: (response) => {
-          if (response.success && response.result) {
-            this.schoolAccreditations = response.result;
-          } else {
-            this.notification.warning(response.message);
+    this.masterDropDownService.getByParentId(MainDropdown.SchoolAccreditations).subscribe({
+      next: (response) => {
+        if (response.success && response.result) {
+          this.schoolAccreditations = response.result;
+
+          if (!this.schoolAccreditations.length) {
+            this.notification.warning(
+              'No school accreditations are available.'
+            );
           }
+          return;
         }
-      });
+        this.schoolAccreditations = [];
+      },
+      error: (error) => {
+        this.schoolAccreditations = [];
+
+        if (this.notification.handleBusinessError(error)) {
+          return;
+        }
+      }
+    });
   }
 
 }

@@ -47,12 +47,15 @@ export class ProgramDetail implements OnInit {
           if (response.success && response.result) {
             this.program = response.result;
             this.updateStatusText();
-          } else {
-            this.notification.warning(response.message);
+            return;
           }
+          this.notification.warning(response.message || 'Failed to load program details.');
         },
-        error: () => {
-          this.notification.error('Failed to load program details.');
+        error: (error) => {
+          this.notification.handleBusinessError(
+            error,
+            'Failed to load program details.'
+          );
         }
       });
     }
@@ -93,7 +96,7 @@ export class ProgramDetail implements OnInit {
     return this.program.allowedHighSchoolDivisions.split(',').map(s => s.trim()).filter(s => s.length > 0);
   }
 
-  
+
   getSortedCourses(): ProgramCourse[] {
     if (!this.program.courses) return [];
     return [...this.program.courses].sort((a, b) => {
@@ -172,30 +175,45 @@ export class ProgramDetail implements OnInit {
     this.programService.getSemesterByProgramId(this.programId).subscribe({
       next: (res: any) => {
         this.registrationSemesters = Array.isArray(res.result) ? res.result : (Array.isArray(res.data) ? res.data : []);
-        
+
         this.programService.getProgramRegistrationWindowByProgramId(this.programId).subscribe({
           next: (regRes: any) => {
+
             if ((regRes.success || regRes.isSuccess) && (regRes.result || regRes.data)) {
               this.registrationData = regRes.result || regRes.data;
-            } else {
+            }
+            else {
               this.registrationData = new ProgramRegistrationWindowModel();
               this.registrationData.programId = this.programId;
+
+              if (regRes.message) {
+                this.notification.warning(regRes.message);
+              }
             }
             this.registrationDateFrom = this.formatDateForInput(this.registrationData?.registrationFrom);
             this.registrationDateTo = this.formatDateForInput(this.registrationData?.registrationTo);
             this.showRegistrationModal = true;
           },
-          error: () => {
+          error: (error) => {
             this.registrationData = new ProgramRegistrationWindowModel();
             this.registrationData.programId = this.programId;
             this.registrationDateFrom = '';
             this.registrationDateTo = '';
             this.showRegistrationModal = true;
+
+            this.notification.handleBusinessError(
+              error,
+              'Failed to load registration window.'
+            );
           }
         });
+
       },
-      error: () => {
-        this.notification.error('Failed to load semesters.');
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load semesters.'
+        );
       }
     });
   }
@@ -271,18 +289,22 @@ export class ProgramDetail implements OnInit {
           this.notification.success('Registration window saved successfully.');
           this.showRegistrationModal = false;
           // Optionally refresh the data if needed
-        } else {
-          this.notification.error(res.message || 'Failed to save registration window.');
+
+          return;
         }
+        this.notification.error(res.message || 'Failed to save registration window.');
       },
-      error: () => {
-        this.notification.error('Error saving registration window.');
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to save registration window.'
+        );
       }
     });
   }
 
   // Placeholder actions
-  requestEditWindow(): void {}
+  requestEditWindow(): void { }
 
   goBack(): void {
     this.router.navigate([AppRoutes.University.Faculties]);

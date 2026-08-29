@@ -62,33 +62,34 @@ export class Courses implements OnInit {
   loadData(): void {
 
     this.filter.isActive = true;
-
     this.filter.facultyId = this.selectedFaculty || undefined;
 
     this.courseService.getCourses(this.filter).subscribe({
 
       next: (response) => {
-
         if (response.success && response.result) {
           this.courses = response.result.items;
           this.totalRecords = response.result.totalCount;
-          // this.cdr.detectChanges();
-        } else {
-          this.courses = [];
-          this.notification.warning(response.message);
-        }
 
+          return;
+        }
+        this.courses = [];
       },
+      error: (error) => {
+        this.courses = [];
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load courses.'
+        );
+      }
 
     });
 
   }
 
   applySearch(): void {
-
     this.filter.searchText = this.searchText.trim() || undefined;
     this.filter.pageNumber = 1;
-
     this.loadData();
   }
 
@@ -194,16 +195,18 @@ export class Courses implements OnInit {
     this.facultyService.getFaculties(filter).subscribe({
 
       next: (response) => {
-
         if (response.success && response.result) {
           this.faculties = response.result.items;
-          //this.cdr.detectChanges();
-        }
-        else {
-          this.notification.warning(response.message);;
-        }
 
+          return;
+        }
       },
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load faculties.'
+        );
+      }
 
     });
 
@@ -268,9 +271,6 @@ export class Courses implements OnInit {
     }
 
     const user = this.currentUserProfileService.getCurrentUserProfile();
-    // if (user?.universityId) {
-    //   this.tempCourseModel.universityId = user.universityId;
-    // }
 
     if (user?.universityIds?.length) {
       this.tempCourseModel.universityId = user.universityIds[0];
@@ -287,11 +287,10 @@ export class Courses implements OnInit {
         this.showCourseModal = false;
         this.loadData();
       },
-
-      error: err => {
-        if (HelperMethods.isBusinessError(err)) {
-          this.modalErrorMessage = HelperMethods.getApiErrorMessage(err);
-        }
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error
+        );
       }
 
     });
@@ -312,16 +311,21 @@ export class Courses implements OnInit {
 
     this.courseService.deleteCourse(this.courseToDelete.courseId).subscribe({
 
-      next: () => {
-        this.notification.success('Course deleted successfully');
-        this.showDeleteModal = false;
-        this.loadData();
-      },
+      next: (response) => {
+        if (response.success) {
+          this.notification.success('Course deleted successfully');
+          this.showDeleteModal = false;
+          this.loadData();
 
-      error: err => {
-        if (HelperMethods.isBusinessError(err)) {
-          this.modalErrorMessage = HelperMethods.getApiErrorMessage(err);
+          return;
         }
+        this.notification.error(response.message || 'Failed to delete course.');
+      },
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+           'Failed to delete course.'
+        );
       }
 
     });

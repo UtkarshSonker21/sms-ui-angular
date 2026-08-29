@@ -28,7 +28,6 @@ import { DisableAutocompleteDirective } from '../../../shared/directives/disable
 import { MasterDropDownService } from '../../../core/services/superadmin/master-dropdown.service';
 import { MasterDropDownRequest } from '../../../core/models/super-admin/master-dropdown/master-dropdown-request.model';
 import { MainDropdown } from '../../../core/enums/main-dropdown.enum';
-import { HttpErrorResponse } from '@angular/common/http';
 
 
 
@@ -103,18 +102,21 @@ export class Program implements OnInit {
       next: (response) => {
         if (response.success && response.result) {
           this.program = response.result;
-
           if (this.program.facultyId && this.program.facultyId > 0) {
             this.getCourses();
           }
-
           this.getSponsorshipTypes();
-        } else {
-          this.notification.warning(response.message);
+          return;
         }
+        this.notification.warning(
+          response.message || 'Failed to load program details.'
+        );
       },
-      error: () => {
-        this.notification.error('Failed to load program details.');
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load program details.'
+        );
       }
     });
   }
@@ -164,9 +166,18 @@ export class Program implements OnInit {
       next: (response) => {
         if (response.success && response.result) {
           this.faculties = response.result.items;
-        } else {
-          this.notification.warning(response.message);
-        }
+          return;
+        } this.faculties = [];
+        this.notification.warning(
+          response.message || 'Failed to load faculties.'
+        );
+      },
+      error: (error) => {
+        this.faculties = [];
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load faculties.'
+        );
       }
     });
   }
@@ -202,45 +213,68 @@ export class Program implements OnInit {
 
   // Master Dropdown API calls
   getHighSchoolDivision(): void {
-    this.masterDropDownService
-      .getByParentId(MainDropdown.HighSchoolDivision)
-      .subscribe({
-        next: (response) => {
-          if (response.success && response.result) {
-            this.highSchoolDivision = response.result;
-          } else {
-            this.notification.warning(response.message);
-          }
+    this.masterDropDownService.getByParentId(MainDropdown.HighSchoolDivision).subscribe({
+      next: (response) => {
+        if (response.success && response.result) {
+          this.highSchoolDivision = response.result;
+          return;
         }
-      });
+        this.highSchoolDivision = [];
+        this.notification.warning(
+          response.message || 'Failed to load high school divisions.'
+        );
+      },
+      error: (error) => {
+        this.highSchoolDivision = [];
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load high school divisions.'
+        );
+      }
+    });
   }
 
   getTanzanianStudentsCombination(): void {
-    this.masterDropDownService
-      .getByParentId(MainDropdown.TanzanianStudentsCombination)
-      .subscribe({
-        next: (response) => {
-          if (response.success && response.result) {
-            this.tanzanianStudentsCombination = response.result;
-          } else {
-            this.notification.warning(response.message);
-          }
-        }
-      });
+    this.masterDropDownService.getByParentId(MainDropdown.TanzanianStudentsCombination).subscribe({
+      next: (response) => {
+        if (response.success && response.result) {
+          this.tanzanianStudentsCombination = response.result;
+          return;
+        } this.tanzanianStudentsCombination = [];
+        this.notification.warning(
+          response.message || 'Failed to load Tanzanian combinations.'
+        );
+      },
+      error: (error) => {
+        this.tanzanianStudentsCombination = [];
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load Tanzanian combinations.'
+        );
+      }
+    });
   }
 
   getDegrees(): void {
-    this.masterDropDownService
-      .getByParentId(MainDropdown.Degrees)
-      .subscribe({
-        next: (response) => {
-          if (response.success && response.result) {
-            this.degrees = response.result;
-          } else {
-            this.notification.warning(response.message);
-          }
+    this.masterDropDownService.getByParentId(MainDropdown.Degrees).subscribe({
+      next: (response) => {
+        if (response.success && response.result) {
+          this.degrees = response.result;
+          return;
         }
-      });
+        this.degrees = [];
+        this.notification.warning(
+          response.message || 'Failed to load degrees.'
+        );
+      },
+      error: (error) => {
+        this.degrees = [];
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load degrees.'
+        );
+      }
+    });
   }
 
   // Helper mappings for HighSchoolDivisionEnum string matching
@@ -356,9 +390,19 @@ export class Program implements OnInit {
       next: (response) => {
         if (response.success && response.result) {
           this.documentTypes = response.result.items;
-        } else {
-          this.notification.warning(response.message);
+          return;
         }
+        this.documentTypes = [];
+        this.notification.warning(
+          response.message || 'Failed to load document types.'
+        );
+      },
+      error: (error) => {
+        this.documentTypes = [];
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load document types.'
+        );
       }
     });
   }
@@ -428,9 +472,19 @@ export class Program implements OnInit {
               }
             }
           });
-        } else {
-          this.notification.warning(response.message);
+          return;
         }
+        this.sponsorshipTypes = [];
+        this.notification.warning(
+          response.message || 'Failed to load sponsorship types.'
+        );
+      },
+      error: (error) => {
+        this.sponsorshipTypes = [];
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load sponsorship types.'
+        );
       }
     });
   }
@@ -501,18 +555,26 @@ export class Program implements OnInit {
       next: (response) => {
         if (response.success && response.result) {
           this.courses = response.result.items;
-        } else {
-          if (filter.facultyId && response.message === 'Data not found') {
-            this.courses = [];
-            this.notification.warning('No courses are mapped to the selected faculty.');
-          } else {
-            this.notification.warning(response.message);
-          }
+          return;
         }
-      },
-      error: () => {
         this.courses = [];
-        this.notification.error('Unable to load courses. Please try again.');
+        if (filter.facultyId && response.message === 'Data not found') {
+          this.notification.warning(
+            'No courses are mapped to the selected faculty.'
+          );
+          return;
+        }
+        this.notification.warning(
+          response.message || 'Failed to load courses.'
+        );
+
+      },
+      error: (error) => {
+        this.courses = [];
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load courses.'
+        );
       }
     });
   }
@@ -681,18 +743,17 @@ export class Program implements OnInit {
         if (response.success) {
           this.notification.success('Program saved successfully.');
           this.router.navigate([AppRoutes.University.Faculties]);
-        } else {
-          this.notification.error(response.message || 'Failed to save program.');
-        }
+        } 
+        
+        this.notification.error(
+          response.message || 'Failed to save program.'
+        );
       },
-      error: (error: HttpErrorResponse) => {
-        const message =
-          error?.error?.message ||
-          error?.error?.Message ||
-          error?.message ||
-          'An error occurred while saving the program.';
-
-        this.notification.error(message);
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to save program.'
+        );
       }
     });
   }

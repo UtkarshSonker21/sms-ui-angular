@@ -10,6 +10,7 @@ import { UserIdentifier } from '../../../core/models/auth/user-identifier.model'
 import { NotificationService } from '../../../core/services/common/notification.service';
 
 import { DisableAutocompleteDirective } from '../../../shared/directives/disable-autocomplete.directive';
+import { ValidationPatterns } from '../../../core/constants/validation-patterns';
 
 @Component({
   selector: 'app-forgot-username',
@@ -22,13 +23,11 @@ export class ForgotUsername {
   private authService = inject(AuthService);
   private notification = inject(NotificationService);
   private router = inject(Router);
-  private cdr = inject(ChangeDetectorRef);
+  validationPatterns = ValidationPatterns;
 
   userIdentifier : UserIdentifier = new UserIdentifier();
 
   isBusy = false;
-
-
   submitted = false;
 
   sendUsername(form: NgForm): void {
@@ -43,16 +42,18 @@ export class ForgotUsername {
     this.authService.forgotUsername(this.userIdentifier).subscribe({
 
       next: response => {
-
         this.isBusy = false;
-        this.cdr.detectChanges();
 
         if (!response.success || !response.result) {
           return;
         }
         this.notification.success(response.message);
       },
-
+      error: error => {
+        if (this.notification.handleBusinessError(error)) {
+          return;
+        }
+      }
     });
 
   }

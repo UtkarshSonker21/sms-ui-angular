@@ -59,14 +59,17 @@ export class AcademicRegistration implements OnInit {
         if (response.success && response.result) {
           this.students = response.result.items;
           this.totalRecords = response.result.totalCount;
-        } else {
-          this.students = [];
-          this.notification.warning(response.message);
+
+          return;
         }
-      },
-      error: () => {
         this.students = [];
-        this.notification.error('Failed to load academic registrations.');
+      },
+      error: (error) => {
+        this.students = [];
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load academic registrations.'
+        );
       }
     });
   }
@@ -146,8 +149,8 @@ export class AcademicRegistration implements OnInit {
 
   registerStudent(): void {
     if (!this.registerRequest.semesterNo || !this.registerRequest.registrationDate) {
-        this.notification.warning('Semester and Registration Date are required.');
-        return;
+      this.notification.warning('Semester and Registration Date are required.');
+      return;
     }
 
     this.isSaving = true;
@@ -158,17 +161,20 @@ export class AcademicRegistration implements OnInit {
           this.notification.success('Student registered successfully.');
           this.closeRegisterDialog();
           this.loadData();
-        } else {
-          this.notification.warning(response.message);
-        }
+
+          return;
+        } 
       },
-      error: () => {
+      error: (error) => {
         this.isSaving = false;
-        this.notification.error('Failed to register student.');
+        this.notification.handleBusinessError(
+          error,
+          'Failed to register student.'
+        );
       }
     });
   }
-  
+
   // --- Status Badge Helper ---
   getStatusBadgeClass(statusId: number): string {
     return this.studentStatusService.getBadgeClass(statusId || StudentStatusEnum.Sponsored);

@@ -197,9 +197,12 @@ export class Students implements OnInit {
 
         this.checkRouteAndLoadData();
       },
-      error: () => {
+      error: (error) => {
         this.isLoading = false;
-        this.notification.error('Failed to load reference data.');
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load reference data.'
+        );
       }
     });
   }
@@ -221,23 +224,38 @@ export class Students implements OnInit {
     this.studentService.getStudentById(id).subscribe({
       next: (res) => {
         if (res.success && res.result) {
+
           this.student = res.result;
           this.parsePhone(this.student.phone);
+
           if (this.student.photoPath) {
             this.photoPreviewUrl = environment.apiUrl + this.student.photoPath;
           }
+
           this.loadCandidatePrograms();
           this.loadStudentHistory(id);
-        } else {
-          this.notification.error('Failed to load student details.');
-          this.router.navigate([AppRoutes.School.CoordinatorStudents]);
+
+          this.isLoading = false;
+          return;
+
         }
+
         this.isLoading = false;
-      },
-      error: () => {
-        this.isLoading = false;
-        this.notification.error('Failed to retrieve student details.');
+        this.notification.error('Student details could not be loaded.');
         this.router.navigate([AppRoutes.School.CoordinatorStudents]);
+      },
+      error: (error) => {
+        this.isLoading = false;
+
+        if (this.notification.handleBusinessError(
+          error,
+          'Unable to load student details.'
+        )) {
+          this.router.navigate([
+            AppRoutes.School.CoordinatorStudents
+          ]);
+          return;
+        }
       }
     });
   }
@@ -401,6 +419,7 @@ export class Students implements OnInit {
 
           const activeApp = this.candidatePrograms.find(p => p.applicationId && p.applicationStatus !== undefined);
           if (activeApp && activeApp.applicationId) {
+
             this.studentProgramService.getDocuments(activeApp.applicationId).subscribe({
               next: (docRes) => {
                 if (docRes.success && docRes.result) {
@@ -412,17 +431,27 @@ export class Students implements OnInit {
                   this.activeApplicationDocuments = [];
                 }
               },
-              error: () => {
+              error: (error) => {
                 this.activeApplicationDocuments = [];
+
+                this.notification.handleBusinessError(
+                  error,
+                  'Failed to load application documents.'
+                );
               }
             });
+
           } else {
             this.activeApplicationDocuments = [];
           }
+
         }
       },
-      error: () => {
-        this.notification.error('Failed to load candidate programs.');
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load candidate programs.'
+        );
       }
     });
   }
@@ -518,13 +547,15 @@ export class Students implements OnInit {
 
           this.closeApplyModal();
 
-        } else {
-          this.notification.error(res.message || 'Failed to create draft application.');
+          return;
         }
         this.isApplying = false;
       },
-      error: () => {
-        this.notification.error('Error creating draft application.');
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to create draft application.'
+        );
         this.isApplying = false;
       }
     });
@@ -563,13 +594,16 @@ export class Students implements OnInit {
           this.loadCandidatePrograms(); // Reload to get updated application ID and status
           // Reload student so updated IsDraft value is reflected in the UI
           this.loadStudent(this.student.studentId!);
-        } else {
-          this.notification.error(res.message || 'Failed to submit application.');
+
+          return;
         }
         this.isApplying = false;
       },
-      error: () => {
-        this.notification.error('Error submitting application.');
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to submit application.'
+        );
         this.isApplying = false;
       }
     });
@@ -599,13 +633,16 @@ export class Students implements OnInit {
             this.loadCandidatePrograms();
             // Reload student so updated IsDraft value is reflected in the UI
             this.loadStudent(this.student.studentId!);
-          } else {
-            this.notification.error(res.message || 'Failed to cancel application.');
+
+            return;
           }
           this.isApplying = false;
         },
-        error: () => {
-          this.notification.error('Error cancelling application.');
+        error: (error) => {
+          this.notification.handleBusinessError(
+            error,
+            'Failed to cancel application.'
+          );
           this.isApplying = false;
         }
       });
@@ -624,7 +661,9 @@ export class Students implements OnInit {
     this.expandedProgramDocuments = [];
 
     if (prog.applicationId) {
+
       this.isDocumentsLoading = true;
+
       this.studentProgramService.getDocuments(prog.applicationId).subscribe({
         next: (res) => {
           if (res.success && res.result) {
@@ -633,11 +672,15 @@ export class Students implements OnInit {
           }
           this.isDocumentsLoading = false;
         },
-        error: () => {
-          this.notification.error('Failed to load documents.');
+        error: (error) => {
+          this.notification.handleBusinessError(
+            error,
+            'Failed to load documents.'
+          );
           this.isDocumentsLoading = false;
         }
       });
+
     }
   }
 
@@ -720,14 +763,17 @@ export class Students implements OnInit {
           this.activeApplicationDocuments = this.activeApplicationDocuments.filter(d => d.documentTypeId !== doc.documentTypeId);
           this.activeApplicationDocuments.push(res.result);
           this.notification.success('Document uploaded successfully.');
-        } else {
-          this.notification.error(res.message || 'Failed to upload document.');
+
+          return;
         }
         this.uploadingDocs.delete(doc.documentTypeId);
         event.target.value = ''; // Reset input
       },
-      error: () => {
-        this.notification.error('Error occurred during upload.');
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to upload document.'
+        );
         this.uploadingDocs.delete(doc.documentTypeId);
         event.target.value = '';
       }
@@ -762,12 +808,15 @@ export class Students implements OnInit {
           if (res.success) {
             this.activeApplicationDocuments = this.activeApplicationDocuments.filter(d => d.documentTypeId !== doc.documentTypeId);
             this.notification.success('Document removed successfully.');
-          } else {
-            this.notification.error(res.message || 'Failed to remove document.');
+
+            return;
           }
         },
-        error: () => {
-          this.notification.error('Error occurred while removing document.');
+        error: (error) => {
+          this.notification.handleBusinessError(
+            error,
+            'Failed to remove document.'
+          );
         }
       });
     });
@@ -784,13 +833,16 @@ export class Students implements OnInit {
           this.photoPreviewUrl = environment.apiUrl + res.result;
           this.photoError = false;
           this.notification.success('Profile photo uploaded successfully.');
-        } else {
-          this.notification.error(res.message || 'Failed to upload profile photo.');
+
+          return;
         }
         event.target.value = '';
       },
-      error: () => {
-        this.notification.error('Error occurred during profile photo upload.');
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to upload profile photo.'
+        );
         event.target.value = '';
       }
     });
@@ -814,12 +866,15 @@ export class Students implements OnInit {
             this.photoPreviewUrl = null;
             this.photoError = false;
             this.notification.success('Profile photo removed successfully.');
-          } else {
-            this.notification.error(res.message || 'Failed to remove profile photo.');
+
+            return;
           }
         },
-        error: () => {
-          this.notification.error('Error occurred while removing profile photo.');
+        error: (error) => {
+          this.notification.handleBusinessError(
+            error,
+            'Failed to remove profile photo.'
+          );
         }
       });
     });
@@ -834,13 +889,16 @@ export class Students implements OnInit {
         if (res.success && res.result) {
           this.student.recommendationLetterPath = res.result;
           this.notification.success('Recommendation letter uploaded successfully.');
-        } else {
-          this.notification.error(res.message || 'Failed to upload recommendation letter.');
+
+          return;
         }
         event.target.value = '';
       },
-      error: () => {
-        this.notification.error('Error occurred during recommendation letter upload.');
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to upload recommendation letter.'
+        );
         event.target.value = '';
       }
     });
@@ -872,12 +930,15 @@ export class Students implements OnInit {
           if (res.success) {
             this.student.recommendationLetterPath = undefined;
             this.notification.success('Recommendation letter removed successfully.');
-          } else {
-            this.notification.error(res.message || 'Failed to remove recommendation letter.');
+
+            return;
           }
         },
-        error: () => {
-          this.notification.error('Error occurred while removing recommendation letter.');
+        error: (error) => {
+          this.notification.handleBusinessError(
+            error,
+            'Failed to remove recommendation letter.'
+          );
         }
       });
     });
@@ -921,10 +982,6 @@ export class Students implements OnInit {
       this.notification.warning('Please fill in all required fields (Name, Nationality, School).');
       return;
     }
-
-    // if (!this.validateRequiredDocuments()) {
-    //   return;
-    // }
 
     this.student.isDraft = false;
     this.submitForm();
@@ -980,13 +1037,16 @@ export class Students implements OnInit {
           if (res.success) {
             this.notification.success('Student updated successfully.');
             this.router.navigate([AppRoutes.School.CoordinatorStudents]);
-          } else {
-            this.notification.error(res.message || 'Failed to update student.');
+
+            return;
           }
           this.isSaving = false;
         },
-        error: () => {
-          this.notification.error('Error occurred while updating student.');
+        error: (error) => {
+          this.notification.handleBusinessError(
+            error,
+            'Unable to update student details.'
+          );
           this.isSaving = false;
         }
       });
@@ -996,13 +1056,16 @@ export class Students implements OnInit {
           if (res.success) {
             this.notification.success('Student added successfully.');
             this.router.navigate([AppRoutes.School.CoordinatorStudents]);
-          } else {
-            this.notification.error(res.message || 'Failed to add student.');
-          }
+
+            return;
+          } 
           this.isSaving = false;
         },
-        error: () => {
-          this.notification.error('Error occurred while saving student.');
+        error: (error) => {
+          this.notification.handleBusinessError(
+            error,
+            'Unable to save student details.'
+          );
           this.isSaving = false;
         }
       });

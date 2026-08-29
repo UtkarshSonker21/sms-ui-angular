@@ -37,38 +37,32 @@
                     <label class="field-label required-label">
                         Email Address
                     </label>
-
                     <div class="input-group">
-
                         <i class="fas fa-envelope"></i>
-
-                        <input type="text" name="emailOrUsername" [(ngModel)]="userIdentifier.emailOrUsername" #userIdentifierName="ngModel"
-                            required placeholder="Enter registered email" autocomplete="off">
-
+                        <input type="email" name="emailOrUsername" [(ngModel)]="userIdentifier.emailOrUsername"
+                            #emailOrUsername="ngModel" required autocomplete="off" placeholder="Enter registered email"
+                            [pattern]="validationPatterns.email">
                     </div>
-
-                    <div class="validation-error" *ngIf="userIdentifierName.invalid && (userIdentifierName.touched || submitted)">
+                    <div class="validation-error"
+                        *ngIf="emailOrUsername.errors?.['required'] && (emailOrUsername.touched || submitted)">
                         Email is required.
+                    </div>
+                    <div class="validation-error"
+                        *ngIf="emailOrUsername.errors?.['pattern'] && (emailOrUsername.touched || submitted)">
+                        Please enter a valid email address.
                     </div>
                 </div>
 
-                
-
                 <button type="submit" class="btn btn-p mt-4" [disabled]="sendUsernameForm.invalid || isBusy">
-
                     <span *ngIf="!isBusy">
-                        SEND USERNAME 
+                        SEND USERNAME
                     </span>
-
                     <span *ngIf="isBusy">
                         SENDING...
                     </span>
-
                 </button>
 
-
                 <div class="row mt-3 g-2">
-
                     <div class="col-12 col-md-12">
                         <button type="button" class="btn btn-g w-100" (click)="goBackToLogin()">
 
@@ -76,7 +70,6 @@
                             BACK TO LOGIN
                         </button>
                     </div>
-
                 </div>
 
                 <p class="browser-note">

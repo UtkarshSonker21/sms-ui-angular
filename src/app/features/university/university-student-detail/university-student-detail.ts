@@ -38,7 +38,7 @@ export class UniversityStudentDetail implements OnInit {
   // Placeholder for when timeline API is provided
   documents: StudentProgramDocument[] = [];
   studentHistory: any[] = [];
-  
+
   // Section toggle state (mirroring coordinator student edit)
   activeSection: number = 1;
 
@@ -57,7 +57,7 @@ export class UniversityStudentDetail implements OnInit {
         if (res.success && res.result) {
           this.student = res.result;
           this.photoError = false;
-          
+
           // Fallback simple timeline for now using actionDate
           if (this.student.actionDate) {
             this.studentHistory = [{
@@ -70,14 +70,18 @@ export class UniversityStudentDetail implements OnInit {
           if (this.student.applicationId) {
             this.loadDocuments(this.student.applicationId);
           }
-        } else {
-          this.notification.error(res.message || 'Failed to load student details.');
+
+          return;
         }
-
+        this.notification.error(
+          res.message || 'Failed to load student details.'
+        );
       },
-      error: () => {
-        this.notification.error('An error occurred while loading student details.');
-
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load student details.'
+        );
       }
     });
   }
@@ -91,13 +95,20 @@ export class UniversityStudentDetail implements OnInit {
       next: (res) => {
         if (res.success && res.result) {
           this.documents = res.result;
-        } else {
-          this.documents = [];
+          return;
+        }
+        this.documents = [];
+        if (res.message) {
+          this.notification.error(res.message);
         }
       },
-      error: () => {
+      error: (error) => {
         this.documents = [];
-        this.notification.error('Failed to load submitted documents.');
+
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load submitted documents.'
+        );
       }
     });
   }
@@ -176,17 +187,17 @@ export class UniversityStudentDetail implements OnInit {
 
   saveUniversityRemark(): void {
     if (!this.currentDiscussionDocTypeId) return;
-    
+
     let existingDoc = this.documents.find(d => d.documentTypeId === this.currentDiscussionDocTypeId);
     if (existingDoc) {
       existingDoc.universityRemark = this.universityDiscussionRemark;
     } else {
       this.documents.push({
-         documentTypeId: this.currentDiscussionDocTypeId,
-         universityRemark: this.universityDiscussionRemark
+        documentTypeId: this.currentDiscussionDocTypeId,
+        universityRemark: this.universityDiscussionRemark
       } as any);
     }
-    
+
     this.notification.success('University remark saved successfully.');
     this.closeDiscussionModal();
   }
@@ -217,7 +228,9 @@ export class UniversityStudentDetail implements OnInit {
       cancelText: 'Cancel',
       variant: 'danger'
     }).then(confirmed => {
+
       if (confirmed) {
+
         this.studentProgramService.changeStatus(this.studentId, {
           applicationStatusId: StudentStatusEnum.AcceptanceRejected,
           remarks: null as any
@@ -226,15 +239,21 @@ export class UniversityStudentDetail implements OnInit {
             if (res.success) {
               this.notification.success('Application rejected successfully.');
               this.refreshApplicationWorkflow();
-            } else {
-              this.notification.error(res.message || 'Failed to reject application.');
+              return;
             }
+            this.notification.error(
+              res.message || 'Failed to reject application.'
+            );
           },
-          error: () => {
-            this.notification.error('An error occurred while rejecting the application.');
+          error: (error) => {
+            this.notification.handleBusinessError(
+              error,
+              'Failed to reject application.'
+            );
           }
         });
       }
+
     });
   }
 
@@ -257,12 +276,17 @@ export class UniversityStudentDetail implements OnInit {
             if (res.success) {
               this.notification.success('Application accepted successfully.');
               this.refreshApplicationWorkflow();
-            } else {
-              this.notification.error(res.message || 'Failed to accept application.');
+              return;
             }
+            this.notification.error(
+              res.message || 'Failed to accept application.'
+            );
           },
-          error: () => {
-            this.notification.error('An error occurred while accepting the application.');
+          error: (error) => {
+            this.notification.handleBusinessError(
+              error,
+              'Failed to accept application.'
+            );
           }
         });
       }
@@ -288,12 +312,15 @@ export class UniversityStudentDetail implements OnInit {
             if (res.success) {
               this.notification.success('Application submitted for awarding review successfully.');
               this.refreshApplicationWorkflow();
-            } else {
-              this.notification.error(res.message || 'Failed to submit application.');
+              return;
             }
+            this.notification.error(res.message || 'Failed to submit application.');
           },
-          error: () => {
-            this.notification.error('An error occurred while submitting the application.');
+          error: (error) => {
+            this.notification.handleBusinessError(
+              error,
+              'Failed to submit application.'
+            );
           }
         });
       }
@@ -319,12 +346,15 @@ export class UniversityStudentDetail implements OnInit {
             if (res.success) {
               this.notification.success('Application awarded successfully.');
               this.refreshApplicationWorkflow();
-            } else {
-              this.notification.error(res.message || 'Failed to award application.');
+              return;
             }
+            this.notification.error(res.message || 'Failed to award application.');
           },
-          error: () => {
-            this.notification.error('An error occurred while awarding the application.');
+          error: (error) => {
+            this.notification.handleBusinessError(
+              error,
+              'Failed to award application.'
+            );
           }
         });
       }
@@ -350,12 +380,15 @@ export class UniversityStudentDetail implements OnInit {
             if (res.success) {
               this.notification.success('Awarding review rejected successfully.');
               this.refreshApplicationWorkflow();
-            } else {
-              this.notification.error(res.message || 'Failed to reject awarding review.');
-            }
+              return;
+            } 
+            this.notification.error(res.message || 'Failed to reject awarding review.'); 
           },
-          error: () => {
-            this.notification.error('An error occurred while rejecting the awarding review.');
+          error: (error) => {
+            this.notification.handleBusinessError(
+              error,
+              'Failed to reject awarding review.'
+            );
           }
         });
       }
@@ -363,31 +396,4 @@ export class UniversityStudentDetail implements OnInit {
   }
 
 
-
-
-
-  // ==========================================
-  // TODO: Temporary UI placeholders.
-  // Replace with API properties later.
-  // ==========================================
-  applicationNumber = '2024-0847';
-  submittedDate: Date | null = new Date('2024-09-01');
-  minimumPercentage = '85%';
-  programDuration = '6 years';
-
-  motherName = '';
-  dateOfBirth: Date | null = null;
-  nationality = '';
-  countryOfResidence = '';
-  gender = '';
-  religion = '';
-  directAidOrphan = false;
-  orphanNumber = '';
-
-  phoneNumber = '';
-  email = '';
-  city = '';
-  village = '';
-  block = '';
-  street = '';
 }
