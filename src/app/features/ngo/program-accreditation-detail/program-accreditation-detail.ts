@@ -57,9 +57,12 @@ export class ProgramAccreditationDetail implements OnInit {
           this.router.navigate(['programs']);
         }
       },
-      error: () => {
-        this.notification.error('Failed to retrieve program details.');
+      error: (error) => {
         this.router.navigate(['programs']);
+        this.notification.handleBusinessError(
+          error,
+          'Failed to retrieve program details.'
+        );
       }
     });
   }
@@ -138,14 +141,11 @@ export class ProgramAccreditationDetail implements OnInit {
           this.notification.error(response.message || 'Failed to update decision.');
         }
       },
-      error: (error: HttpErrorResponse) => {
-        const message =
-          error?.error?.message ||
-          error?.error?.Message ||
-          error?.message ||
-          'Failed to update accreditation decision.';
-
-        this.notification.error(message);
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to update accreditation decision.'
+        );
       }
     });
   }

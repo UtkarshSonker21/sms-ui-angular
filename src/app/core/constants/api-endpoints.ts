@@ -16,6 +16,8 @@ export const ApiEndpoints = {
     VerifyLoginCode: 'auth/verify-login-code',
 
     MyProfile: 'auth/my-profile',
+
+    UpdateMyProfile: 'auth/update/my-profile',
   },
 
   Common: {

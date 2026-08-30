@@ -7,6 +7,7 @@ import { MarketingAdministrativeFeeRequest } from '../../../core/models/common/m
 import { MarketingAdministrativeFeeHistory } from '../../../core/models/common/marketing-administrative-fee/marketing-administrative-fee-history.model';
 import { ApiResponse } from '../../../core/models/common/response/api-response.model';
 import { finalize } from 'rxjs';
+import { NotificationService } from '../../../core/services/common/notification.service';
 
 @Component({
   selector: 'app-marketing-administrative-fee',
@@ -19,6 +20,7 @@ import { finalize } from 'rxjs';
 export class MarketingAdministrativeFee implements OnInit {
   private readonly feeService = inject(MarketingAdministrativeFeeService);
   private readonly datePipe = inject(DatePipe);
+  private readonly notification = inject(NotificationService);
 
   feePercentage: number | null = null;
   currentValueInfo: MarketingAdministrativeFeeResponse | null = null;
@@ -48,8 +50,11 @@ export class MarketingAdministrativeFee implements OnInit {
             this.feePercentage = res.result.feePercentage;
           }
         },
-        error: (err) => {
-          console.error('Error loading fee', err);
+        error: (error) => {
+          this.notification.handleBusinessError(
+            error,
+            'Failed to load fee settings.'
+          );
         }
       });
   }
@@ -89,8 +94,11 @@ export class MarketingAdministrativeFee implements OnInit {
             this.validationError = res.message || 'Failed to update fee.';
           }
         },
-        error: (err) => {
-          this.validationError = 'An error occurred while saving.';
+        error: (error) => {
+          this.notification.handleBusinessError(
+            error,
+            'Failed to save fee settings.'
+          );
         }
       });
   }
@@ -113,8 +121,11 @@ export class MarketingAdministrativeFee implements OnInit {
             this.isHistoryLoaded = true;
           }
         },
-        error: (err) => {
-          console.error('Error loading history', err);
+        error: (error) => {
+          this.notification.handleBusinessError(
+            error,
+            'Failed to load fee history.'
+          );
         }
       });
   }

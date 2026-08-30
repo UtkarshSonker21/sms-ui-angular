@@ -75,11 +75,15 @@ export class SchoolAccreditationDetail implements OnInit {
           this.loadSchool(schoolId);
         }
       },
-      error: () => {
+      error: (error) => {
         const schoolId = Number(this.route.snapshot.params['schoolId']);
         if (schoolId) {
           this.loadSchool(schoolId);
         }
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load countries.'
+        );
       }
     });
   }
@@ -104,6 +108,12 @@ export class SchoolAccreditationDetail implements OnInit {
           this.schoolTypes = response.result;
           this.buildSchoolTypeMap();
         }
+      },
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load school types.'
+        );
       }
     });
   }
@@ -133,9 +143,12 @@ export class SchoolAccreditationDetail implements OnInit {
           this.backToList();
         }
       },
-      error: () => {
-        this.notification.error('Failed to retrieve school details.');
+      error: (error) => {
         this.backToList();
+        this.notification.handleBusinessError(
+          error,
+          'Failed to retrieve school details.'
+        );
       }
     });
   }
@@ -187,14 +200,11 @@ export class SchoolAccreditationDetail implements OnInit {
           this.notification.error(response.message || 'Failed to update decision.');
         }
       },
-      error: (error: HttpErrorResponse) => {
-        const message =
-          error?.error?.message ||
-          error?.error?.Message ||
-          error?.message ||
-          'Failed to update accreditation decision.';
-
-        this.notification.error(message);
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to update accreditation decision.'
+        );
       }
     });
   }

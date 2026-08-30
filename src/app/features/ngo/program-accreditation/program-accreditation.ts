@@ -87,6 +87,12 @@ export class ProgramAccreditation implements OnInit {
         if (response.success && response.result) {
           this.universities = response.result.items;
         }
+      },
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load universities.'
+        );
       }
     });
   }
@@ -136,8 +142,11 @@ export class ProgramAccreditation implements OnInit {
           this.kpiRejected = 0;
         }
       },
-      error: (err) => {
-        this.notification.error('Failed to load program accreditation list.');
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load program accreditation list.'
+        );
       }
     });
   }
@@ -237,6 +246,12 @@ export class ProgramAccreditation implements OnInit {
           } else {
             this.notification.warning(response.message);
           }
+        },
+        error: (error) => {
+          this.notification.handleBusinessError(
+            error,
+            'Failed to load degrees.'
+          );
         }
       });
   }

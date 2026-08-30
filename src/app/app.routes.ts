@@ -62,6 +62,7 @@ import { Labels } from './features/superadmin/labels/labels';
 import { LanguageTranslations } from './features/superadmin/language-translations/language-translations';
 import { FacultiesList } from './features/university/faculties-list/faculties-list';
 import { ProgramsList } from './features/university/programs-list/programs-list';
+import { MyProfile } from './features/common/my-profile/my-profile';
 
 export const routes: Routes = [
 
@@ -145,6 +146,10 @@ export const routes: Routes = [
             {
                 path: 'marketing-dashboard',
                 component: MarketingDashboard
+            },
+            {
+                path: 'my-profile',
+                component: MyProfile
             },
 
             // superadmin components

@@ -130,6 +130,12 @@ export class UniversityCoordinators implements OnInit {
         if (response.success && response.result) {
           this.roles = response.result;
         }
+      },
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load roles.'
+        );
       }
     });
   }
@@ -144,6 +150,12 @@ export class UniversityCoordinators implements OnInit {
         if (response.success && response.result) {
           this.masterUniversities = response.result.items;
         }
+      },
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load universities.'
+        );
       }
     });
   }
@@ -157,6 +169,12 @@ export class UniversityCoordinators implements OnInit {
         if (response.success && response.result) {
           this.countries = response.result.items;
         }
+      },
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load countries.'
+        );
       }
     });
   }
@@ -167,6 +185,12 @@ export class UniversityCoordinators implements OnInit {
         if (response.success && response.result) {
           this.genders = response.result;
         }
+      },
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load genders.'
+        );
       }
     });
   }
@@ -177,6 +201,12 @@ export class UniversityCoordinators implements OnInit {
         if (response.success && response.result) {
           this.salutations = response.result.map(x => x.displayText);
         }
+      },
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load salutations.'
+        );
       }
     });
   }
@@ -194,10 +224,13 @@ export class UniversityCoordinators implements OnInit {
           this.notification.warning(response.message);
         }
       },
-      error: () => {
+      error: (error) => {
         this.users = [];
         this.totalRecords = 0;
-        this.notification.error('Failed to load university coordinators.');
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load university coordinators.'
+        );
       }
     });
   }
@@ -371,6 +404,12 @@ export class UniversityCoordinators implements OnInit {
             }
             this.parsePhone(this.tempUserModel.mobileNumber);
           }
+        },
+        error: (error) => {
+          this.notification.handleBusinessError(
+            error,
+            'Failed to load coordinator details.'
+          );
         }
       });
     }
@@ -547,13 +586,12 @@ export class UniversityCoordinators implements OnInit {
         this.showUserModal = false;
         this.loadData();
       },
-      error: (err) => {
+      error: (error) => {
         this.isSaving = false;
-        if (HelperMethods.isBusinessError(err)) {
-          this.modalErrorMessage = HelperMethods.getApiErrorMessage(err);
-        } else {
-          this.modalErrorMessage = 'An error occurred while saving the coordinator.';
-        }
+        this.notification.handleBusinessError(
+          error,
+          'Failed to save coordinator.'
+        );
       }
     });
   }
@@ -575,9 +613,12 @@ export class UniversityCoordinators implements OnInit {
         this.showDeleteModal = false;
         this.loadData();
       },
-      error: () => {
+      error: (error) => {
         this.showDeleteModal = false;
-        this.notification.error('Error occurred while deleting coordinator.');
+        this.notification.handleBusinessError(
+          error,
+          'Failed to delete coordinator.'
+        );
       }
     });
   }

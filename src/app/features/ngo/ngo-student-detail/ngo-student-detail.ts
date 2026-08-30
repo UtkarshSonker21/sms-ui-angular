@@ -73,8 +73,11 @@ export class NgoStudentDetail implements OnInit {
         }
 
       },
-      error: () => {
-        this.notification.error('An error occurred while loading student details.');
+      error: (error) => {
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load student details.'
+        );
       }
     });
   }
@@ -93,9 +96,12 @@ export class NgoStudentDetail implements OnInit {
           this.documents = [];
         }
       },
-      error: () => {
+      error: (error) => {
         this.documents = [];
-        this.notification.error('Failed to load submitted documents.');
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load submitted documents.'
+        );
       }
     });
   }
@@ -210,7 +216,12 @@ export class NgoStudentDetail implements OnInit {
               this.notification.error(res.message || 'Failed to submit application.');
             }
           },
-          error: () => this.notification.error('An error occurred.')
+          error: (error) => {
+            this.notification.handleBusinessError(
+              error,
+              'Failed to submit for sponsorship review.'
+            );
+          }
         });
       }
     });
@@ -238,7 +249,12 @@ export class NgoStudentDetail implements OnInit {
               this.notification.error(res.message || 'Failed to reject application.');
             }
           },
-          error: () => this.notification.error('An error occurred.')
+          error: (error) => {
+            this.notification.handleBusinessError(
+              error,
+              'Failed to reject sponsorship.'
+            );
+          }
         });
       }
     });
@@ -266,7 +282,12 @@ export class NgoStudentDetail implements OnInit {
               this.notification.error(res.message || 'Failed to approve application.');
             }
           },
-          error: () => this.notification.error('An error occurred.')
+          error: (error) => {
+            this.notification.handleBusinessError(
+              error,
+              'Failed to approve sponsorship.'
+            );
+          }
         });
       }
     });
