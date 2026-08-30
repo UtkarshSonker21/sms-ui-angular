@@ -1,0 +1,69 @@
+/* Input field validation error border styling */
+.field-input.invalid,
+.da-select.invalid .da-select-control,
+.phone-input-group.invalid {
+  border-color: var(--da-danger, #dc3545) !important;
+}
+
+/* Match layout/spacing to Students page (38px heights) */
+.field-input,
+.da-select-control {
+  height: 38px !important;
+  box-sizing: border-box !important;
+  background: var(--da-surface) !important;
+  line-height: 36px !important;
+}
+
+/* Country Code + Phone Number Unified Input Group */
+.phone-input-group {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  height: 38px !important;
+  border: 1px solid var(--da-border, #e0e0e0);
+  border-radius: var(--da-radius-sm, 6px);
+  background: var(--da-white, #ffffff);
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+  overflow: visible;
+
+  &:hover {
+    border-color: var(--da-border-strong, #bdbdbd);
+  }
+
+  &:focus-within {
+    border-color: var(--da-green, #2C9942);
+    box-shadow: 0 0 0 3px rgba(44,153,66,0.12);
+  }
+
+  .multi-select {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    width: 200px;
+    max-width: 200px;
+    flex-shrink: 0;
+    height: 100% !important;
+    border-radius: 0 !important;
+    border-right: 1px solid var(--da-border, #e0e0e0) !important;
+    padding: 0 12px !important;
+  }
+
+  .multi-select .ms-display {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    display: block;
+    width: 100%;
+  }
+
+  .phone-number-input {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    height: 100% !important;
+    flex: 1;
+    box-sizing: border-box;
+    padding: 7px 12px;
+  }
+}

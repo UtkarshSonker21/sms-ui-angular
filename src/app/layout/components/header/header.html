@@ -54,8 +54,9 @@
       </button>
 
       <div class="header__dropdown-menu header__dropdown-menu--profile" *ngIf="isProfileDropdownOpen">
+      
         <!-- Profile Header -->
-        <div class="header__profile-info">
+        <div class="header__profile-info"  (click)="goBackToMyProfile()">
           <div class="header__profile-name">{{ currentUser.fullName || 'User Full Name' }}</div>
           <div class="header__profile-role-row">
             <span class="header__profile-role">{{ currentUser.currentRoleName || 'Role Name' }}</span>

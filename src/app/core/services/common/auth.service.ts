@@ -20,6 +20,7 @@ import { UserIdentifier } from '../../models/auth/user-identifier.model';
 import { VerifyOtp } from '../../models/auth/verify-otp.model';
 import { ResetPasswordRequest } from '../../models/auth/reset-password-request.model';
 import { StaffType } from '../../enums/staff-type.enum';
+import { UpdateMyProfile } from '../../models/common/settings/update-my-profile-request.model';
 
 @Injectable({
     providedIn: 'root'
@@ -52,6 +53,16 @@ export class AuthService {
             ApiEndpoints.Auth.MyProfile
         );
     }
+
+
+    updateMyProfile(request: UpdateMyProfile): Observable<ApiResponse<boolean>> {
+        return this.apiService.post<ApiResponse<boolean>>(
+            ApiEndpoints.Auth.UpdateMyProfile,
+            request
+        );
+    }
+
+
 
     forgotUsername(dto: UserIdentifier): Observable<ApiResponse<boolean>> {
         return this.apiService.post<ApiResponse<boolean>>(

@@ -32,7 +32,7 @@ export class CommonService {
     }
 
 
-    getDashboard() { }
+    
 
 
 }
