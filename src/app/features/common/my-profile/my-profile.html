@@ -1,198 +1,321 @@
 <div class="courses-page" data-lang="en">
-  <div class="page-head">
-    <div>
-      <div class="crumb">
-        <a routerLink="/dashboard">Dashboard</a>
-        <span class="sep">/</span>
-        <span class="text-muted">My Profile</span>
-      </div>
-      <h1 class="page-title">My Profile</h1>
-      <div class="page-sub">
-        Manage your personal profile, contact information, and address details.
-      </div>
-    </div>
-    <div class="page-actions">
-      <button type="button" class="btn btn-faculties-outline" (click)="viewLogs()">
-        <i class="fas fa-history btn-icon"></i> View Logs
-      </button>
-    </div>
-  </div>
 
-  <div *ngIf="isLoadingProfile" style="display: flex; justify-content: center; align-items: center; padding: 60px 0;">
-    <i class="fas fa-spinner fa-spin" style="font-size: 32px; color: var(--da-green);"></i>
-  </div>
-
-  <form *ngIf="!isLoadingProfile" #profileForm="ngForm" (ngSubmit)="updateProfile()" novalidate appDisableAutocomplete style="display: flex; flex-direction: column; gap: 20px;">
-    
-    <!-- Section 1: Basic Information -->
-    <section class="form-section">
-      <div class="form-section-head">
-        <div class="form-section-num">1</div>
-        <div>
-          <div class="form-section-title">Basic Information</div>
-          <div class="form-section-sub">Personal identity and contact details.</div>
+  <!-- Profile Form View -->
+  <ng-container *ngIf="!showLogsView">
+    <div class="page-head">
+      <div>
+        <div class="crumb">
+          <a routerLink="/dashboard">Dashboard</a>
+          <span class="sep">/</span>
+          <span class="text-muted">My Profile</span>
+        </div>
+        <h1 class="page-title">My Profile</h1>
+        <div class="page-sub">
+          Manage your personal profile, contact information, and address details.
         </div>
       </div>
-      
-      <div class="form-section-body">
-        <div class="form-grid form-grid-2">
-          
-          <!-- Salutation -->
-          <div class="field">
-            <label class="field-label required-label">Salutation</label>
-            <div class="da-select" [class.da-select-open]="isSalutationDropdownOpen" [class.invalid]="(salutationModel.touched || profileForm.submitted) && salutationModel.invalid" tabindex="0" (click)="$event.stopPropagation()">
-              <div class="da-select-control" (click)="toggleSalutationDropdown($event)">
-                <span class="da-select-value">{{ model.saluatation || 'Select...' }}</span>
-                <i class="fas da-select-arrow" [ngClass]="isSalutationDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-              </div>
-              <div class="da-select-menu" *ngIf="isSalutationDropdownOpen">
-                <div class="da-select-option" [class.selected]="model.saluatation === ''" (click)="selectSalutationOption('')">
-                  Select...
-                </div>
-                <div class="da-select-option" *ngFor="let opt of salutations" [class.selected]="model.saluatation === opt" (click)="selectSalutationOption(opt)">
-                  {{ opt }}
-                </div>
-              </div>
-            </div>
-            <input type="hidden" name="saluatation" [ngModel]="model.saluatation" required #salutationModel="ngModel">
-            <div class="validation-error" *ngIf="(salutationModel.touched || profileForm.submitted) && salutationModel.errors?.['required']">
-              Salutation is required.
-            </div>
+      <div class="page-actions">
+        <button type="button" class="btn btn-faculties-outline" (click)="goBack()">
+          <i class="fas fa-arrow-left btn-icon"></i> Back
+        </button>
+        <button type="button" class="btn btn-faculties-outline" (click)="viewLogs()">
+          <i class="fas fa-history btn-icon"></i> View Logs
+        </button>
+      </div>
+    </div>
+
+    <form #profileForm="ngForm" (ngSubmit)="updateProfile()" novalidate appDisableAutocomplete
+      style="display: flex; flex-direction: column; gap: 20px;">
+
+      <!-- Section 1: Basic Information -->
+      <section class="form-section">
+        <div class="form-section-head">
+          <div class="form-section-num">1</div>
+          <div>
+            <div class="form-section-title">Basic Information</div>
+            <div class="form-section-sub">Personal identity and contact details.</div>
           </div>
+        </div>
 
-          <!-- Empty space in grid to align inputs nicely -->
-          <div class="field"></div>
+        <div class="form-section-body">
+          <div class="form-grid form-grid-2">
 
-          <!-- First Name -->
-          <div class="field">
-            <label class="field-label required-label">First Name</label>
-            <input type="text" name="firstName" class="field-input" placeholder="First Name" required maxlength="100" [(ngModel)]="model.firstName" #firstNameModel="ngModel" [pattern]="validationPatterns.name" [class.invalid]="(firstNameModel.touched || profileForm.submitted) && firstNameModel.invalid">
-            <div class="validation-error" *ngIf="(firstNameModel.touched || profileForm.submitted) && firstNameModel.errors?.['required']">
-              First Name is required.
-            </div>
-            <div class="validation-error" *ngIf="(firstNameModel.touched || profileForm.submitted) && firstNameModel.errors?.['pattern']">
-              Please enter a valid name. Only letters and single spaces between words are allowed.
-            </div>
-          </div>
-
-          <!-- Last Name -->
-          <div class="field">
-            <label class="field-label required-label">Last Name</label>
-            <input type="text" name="lastName" class="field-input" placeholder="Last Name" required maxlength="100" [(ngModel)]="model.lastName" #lastNameModel="ngModel" [pattern]="validationPatterns.name" [class.invalid]="(lastNameModel.touched || profileForm.submitted) && lastNameModel.invalid">
-            <div class="validation-error" *ngIf="(lastNameModel.touched || profileForm.submitted) && lastNameModel.errors?.['required']">
-              Last Name is required.
-            </div>
-            <div class="validation-error" *ngIf="(lastNameModel.touched || profileForm.submitted) && lastNameModel.errors?.['pattern']">
-              Please enter a valid name. Only letters and single spaces between words are allowed.
-            </div>
-          </div>
-
-          <!-- Mobile (Phone Input Group matching Students page) -->
-          <div class="field" (click)="$event.stopPropagation()">
-            <label class="field-label">Mobile</label>
-            <div class="phone-input-group" [class.invalid]="(mobilePhoneModel.touched || profileForm.submitted) && (mobilePhoneModel.invalid || phoneCodeModel.invalid)">
-              <div class="multi-select" [class.open]="isPhoneDropdownOpen" (click)="togglePhoneDropdown($event)" tabindex="0">
-                <div class="ms-display" [class.has-selection]="PhoneCountryId !== null">
-                  <span>{{ PhoneCountryId ? getPhoneCountryName() : 'Select Code...' }}</span>
+            <!-- Salutation -->
+            <div class="field">
+              <label class="field-label required-label">Salutation</label>
+              <div class="da-select" [class.da-select-open]="isSalutationDropdownOpen"
+                [class.invalid]="(salutationModel.touched || profileForm.submitted) && salutationModel.invalid"
+                tabindex="0" (click)="$event.stopPropagation()">
+                <div class="da-select-control" (click)="toggleSalutationDropdown($event)">
+                  <span class="da-select-value">{{ model.saluatation || 'Select...' }}</span>
+                  <i class="fas da-select-arrow"
+                    [ngClass]="isSalutationDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
                 </div>
-                <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="6 9 12 15 18 9" />
-                </svg>
-                <div class="ms-panel" *ngIf="isPhoneDropdownOpen" (click)="$event.stopPropagation()" style="display: block; max-height: 200px; overflow-y: auto;">
-                  <div *ngFor="let c of countries" class="ms-option" [class.checked]="PhoneCountryCode === c.countryIsdCode?.toString()" (click)="selectPhoneCountry(c); $event.stopPropagation()">
-                    <span>{{ c.countryName }} (+{{ c.countryIsdCode }})</span>
+                <div class="da-select-menu" *ngIf="isSalutationDropdownOpen">
+                  <div class="da-select-option" [class.selected]="model.saluatation === ''"
+                    (click)="selectSalutationOption('')">
+                    Select...
+                  </div>
+                  <div class="da-select-option" *ngFor="let opt of salutations"
+                    [class.selected]="model.saluatation === opt" (click)="selectSalutationOption(opt)">
+                    {{ opt }}
                   </div>
                 </div>
               </div>
-              <input type="text" name="mobile" class="field-input phone-number-input" placeholder="55554444" [(ngModel)]="PhoneNumber" #mobilePhoneModel="ngModel" [appPhoneValidator]="PhoneCountryCode" [phoneCodeModel]="phoneCodeModel">
-            </div>
-            <input type="hidden" name="phoneCountryCode" [ngModel]="PhoneCountryCode ? PhoneCountryCode : ''" #phoneCodeModel="ngModel">
-            <div class="validation-error" *ngIf="(phoneCodeModel.touched || profileForm.submitted) && !phoneCodeModel.valid">
-              Phone Code is required.
-            </div>
-            <div class="validation-error" *ngIf="(mobilePhoneModel.touched || profileForm.submitted) && mobilePhoneModel.errors?.['required']">
-              Phone number is required.
-            </div>
-            <div class="validation-error" *ngIf="(mobilePhoneModel.touched || profileForm.submitted) && mobilePhoneModel.errors?.['pattern']">
-              Please enter a valid phone number.
-            </div>
-          </div>
-
-          <!-- Personal Email -->
-          <div class="field">
-            <label class="field-label">Personal Email</label>
-            <input type="email" name="personalEmail" class="field-input num-ltr" placeholder="personal@example.com" maxlength="100" [(ngModel)]="model.personalEmail" #personalEmailModel="ngModel" [pattern]="validationPatterns.email" [class.invalid]="(personalEmailModel.touched || profileForm.submitted) && personalEmailModel.invalid" dir="ltr">
-            <div class="validation-error" *ngIf="(personalEmailModel.touched || profileForm.submitted) && personalEmailModel.errors?.['pattern']">
-              Please enter a valid email address.
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </section>
-
-    <!-- Section 2: Address Information -->
-    <section class="form-section">
-      <div class="form-section-head">
-        <div class="form-section-num">2</div>
-        <div>
-          <div class="form-section-title">Address Information</div>
-          <div class="form-section-sub">Your physical address and location details.</div>
-        </div>
-      </div>
-      
-      <div class="form-section-body">
-        <div class="form-grid form-grid-2">
-          
-          <!-- Address -->
-          <div class="field field-span-2">
-            <label class="field-label">Address</label>
-            <input type="text" name="address" class="field-input" placeholder="Line 1 Address" maxlength="250" [(ngModel)]="model.address">
-          </div>
-
-          <!-- City -->
-          <div class="field">
-            <label class="field-label">City</label>
-            <input type="text" name="city" class="field-input" placeholder="City Name" maxlength="100" [(ngModel)]="model.city">
-          </div>
-
-          <!-- Country -->
-          <div class="field">
-            <label class="field-label">Country</label>
-            <div class="da-select" [class.da-select-open]="isCountryDropdownOpen" [class.invalid]="(countryModel.touched || profileForm.submitted) && (model.country === 0 || countryModel.invalid)" tabindex="0" (click)="$event.stopPropagation()">
-              <div class="da-select-control" (click)="toggleCountryDropdown($event)">
-                <span class="da-select-value">{{ getSelectedCountryName() }}</span>
-                <i class="fas da-select-arrow" [ngClass]="isCountryDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-              </div>
-              <div class="da-select-menu" *ngIf="isCountryDropdownOpen">
-                <div class="da-select-option" [class.selected]="model.country === 0" (click)="selectCountryOption(0)">
-                  Select Country...
-                </div>
-                <div class="da-select-option" *ngFor="let c of countries" [class.selected]="model.country === c.countryId" (click)="selectCountryOption(c.countryId)">
-                  {{ c.countryName }}
-                </div>
+              <input type="hidden" name="saluatation" [ngModel]="model.saluatation" required #salutationModel="ngModel">
+              <div class="validation-error"
+                *ngIf="(salutationModel.touched || profileForm.submitted) && salutationModel.errors?.['required']">
+                Salutation is required.
               </div>
             </div>
-            <input type="hidden" name="country" [ngModel]="model.country === 0 ? '' : model.country" #countryModel="ngModel">
-          </div>
 
-          <!-- ZIP / Postal Code -->
-          <div class="field">
-            <label class="field-label">ZIP / Postal Code</label>
-            <input type="text" name="zip" class="field-input" placeholder="Postal Code" maxlength="20" [(ngModel)]="model.zip">
-          </div>
+            <!-- Username -->
+            <div class="field">
+              <label class="field-label">Username</label>
+              <input type="text" name="usernameOrLoginName" class="field-input" placeholder="Username" maxlength="100"
+                [(ngModel)]="model.usernameOrLoginName" #usernameModel="ngModel"
+                [class.invalid]="(usernameModel.touched || profileForm.submitted) && usernameModel.invalid">
+            </div>
 
+            <!-- First Name -->
+            <div class="field">
+              <label class="field-label required-label">First Name</label>
+              <input type="text" name="firstName" class="field-input" placeholder="First Name" required maxlength="100"
+                [(ngModel)]="model.firstName" #firstNameModel="ngModel" [pattern]="validationPatterns.name"
+                [class.invalid]="(firstNameModel.touched || profileForm.submitted) && firstNameModel.invalid">
+              <div class="validation-error"
+                *ngIf="(firstNameModel.touched || profileForm.submitted) && firstNameModel.errors?.['required']">
+                First Name is required.
+              </div>
+              <div class="validation-error"
+                *ngIf="(firstNameModel.touched || profileForm.submitted) && firstNameModel.errors?.['pattern']">
+                Please enter a valid name. Only letters and single spaces between words are allowed.
+              </div>
+            </div>
+
+            <!-- Last Name -->
+            <div class="field">
+              <label class="field-label required-label">Last Name</label>
+              <input type="text" name="lastName" class="field-input" placeholder="Last Name" required maxlength="100"
+                [(ngModel)]="model.lastName" #lastNameModel="ngModel" [pattern]="validationPatterns.name"
+                [class.invalid]="(lastNameModel.touched || profileForm.submitted) && lastNameModel.invalid">
+              <div class="validation-error"
+                *ngIf="(lastNameModel.touched || profileForm.submitted) && lastNameModel.errors?.['required']">
+                Last Name is required.
+              </div>
+              <div class="validation-error"
+                *ngIf="(lastNameModel.touched || profileForm.submitted) && lastNameModel.errors?.['pattern']">
+                Please enter a valid name. Only letters and single spaces between words are allowed.
+              </div>
+            </div>
+
+            <!-- Mobile (Phone Input Group matching Students page) -->
+            <div class="field" (click)="$event.stopPropagation()">
+              <label class="field-label">Mobile</label>
+              <div class="phone-input-group"
+                [class.invalid]="(mobilePhoneModel.touched || profileForm.submitted) && (mobilePhoneModel.invalid || phoneCodeModel.invalid)">
+                <div class="multi-select" [class.open]="isPhoneDropdownOpen" (click)="togglePhoneDropdown($event)"
+                  tabindex="0">
+                  <div class="ms-display" [class.has-selection]="PhoneCountryId !== null">
+                    <span>{{ PhoneCountryId ? getPhoneCountryName() : 'Select Code...' }}</span>
+                  </div>
+                  <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                  <div class="ms-panel" *ngIf="isPhoneDropdownOpen" (click)="$event.stopPropagation()"
+                    style="display: block; max-height: 200px; overflow-y: auto;">
+                    <div *ngFor="let c of countries" class="ms-option"
+                      [class.checked]="PhoneCountryCode === c.countryIsdCode?.toString()"
+                      (click)="selectPhoneCountry(c); $event.stopPropagation()">
+                      <span>{{ c.countryName }} (+{{ c.countryIsdCode }})</span>
+                    </div>
+                  </div>
+                </div>
+                <input type="text" name="mobile" class="field-input phone-number-input" placeholder="55554444"
+                  [(ngModel)]="PhoneNumber" #mobilePhoneModel="ngModel" [appPhoneValidator]="PhoneCountryCode"
+                  [phoneCodeModel]="phoneCodeModel">
+              </div>
+              <input type="hidden" name="phoneCountryCode" [ngModel]="PhoneCountryCode ? PhoneCountryCode : ''"
+                #phoneCodeModel="ngModel">
+              <div class="validation-error"
+                *ngIf="(phoneCodeModel.touched || profileForm.submitted) && !phoneCodeModel.valid">
+                Phone Code is required.
+              </div>
+              <div class="validation-error"
+                *ngIf="(mobilePhoneModel.touched || profileForm.submitted) && mobilePhoneModel.errors?.['required']">
+                Phone number is required.
+              </div>
+              <div class="validation-error"
+                *ngIf="(mobilePhoneModel.touched || profileForm.submitted) && mobilePhoneModel.errors?.['pattern']">
+                Please enter a valid phone number.
+              </div>
+            </div>
+
+            <!-- Personal Email -->
+            <div class="field">
+              <label class="field-label">Personal Email</label>
+              <input type="email" name="personalEmail" class="field-input num-ltr" placeholder="personal@example.com"
+                maxlength="100" [(ngModel)]="model.personalEmail" #personalEmailModel="ngModel"
+                [pattern]="validationPatterns.email"
+                [class.invalid]="(personalEmailModel.touched || profileForm.submitted) && personalEmailModel.invalid"
+                dir="ltr">
+              <div class="validation-error"
+                *ngIf="(personalEmailModel.touched || profileForm.submitted) && personalEmailModel.errors?.['pattern']">
+                Please enter a valid email address.
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 2: Address Information -->
+      <section class="form-section">
+        <div class="form-section-head">
+          <div class="form-section-num">2</div>
+          <div>
+            <div class="form-section-title">Address Information</div>
+            <div class="form-section-sub">Your physical address and location details.</div>
+          </div>
+        </div>
+
+        <div class="form-section-body">
+          <div class="form-grid form-grid-2">
+
+            <!-- Address -->
+            <div class="field field-span-2">
+              <label class="field-label">Address</label>
+              <input type="text" name="address" class="field-input" placeholder="Line 1 Address" maxlength="250"
+                [(ngModel)]="model.address">
+            </div>
+
+            <!-- City -->
+            <div class="field">
+              <label class="field-label">City</label>
+              <input type="text" name="city" class="field-input" placeholder="City Name" maxlength="100"
+                [(ngModel)]="model.city">
+            </div>
+
+            <!-- Country -->
+            <div class="field">
+              <label class="field-label">Country</label>
+              <div class="da-select" [class.da-select-open]="isCountryDropdownOpen"
+                [class.invalid]="(countryModel.touched || profileForm.submitted) && countryModel.invalid" tabindex="0"
+                (click)="$event.stopPropagation()">
+                <div class="da-select-control" (click)="toggleCountryDropdown($event)">
+                  <span class="da-select-value">{{ getSelectedCountryName() }}</span>
+                  <i class="fas da-select-arrow"
+                    [ngClass]="isCountryDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                </div>
+                <div class="da-select-menu" *ngIf="isCountryDropdownOpen">
+                  <div class="da-select-option" [class.selected]="model.countryId === 0"
+                    (click)="selectCountryOption(0)">
+                    Select Country...
+                  </div>
+                  <div class="da-select-option" *ngFor="let c of countries"
+                    [class.selected]="model.countryId === c.countryId" (click)="selectCountryOption(c.countryId)">
+                    {{ c.countryName }}
+                  </div>
+                </div>
+              </div>
+              <input type="hidden" name="country" [ngModel]="model.countryId === 0 ? '' : model.countryId"
+                #countryModel="ngModel">
+            </div>
+
+            <!-- ZIP / Postal Code -->
+            <div class="field">
+              <label class="field-label">ZIP / Postal Code</label>
+              <input type="text" name="zip" class="field-input" placeholder="Postal Code" maxlength="20"
+                [(ngModel)]="model.zip">
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- Save button at bottom -->
+      <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 10px; padding: 10px 0;">
+        <button type="submit" class="btn btn-p" [disabled]="isSaving || profileForm.invalid">
+          <span *ngIf="isSaving"><i class="fas fa-spinner fa-spin" style="margin-right: 6px;"></i>Saving...</span>
+          <span *ngIf="!isSaving">Save Profile</span>
+        </button>
+      </div>
+
+    </form>
+  </ng-container>
+
+  <!-- Login Logs View -->
+  <ng-container *ngIf="showLogsView">
+    <div class="page-head">
+      <div>
+        <div class="crumb">
+          <a routerLink="/dashboard">Dashboard</a>
+          <span class="sep">/</span>
+          <a href="javascript:void(0)" (click)="hideLogs()">My Profile</a>
+          <span class="sep">/</span>
+          <span class="text-muted">Login Logs</span>
+        </div>
+        <h1 class="page-title">Login Logs</h1>
+        <div class="page-sub">
+          History of your recent logins and active sessions.
         </div>
       </div>
-    </section>
-
-    <!-- Save button at bottom -->
-    <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 10px; padding: 10px 0;">
-      <button type="submit" class="btn btn-p" [disabled]="isSaving || profileForm.invalid">
-        <span *ngIf="isSaving"><i class="fas fa-spinner fa-spin" style="margin-right: 6px;"></i>Saving...</span>
-        <span *ngIf="!isSaving">Save Profile</span>
-      </button>
+      <div class="page-actions">
+        <button type="button" class="btn btn-faculties-outline" routerLink="/my-profile" (click)="hideLogs()">
+          <i class="fas fa-arrow-left btn-icon"></i> Back
+        </button>
+      </div>
     </div>
 
-  </form>
+    <div class="card" style="margin-top: 20px;">
+      <div class="card-body">
+        <div class="table-responsive" *ngIf="loginLogs.length; else noLogsFound">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Date / Time</th>
+                <th>IP Address</th>
+                <th>Browser</th>
+                <th>OS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let log of loginLogs">
+                <td>{{ log.loginDateTime | date:'medium' }}</td>
+                <td>{{ log.ipAddress }}</td>
+                <td>{{ log.browserName || '-' }}</td>
+                <td>{{ log.operatingSystem || '-' }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="pagination-footer">
+            <div style="display: flex; align-items: center; gap: 8px;">
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="font-size: 13px; color: var(--da-text-2);">
+                Page <strong style="font-weight: 700; color: var(--da-black);">{{ logFilter.pageNumber }}</strong> of
+                <strong style="font-weight: 700; color: var(--da-black);">{{ totalPages }}</strong>
+              </span>
+              <div style="display: flex; gap: 6px;">
+                <button type="button" class="icon-btn btn-pagination" [disabled]="isPreviousDisabled"
+                  (click)="previousPage()">
+                  <i class="fas fa-chevron-left" style="font-size: 11px;"></i>
+                </button>
+                <button type="button" class="icon-btn btn-pagination" [disabled]="isNextDisabled" (click)="nextPage()">
+                  <i class="fas fa-chevron-right" style="font-size: 11px;"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <ng-template #noLogsFound>
+          <div class="empty-state">
+            <i class="fas fa-clock-rotate-left empty-state__icon"></i>
+            <p>No login logs found.</p>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </ng-container>
+
 </div>

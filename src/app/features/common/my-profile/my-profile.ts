@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../../core/services/common/auth.service';
 import { CurrentUserProfileService } from '../../../core/services/common/current-user-profile.service';
@@ -12,6 +12,9 @@ import { MasterDropDownService } from '../../../core/services/superadmin/master-
 
 import { MasterCountryRequest } from '../../../core/models/super-admin/master-country/master-country-request.model';
 import { MasterCountryFilter } from '../../../core/models/super-admin/master-country/master-country-filter.model';
+import { UsersLoginLogService } from '../../../core/services/superadmin/users-login-log.service';
+import { UsersLoginLogFilter } from '../../../core/models/super-admin/users-login-logs/users-login-log-filter.model';
+import { UsersLoginLogRequest } from '../../../core/models/super-admin/users-login-logs/users-login-log-request.model';
 import { MainDropdown } from '../../../core/enums/main-dropdown.enum';
 import { UpdateMyProfile } from '../../../core/models/common/settings/update-my-profile-request.model';
 import { CurrentUserProfile } from '../../../core/models/common/settings/current-user-profile.model';
@@ -34,10 +37,16 @@ export class MyProfile implements OnInit {
   private notification = inject(NotificationService);
   private countryService = inject(MasterCountryService);
   private dropdownService = inject(MasterDropDownService);
+  private usersLoginLogService = inject(UsersLoginLogService);
+  private router = inject(Router);
 
   // Loading States
   isLoadingProfile = false;
   isSaving = false;
+  isLoadingLogs = false;
+
+  // View State
+  showLogsView = false;
 
   // Master Data
   countries: MasterCountryRequest[] = [];
@@ -57,6 +66,24 @@ export class MyProfile implements OnInit {
   profile: CurrentUserProfile | null = null;
   model = new UpdateMyProfile();
   validationPatterns = ValidationPatterns;
+
+  // Login Logs Data
+  loginLogs: UsersLoginLogRequest[] = [];
+  logFilter = new UsersLoginLogFilter();
+  totalLogs = 0;
+
+  get totalPages(): number {
+    if (!this.logFilter.pageSize) return 1;
+    return Math.ceil(this.totalLogs / this.logFilter.pageSize) || 1;
+  }
+
+  get isPreviousDisabled(): boolean {
+    return this.logFilter.pageNumber <= 1;
+  }
+
+  get isNextDisabled(): boolean {
+    return this.logFilter.pageNumber >= this.totalPages;
+  }
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
@@ -118,6 +145,7 @@ export class MyProfile implements OnInit {
         this.isLoadingProfile = false;
         if (res.success && res.result) {
           this.profile = res.result;
+          this.profile.usernameOrLoginName = this.profile.loginName;
           this.mapProfileToModel(res.result);
         }
       },
@@ -131,6 +159,7 @@ export class MyProfile implements OnInit {
   mapProfileToModel(profile: CurrentUserProfile): void {
     this.model = new UpdateMyProfile();
     this.model.saluatation = profile.salutation || '';
+    this.model.usernameOrLoginName = profile.usernameOrLoginName || '';
     this.model.firstName = profile.firstName || '';
     this.model.lastName = profile.lastName || '';
     this.model.personalEmail = profile.personalEmail || '';
@@ -138,8 +167,8 @@ export class MyProfile implements OnInit {
     this.model.city = profile.city || '';
     this.model.zip = profile.zip || '';
 
-    // Map string country name to countryId
-    this.model.country = this.getCountryId(profile.country);
+    // Map string country name or countryId
+    this.model.countryId = profile.countryId || this.getCountryId(profile.country);
 
     // Split and parse mobile phone number
     this.parsePhone(profile.mobileNumber);
@@ -223,7 +252,7 @@ export class MyProfile implements OnInit {
   }
 
   selectCountryOption(countryId: number | undefined): void {
-    this.model.country = countryId || 0;
+    this.model.countryId = countryId || 0;
     this.isCountryDropdownOpen = false;
   }
 
@@ -234,8 +263,8 @@ export class MyProfile implements OnInit {
   }
 
   getSelectedCountryName(): string {
-    if (!this.model.country) return 'Select Country...';
-    const c = this.countries.find(x => x.countryId === this.model.country);
+    if (!this.model.countryId) return 'Select Country...';
+    const c = this.countries.find(x => x.countryId === this.model.countryId);
     return c ? c.countryName : 'Select Country...';
   }
 
@@ -294,6 +323,53 @@ export class MyProfile implements OnInit {
   }
 
   viewLogs(): void {
-    // TODO: Implement profile/login activity logs later.
+    this.showLogsView = true;
+    this.logFilter.pageNumber = 1;
+    this.logFilter.pageSize = 10;
+    
+    // Get loginId from profile. Note: CurrentUserProfile has loginId.
+    if (this.profile && this.profile.loginId) {
+        this.logFilter.loginId = this.profile.loginId;
+    }
+    this.loadLoginLogs();
+  }
+
+  hideLogs(): void {
+    this.showLogsView = false;
+  }
+
+  loadLoginLogs(): void {
+    this.isLoadingLogs = true;
+    this.usersLoginLogService.getLoginLogs(this.logFilter).subscribe({
+      next: (res) => {
+        this.isLoadingLogs = false;
+        if (res.success && res.result) {
+          this.loginLogs = res.result.items;
+          this.totalLogs = res.result.totalCount;
+        }
+      },
+      error: (error) => {
+        this.isLoadingLogs = false;
+        this.notification.handleBusinessError(error, 'Failed to load login logs.');
+      }
+    });
+  }
+
+  previousPage(): void {
+    if (!this.isPreviousDisabled) {
+      this.logFilter.pageNumber--;
+      this.loadLoginLogs();
+    }
+  }
+
+  nextPage(): void {
+    if (!this.isNextDisabled) {
+      this.logFilter.pageNumber++;
+      this.loadLoginLogs();
+    }
+  }
+
+  goBack(): void {
+    this.router.navigate(['/dashboard']);
   }
 }
