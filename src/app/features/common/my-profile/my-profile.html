@@ -21,6 +21,9 @@
         <button type="button" class="btn btn-faculties-outline" (click)="viewLogs()">
           <i class="fas fa-history btn-icon"></i> View Logs
         </button>
+        <button type="button" class="btn btn-p" (click)="openPasswordDialog()">
+          <i class="fas fa-lock btn-icon"></i> Change Password
+        </button>
       </div>
     </div>
 
@@ -318,4 +321,70 @@
     </div>
   </ng-container>
 
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal-backdrop" *ngIf="showPasswordModal">
+    <div class="modal-card">
+        <div class="modal-head">
+            <div>
+                <div class="modal-title">Change Password</div>
+                <div class="modal-sub">Update your account password.</div>
+            </div>
+            <button type="button" class="modal-close" (click)="closePasswordDialog()" [disabled]="isUpdatingPassword">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form #passwordForm="ngForm" (ngSubmit)="updatePassword(passwordForm)" novalidate autocomplete="off">
+            <!-- Hidden fields to absorb browser autofill/password managers -->
+            <input type="text" name="fakeUsername" style="position: absolute; opacity: 0; height: 0; width: 0; border: none; z-index: -1;" aria-hidden="true" autocomplete="username" tabindex="-1">
+            <input type="password" name="fakePassword" style="position: absolute; opacity: 0; height: 0; width: 0; border: none; z-index: -1;" aria-hidden="true" autocomplete="current-password" tabindex="-1">
+            <input type="password" name="fakeNewPassword" style="position: absolute; opacity: 0; height: 0; width: 0; border: none; z-index: -1;" aria-hidden="true" autocomplete="new-password" tabindex="-1">
+
+            <div class="modal-body">
+                
+                <div class="field" style="margin-bottom: 16px;">
+                    <label class="field-label required-label">Current Password</label>
+                    <input type="password" name="currentPassword" class="field-input" placeholder="Enter current password" 
+                           autocomplete="off" readonly onfocus="this.removeAttribute('readonly');"
+                           required [(ngModel)]="currentPassword" #currentPwdModel="ngModel">
+                    <div class="validation-error" *ngIf="(currentPwdModel.touched || passwordForm.submitted) && currentPwdModel.errors?.['required']">
+                        Current Password is required.
+                    </div>
+                </div>
+
+                <div class="field" style="margin-bottom: 16px;">
+                    <label class="field-label required-label">New Password</label>
+                    <input type="password" name="newPassword" class="field-input" placeholder="Enter new password" 
+                           autocomplete="off" readonly onfocus="this.removeAttribute('readonly');"
+                           required [(ngModel)]="newPassword" #newPwdModel="ngModel">
+                    <div class="validation-error" *ngIf="(newPwdModel.touched || passwordForm.submitted) && newPwdModel.errors?.['required']">
+                        New Password is required.
+                    </div>
+                </div>
+
+                <div class="field" style="margin-bottom: 8px;">
+                    <label class="field-label required-label">Confirm New Password</label>
+                    <input type="password" name="confirmNewPassword" class="field-input" placeholder="Confirm new password" 
+                           autocomplete="off" readonly onfocus="this.removeAttribute('readonly');"
+                           required [(ngModel)]="confirmNewPassword" #confirmPwdModel="ngModel">
+                    <div class="validation-error" *ngIf="(confirmPwdModel.touched || passwordForm.submitted) && confirmPwdModel.errors?.['required']">
+                        Confirm New Password is required.
+                    </div>
+                    <div class="validation-error" *ngIf="(confirmPwdModel.touched || passwordForm.submitted) && !confirmPwdModel.errors?.['required'] && newPassword !== confirmNewPassword">
+                        Passwords do not match.
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-foot">
+                <button type="button" class="btn btn-g" (click)="closePasswordDialog()" [disabled]="isUpdatingPassword">Cancel</button>
+                <button type="submit" class="btn btn-p" [disabled]="isUpdatingPassword || passwordForm.invalid || newPassword !== confirmNewPassword">
+                    <span *ngIf="isUpdatingPassword"><i class="fas fa-spinner fa-spin" style="margin-right: 6px;"></i>Updating...</span>
+                    <span *ngIf="!isUpdatingPassword">Update Password</span>
+                </button>
+            </div>
+        </form>
+    </div>
 </div>

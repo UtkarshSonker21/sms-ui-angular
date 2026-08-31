@@ -20,6 +20,8 @@ export const LOCAL_STORAGE_KEYS = {
     AVAILABLE_ROLES: 'AvailableRoles',
 
     CURRENT_USER : 'CurrentUser',
+
+    CURRENT_USER_LANGUAGE : 'CurrentUserLanguage',
     
   },
 

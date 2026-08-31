@@ -25,6 +25,7 @@
 
   /* Label text styles */
   .mdc-snackbar__label {
+    font-family: inherit !important;
     font-size: 13px !important;
     font-weight: 500 !important;
     line-height: 1.4 !important;
@@ -93,6 +94,7 @@
   }
 
   .mat-mdc-snack-bar-action {
+    font-family: inherit !important;
     background-color: transparent !important;
     border-radius: 8px !important;
     padding: 0 12px !important;
