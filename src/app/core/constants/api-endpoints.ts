@@ -138,7 +138,12 @@ export const ApiEndpoints = {
 
     Localization: {
       GetTranslations: (languageCode: string) => `localization/${languageCode}`
-    }
+    },
+
+    UsersLoginLog:{
+      Search: 'superadmin/users-login-log/search',
+      GetById: (id: number) => `superadmin/users-login-log/getById/${id}`,
+    },
 
   },
 

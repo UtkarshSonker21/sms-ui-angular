@@ -7,6 +7,7 @@ export class CurrentUserProfile {
 
     loginId!: number;
     loginName!: string;
+    usernameOrLoginName?: string;
 
     availableRoles: AvailableRole[] = [];
 
@@ -44,6 +45,7 @@ export class CurrentUserProfile {
     address?: string;
     city?: string;
     country?: string;
+    countryId: number = 0;
     zip?: string;
 
     // default currency info (for school & university) and for rest send base currency info

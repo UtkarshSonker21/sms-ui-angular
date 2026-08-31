@@ -4,9 +4,10 @@ export class UpdateMyProfile {
   lastName: string = '';
   mobile?: string;
   personalEmail?: string;
+  usernameOrLoginName?: string;
 
   address?: string;
   city?: string;
-  country: number = 0;
+  countryId: number = 0;
   zip?: string;
 }
