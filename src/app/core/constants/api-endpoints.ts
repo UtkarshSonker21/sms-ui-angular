@@ -14,9 +14,8 @@ export const ApiEndpoints = {
 
     LoginWithCode: 'auth/login-with-code',
     VerifyLoginCode: 'auth/verify-login-code',
-
+    
     MyProfile: 'auth/my-profile',
-
     UpdateMyProfile: 'auth/update/my-profile',
     UpdateMyPassword: 'auth/update-password',
   },
