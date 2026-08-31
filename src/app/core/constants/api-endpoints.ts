@@ -18,6 +18,7 @@ export const ApiEndpoints = {
     MyProfile: 'auth/my-profile',
 
     UpdateMyProfile: 'auth/update/my-profile',
+    UpdateMyPassword: 'auth/update-password',
   },
 
   Common: {

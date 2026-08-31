@@ -17,6 +17,7 @@ import { UsersLoginLogFilter } from '../../../core/models/super-admin/users-logi
 import { UsersLoginLogRequest } from '../../../core/models/super-admin/users-login-logs/users-login-log-request.model';
 import { MainDropdown } from '../../../core/enums/main-dropdown.enum';
 import { UpdateMyProfile } from '../../../core/models/common/settings/update-my-profile-request.model';
+import { UpdatePassword } from '../../../core/models/common/settings/update-password-request.model';
 import { CurrentUserProfile } from '../../../core/models/common/settings/current-user-profile.model';
 import { LOCAL_STORAGE_KEYS } from '../../../core/constants/local-storage-keys';
 import { ValidationPatterns } from '../../../core/constants/validation-patterns';
@@ -56,6 +57,12 @@ export class MyProfile implements OnInit {
   isSalutationDropdownOpen = false;
   isCountryDropdownOpen = false;
   isPhoneDropdownOpen = false;
+
+  // Password Update
+  currentPassword = '';
+  newPassword = '';
+  confirmNewPassword = '';
+  isUpdatingPassword = false;
 
   // Phone Inputs
   PhoneCountryId: number | null = null;
@@ -372,4 +379,48 @@ export class MyProfile implements OnInit {
   goBack(): void {
     this.router.navigate(['/dashboard']);
   }
+
+  // Password Update Methods
+  showPasswordModal = false;
+
+  openPasswordDialog(): void {
+    this.currentPassword = '';
+    this.newPassword = '';
+    this.confirmNewPassword = '';
+    this.isUpdatingPassword = false;
+    this.showPasswordModal = true;
+  }
+
+  closePasswordDialog(): void {
+    this.showPasswordModal = false;
+  }
+
+  updatePassword(form: any): void {
+    if (form.invalid || this.newPassword !== this.confirmNewPassword) {
+      return;
+    }
+
+    this.isUpdatingPassword = true;
+    
+    const request = new UpdatePassword();
+    request.currentPassword = this.currentPassword;
+    request.updatedPassword = this.newPassword;
+    
+    this.authService.updateMyPassword(request).subscribe({
+      next: (response) => {
+        this.isUpdatingPassword = false;
+        if (response.success) {
+          this.notification.success('Password updated successfully');
+          this.closePasswordDialog();
+        } else {
+          this.notification.handleBusinessError(null, response.message || 'Failed to update password');
+        }
+      },
+      error: (error) => {
+        this.isUpdatingPassword = false;
+        this.notification.handleBusinessError(error, 'Failed to update password');
+      }
+    });
+  }
+
 }

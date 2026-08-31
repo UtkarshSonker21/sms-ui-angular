@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, ChangeDetectorRef, HostListener, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { CurrentUserProfile } from '../../../core/models/common/settings/current-user-profile.model';
@@ -52,6 +53,14 @@ export class Header implements OnInit {
     this.currentUser = this.currentUserProfileService.getCurrentUserProfile();
     this.availableRoles = this.storageService.getItem<AvailableRole[]>(LOCAL_STORAGE_KEYS.USER.AVAILABLE_ROLES) || [];
     this.loadLanguages();
+
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe(() => {
+      this.isProfileDropdownOpen = false;
+      this.isLanguageDropdownOpen = false;
+      this.isRolesSectionExpanded = false;
+    });
   }
 
   loadLanguages(): void {
@@ -165,6 +174,8 @@ export class Header implements OnInit {
   }
 
   goBackToMyProfile(): void {
+    this.isProfileDropdownOpen = false;
+    this.isRolesSectionExpanded = false;
     this.router.navigate([AppRoutes.Common.MyProfile]);
   }
 

@@ -21,6 +21,7 @@ import { VerifyOtp } from '../../models/auth/verify-otp.model';
 import { ResetPasswordRequest } from '../../models/auth/reset-password-request.model';
 import { StaffType } from '../../enums/staff-type.enum';
 import { UpdateMyProfile } from '../../models/common/settings/update-my-profile-request.model';
+import { UpdatePassword } from '../../models/common/settings/update-password-request.model';
 
 @Injectable({
     providedIn: 'root'
@@ -58,6 +59,14 @@ export class AuthService {
     updateMyProfile(request: UpdateMyProfile): Observable<ApiResponse<boolean>> {
         return this.apiService.post<ApiResponse<boolean>>(
             ApiEndpoints.Auth.UpdateMyProfile,
+            request
+        );
+    }
+
+
+    updateMyPassword(request: UpdatePassword): Observable<ApiResponse<boolean>> {
+        return this.apiService.post<ApiResponse<boolean>>(
+            ApiEndpoints.Auth.UpdateMyPassword,
             request
         );
     }
