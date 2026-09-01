@@ -78,6 +78,7 @@
               <input type="text" name="usernameOrLoginName" class="field-input" placeholder="Username" maxlength="100"
                 [(ngModel)]="model.usernameOrLoginName" #usernameModel="ngModel"
                 [class.invalid]="(usernameModel.touched || profileForm.submitted) && usernameModel.invalid">
+              <div class="form-hint text-danger">Note : Use this username when logging in to your account.</div>
             </div>
 
             <!-- First Name -->

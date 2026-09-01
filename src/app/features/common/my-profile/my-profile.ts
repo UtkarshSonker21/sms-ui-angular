@@ -333,10 +333,10 @@ export class MyProfile implements OnInit {
     this.showLogsView = true;
     this.logFilter.pageNumber = 1;
     this.logFilter.pageSize = 10;
-    
+
     // Get loginId from profile. Note: CurrentUserProfile has loginId.
     if (this.profile && this.profile.loginId) {
-        this.logFilter.loginId = this.profile.loginId;
+      this.logFilter.loginId = this.profile.loginId;
     }
     this.loadLoginLogs();
   }
@@ -377,7 +377,7 @@ export class MyProfile implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/dashboard']);
+    window.history.back();
   }
 
   // Password Update Methods
@@ -401,11 +401,11 @@ export class MyProfile implements OnInit {
     }
 
     this.isUpdatingPassword = true;
-    
+
     const request = new UpdatePassword();
     request.currentPassword = this.currentPassword;
     request.updatedPassword = this.newPassword;
-    
+
     this.authService.updateMyPassword(request).subscribe({
       next: (response) => {
         this.isUpdatingPassword = false;
