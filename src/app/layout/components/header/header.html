@@ -2,16 +2,84 @@
   <!-- Left Section: System Name, Divider, Breadcrumb -->
   <div class="header__left">
     <span class="header__system-name">Kafa'at Committee</span>
-    <span class="header__divider"></span>
-    <span class="header__breadcrumb">Oversight Dashboard</span>
+    <!-- <span class="header__divider"></span>
+    <span class="header__breadcrumb">Oversight Dashboard</span> -->
   </div>
 
   <!-- Center Section: Search Input -->
-  <div class="header__center">
+  <div class="header__center" *ngIf="showGlobalSearch">
     <div class="header__search-container">
       <i class="fa fa-search header__search-icon"></i>
-      <input type="text" class="header__search-input" placeholder="Search..." aria-label="Search" />
-      <span class="header__search-badge">Ctrl + K</span>
+      <input
+        type="text"
+        class="header__search-input"
+        placeholder="Search..."
+        aria-label="Search"
+        [(ngModel)]="searchQuery"
+        (input)="onSearchInput(searchQuery)"
+        (focus)="onSearchFocus()"
+        autocomplete="off"
+      />
+      <button
+        type="button"
+        *ngIf="searchQuery"
+        class="header__search-clear-btn"
+        (click)="clearSearch()"
+        aria-label="Clear search"
+      >
+        <i class="fa fa-times"></i>
+      </button>
+      <!-- <span *ngIf="!searchQuery" class="header__search-badge">Ctrl + K</span> -->
+
+      <!-- Global Search Results Dropdown Overlay -->
+      <div class="header__search-dropdown" *ngIf="isSearchOpen">
+        <!-- Loading State -->
+        <div class="header__search-state" *ngIf="isSearching">
+          <i class="fa fa-spinner fa-spin header__search-spinner"></i>
+          <span>Searching...</span>
+        </div>
+
+        <!-- Results Sections -->
+        <ng-container *ngIf="!isSearching">
+          <div class="header__search-results" *ngIf="hasResults; else noSearchResults">
+            <div class="header__search-section" *ngFor="let section of searchSections">
+              <ng-container *ngIf="section.items && section.items.length > 0">
+                <div class="header__search-section-header">
+                  <span class="header__search-section-name">{{ section.sectionName }}</span>
+                  <span class="header__search-section-count">{{ section.items.length }}</span>
+                </div>
+                <div class="header__search-item-list">
+                  <div
+                    *ngFor="let item of section.items"
+                    class="header__search-item"
+                    [class.header__search-item--clickable]="!!item.route"
+                    (click)="onItemClick(item)"
+                  >
+                    <div class="header__search-item-info">
+                      <div class="header__search-item-title">{{ item.title }}</div>
+                      <div class="header__search-item-subtitle" *ngIf="item.subtitle">
+                        {{ item.subtitle }}
+                      </div>
+                    </div>
+                    <i class="fa fa-chevron-right header__search-item-icon" *ngIf="item.route"></i>
+                  </div>
+                </div>
+              </ng-container>
+            </div>
+          </div>
+
+          <!-- No Results State -->
+          <ng-template #noSearchResults>
+            <div class="header__search-state header__search-state--empty">
+              <i class="fa fa-search header__search-empty-icon"></i>
+              <div class="header__search-empty-title">No results found</div>
+              <div class="header__search-empty-desc" *ngIf="searchQuery">
+                No matching records found for "{{ searchQuery }}"
+              </div>
+            </div>
+          </ng-template>
+        </ng-container>
+      </div>
     </div>
   </div>
 
@@ -99,4 +167,5 @@
     </div>
 
   </div>
+
 </header>

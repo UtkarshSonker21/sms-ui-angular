@@ -1,7 +1,8 @@
-import { Component, inject, OnInit, ChangeDetectorRef, HostListener, ElementRef } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, ChangeDetectorRef, HostListener, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, NavigationEnd } from '@angular/router';
-import { filter } from 'rxjs';
+import { filter, Subject, Subscription, debounceTime, distinctUntilChanged, switchMap, of, catchError } from 'rxjs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { CurrentUserProfile } from '../../../core/models/common/settings/current-user-profile.model';
@@ -17,16 +18,22 @@ import { LanguageService } from '../../../core/services/superadmin/language.serv
 import { LocalizationService } from '../../../core/services/superadmin/localization.service';
 import { LanguageFilterModel } from '../../../core/models/super-admin/language/language-filter.model';
 
+import { CommonService } from '../../../core/services/common/common.service';
+import { GlobalSearchRequest } from '../../../core/models/common/global-search/global-search-request.model';
+import { GlobalSearchSection } from '../../../core/models/common/global-search/global-search-section.model';
+import { GlobalSearchItem } from '../../../core/models/common/global-search/global-search-item.model';
+import { StaffType } from '../../../core/enums/staff-type.enum';
+
 import { DisableAutocompleteDirective } from '../../../shared/directives/disable-autocomplete.directive';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, MatTooltipModule, DisableAutocompleteDirective],
+  imports: [CommonModule, FormsModule, MatTooltipModule, DisableAutocompleteDirective],
   templateUrl: './header.html',
   styleUrl: './header.scss',
 })
-export class Header implements OnInit {
+export class Header implements OnInit, OnDestroy {
 
   private currentUserProfileService = inject(CurrentUserProfileService);
   private authService = inject(AuthService);
@@ -38,6 +45,7 @@ export class Header implements OnInit {
   private menuService = inject(MenuService);
   private languageService = inject(LanguageService);
   private localizationService = inject(LocalizationService);
+  private commonService = inject(CommonService);
 
   currentUser: CurrentUserProfile = new CurrentUserProfile();
   availableRoles: AvailableRole[] = [];
@@ -49,10 +57,52 @@ export class Header implements OnInit {
 
   languages: any[] = [];
 
+  // Global Search State
+  searchQuery: string = '';
+  isSearching: boolean = false;
+  isSearchOpen: boolean = false;
+  searchSections: GlobalSearchSection[] = [];
+  private searchSubject = new Subject<string>();
+  private searchSubscription?: Subscription;
+
+  get showGlobalSearch(): boolean {
+    const user = this.currentUserProfileService.getCurrentUserProfile();
+    const staffType = user?.staffType ?? this.currentUser?.staffType;
+    return staffType !== StaffType.SuperAdmin;
+  }
+
   ngOnInit(): void {
     this.currentUser = this.currentUserProfileService.getCurrentUserProfile();
     this.availableRoles = this.storageService.getItem<AvailableRole[]>(LOCAL_STORAGE_KEYS.USER.AVAILABLE_ROLES) || [];
     this.loadLanguages();
+
+    this.searchSubscription = this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap((text) => {
+        if (!text || !text.trim()) {
+          this.isSearching = false;
+          this.searchSections = [];
+          return of(null);
+        }
+        const req = new GlobalSearchRequest();
+        req.searchText = text.trim();
+        req.limit = 10;
+        return this.commonService.searchGlobal(req).pipe(
+          catchError(() => {
+            return of(null);
+          })
+        );
+      })
+    ).subscribe((response) => {
+      this.isSearching = false;
+      if (response && response.success && response.result) {
+        this.searchSections = response.result.sections || [];
+      } else if (response !== null) {
+        this.searchSections = [];
+      }
+      this.cdr.markForCheck();
+    });
 
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
@@ -60,7 +110,12 @@ export class Header implements OnInit {
       this.isProfileDropdownOpen = false;
       this.isLanguageDropdownOpen = false;
       this.isRolesSectionExpanded = false;
+      this.isSearchOpen = false;
     });
+  }
+
+  ngOnDestroy(): void {
+    this.searchSubscription?.unsubscribe();
   }
 
   loadLanguages(): void {
@@ -117,12 +172,14 @@ export class Header implements OnInit {
     event.stopPropagation();
     this.isProfileDropdownOpen = !this.isProfileDropdownOpen;
     this.isLanguageDropdownOpen = false;
+    this.isSearchOpen = false;
   }
 
   toggleLanguageDropdown(event: Event): void {
     event.stopPropagation();
     this.isLanguageDropdownOpen = !this.isLanguageDropdownOpen;
     this.isProfileDropdownOpen = false;
+    this.isSearchOpen = false;
   }
 
   toggleRolesSection(event: Event): void {
@@ -130,9 +187,51 @@ export class Header implements OnInit {
     this.isRolesSectionExpanded = !this.isRolesSectionExpanded;
   }
 
+  onSearchInput(value: string): void {
+    const trimmed = value ? value.trim() : '';
+    if (!trimmed) {
+      this.isSearching = false;
+      this.searchSections = [];
+      this.isSearchOpen = false;
+      return;
+    }
+    this.isSearchOpen = true;
+    this.isSearching = true;
+    this.searchSubject.next(trimmed);
+  }
+
+  onSearchFocus(): void {
+    if (this.searchQuery && this.searchQuery.trim().length > 0) {
+      this.isSearchOpen = true;
+    }
+  }
+
+  clearSearch(): void {
+    this.searchQuery = '';
+    this.searchSections = [];
+    this.isSearchOpen = false;
+    this.isSearching = false;
+  }
+
+  onItemClick(item: GlobalSearchItem): void {
+    if (item.route) {
+      this.isSearchOpen = false;
+      this.router.navigateByUrl(item.route);
+    }
+  }
+
+  get hasResults(): boolean {
+    return this.searchSections.some(s => s.items && s.items.length > 0);
+  }
+
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event): void {
-    if (!this.elementRef.nativeElement.contains(event.target)) {
+    const target = event.target as HTMLElement;
+    const searchContainer = this.elementRef.nativeElement.querySelector('.header__search-container');
+    if (searchContainer && !searchContainer.contains(target)) {
+      this.isSearchOpen = false;
+    }
+    if (!this.elementRef.nativeElement.contains(target)) {
       this.isProfileDropdownOpen = false;
       this.isLanguageDropdownOpen = false;
       this.isRolesSectionExpanded = false;
