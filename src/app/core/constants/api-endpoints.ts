@@ -23,8 +23,10 @@ export const ApiEndpoints = {
   Common: {
     UsersModule: 'common/user-modules',
     LoadMenus: 'common/load-menus',
-    Dashboard: 'common/load-dashboard',
+    GlobalDashboard: 'common/load-dashboard',
+    GlobalSearch: 'common/global-search',
     UpdateMyProfile: 'auth/update/my-profile',
+
 
     // Marketing Administrative Fee
     MarketingAdministrativeFee: {

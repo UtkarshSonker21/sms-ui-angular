@@ -10,6 +10,8 @@ import { ApiEndpoints } from '../../constants/api-endpoints';
 import { ApiResponse } from '../../models/common/response/api-response.model';
 import { LoadMenu } from '../../models/common/menu/load-menu.model';
 import { UsersModule } from '../../models/common/settings/users-module.model';
+import { GlobalSearchResponse } from '../../models/common/global-search/global-search-response.model';
+import { GlobalSearchRequest } from '../../models/common/global-search/global-search-request.model';
 
 @Injectable({
     providedIn: 'root'
@@ -24,7 +26,7 @@ export class CommonService {
         );
     }
 
-    
+
     getAllUsersModule(): Observable<ApiResponse<UsersModule[]>> {
         return this.apiService.get<ApiResponse<UsersModule[]>>(
             ApiEndpoints.Common.UsersModule
@@ -32,7 +34,12 @@ export class CommonService {
     }
 
 
-    
+    searchGlobal(request: GlobalSearchRequest): Observable<ApiResponse<GlobalSearchResponse>> {
+        return this.apiService.post<ApiResponse<GlobalSearchResponse>>(
+            ApiEndpoints.Common.GlobalSearch,
+            request
+        );
+    }
 
 
 }
