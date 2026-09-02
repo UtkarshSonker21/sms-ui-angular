@@ -154,7 +154,7 @@ export class ProgramDetail implements OnInit {
   // Registration Modal State
   showRegistrationModal = false;
   registrationSemesters: any[] = [];
-  registrationData: ProgramRegistrationWindowModel | null = null;
+  registrationData: ProgramRegistrationWindowModel = new ProgramRegistrationWindowModel();
   registrationDateFrom: string = '';
   registrationDateTo: string = '';
   isSemesterDropdownOpen = false;
@@ -179,10 +179,15 @@ export class ProgramDetail implements OnInit {
         this.programService.getProgramRegistrationWindowByProgramId(this.programId).subscribe({
           next: (regRes: any) => {
 
-            if ((regRes.success || regRes.isSuccess) && (regRes.result || regRes.data)) {
-              this.registrationData = regRes.result || regRes.data;
-            }
-            else {
+            const isSuccess = regRes.success ?? regRes.isSuccess;
+
+            if (isSuccess) {
+              this.registrationData =
+                regRes.result ?? regRes.data ?? new ProgramRegistrationWindowModel();
+
+              this.registrationData.programId = this.programId;
+
+            } else {
               this.registrationData = new ProgramRegistrationWindowModel();
               this.registrationData.programId = this.programId;
 
@@ -190,6 +195,7 @@ export class ProgramDetail implements OnInit {
                 this.notification.warning(regRes.message);
               }
             }
+
             this.registrationDateFrom = this.formatDateForInput(this.registrationData?.registrationFrom);
             this.registrationDateTo = this.formatDateForInput(this.registrationData?.registrationTo);
             this.showRegistrationModal = true;
