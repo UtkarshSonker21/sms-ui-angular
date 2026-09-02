@@ -763,9 +763,12 @@ export class Students implements OnInit {
           this.activeApplicationDocuments = this.activeApplicationDocuments.filter(d => d.documentTypeId !== doc.documentTypeId);
           this.activeApplicationDocuments.push(res.result);
           this.notification.success('Document uploaded successfully.');
-
-          return;
+        } else {
+          this.notification.error(
+            res.message || 'Failed to upload document.'
+          );
         }
+
         this.uploadingDocs.delete(doc.documentTypeId);
         event.target.value = ''; // Reset input
       },
@@ -1058,7 +1061,7 @@ export class Students implements OnInit {
             this.router.navigate([AppRoutes.School.CoordinatorStudents]);
 
             return;
-          } 
+          }
           this.isSaving = false;
         },
         error: (error) => {

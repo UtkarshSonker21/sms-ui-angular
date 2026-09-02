@@ -734,25 +734,32 @@ export class Program implements OnInit {
       this.program.universityId = user.universityIds[0];
     }
 
-    const request = (this.isEditMode || (this.program.programId && this.program.programId > 0))
+    const isUpdate = this.isEditMode || (this.program.programId && this.program.programId > 0);
+
+    const request = isUpdate
       ? this.programService.updateProgram(this.program)
       : this.programService.addProgram(this.program);
 
     request.subscribe({
       next: (response) => {
         if (response.success) {
-          this.notification.success('Program saved successfully.');
+          this.notification.success(
+            isUpdate
+              ? 'Program updated successfully.'
+              : 'Program created successfully.'
+          );
+
           this.router.navigate([AppRoutes.University.Faculties]);
-        } 
-        
+          return;
+        }
+
         this.notification.error(
           response.message || 'Failed to save program.'
         );
       },
       error: (error) => {
         this.notification.handleBusinessError(
-          error,
-          'Failed to save program.'
+          error
         );
       }
     });
