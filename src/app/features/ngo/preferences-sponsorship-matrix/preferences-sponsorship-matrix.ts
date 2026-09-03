@@ -89,11 +89,7 @@ export class PreferencesSponsorshipMatrix implements OnInit {
 
   get filteredCategories() {
     if (!this.matrixData?.studentCategories) return [];
-    if (!this.searchText) return this.matrixData.studentCategories;
-    const lowerSearch = this.searchText.toLowerCase();
-    return this.matrixData.studentCategories.filter(c => 
-      c.categoryName.toLowerCase().includes(lowerSearch)
-    );
+    return this.matrixData.studentCategories;
   }
 
   isMapped(typeId: number, categoryId: number): boolean {
