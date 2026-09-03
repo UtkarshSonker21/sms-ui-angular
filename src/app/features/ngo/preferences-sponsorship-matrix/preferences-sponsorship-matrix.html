@@ -126,22 +126,28 @@
             </button>
         </div>
 
-        <form (ngSubmit)="saveSponsorship()" novalidate>
+        <form #sponsorshipForm="ngForm" (ngSubmit)="saveSponsorship(sponsorshipForm)" autocomplete="off" novalidate>
             <div class="modal-body">
                 <div class="field" style="margin-bottom: 16px;">
                     <label class="field-label required-label">Sponsorship Type Name</label>
-                    <input type="text" name="sponsorshipName" class="field-input" placeholder="Enter name" required [(ngModel)]="editingSponsorship.sponsorshipName">
+                    <input type="text" name="sponsorshipName" class="field-input" placeholder="Enter name" required autocomplete="off" [(ngModel)]="editingSponsorship.sponsorshipName" #sponsorshipNameModel="ngModel">
+                    <div class="validation-error" *ngIf="(sponsorshipNameModel.touched || sponsorshipForm.submitted) && sponsorshipNameModel.errors?.['required']">
+                        Sponsorship type name is required.
+                    </div>
                 </div>
                 
                 <div class="field" style="margin-bottom: 16px;">
                     <label class="field-label required-label">Frequency</label>
                     <div style="display: flex; gap: 16px; margin-top: 8px;">
                         <label style="display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--da-black); cursor: pointer;">
-                            <input type="radio" name="frequencyType" [value]="1" [(ngModel)]="editingSponsorship.frequencyType"> Recurring
+                            <input type="radio" name="frequencyType" [value]="1" required [(ngModel)]="editingSponsorship.frequencyType" #frequencyTypeModel="ngModel"> Recurring
                         </label>
                         <label style="display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--da-black); cursor: pointer;">
-                            <input type="radio" name="frequencyType" [value]="2" [(ngModel)]="editingSponsorship.frequencyType"> One-time
+                            <input type="radio" name="frequencyType" [value]="2" required [(ngModel)]="editingSponsorship.frequencyType" #frequencyTypeModel="ngModel"> One-time
                         </label>
+                    </div>
+                    <div class="validation-error" *ngIf="(frequencyTypeModel.touched || sponsorshipForm.submitted) && !editingSponsorship.frequencyType">
+                        Frequency is required.
                     </div>
                 </div>
             </div>
@@ -167,11 +173,14 @@
             </button>
         </div>
 
-        <form (ngSubmit)="saveCategory()" novalidate>
+        <form #categoryForm="ngForm" (ngSubmit)="saveCategory(categoryForm)" autocomplete="off" novalidate>
             <div class="modal-body">
                 <div class="field" style="margin-bottom: 16px;">
                     <label class="field-label required-label">Category Name</label>
-                    <input type="text" name="categoryName" class="field-input" placeholder="Enter category name" required [(ngModel)]="editingCategory.categoryName">
+                    <input type="text" name="categoryName" class="field-input" placeholder="Enter category name" required autocomplete="off" [(ngModel)]="editingCategory.categoryName" #categoryNameModel="ngModel">
+                    <div class="validation-error" *ngIf="(categoryNameModel.touched || categoryForm.submitted) && categoryNameModel.errors?.['required']">
+                        Category name is required.
+                    </div>
                 </div>
             </div>
 

@@ -141,17 +141,25 @@
                         <label class="field-label required-label">Country Name</label>
                         <input type="text" name="countryName" class="field-input" placeholder="Enter country name" required
                             [(ngModel)]="tempCountryModel.countryName" #nameModel="ngModel">
-                        <div class="validation-error" *ngIf="nameModel.touched && nameModel.errors?.['required']">
+                        <div class="validation-error" *ngIf="(nameModel.touched || countryForm.submitted) && nameModel.errors?.['required']">
                             Country Name is required.
                         </div>
                     </div>
                     
                     <div class="field">
                         <label class="field-label required-label">ISD Code</label>
-                        <input type="text" name="countryIsdCode" class="field-input" placeholder="Enter ISD code (e.g. 91)" required
-                            [ngModel]="tempCountryModel.countryIsdCode" (ngModelChange)="tempCountryModel.countryIsdCode = $event" #isdModel="ngModel">
-                        <div class="validation-error" *ngIf="isdModel.touched && isdModel.errors?.['required']">
+                        <input type="text" inputmode="numeric" name="countryIsdCode" class="field-input" placeholder="Enter ISD code (e.g. 91)" required pattern="^[0-9]+$" maxlength="5"
+                            (keypress)="allowNumbersOnly($event)"
+                            (input)="onIsdCodeInput($event)"
+                            [(ngModel)]="tempCountryModel.countryIsdCode" #isdModel="ngModel">
+                        <div class="validation-error" *ngIf="(isdModel.touched || countryForm.submitted) && isdModel.errors?.['required']">
                             ISD Code is required.
+                        </div>
+                        <div class="validation-error" *ngIf="(isdModel.touched || countryForm.submitted) && isdModel.errors?.['pattern'] && !isdModel.errors?.['maxlength']">
+                            ISD Code must contain numbers only.
+                        </div>
+                        <div class="validation-error" *ngIf="(isdModel.touched || countryForm.submitted) && (isdModel.errors?.['maxlength'] || (tempCountryModel.countryIsdCode && tempCountryModel.countryIsdCode.toString().length > 5))">
+                            ISD Code cannot exceed 5 digits.
                         </div>
                     </div>
                 </div>

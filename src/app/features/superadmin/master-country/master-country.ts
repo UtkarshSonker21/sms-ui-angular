@@ -167,6 +167,25 @@ export class MasterCountry implements OnInit {
     });
   }
 
+  allowNumbersOnly(event: KeyboardEvent): boolean {
+    const charCode = event.which ? event.which : event.keyCode;
+    // Allow only numbers (0-9)
+    if (charCode < 48 || charCode > 57) {
+      event.preventDefault();
+      return false;
+    }
+    return true;
+  }
+
+  onIsdCodeInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const sanitized = input.value.replace(/[^0-9]/g, '');
+    if (input.value !== sanitized) {
+      input.value = sanitized;
+      this.tempCountryModel.countryIsdCode = sanitized as any;
+    }
+  }
+
   saveCountry(form: NgForm): void {
     if (form.invalid) {
       form.control.markAllAsTouched();
@@ -175,6 +194,9 @@ export class MasterCountry implements OnInit {
 
     this.isSaving = true;
     this.modalErrorMessage = '';
+
+    // Convert ISD code to a number to satisfy the backend contract
+    this.tempCountryModel.countryIsdCode = Number(this.tempCountryModel.countryIsdCode);
 
     const request = this.tempCountryModel.countryId
       ? this.masterCountryService.updateMasterCountry(this.tempCountryModel)

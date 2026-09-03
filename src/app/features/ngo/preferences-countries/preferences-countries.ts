@@ -136,6 +136,7 @@ export class PreferencesCountries implements OnInit {
 
   openAddCountryModal(): void {
     this.tempCountryModel = new MasterCountryRequest();
+    this.tempCountryModel.countryIsdCode = null as any;
     this.modalErrorMessage = '';
     this.showCountryModal = true;
   }
@@ -146,11 +147,32 @@ export class PreferencesCountries implements OnInit {
     this.showCountryModal = true;
   }
 
+  allowNumbersOnly(event: KeyboardEvent): boolean {
+    const charCode = event.which ? event.which : event.keyCode;
+    if (charCode < 48 || charCode > 57) {
+      event.preventDefault();
+      return false;
+    }
+    return true;
+  }
+
+  onIsdCodeInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const sanitized = input.value.replace(/[^0-9]/g, '');
+    if (input.value !== sanitized) {
+      input.value = sanitized;
+      this.tempCountryModel.countryIsdCode = sanitized as any;
+    }
+  }
+
   saveCountry(form: NgForm): void {
     if (form.invalid) {
       form.control.markAllAsTouched();
       return;
     }
+
+    // Convert ISD code to a number to satisfy the backend contract
+    this.tempCountryModel.countryIsdCode = Number(this.tempCountryModel.countryIsdCode);
 
     const request = this.tempCountryModel.countryId
       ? this.countryService.updateMasterCountry(this.tempCountryModel)
