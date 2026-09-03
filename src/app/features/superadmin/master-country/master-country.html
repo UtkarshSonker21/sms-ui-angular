@@ -162,11 +162,21 @@
                 <div class="modal-form-row">
                     <div class="field" style="grid-column: span 2;">
                         <label class="field-label required-label">ISD Code</label>
-                        <input type="number" name="countryIsdCode" class="field-input" placeholder="e.g. 1" required
+                        <input type="text" inputmode="numeric" name="countryIsdCode" class="field-input" placeholder="e.g. 1" required pattern="^[0-9]+$" maxlength="5"
+                            (keypress)="allowNumbersOnly($event)"
+                            (input)="onIsdCodeInput($event)"
                             [(ngModel)]="tempCountryModel.countryIsdCode" #countryIsdCodeModel="ngModel">
                         <div class="validation-error"
                             *ngIf="(countryIsdCodeModel.touched || countryForm.submitted) && countryIsdCodeModel.errors?.['required']">
-                            ISD Code is required.
+                            ISD code is required.
+                        </div>
+                        <div class="validation-error"
+                            *ngIf="(countryIsdCodeModel.touched || countryForm.submitted) && countryIsdCodeModel.errors?.['pattern'] && !countryIsdCodeModel.errors?.['maxlength']">
+                            ISD Code must contain numbers only.
+                        </div>
+                        <div class="validation-error"
+                            *ngIf="(countryIsdCodeModel.touched || countryForm.submitted) && (countryIsdCodeModel.errors?.['maxlength'] || (tempCountryModel.countryIsdCode && tempCountryModel.countryIsdCode.toString().length > 5))">
+                            ISD Code cannot exceed 5 digits.
                         </div>
                     </div>
                 </div>
@@ -183,7 +193,7 @@
             <div class="modal-foot">
                 <button type="button" class="btn btn-g" (click)="showCountryModal = false"
                     [disabled]="isSaving">Cancel</button>
-                <button type="submit" class="btn btn-p" [disabled]="isSaving || countryForm.invalid">
+                <button type="submit" class="btn btn-p" [disabled]="isSaving">
                     <span *ngIf="isSaving"><i class="fas fa-spinner fa-spin"
                             style="margin-right: 6px;"></i>Saving...</span>
                     <span *ngIf="!isSaving">Save</span>

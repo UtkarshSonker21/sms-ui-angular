@@ -29,9 +29,11 @@ export class PreferencesSponsorshipMatrix implements OnInit {
 
   // Modals state
   showSponsorshipModal = false;
+  isEditingSponsorshipMode = false;
   editingSponsorship: SponsorshipTypeRequest = new SponsorshipTypeRequest();
   
   showCategoryModal = false;
+  isEditingCategoryMode = false;
   editingCategory: StudentCategoryRequest = new StudentCategoryRequest();
 
   get kpiSponsorshipTypes(): number {
@@ -139,6 +141,7 @@ export class PreferencesSponsorshipMatrix implements OnInit {
   // --- Sponsorship Type Actions ---
   openSponsorshipModal(id?: number): void {
     if (id) {
+      this.isEditingSponsorshipMode = true;
       this.sponsorshipTypeService.getSponsorshipTypeById(id).subscribe({
         next: (res) => {
           if (res.success && res.result) {
@@ -154,20 +157,27 @@ export class PreferencesSponsorshipMatrix implements OnInit {
         }
       });
     } else {
+      this.isEditingSponsorshipMode = false;
       this.editingSponsorship = new SponsorshipTypeRequest();
       this.showSponsorshipModal = true;
     }
   }
 
-  saveSponsorship(): void {
-    // Determine create vs update based on if an ID exists
-    const saveObservable = this.editingSponsorship.sponsorshipTypeId 
+  saveSponsorship(form: any): void {
+    if (form.invalid || !this.editingSponsorship.frequencyType) return;
+    
+    const saveObservable = this.isEditingSponsorshipMode
       ? this.sponsorshipTypeService.updateSponsorshipType(this.editingSponsorship)
-      : this.sponsorshipTypeService.updateSponsorshipType(this.editingSponsorship); // Create typically has a separate endpoint, but following prompt
+      : this.sponsorshipTypeService.addSponsorshipType(this.editingSponsorship);
 
     saveObservable.subscribe({
       next: (res) => {
         if (res.success) {
+          this.notification.success(
+            this.isEditingSponsorshipMode
+              ? 'Sponsorship type updated successfully.'
+              : 'Sponsorship type created successfully.'
+          );
           this.showSponsorshipModal = false;
           this.loadMatrix();
         }
@@ -190,6 +200,7 @@ export class PreferencesSponsorshipMatrix implements OnInit {
         this.sponsorshipTypeService.deleteSponsorshipType(id).subscribe({
           next: (res) => {
             if (res.success) {
+              this.notification.success('Sponsorship type deleted successfully.');
               this.loadMatrix();
             }
           },
@@ -207,6 +218,7 @@ export class PreferencesSponsorshipMatrix implements OnInit {
   // --- Student Category Actions ---
   openCategoryModal(id?: number): void {
     if (id) {
+      this.isEditingCategoryMode = true;
       this.studentCategoryService.getStudentCategoryById(id).subscribe({
         next: (res) => {
           if (res.success && res.result) {
@@ -222,19 +234,27 @@ export class PreferencesSponsorshipMatrix implements OnInit {
         }
       });
     } else {
+      this.isEditingCategoryMode = false;
       this.editingCategory = new StudentCategoryRequest();
       this.showCategoryModal = true;
     }
   }
 
-  saveCategory(): void {
-    const saveObservable = this.editingCategory.studentCategoryId
+  saveCategory(form: any): void {
+    if (form.invalid) return;
+
+    const saveObservable = this.isEditingCategoryMode
       ? this.studentCategoryService.updateStudentCategory(this.editingCategory)
-      : this.studentCategoryService.updateStudentCategory(this.editingCategory);
+      : this.studentCategoryService.addStudentCategory(this.editingCategory);
 
     saveObservable.subscribe({
       next: (res) => {
         if (res.success) {
+          this.notification.success(
+            this.isEditingCategoryMode
+              ? 'Student category updated successfully.'
+              : 'Student category created successfully.'
+          );
           this.showCategoryModal = false;
           this.loadMatrix();
         }
@@ -257,6 +277,7 @@ export class PreferencesSponsorshipMatrix implements OnInit {
         this.studentCategoryService.deleteStudentCategory(id).subscribe({
           next: (res) => {
             if (res.success) {
+              this.notification.success('Student category deleted successfully.');
               this.loadMatrix();
             }
           },
