@@ -139,7 +139,7 @@ export class UniversityAccreditation implements OnInit {
       const q = this.searchText.trim().toLowerCase();
       items = items.filter(u => {
         const nameMatch = u.universityName.toLowerCase().includes(q);
-        const typeMatch = u.universityType.toLowerCase().includes(q);
+        const typeMatch = u.universityTypeName?.toLowerCase().includes(q) || false;
         const countryName = this.getCountryName(u.countryId).toLowerCase();
         const countryMatch = countryName.includes(q);
         return nameMatch || typeMatch || countryMatch;

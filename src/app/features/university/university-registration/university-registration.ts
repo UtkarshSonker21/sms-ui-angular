@@ -144,18 +144,20 @@ export class UniversityRegistration implements OnInit {
     this.isUniversityTypeDropdownOpen = !current;
   }
 
-  selectUniversityType(type: string): void {
-    this.university.universityType = type;
+  selectUniversityType(typeId: number, typeName: string): void {
+    this.university.universityTypeId = typeId;
+    this.university.universityTypeName = typeName;
     this.isUniversityTypeDropdownOpen = false;
   }
 
   clearUniversityType(event: Event): void {
     event.stopPropagation();
-    this.university.universityType = '';
+    this.university.universityTypeId = undefined;
+    this.university.universityTypeName = undefined;
   }
 
   getSelectedUniversityTypeName(): string {
-    return this.university.universityType ? this.university.universityType : 'Select Type...';
+    return this.university.universityTypeName ? this.university.universityTypeName : 'Select Type...';
   }
 
   // Student Genders Selection
@@ -322,7 +324,7 @@ export class UniversityRegistration implements OnInit {
       return;
     }
 
-    if (!this.university.universityType) {
+    if (!this.university.universityTypeId) {
       this.notification.warning('Please select university type');
       return;
     }

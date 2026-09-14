@@ -4,7 +4,8 @@ export class MasterUniversityRequest {
 
   // University Information
   universityName: string = '';
-  universityType: string = '';
+  universityTypeId?: number;
+  universityTypeName?: string;
   charterAccreditation?: string;
   establishedYear?: number;
   countryId: number = 0;
@@ -77,6 +78,7 @@ export class MasterUniversityRequest {
   updatedBy?: number;
   updatedDate?: Date | string;
 
+  programsCount?: number;
 }
 
 
