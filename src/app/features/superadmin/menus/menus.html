@@ -84,7 +84,9 @@
         <tbody>
             <tr *ngFor="let m of menusList">
                 <td>
-                    <div [style.padding-left.px]="(m.levelNo || 0) * 20">
+                    <div [style.padding-left.px]="(m.levelNo || 0) * 20" style="display: flex; align-items: center; gap: 8px;">
+                        <i *ngIf="m.levelNo === 0" class="text-muted" [ngClass]="m.icon ? m.icon : 'fas fa-folder'" style="font-size: 13px;"></i>
+                        <i *ngIf="(m.levelNo || 0) > 0" class="text-muted" [ngClass]="m.icon ? m.icon : 'fas fa-file-alt'" style="font-size: 13px; opacity: 0.6;"></i>
                         <div style="font-size: 13.5px; font-weight: 600; color: var(--da-black);">
                             {{ m.pageHeading }}
                         </div>

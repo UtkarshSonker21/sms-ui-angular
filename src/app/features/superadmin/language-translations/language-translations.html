@@ -60,8 +60,9 @@
 </div>
 
 <div class="card"
-    style="border-radius: var(--da-radius); overflow: auto; margin-bottom: 20px; border: 1px solid var(--da-border, #e0e0e0); background: var(--da-surface, #ffffff); box-shadow: 0 10px 40px rgba(5,5,5,0.04);">
-    <table class="table" style="min-width: 800px;">
+    style="border-radius: var(--da-radius); overflow: visible; margin-bottom: 20px; border: 1px solid var(--da-border, #e0e0e0); background: var(--da-surface, #ffffff); box-shadow: 0 10px 40px rgba(5,5,5,0.04);">
+    <div style="overflow-x: auto; overflow-y: visible;">
+        <table class="table" style="min-width: 800px;">
         <thead>
             <tr>
                 <th style="width: 250px; position: sticky; left: 0; background: var(--da-surface); z-index: 2;">Label Key</th>
@@ -109,10 +110,11 @@
             </tr>
         </tbody>
     </table>
+    </div>
 
     <!-- Pagination Footer -->
     <div class="pagination-footer"
-        style="padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; left: 0;">
+        style="padding: 12px 20px; display: flex; align-items: center; justify-content: space-between;">
         <div style="display: flex; align-items: center; gap: 8px;">
             <span class="text-muted" style="font-size: 13px; font-weight: 500;">Show</span>
             <div class="custom-dropdown" [class.open]="isPageSizeDropdownOpen" [class.open-up]="true" tabindex="0"
