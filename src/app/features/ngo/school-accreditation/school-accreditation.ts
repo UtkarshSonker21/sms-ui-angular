@@ -144,19 +144,59 @@ export class SchoolAccreditation implements OnInit {
 
   loadData(): void {
     const queryFilter = new MasterSchoolFilter();
-    queryFilter.pageNumber = 1;
-    queryFilter.pageSize = 10000; // Fetch all for client-side tab/dropdown filters
+    queryFilter.pageNumber = this.filter.pageNumber;
+    queryFilter.pageSize = this.filter.pageSize; 
+    queryFilter.searchText = this.searchText.trim() || undefined;
+
+    if (this.selectedCountryId !== 0) {
+      queryFilter.countryId = this.selectedCountryId;
+    }
+
+    if (this.activeTab === 'pending') {
+      queryFilter.accreditationStatus = 1;
+    } else if (this.activeTab === 'accepted') {
+      queryFilter.accreditationStatus = 2;
+    } else if (this.activeTab === 'rejected') {
+      queryFilter.accreditationStatus = 3;
+    }
+
+    if (this.selectedSchoolTypeId !== 0) {
+      // Assuming backend supports it, otherwise fallback to local filter below
+      (queryFilter as any).schoolType = this.selectedSchoolTypeId;
+    }
 
     this.schoolService.getMasterSchools(queryFilter).subscribe({
       next: (response) => {
         if (response.success && response.result) {
-          this.processSchoolsList(response.result.items);
+          let items = response.result.items;
+          
+          this.kpiTotal = items.length;
+          this.kpiPending = items.filter(x => x.accreditationStatus === 1).length;
+          this.kpiAccepted = items.filter(x => x.accreditationStatus === 2).length;
+          this.kpiRejected = items.filter(x => x.accreditationStatus === 3).length;
+
+          // Local fallback filter for schoolType
+          if (this.selectedSchoolTypeId !== 0) {
+            items = items.filter(s => s.schoolType === this.selectedSchoolTypeId);
+          }
+
+          this.allFilteredItems = items;
+          this.totalRecords = (response.result as any).totalCount || items.length;
+          this.paginateItems();
         } else {
-          this.processSchoolsList([]);
+          this.schools = [];
+          this.allFilteredItems = [];
+          this.totalRecords = 0;
+          this.kpiTotal = 0;
+          this.kpiPending = 0;
+          this.kpiAccepted = 0;
+          this.kpiRejected = 0;
         }
       },
       error: (error) => {
-        this.processSchoolsList([]);
+        this.schools = [];
+        this.allFilteredItems = [];
+        this.totalRecords = 0;
         this.notification.handleBusinessError(
           error,
           'Failed to load school accreditation list.'
@@ -166,52 +206,11 @@ export class SchoolAccreditation implements OnInit {
   }
 
   private processSchoolsList(items: MasterSchoolRequest[]): void {
-    // 1. Calculate KPI counts across all items loaded
-    this.kpiTotal = items.length;
-    this.kpiPending = items.filter(x => x.accreditationStatus === 1).length;
-    this.kpiAccepted = items.filter(x => x.accreditationStatus === 2).length;
-    this.kpiRejected = items.filter(x => x.accreditationStatus === 3).length;
-
-    // 2. Apply search text filter
-    if (this.searchText.trim()) {
-      const q = this.searchText.trim().toLowerCase();
-      items = items.filter(s => {
-        const nameMatch = s.schoolName.toLowerCase().includes(q);
-        const countryName = this.getCountryName(s.countryId).toLowerCase();
-        const countryMatch = countryName.includes(q);
-        const typeName = this.getSchoolTypeName(s.schoolType).toLowerCase();
-        const typeMatch = typeName.includes(q);
-        return nameMatch || countryMatch || typeMatch;
-      });
-    }
-
-    // 3. Apply country filter
-    if (this.selectedCountryId !== 0) {
-      items = items.filter(s => s.countryId === this.selectedCountryId);
-    }
-
-    // 4. Apply school type filter
-    if (this.selectedSchoolTypeId !== 0) {
-      items = items.filter(s => s.schoolType === this.selectedSchoolTypeId);
-    }
-
-    // 5. Apply status tab filter
-    if (this.activeTab === 'pending') {
-      items = items.filter(x => x.accreditationStatus === 1);
-    } else if (this.activeTab === 'accepted') {
-      items = items.filter(x => x.accreditationStatus === 2);
-    } else if (this.activeTab === 'rejected') {
-      items = items.filter(x => x.accreditationStatus === 3);
-    }
-
-    this.allFilteredItems = items;
-    this.totalRecords = items.length;
-    this.paginateItems();
+    // Replaced by inline processing in loadData to handle totalRecords properly
   }
 
   paginateItems(): void {
-    const startIndex = (this.filter.pageNumber - 1) * this.filter.pageSize;
-    this.schools = this.allFilteredItems.slice(startIndex, startIndex + this.filter.pageSize);
+    this.schools = this.allFilteredItems;
   }
 
   applySearch(): void {
@@ -304,20 +303,20 @@ export class SchoolAccreditation implements OnInit {
     this.isPageSizeDropdownOpen = false;
     this.filter.pageSize = size;
     this.filter.pageNumber = 1;
-    this.paginateItems();
+    this.loadData();
   }
 
   previousPage(): void {
     if (this.filter.pageNumber > 1) {
       this.filter.pageNumber--;
-      this.paginateItems();
+      this.loadData();
     }
   }
 
   nextPage(): void {
     if (this.filter.pageNumber < this.totalPages) {
       this.filter.pageNumber++;
-      this.paginateItems();
+      this.loadData();
     }
   }
 

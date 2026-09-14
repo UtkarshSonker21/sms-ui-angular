@@ -56,21 +56,21 @@
               <div class="field" (click)="$event.stopPropagation()">
                 <label class="field-label required-label">University Type (License)</label>
                 <div class="multi-select" [class.open]="isUniversityTypeDropdownOpen" [class.invalid]="(typeModel.touched || regForm.submitted) && !typeModel.valid" (click)="toggleUniversityTypeDropdown($event)" tabindex="0">
-                  <div class="ms-display" [class.has-selection]="university.universityType !== ''">
-                    <span *ngIf="university.universityType === ''">Select type...</span>
-                    <span *ngIf="university.universityType !== ''" class="ms-chip">
+                  <div class="ms-display" [class.has-selection]="university.universityTypeId">
+                    <span *ngIf="!university.universityTypeId">Select type...</span>
+                    <span *ngIf="university.universityTypeId" class="ms-chip">
                       {{ getSelectedUniversityTypeName() }}
                       <span class="ms-chip-x" (click)="clearUniversityType($event); typeModel.control.markAsTouched()">×</span>
                     </span>
                   </div>
                   <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                   <div class="ms-panel" *ngIf="isUniversityTypeDropdownOpen" (click)="$event.stopPropagation()" style="display: block; max-height: 200px; overflow-y: auto;">
-                    <div *ngFor="let type of universityType" class="ms-option" [class.checked]="university.universityType === type.displayText" (click)="selectUniversityType(type.displayText!); typeModel.control.markAsTouched(); $event.stopPropagation()">
+                    <div *ngFor="let type of universityType" class="ms-option" [class.checked]="university.universityTypeId === type.id" (click)="selectUniversityType(type.id, type.displayText!); typeModel.control.markAsTouched(); $event.stopPropagation()">
                       <span>{{ type.displayText }}</span>
                     </div>
                   </div>
                 </div>
-                <input type="hidden" name="universityType" [ngModel]="university.universityType !== '' ? university.universityType : ''" required #typeModel="ngModel">
+                <input type="hidden" name="universityType" [ngModel]="university.universityTypeId ? university.universityTypeId : null" required #typeModel="ngModel">
                 <div class="validation-error" *ngIf="(typeModel.touched || regForm.submitted) && !typeModel.valid">
                   University type is required.
                 </div>
