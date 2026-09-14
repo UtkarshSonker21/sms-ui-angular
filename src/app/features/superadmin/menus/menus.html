@@ -276,8 +276,17 @@
 
                     <div class="field">
                         <label class="field-label">Icon Class (FontAwesome)</label>
-                        <input type="text" name="icon" class="field-input" placeholder="e.g. fas fa-users"
-                            maxlength="50" [(ngModel)]="tempMenuModel.icon">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="text" name="icon" class="field-input" placeholder="e.g. fas fa-users"
+                                maxlength="50" [(ngModel)]="tempMenuModel.icon" style="flex: 1;">
+                            <div style="width: 34px; height: 34px; border: 1px solid var(--da-border); border-radius: 6px; background: var(--da-surface); display: flex; align-items: center; justify-content: center; color: var(--da-text); flex-shrink: 0;">
+                                <i *ngIf="tempMenuModel.icon" [class]="tempMenuModel.icon" style="font-size: 15px;"></i>
+                                <span *ngIf="!tempMenuModel.icon" style="color: var(--da-muted); font-size: 12px;">-</span>
+                            </div>
+                        </div>
+                        <div style="margin-top: 4px;">
+                            <a href="https://fontawesome.com/search?m=free" target="_blank" rel="noopener noreferrer" style="font-size: 11.5px; color: #6366f1; text-decoration: none;">Choose an icon from FontAwesome ↗</a>
+                        </div>
                     </div>
                 </div>
 
