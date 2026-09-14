@@ -26,10 +26,10 @@ export class Menus implements OnInit {
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
-    this.isPageSizeDropdownOpen = false;
     this.isModuleDropdownOpen = false;
     this.isParentDropdownOpen = false;
     this.isModuleFilterDropdownOpen = false;
+    this.isPageSizeDropdownOpen = false;
   }
 
   private usersMenuService = inject(UsersMenuService);
@@ -105,7 +105,7 @@ export class Menus implements OnInit {
   loadParentMenus(): void {
     const parentFilter = new UsersMenuFilterModel();
     parentFilter.pageNumber = 1;
-    parentFilter.pageSize = 1000;
+    parentFilter.pageSize = 0;
     parentFilter.isActive = true;
     this.usersMenuService.getUserMenus(parentFilter).subscribe({
       next: (response) => {
@@ -127,7 +127,7 @@ export class Menus implements OnInit {
   loadAllMenus(): void {
     const allFilter = new UsersMenuFilterModel();
     allFilter.pageNumber = 1;
-    allFilter.pageSize = 1000;
+    allFilter.pageSize = 0;
     this.usersMenuService.getUserMenus(allFilter).subscribe({
       next: (response) => {
         if (response.success && response.result) {
