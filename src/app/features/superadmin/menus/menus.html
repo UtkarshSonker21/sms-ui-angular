@@ -232,8 +232,8 @@
                     </div>
                 </div>
 
-                <!-- Row 2: Parent Menu & Page Path -->
-                <div class="modal-form-row">
+                <!-- Row 2: Parent Menu (Full Width) -->
+                <div class="modal-form-row" style="grid-template-columns: 1fr;">
                     <div class="field">
                         <label class="field-label">Parent Menu</label>
                         <div class="da-select" [class.da-select-open]="isParentDropdownOpen" tabindex="0"
@@ -251,13 +251,19 @@
                                 <div class="da-select-option" *ngFor="let p of filteredParentMenus"
                                     [class.selected]="tempMenuModel.parentId === p.menuLinkId"
                                     (click)="selectParentOption(p.menuLinkId)"
-                                    [style.padding-left.px]="(p.levelNo || 0) * 16 + 12">
-                                    {{ p.pageHeading }}
+                                    [style.padding-left.px]="(p.levelNo || 0) * 16 + 12"
+                                    style="display: flex; align-items: center; gap: 8px;">
+                                    <i *ngIf="p.levelNo === 0" class="text-muted" [ngClass]="p.icon ? p.icon : 'fas fa-folder'" style="font-size: 13px;"></i>
+                                    <i *ngIf="(p.levelNo || 0) > 0" class="text-muted" [ngClass]="p.icon ? p.icon : 'fas fa-file-alt'" style="font-size: 13px; opacity: 0.6;"></i>
+                                    <span>{{ p.pageHeading }}</span>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
+                <!-- Row 3: Page Path & Icon -->
+                <div class="modal-form-row">
                     <div class="field">
                         <label class="field-label required-label">Page Path</label>
                         <input type="text" name="pagePath" class="field-input" placeholder="e.g. ngo/panel-users" required
@@ -267,9 +273,15 @@
                             Page Path is required.
                         </div>
                     </div>
+
+                    <div class="field">
+                        <label class="field-label">Icon Class (FontAwesome)</label>
+                        <input type="text" name="icon" class="field-input" placeholder="e.g. fas fa-users"
+                            maxlength="50" [(ngModel)]="tempMenuModel.icon">
+                    </div>
                 </div>
 
-                <!-- Row 3: Actual Name & Icon -->
+                <!-- Row 4: Actual Name & Level No -->
                 <div class="modal-form-row">
                     <div class="field">
                         <label class="field-label required-label">Actual Name</label>
@@ -282,19 +294,13 @@
                     </div>
 
                     <div class="field">
-                        <label class="field-label">Icon Class (FontAwesome)</label>
-                        <input type="text" name="icon" class="field-input" placeholder="e.g. fas fa-users"
-                            maxlength="50" [(ngModel)]="tempMenuModel.icon">
-                    </div>
-                </div>
-
-                <!-- Row 4: Level No & Sequence No -->
-                <div class="modal-form-row">
-                    <div class="field">
                         <label class="field-label">Level Number (Calculated)</label>
                         <input type="number" name="levelNo" class="field-input" [ngModel]="tempMenuModel.levelNo" readonly disabled style="background-color: var(--da-surface); color: var(--da-muted); border-color: var(--da-border); cursor: not-allowed;">
                     </div>
+                </div>
 
+                <!-- Row 5: Sequence No & Menu Visibility -->
+                <div class="modal-form-row">
                     <div class="field">
                         <label class="field-label required-label">Sequence Number</label>
                         <input type="number" name="sequenceNo" class="field-input" placeholder="e.g. 1, 2, 3" required
@@ -304,10 +310,7 @@
                             Sequence Number is required.
                         </div>
                     </div>
-                </div>
 
-                <!-- Row 5: View Visibility & Active Status -->
-                <div class="modal-form-row">
                     <div class="field">
                         <label class="field-label">Menu Visibility</label>
                         <div class="pill-group">
@@ -317,7 +320,6 @@
                                 (click)="tempMenuModel.isView = false">No</button>
                         </div>
                     </div>
-
                 </div>
             </div>
 

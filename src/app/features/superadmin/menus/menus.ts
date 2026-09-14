@@ -26,10 +26,10 @@ export class Menus implements OnInit {
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
-    this.isPageSizeDropdownOpen = false;
     this.isModuleDropdownOpen = false;
     this.isParentDropdownOpen = false;
     this.isModuleFilterDropdownOpen = false;
+    this.isPageSizeDropdownOpen = false;
   }
 
   private usersMenuService = inject(UsersMenuService);
