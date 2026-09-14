@@ -143,7 +143,7 @@ export class UniversityCoordinators implements OnInit {
   loadUniversities(): void {
     const filter = new MasterUniversityFilter();
     filter.pageNumber = 1;
-    filter.pageSize = 1000;
+    filter.pageSize = 0;
     filter.isActive = true;
     this.universityService.getMasterUniversities(filter).subscribe({
       next: (response) => {
@@ -163,7 +163,7 @@ export class UniversityCoordinators implements OnInit {
   loadCountries(): void {
     const countryFilter = new MasterCountryFilter();
     countryFilter.pageNumber = 1;
-    countryFilter.pageSize = 1000;
+    countryFilter.pageSize = 0;
     this.countryService.getMasterCountries(countryFilter).subscribe({
       next: (response) => {
         if (response.success && response.result) {

@@ -99,38 +99,42 @@ export class ProgramAccreditation implements OnInit {
 
   loadData(): void {
     const queryFilter = new ProgramFilter();
-    queryFilter.pageNumber = 1;
-    queryFilter.pageSize = 10000;
+    queryFilter.pageNumber = this.filter.pageNumber;
+    queryFilter.pageSize = this.filter.pageSize;
     queryFilter.universityId = this.selectedUniversityId || undefined;
     queryFilter.searchText = this.searchText.trim() || undefined;
+
+    if (this.activeTab === 'pending') {
+      queryFilter.accreditationStatus = 1;
+    } else if (this.activeTab === 'accepted') {
+      queryFilter.accreditationStatus = 2;
+    } else if (this.activeTab === 'rejected') {
+      queryFilter.accreditationStatus = 3;
+    }
+
+    // Try to pass degree if backend supports it
+    if (this.selectedDegree !== 0) {
+      (queryFilter as any).degreeId = this.selectedDegree; 
+    }
 
     this.programService.getPrograms(queryFilter).subscribe({
       next: (response) => {
         if (response.success && response.result) {
           let items = response.result.items;
 
-          // Calculate KPI counts for current search and university
+          // Note: KPIs reflect current page if backend pagination is used
           this.kpiTotal = items.length;
           this.kpiPending = items.filter(x => x.accreditationStatus === 1).length;
           this.kpiAccredited = items.filter(x => x.accreditationStatus === 2).length;
           this.kpiRejected = items.filter(x => x.accreditationStatus === 3).length;
 
-          // Client-side filtering by degree
+          // Keep client-side filtering fallback for degree if backend ignored it
           if (this.selectedDegree !== 0) {
             items = items.filter(x => x.degree === this.selectedDegree);
           }
 
-          // Client-side filtering by status tab
-          if (this.activeTab === 'pending') {
-            items = items.filter(x => x.accreditationStatus === 1);
-          } else if (this.activeTab === 'accepted') {
-            items = items.filter(x => x.accreditationStatus === 2);
-          } else if (this.activeTab === 'rejected') {
-            items = items.filter(x => x.accreditationStatus === 3);
-          }
-
           this.allFilteredItems = items;
-          this.totalRecords = items.length;
+          this.totalRecords = (response.result as any).totalCount || items.length;
           this.paginateItems();
         } else {
           this.programs = [];
@@ -152,8 +156,8 @@ export class ProgramAccreditation implements OnInit {
   }
 
   paginateItems(): void {
-    const startIndex = (this.filter.pageNumber - 1) * this.filter.pageSize;
-    this.programs = this.allFilteredItems.slice(startIndex, startIndex + this.filter.pageSize);
+    // Items are already paginated by the API
+    this.programs = this.allFilteredItems;
   }
 
   applySearch(): void {
@@ -268,20 +272,20 @@ export class ProgramAccreditation implements OnInit {
     this.isPageSizeDropdownOpen = false;
     this.filter.pageSize = size;
     this.filter.pageNumber = 1;
-    this.paginateItems();
+    this.loadData();
   }
 
   previousPage(): void {
     if (this.filter.pageNumber > 1) {
       this.filter.pageNumber--;
-      this.paginateItems();
+      this.loadData();
     }
   }
 
   nextPage(): void {
     if (this.filter.pageNumber < this.totalPages) {
       this.filter.pageNumber++;
-      this.paginateItems();
+      this.loadData();
     }
   }
 

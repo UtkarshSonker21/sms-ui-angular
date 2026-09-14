@@ -106,18 +106,35 @@ export class UniversityAccreditation implements OnInit {
 
   loadData(): void {
     const queryFilter = new MasterUniversityFilter();
-    queryFilter.pageNumber = 1;
-    queryFilter.pageSize = 10000; // Fetch all for client-side filtering
+    queryFilter.pageNumber = this.filter.pageNumber;
+    queryFilter.pageSize = this.filter.pageSize;
+    queryFilter.searchText = this.searchText.trim() ? this.searchText.trim() : undefined;
+    
+    if (this.selectedCountryId > 0) {
+      queryFilter.countryId = this.selectedCountryId;
+    }
+
+    if (this.activeTab === 'pending') {
+      queryFilter.accreditationStatus = AccreditationStatus.Pending;
+    } else if (this.activeTab === 'accepted') {
+      queryFilter.accreditationStatus = AccreditationStatus.Accredited;
+    } else if (this.activeTab === 'rejected') {
+      queryFilter.accreditationStatus = AccreditationStatus.Rejected;
+    }
 
     this.universityService.getMasterUniversities(queryFilter).subscribe({
       next: (response) => {
         if (response.success && response.result) {
+          // Total records from backend for pagination
+          this.totalRecords = response.result.totalCount || response.result.items.length;
           this.processUniversitiesList(response.result.items);
         } else {
+          this.totalRecords = 0;
           this.processUniversitiesList([]);
         }
       },
       error: (error) => {
+        this.totalRecords = 0;
         this.processUniversitiesList([]);
         this.notification.handleBusinessError(
           error,
@@ -128,46 +145,20 @@ export class UniversityAccreditation implements OnInit {
   }
 
   private processUniversitiesList(items: MasterUniversityRequest[]): void {
-    // 1. Calculate general stats across ALL items loaded
+    // Note: Since pagination and filtering are now server-side, 
+    // the KPIs will reflect the current page's stats.
     this.kpiTotal = items.length;
     this.kpiPending = items.filter(x => x.accreditationStatus === AccreditationStatus.Pending).length;
     this.kpiAccredited = items.filter(x => x.accreditationStatus === AccreditationStatus.Accredited).length;
     this.kpiRejected = items.filter(x => x.accreditationStatus === AccreditationStatus.Rejected).length;
 
-    // 2. Apply search text filter (name, country, or type)
-    if (this.searchText.trim()) {
-      const q = this.searchText.trim().toLowerCase();
-      items = items.filter(u => {
-        const nameMatch = u.universityName.toLowerCase().includes(q);
-        const typeMatch = u.universityTypeName?.toLowerCase().includes(q) || false;
-        const countryName = this.getCountryName(u.countryId).toLowerCase();
-        const countryMatch = countryName.includes(q);
-        return nameMatch || typeMatch || countryMatch;
-      });
-    }
-
-    // 3. Apply country dropdown filter
-    if (this.selectedCountryId !== 0) {
-      items = items.filter(u => u.countryId === this.selectedCountryId);
-    }
-
-    // 4. Apply status tab filter
-    if (this.activeTab === 'pending') {
-      items = items.filter(x => x.accreditationStatus === AccreditationStatus.Pending);
-    } else if (this.activeTab === 'accepted') {
-      items = items.filter(x => x.accreditationStatus === AccreditationStatus.Accredited);
-    } else if (this.activeTab === 'rejected') {
-      items = items.filter(x => x.accreditationStatus === AccreditationStatus.Rejected);
-    }
-
     this.allFilteredItems = items;
-    this.totalRecords = items.length;
     this.paginateItems();
   }
 
   paginateItems(): void {
-    const startIndex = (this.filter.pageNumber - 1) * this.filter.pageSize;
-    this.universities = this.allFilteredItems.slice(startIndex, startIndex + this.filter.pageSize);
+    // Items are already paginated by the API
+    this.universities = this.allFilteredItems;
   }
 
   applySearch(): void {
@@ -231,20 +222,20 @@ export class UniversityAccreditation implements OnInit {
     this.isPageSizeDropdownOpen = false;
     this.filter.pageSize = size;
     this.filter.pageNumber = 1;
-    this.paginateItems();
+    this.loadData();
   }
 
   previousPage(): void {
     if (this.filter.pageNumber > 1) {
       this.filter.pageNumber--;
-      this.paginateItems();
+      this.loadData();
     }
   }
 
   nextPage(): void {
     if (this.filter.pageNumber < this.totalPages) {
       this.filter.pageNumber++;
-      this.paginateItems();
+      this.loadData();
     }
   }
 

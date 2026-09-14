@@ -139,7 +139,7 @@ export class SchoolCoordinators implements OnInit {
   loadCountries(): void {
     const countryFilter = new MasterCountryFilter();
     countryFilter.pageNumber = 1;
-    countryFilter.pageSize = 1000;
+    countryFilter.pageSize = 0;
     this.countryService.getMasterCountries(countryFilter).subscribe({
       next: (response) => {
         if (response.success && response.result) {
