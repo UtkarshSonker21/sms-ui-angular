@@ -1,0 +1,181 @@
+<div *ngIf="isLoading" style="display: flex; justify-content: center; padding: 40px;">
+  <div class="spinner"></div>
+</div>
+
+<div *ngIf="!isLoading && student" class="courses-page" data-lang="en">
+
+  <div class="page-head">
+    <div>
+      <div class="crumb">
+        <a href="#">Dashboard</a> <span class="sep">/</span>
+        <a href="javascript:void(0)" (click)="goBack()">University Students</a> <span class="sep">/</span>
+        <span>{{ student.firstName }} {{ student.lastName }}</span>
+      </div>
+      <h1 class="page-title">Registered Student Profile</h1>
+      <div class="page-sub">Personal details, sponsorship summary, and current academic stats.</div>
+    </div>
+    <div class="page-actions" style="display: flex; gap: 12px; align-items: center;">
+      <button class="btn btn-faculties-outline" type="button" (click)="viewAcademicRecord()">
+        View Academic Record
+      </button>
+      <button class="btn btn-p" type="button" (click)="openStatusModal()">
+        Update Status
+      </button>
+      <button class="btn btn-faculties-outline" type="button" (click)="goBack()"
+          style="display: flex; align-items: center; gap: 8px;">
+          <i class="fas fa-arrow-left"></i> Back to List
+      </button>
+    </div>
+  </div>
+
+  <div class="profile-container" style="display: flex; flex-direction: column; gap: 24px; padding-bottom: 40px;">
+
+    <!-- Profile Header -->
+    <div class="profile-head" style="background: var(--da-surface); padding: 24px; border-radius: var(--da-radius); border: 1px solid var(--da-border); display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+      <div style="width: 64px; height: 64px; border-radius: 50%; background: var(--da-green); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; flex-shrink: 0;">
+        <img *ngIf="student.photoPath && !photoError" [src]="getPhotoUrl(student.photoPath)" (error)="handlePhotoError()" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+        <span *ngIf="!student.photoPath || photoError">{{ getInitials() }}</span>
+      </div>
+      <div style="flex: 1; min-width: 280px;">
+        <div style="font-size: 20px; font-weight: 700; color: var(--da-black);">{{ student.fullName }}</div>
+        <div class="profile-meta" style="display: flex; gap: 16px; margin-top: 8px; font-size: 14px; color: var(--da-text); flex-wrap: wrap;">
+          <span><b style="color: var(--da-black); font-weight: 600;">ID:</b> {{ student.studentCode || student.studentId }}</span>
+          <span><b style="color: var(--da-black); font-weight: 600;">Faculty:</b> {{ student.facultyName || '-' }}</span>
+          <span><b style="color: var(--da-black); font-weight: 600;">Program:</b> {{ student.programName || '-' }}</span>
+          <span style="display: flex; align-items: center;"><b style="color: var(--da-black); font-weight: 600; margin-right: 6px;">Status:</b> <span class="chip {{ getBadgeClass() }}">{{ getStatusName() }}</span></span>
+        </div>
+      </div>
+      <div style="text-align: right; background: rgba(0,0,0,0.03); padding: 16px 20px; border-radius: 8px; min-width: 140px;">
+        <div style="font-size: 11px; font-weight: 700; color: var(--da-muted); letter-spacing: 0.5px; text-transform: uppercase;">CUMULATIVE GPA</div>
+        <div style="font-size: 28px; font-weight: 700; color: var(--da-black); line-height: 1.2; margin: 4px 0;">N/A</div>
+      </div>
+    </div>
+
+    <!-- Stats KPI strip -->
+    <div class="stats-strip">
+      <div class="kpi">
+        <div class="kpi-l">Current Semester</div>
+        <div class="kpi-v">N/A</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-l">Credits Earned</div>
+        <div class="kpi-v">N/A</div>
+        <div class="progress"><span style="width: 0%"></span></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-l">Attendance</div>
+        <div class="kpi-v">N/A</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-l">Courses Passed / Failed</div>
+        <div class="kpi-v">N/A</div>
+      </div>
+    </div>
+
+    <!-- Details Sections -->
+    <div class="profile-cards">
+      <!-- 1. Personal Information -->
+      <div class="info-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <h3 style="margin: 0;">Personal Information</h3>
+          <button type="button" class="btn btn-faculties-outline btn-sm" (click)="viewUniversityStudentDetails()" style="display: flex; align-items: center; gap: 8px; padding: 4px 10px; font-size: 12px;">
+            <i class="fas fa-eye"></i> View Student Profile
+          </button>
+        </div>
+        <div class="info-row"><div class="info-k">Student ID</div><div class="info-v">{{ student.studentCode || student.studentId }}</div></div>
+        <div class="info-row"><div class="info-k">Date of Birth</div><div class="info-v">{{ (student.dateOfBirth | date:'yyyy/MM/dd') || '-' }}</div></div>
+        <div class="info-row"><div class="info-k">Gender</div><div class="info-v">{{ student.genderName || '-' }}</div></div>
+        <div class="info-row"><div class="info-k">Nationality</div><div class="info-v">{{ student.nationality || '-' }}</div></div>
+        <div class="info-row"><div class="info-k">High School</div><div class="info-v">{{ student.schoolName || '-' }}</div></div>
+        <div class="info-row"><div class="info-k">HS Score</div><div class="info-v">{{ student.highSchoolRelativeGradeOrPercentage || student.highSchoolTotalScore || '-' }}</div></div>
+        <div class="info-row"><div class="info-k">Phone</div><div class="info-v">{{ student.phoneNumber || '-' }}</div></div>
+        <div class="info-row"><div class="info-k">Email</div><div class="info-v">{{ student.emailAddress || '-' }}</div></div>
+      </div>
+
+      <!-- 2. Academic Progress -->
+      <div class="info-card">
+        <h3>Academic Progress</h3>
+        <div class="info-row"><div class="info-k">Semesters completed</div><div class="info-v">N/A</div></div>
+        <div class="info-row"><div class="info-k">Credits completed</div><div class="info-v">N/A</div></div>
+        <div class="info-row"><div class="info-k">Credits remaining</div><div class="info-v">N/A</div></div>
+        <div class="info-row"><div class="info-k">Credits remaining until graduation</div><div class="info-v">N/A</div></div>
+        <div class="info-row"><div class="info-k">Percentage of completion</div><div class="info-v">N/A</div></div>
+      </div>
+
+      <!-- 3. Sponsorship Details -->
+      <div class="info-card" style="grid-column: 1 / -1;">
+        <h3>Sponsorship Details</h3>
+        <div class="info-row"><div class="info-k">Status</div><div class="info-v"><span class="chip chip-registered">Registered</span></div></div>
+        <div class="info-row"><div class="info-k">Sponsor</div><div class="info-v">N/A</div></div>
+        <div class="info-row"><div class="info-k">Award Date</div><div class="info-v">N/A</div></div>
+        <div class="info-row"><div class="info-k">Coverage</div><div class="info-v">N/A</div></div>
+        <div class="info-row"><div class="info-k">Sponsorship Year</div><div class="info-v">N/A</div></div>
+        <div class="info-row"><div class="info-k">Last Disbursement</div><div class="info-v">N/A</div></div>
+        <div class="info-row"><div class="info-k">Outstanding Balance</div><div class="info-v">N/A</div></div>
+        <div class="info-row"><div class="info-k">Notes</div><div class="info-v">N/A</div></div>
+      </div>
+    </div>
+
+    <!-- Current semester courses -->
+    <div class="as-sem">
+      <div class="as-sem-head">
+        <div>
+          <div class="as-sem-title">Current Semester Courses</div>
+          
+        </div>
+        <div class="as-gpa-pill pending">N/A</div>
+      </div>
+      <div style="padding: 40px; text-align: center; color: var(--da-muted);">
+        <div style="font-size: 15px; font-weight: 500;">No course data available</div>
+        
+      </div>
+    </div>
+
+  </div>
+
+</div>
+<div class="modal-backdrop" *ngIf="showStatusModal">
+    <div class="modal-card" style="max-width: 600px;">
+        <div class="modal-head">
+            <div>
+                <div class="modal-title">Update Application Status</div>
+                <div class="modal-sub">Current status: {{ student?.applicationStatusName || 'Registered' }}. Choose the next outcome &mdash; the change is saved immediately.</div>
+                <div style="font-size: 12px; color: var(--da-muted); margin-top: 8px;">
+                    <!-- TODO: Replace the temporary reference text with the final status-transition guidance once the backend workflow and business rules are implemented. -->
+                    Reference: Status changes should follow the student's current application workflow and eligibility.
+                </div>
+            </div>
+            <button type="button" class="modal-close" (click)="closeStatusModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form (ngSubmit)="saveStatus()">
+            <div class="modal-body">
+                <!-- Selectable status card -->
+                <!-- TODO: Load valid status transitions from API. -->
+                <!-- TODO: Replace this temporary UI-only status options list with the actual status transition API once the backend endpoint is available. -->
+                <div class="status-option-card" [class.selected]="selectedStatusAction === 'Graduated'" (click)="selectStatus('Graduated')">
+                    <div class="status-icon"><i class="fas fa-graduation-cap"></i></div>
+                    <div class="status-content">
+                        <div class="status-name">Graduated</div>
+                        <div class="status-desc">Student has completed the required credit hours for the program. Status moves to Graduate.</div>
+                    </div>
+                </div>
+
+                <!-- Notes field -->
+                <div class="field" style="margin-top: 24px;">
+                    <label class="field-label" style="text-transform: uppercase; font-size: 11px; color: var(--da-muted); letter-spacing: 0.5px; margin-bottom: 8px; display: block;">Notes (Optional)</label>
+                    <textarea class="field-input" rows="3" placeholder="Internal note for the record" [(ngModel)]="statusNotes" name="notes"></textarea>
+                </div>
+            </div>
+            <div class="modal-foot">
+                <button type="button" class="btn btn-g" (click)="closeStatusModal()">Cancel</button>
+                <button type="submit" class="btn btn-p">Save Status</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+
