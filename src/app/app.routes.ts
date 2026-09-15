@@ -37,6 +37,7 @@ import { CoordinatorNominations } from './features/school/coordinator-nomination
 import { UniversityStudents } from './features/university/university-students/university-students';
 import { UniversityStudentDetail } from './features/university/university-student-detail/university-student-detail';
 import { RegisteredStudent } from './features/university/registered-student/registered-student';
+import { AcademicRecord } from './features/university/academic-record/academic-record';
 import { NgoStudents } from './features/ngo/ngo-students/ngo-students';
 import { NgoStudentDetail } from './features/ngo/ngo-student-detail/ngo-student-detail';
 import { PreferencesCountries } from './features/ngo/preferences-countries/preferences-countries';
@@ -317,6 +318,10 @@ export const routes: Routes = [
             {
                 path: 'registered-student/:id',
                 component: RegisteredStudent
+            },
+            {
+                path: 'registered-student/:id/academic-record',
+                component: AcademicRecord
             },
             {
                 path: 'academic-registration',

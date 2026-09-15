@@ -133,6 +133,10 @@ export class RegisteredStudent implements OnInit {
   }
 
   viewAcademicRecord(): void {
+    if (this.applicationId) {
+      this.router.navigate(['/registered-student', this.applicationId, 'academic-record']);
+    }
   }
 }
+
 

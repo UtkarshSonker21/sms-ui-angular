@@ -1,0 +1,244 @@
+.profile-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+@media (max-width: 1000px) { .profile-cards { grid-template-columns: 1fr; } }
+
+.info-card {
+  background: var(--da-surface, #ffffff);
+  border: 1px solid var(--da-border, #e0e0e0);
+  border-radius: var(--da-radius, 8px);
+  padding: 18px 20px;
+}
+.info-card h3 {
+  margin: 0 0 14px 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--da-black);
+  letter-spacing: 0.2px;
+}
+.info-row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--da-border);
+  font-size: 13px;
+}
+.info-row:last-child {
+  border-bottom: none;
+}
+.info-k {
+  color: var(--da-muted);
+  font-weight: 500;
+}
+.info-v {
+  color: var(--da-black);
+  font-weight: 600;
+}
+
+.stats-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+@media (max-width: 1000px) { .stats-strip { grid-template-columns: repeat(2, 1fr); } }
+
+.stats-strip .kpi {
+  background: var(--da-surface, #ffffff);
+  border: 1px solid var(--da-border, #e0e0e0);
+  border-radius: var(--da-radius, 8px);
+  padding: 14px 16px;
+}
+.stats-strip .kpi-l {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--da-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+.stats-strip .kpi-v {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--da-black);
+}
+
+.progress {
+  width: 100%;
+  height: 6px;
+  border-radius: 100px;
+  background: var(--da-border);
+  overflow: hidden;
+  margin-top: 8px;
+}
+.progress > span {
+  display: block;
+  height: 100%;
+  background: var(--da-green);
+  border-radius: 100px;
+}
+
+.as-sem {
+  background: var(--da-surface, #ffffff);
+  border: 1px solid var(--da-border, #e0e0e0);
+  border-radius: var(--da-radius, 8px);
+  overflow: hidden;
+}
+.as-sem-head {
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--da-border);
+}
+.as-sem-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--da-black);
+}
+.as-sem-meta {
+  font-size: 12px;
+  color: var(--da-muted);
+  margin-top: 4px;
+}
+.as-gpa-pill {
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.as-gpa-pill.pending {
+  background: rgba(0,0,0,0.05);
+  color: var(--da-muted);
+}
+
+/* Empty state / missing data */
+.api-gap-indicator {
+  font-style: italic;
+  color: var(--da-muted);
+  font-weight: 400;
+}
+/* Status Update Modal Styles */
+.status-option-card {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--da-border, #e0e0e0);
+  border-radius: 8px;
+  cursor: pointer;
+  background: white;
+  transition: all 0.2s;
+}
+.status-option-card:hover {
+  border-color: var(--da-green);
+}
+.status-option-card.selected {
+  border: 1px solid var(--da-green, #2c9942);
+  background: var(--da-green-50, #f0fdf4);
+}
+.status-option-card .status-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--da-green, #2c9942);
+  font-size: 20px;
+}
+.status-option-card .status-content .status-name {
+  font-weight: 700;
+  color: var(--da-black, #1f2937);
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+.status-option-card .status-content .status-desc {
+  font-size: 13px;
+  color: var(--da-muted, #6b7280);
+}
+/* Semesters History */
+.semesters-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.semester-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  overflow: hidden;
+}
+
+.semester-head {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--da-border, #e5e7eb);
+  background: #fafafa;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.semester-title-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.semester-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--da-black);
+}
+.semester-term {
+  font-size: 13px;
+  color: var(--da-muted);
+  background: #f3f4f6;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.semester-meta {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.semester-gpa {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--da-black);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.semester-gpa-label {
+  color: var(--da-muted);
+  font-weight: 500;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.da-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.da-table th, .da-table td {
+  padding: 16px 24px;
+  text-align: left;
+  border-bottom: 1px solid var(--da-border, #e5e7eb);
+  font-size: 14px;
+}
+
+.da-table th {
+  background: white;
+  font-weight: 600;
+  color: var(--da-muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.da-table tr:last-child td {
+  border-bottom: none;
+}
