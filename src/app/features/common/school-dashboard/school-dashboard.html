@@ -73,7 +73,7 @@
               <th>Program</th>
               <th>Status</th>
               <th>Last Update</th>
-              <th>Action</th>
+              <th style="text-align: right;">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -102,9 +102,9 @@
                 </span>
               </td>
               <td class="time-col">{{ student.lastUpdated }}</td>
-              <td>
-                <button type="button" class="btn btn-g" style="padding: 4px 10px; font-size: 12px; height: 28px;" (click)="viewStudent(student.id)">
-                  View
+              <td style="text-align: left;">
+                <button type="button" class="btn btn-g" style="padding: 4px 10px; font-size: 12px; height: 28px; display: inline-flex; align-items: center; justify-content: center;" (click)="viewStudent(student.id)">
+                  Review <i class="fas fa-arrow-right" style="margin-left: 4px; font-size: 10px;"></i>
                 </button>
               </td>
             </tr>

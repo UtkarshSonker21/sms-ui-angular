@@ -133,13 +133,13 @@ export const UNIVERSITY_STATUS_IDS = [
     StudentStatusEnum.AcceptanceRejected,
 
     // Awarding
-    StudentStatusEnum.AwardingInProcess,
+    //StudentStatusEnum.AwardingInProcess,
     StudentStatusEnum.Awarded,
-    StudentStatusEnum.AwardingRejected,
+    //StudentStatusEnum.AwardingRejected,
 
     // Sponsoring
     // StudentStatusEnum.SponsoringInProcess,
-    // StudentStatusEnum.Sponsored,
+    StudentStatusEnum.Sponsored,
     // StudentStatusEnum.SponsoringRejected,
 
     // Student Lifecycle
@@ -157,7 +157,7 @@ export const SCHOOL_STATUS_IDS = [
 
     // Acceptance
     StudentStatusEnum.AcceptanceInProcess,
-    StudentStatusEnum.Accepted,
+    //StudentStatusEnum.Accepted,
     StudentStatusEnum.AcceptanceRejected,
 
     // Awarding
@@ -167,12 +167,12 @@ export const SCHOOL_STATUS_IDS = [
 
     // Sponsoring
     StudentStatusEnum.Sponsored,
-    StudentStatusEnum.SponsoringInProcess,
+    //StudentStatusEnum.SponsoringInProcess,
     StudentStatusEnum.SponsoringRejected,
 
     // Student Lifecycle
     StudentStatusEnum.Registered,
-    // StudentStatusEnum.Failed,
+    StudentStatusEnum.Failed,
     // StudentStatusEnum.Dismissed,
     StudentStatusEnum.Graduated
 ];

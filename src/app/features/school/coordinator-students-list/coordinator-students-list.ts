@@ -59,16 +59,17 @@ export class CoordinatorStudentsList implements OnInit {
 
   // Tab Counts
   tabAll = 0;
+  tabDraft = 0;
   tabInProcess = 0;
   tabAccRejected = 0;
-  tabSponsored = 0;
-  tabSponRejected = 0;
   tabAwarded = 0;
   tabAwardedRejected = 0;
+  tabSponsored = 0;
+  tabSponRejected = 0;
   tabRegistered = 0;
   tabFailed = 0;
-  tabDismissed = 0;
-  tabGraduate = 0;
+  tabGraduated = 0;
+  tabGraduate = 0; // Keeping both in case Graduate is used in template
 
   activeTab: number | string = 'all';
   studentStatus = StudentStatusEnum;
@@ -151,61 +152,97 @@ export class CoordinatorStudentsList implements OnInit {
     });
   }
 
+  isDataLoaded = false;
+  allStudents: StudentRequest[] = [];
+  filteredStudents: StudentRequest[] = [];
+
   loadData(): void {
-    this.filter.isActive = true;
-    this.filter.schoolId = this.selectedSchool || undefined;
-    this.filter.studentStatusId = this.selectedStatus !== null ? this.selectedStatus : undefined;
-    this.filter.hsSpecialization = (this.selectedSpec as any) || undefined;
+    if (!this.isDataLoaded) {
+      const fetchFilter = new StudntFilter();
+      fetchFilter.pageNumber = 1;
+      fetchFilter.pageSize = 100000;
+      fetchFilter.isActive = true;
+      fetchFilter.schoolId = this.filter.schoolId || undefined;
 
-    this.studentService.getStudents(this.filter).subscribe({
-      next: (response) => {
-        if (response.success && response.result) {
-
-          this.students = response.result.items;
-          this.totalRecords = response.result.totalCount;
-          this.calculateKPIs(this.students);
-
-          if (!this.students.length) {
-            this.notification.warning(
-              'No students found for the selected filters.'
-            );
+      this.studentService.getStudents(fetchFilter).subscribe({
+        next: (response) => {
+          if (response.success && response.result) {
+            this.allStudents = response.result.items || [];
+            this.calculateKPIs(this.allStudents);
+            this.isDataLoaded = true;
+            this.applyLocalFilters();
+          } else {
+            this.allStudents = [];
+            this.filteredStudents = [];
+            this.notification.warning(response.message || 'Failed to load students.');
           }
-          return;
+        },
+        error: (error) => {
+          this.allStudents = [];
+          this.filteredStudents = [];
+          if (this.notification.handleBusinessError(error)) {
+            return;
+          }
         }
-        this.students = [];
-        this.totalRecords = 0;
-      },
-      error: (error) => {
-        this.students = [];
-        this.totalRecords = 0;
+      });
+    } else {
+      this.applyLocalFilters();
+    }
+  }
 
-        if (this.notification.handleBusinessError(error)) {
-          return;
-        }
-      }
-    });
+  applyLocalFilters(): void {
+    let result = this.allStudents;
+
+    if (this.selectedSchool) {
+      result = result.filter(s => s.schoolId === this.selectedSchool);
+    }
+    if (this.selectedSpec) {
+      result = result.filter(s => s.hsSpecialization === this.selectedSpec);
+    }
+    if (this.selectedStatus !== null) {
+      result = result.filter(s => s.studentApplicationStatusId === this.selectedStatus);
+    }
+    if (this.filter.searchText) {
+      const term = this.filter.searchText.trim().toLowerCase();
+      result = result.filter(s => 
+        (s.fullName && s.fullName.toLowerCase().includes(term)) ||
+        (s.studentCode && s.studentCode.toLowerCase().includes(term)) ||
+        (s.email && s.email.toLowerCase().includes(term)) || 
+        (s.phone && s.phone.toLowerCase().includes(term))
+      );
+    }
+
+    this.totalRecords = result.length;
+
+    const start = (this.filter.pageNumber - 1) * this.filter.pageSize;
+    const end = start + this.filter.pageSize;
+    this.filteredStudents = result.slice(start, end);
+    this.students = this.filteredStudents;
   }
 
   calculateKPIs(items: StudentRequest[]): void {
 
-    this.kpiTotal = this.totalRecords;
+    this.kpiTotal = items.length;
     this.kpiInProcess = this.studentStatusService.count(items, StudentStatusEnum.AcceptanceInProcess);
     this.kpiSponsored = this.studentStatusService.count(items, StudentStatusEnum.Sponsored);
     this.kpiRegistered = this.studentStatusService.count(items, StudentStatusEnum.Registered);
+
+    this.tabAll = items.length;
+    this.tabDraft = this.studentStatusService.count(items, StudentStatusEnum.Draft);
+    this.tabInProcess = this.kpiInProcess;
     this.tabAccRejected = this.studentStatusService.count(items, StudentStatusEnum.AcceptanceRejected);
+    this.tabAwarded = this.studentStatusService.count(items, StudentStatusEnum.Awarded);
+    this.tabAwardedRejected = this.studentStatusService.count(items, StudentStatusEnum.AwardingRejected);
+    this.tabSponsored = this.kpiSponsored;
+    this.tabSponRejected = this.studentStatusService.count(items, StudentStatusEnum.SponsoringRejected);
+    this.tabRegistered = this.kpiRegistered;
+    this.tabFailed = this.studentStatusService.count(items, StudentStatusEnum.Failed);
+    this.tabGraduate = this.studentStatusService.count(items, StudentStatusEnum.Graduated);
 
-    // this.tabAll = this.totalRecords;
-    // this.tabInProcess = this.kpiInProcess;
-    // this.tabAccRejected = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.AcceptanceRejected).length;
-    // this.tabSponsored = this.kpiSponsored;
-    // this.tabSponRejected = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.SponsoredRejected).length;
-    // this.tabAwarded = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.Awarded).length;
-    // this.tabAwardedRejected = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.AwardedRejected).length;
-    // this.tabRegistered = this.kpiRegistered;
-    // this.tabFailed = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.Failed).length;
-    // this.tabDismissed = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.Dismissed).length;
-    // this.tabGraduate = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.Graduate).length;
+  }
 
+  getBadgeClassForStatus(statusId: number): string {
+    return this.studentStatusService.getBadgeClass(statusId);
   }
 
   // --- Search & Filters ---

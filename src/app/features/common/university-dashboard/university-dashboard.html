@@ -69,9 +69,9 @@
                   </span>
                 </td>
                 <td class="time-col">{{ app.actionDate ? (app.actionDate | date: 'dd MMM yyyy') : 'N/A' }}</td>
-                <td>
-                    <button type="button" class="btn btn-g" style="padding: 4px 10px; font-size: 12px; height: 28px;" (click)="viewStudent(app.studentId)">
-                        Review
+                <td style="text-align: center;">
+                    <button type="button" class="btn btn-g" style="padding: 4px 10px; font-size: 12px; height: 28px; display: inline-flex; align-items: center; justify-content: center;" (click)="viewStudent(app.studentId)">
+                        Review <i class="fas fa-arrow-right" style="margin-left: 4px; font-size: 10px;"></i>
                     </button>
                 </td>
               </tr>
