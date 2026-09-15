@@ -466,7 +466,11 @@ export class UniversityStudents implements OnInit {
   viewStudent(studentId: number): void {
     const student = this.students.find(x => x.studentId === studentId);
     if (student) {
-      this.router.navigate(['/university-student-details', student.applicationId]);
+      if (student.applicationStatusId === StudentStatusEnum.Registered) {
+        this.router.navigate(['/registered-student', student.applicationId]);
+      } else {
+        this.router.navigate(['/university-student-details', student.applicationId]);
+      }
     }
   }
 
