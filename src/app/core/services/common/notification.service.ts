@@ -17,7 +17,7 @@ export class NotificationService {
     });
   }
 
-  error(message: string, action: string = 'Error', duration: number = 6000): void {
+  error(message: string, action: string = 'Error', duration: number = 10000): void {
     this.snackBar.open(message, action, {
       duration: duration,
       horizontalPosition: 'right',
@@ -26,7 +26,7 @@ export class NotificationService {
     });
   }
 
-  warning(message: string, action: string = 'Warning', duration: number = 6000): void {
+  warning(message: string, action: string = 'Warning', duration: number = 10000): void {
     this.snackBar.open(message, action, {
       duration: duration,
       horizontalPosition: 'right',

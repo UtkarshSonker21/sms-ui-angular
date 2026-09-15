@@ -215,15 +215,11 @@
   font-weight: 700;
 }
 .tab-count {
-  font-size: 10px;
-  background: rgba(0,0,0,0.05);
-  padding: 2px 7px;
+  font-size: 11px;
+  padding: 2px 8px;
   border-radius: 100px;
-  color: var(--da-muted);
-  font-weight: 700;
-}
-.tab.active .tab-count {
-  background: var(--da-green-50);
-  color: var(--da-green-800);
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  /* background and color provided by status badge classes */
 }
 

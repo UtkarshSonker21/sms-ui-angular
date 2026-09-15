@@ -61,6 +61,7 @@ export class UniversityStudents implements OnInit {
   // Tab Counts
   tabAll = 0;
   tabInProcess = 0;
+  tabAccepted = 0;
   tabAccRejected = 0;
   tabSponsored = 0;
   tabSponRejected = 0;
@@ -154,55 +155,86 @@ export class UniversityStudents implements OnInit {
     });
   }
 
-  loadData(): void {
-    this.filter.universityId = this.universityId || undefined;
-    (this.filter as any).facultyId = this.selectedFaculty || undefined;
-    (this.filter as any).programId = this.selectedProgram || undefined;
-    this.filter.applicationStatusId = this.selectedStatus !== null ? this.selectedStatus : undefined;
+  isDataLoaded = false;
+  allStudents: StudentProgramApplication[] = [];
+  filteredStudents: StudentProgramApplication[] = [];
 
-    this.studentService.search(this.filter).subscribe({
-      next: (response) => {
-        if (response.success && response.result) {
-          // The backend should handle excluding drafts etc. per instructions
-          this.students = response.result.items;
-          this.totalRecords = response.result.totalCount;
-          this.calculateKPIs(this.students);
-          return;
+  loadData(): void {
+    if (!this.isDataLoaded) {
+      const fetchFilter = new StudentProgramApplicationFilter();
+      fetchFilter.pageNumber = 1;
+      fetchFilter.pageSize = 100000;
+      fetchFilter.universityId = this.universityId || undefined;
+
+      this.studentService.search(fetchFilter).subscribe({
+        next: (response) => {
+          if (response.success && response.result) {
+            this.allStudents = response.result.items || [];
+            this.calculateKPIs(this.allStudents);
+            this.isDataLoaded = true;
+            this.applyLocalFilters();
+          } else {
+            this.allStudents = [];
+            this.filteredStudents = [];
+            this.notification.warning(response.message || 'Failed to load students.');
+          }
+        },
+        error: (error) => {
+          this.allStudents = [];
+          this.filteredStudents = [];
+          this.notification.handleBusinessError(error, 'Failed to load students.');
         }
-        this.students = [];
-        this.notification.warning(
-          response.message || 'Failed to load students.'
-        );
-      },
-      error: (error) => {
-        this.students = [];
-        this.notification.handleBusinessError(
-          error,
-          'Failed to load students.'
-        );
-      }
-    });
+      });
+    } else {
+      this.applyLocalFilters();
+    }
+  }
+
+  applyLocalFilters(): void {
+    let result = this.allStudents;
+
+    if (this.selectedFaculty) {
+      result = result.filter(s => s.facultyId === this.selectedFaculty);
+    }
+    if (this.selectedProgram) {
+      result = result.filter(s => s.programId === this.selectedProgram);
+    }
+    if (this.selectedStatus !== null) {
+      result = result.filter(s => s.applicationStatusId === this.selectedStatus || s.applicationStatus === this.selectedStatus);
+    }
+    if (this.filter.searchText) {
+      const term = this.filter.searchText.trim().toLowerCase();
+      result = result.filter(s => 
+        (s.fullName && s.fullName.toLowerCase().includes(term)) ||
+        (s.studentCode && s.studentCode.toLowerCase().includes(term)) ||
+        (s.programName && s.programName.toLowerCase().includes(term)) ||
+        (s.universityName && s.universityName.toLowerCase().includes(term))
+      );
+    }
+
+    this.totalRecords = result.length;
+
+    const start = (this.filter.pageNumber - 1) * this.filter.pageSize;
+    const end = start + this.filter.pageSize;
+    this.filteredStudents = result.slice(start, end);
+    this.students = this.filteredStudents; // Keep this in sync just in case
   }
 
   calculateKPIs(items: StudentProgramApplication[]): void {
 
-    this.kpiTotal = this.totalRecords;
+    this.kpiTotal = items.length;
     this.kpiInProcess = this.studentStatusService.counts(items as any, StudentStatusEnum.AcceptanceInProcess);
     this.kpiSponsored = this.studentStatusService.counts(items as any, StudentStatusEnum.Sponsored);
     this.kpiRegistered = this.studentStatusService.counts(items as any, StudentStatusEnum.Registered);
+    
+    this.tabAll = items.length;
+    this.tabInProcess = this.kpiInProcess;
+    this.tabAccepted = this.studentStatusService.counts(items as any, StudentStatusEnum.Accepted);
     this.tabAccRejected = this.studentStatusService.counts(items as any, StudentStatusEnum.AcceptanceRejected);
-
-    // this.tabAll = this.totalRecords;
-    // this.tabInProcess = this.kpiInProcess;
-    // this.tabAccRejected = items.filter(s => s.applicationStatusId === StudentStatusEnum.AcceptanceRejected).length;
-    // this.tabSponsored = this.kpiSponsored;
-    // this.tabSponRejected = items.filter(s => s.applicationStatusId === StudentStatusEnum.SponsoredRejected).length;
-    // this.tabAwarded = items.filter(s => s.applicationStatusId === StudentStatusEnum.Awarded).length;
-    // this.tabAwardedRejected = items.filter(s => s.applicationStatusId === StudentStatusEnum.AwardedRejected).length;
-    // this.tabRegistered = this.kpiRegistered;
-    // this.tabFailed = items.filter(s => s.applicationStatusId === StudentStatusEnum.Failed).length;
-    // this.tabDismissed = items.filter(s => s.applicationStatusId === StudentStatusEnum.Dismissed).length;
-    // this.tabGraduate = items.filter(s => s.applicationStatusId === StudentStatusEnum.Graduate).length;
+    this.tabAwarded = this.studentStatusService.counts(items as any, StudentStatusEnum.Awarded);
+    this.tabSponsored = this.kpiSponsored;
+    this.tabRegistered = this.kpiRegistered;
+    this.tabGraduate = this.studentStatusService.counts(items as any, StudentStatusEnum.Graduated);
   }
 
   // --- Search & Filters ---
@@ -321,11 +353,13 @@ export class UniversityStudents implements OnInit {
 
   // --- Status Badge Helper ---
   getStatusBadgeClass(student: StudentProgramApplication): string {
-    return this.studentStatusService.getBadgeClass(
-      student.applicationStatusId ?? StudentStatusEnum.Draft
-    );
+    const statusId = student.applicationStatusId ?? StudentStatusEnum.Draft;
+    return this.studentStatusService.getBadgeClass(statusId);
   }
 
+  getBadgeClassForStatus(statusId: number): string {
+    return this.studentStatusService.getBadgeClass(statusId);
+  }
 
   getStatusName(student: StudentProgramApplication): string {
     return this.studentStatusService.getName(
@@ -333,7 +367,60 @@ export class UniversityStudents implements OnInit {
     );
   }
 
-  // --- Pagination ---
+  getStatusDateInfo(student: StudentProgramApplication): { label: string, date: Date | undefined } {
+    const statusId = student.applicationStatus || student.applicationStatusId;
+    let label = 'Status Date';
+    let dateField = 'actionDate'; // Fallback to actionDate since individual dates are not exposed yet
+
+    switch (statusId) {
+      case StudentStatusEnum.Sponsored:
+        label = 'Sponsored Date';
+        break;
+      case StudentStatusEnum.Awarded:
+        label = 'Awarded Date';
+        break;
+      case StudentStatusEnum.Registered:
+        label = 'Registered Date';
+        break;
+      case StudentStatusEnum.AcceptanceInProcess:
+        label = 'Acceptance in Process Date';
+        break;
+      case StudentStatusEnum.AcceptanceRejected:
+        label = 'Acceptance Rejected Date';
+        break;
+      case StudentStatusEnum.SponsoringInProcess:
+        label = 'Sponsoring in Process Date';
+        break;
+      case StudentStatusEnum.SponsoringRejected:
+        label = 'Sponsoring Rejected Date';
+        break;
+      case StudentStatusEnum.AwardingInProcess:
+        label = 'Awarding in Process Date';
+        break;
+      case StudentStatusEnum.AwardingRejected:
+        label = 'Awarding Rejected Date';
+        break;
+      case StudentStatusEnum.Failed:
+        label = 'Failed Date';
+        break;
+      case StudentStatusEnum.Dismissed:
+        label = 'Dismissed Date';
+        break;
+      case StudentStatusEnum.Graduated:
+        label = 'Graduated Date';
+        break;
+      default:
+        label = 'Action Date';
+        break;
+    }
+
+    return {
+      label: label,
+      date: (student as any)[dateField]
+    };
+  }
+
+  // --- Photo Handling ---
   get totalPages(): number {
     return Math.ceil(this.totalRecords / this.filter.pageSize);
   }
