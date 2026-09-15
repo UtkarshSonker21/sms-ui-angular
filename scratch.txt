@@ -62,7 +62,6 @@ export class NgoStudents implements OnInit {
   // Tab Counts
   tabAll = 0;
   tabInProcess = 0;
-  tabAccepted = 0;
   tabAccRejected = 0;
   tabSponsored = 0;
   tabSponRejected = 0;
@@ -175,14 +174,7 @@ export class NgoStudents implements OnInit {
     this.kpiInProcess = this.studentStatusService.counts(items as any, StudentStatusEnum.AcceptanceInProcess);
     this.kpiSponsored = this.studentStatusService.counts(items as any, StudentStatusEnum.Sponsored);
     this.kpiRegistered = this.studentStatusService.counts(items as any, StudentStatusEnum.Registered);
-    this.tabAccepted = this.studentStatusService.counts(items as any, StudentStatusEnum.Accepted);
     this.tabAccRejected = this.studentStatusService.counts(items as any, StudentStatusEnum.AcceptanceRejected);
-    this.tabAll = items.length;
-    this.tabInProcess = this.kpiInProcess;
-    this.tabSponsored = this.kpiSponsored;
-    this.tabRegistered = this.kpiRegistered;
-    this.tabAwarded = this.studentStatusService.counts(items as any, StudentStatusEnum.Awarded);
-    this.tabGraduate = this.studentStatusService.counts(items as any, StudentStatusEnum.Graduated);
   }
 
   // --- Search & Filters ---
@@ -300,10 +292,6 @@ export class NgoStudents implements OnInit {
   }
 
   // --- Status Badge Helper ---
-  getBadgeClassForStatus(statusId: number): string {
-    return this.studentStatusService.getBadgeClass(statusId);
-  }
-
   getStatusBadgeClass(student: StudentProgramApplication): string {
     return this.studentStatusService.getBadgeClass(
       student.applicationStatusId ?? StudentStatusEnum.Draft
@@ -383,6 +371,4 @@ export class NgoStudents implements OnInit {
   }
 
 }
-
-
 
