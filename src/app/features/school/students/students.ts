@@ -1047,8 +1047,7 @@ export class Students implements OnInit {
         },
         error: (error) => {
           this.notification.handleBusinessError(
-            error,
-            'Unable to update student details.'
+            error
           );
           this.isSaving = false;
         }
@@ -1066,8 +1065,7 @@ export class Students implements OnInit {
         },
         error: (error) => {
           this.notification.handleBusinessError(
-            error,
-            'Unable to save student details.'
+            error
           );
           this.isSaving = false;
         }
