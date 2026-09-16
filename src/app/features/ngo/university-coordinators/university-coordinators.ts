@@ -45,6 +45,7 @@ export class UniversityCoordinators implements OnInit {
     this.isRoleDropdownOpen = false;
     this.isRoleFilterDropdownOpen = false;
     this.isUniversityFilterDropdownOpen = false;
+    this.isStatusFilterDropdownOpen = false;
     this.isPhoneDropdownOpen = false;
     this.isUniversitiesDropdownOpen = false;
   }
@@ -77,10 +78,12 @@ export class UniversityCoordinators implements OnInit {
 
   selectedRoleFilter: string = 'all';
   selectedUniversityFilter: string = 'all';
+  selectedStatusFilter: string = 'all';
 
   isPageSizeDropdownOpen = false;
   isRoleFilterDropdownOpen = false;
   isUniversityFilterDropdownOpen = false;
+  isStatusFilterDropdownOpen = false;
 
   // Custom Dropdown States
   isSalutationDropdownOpen = false;
@@ -221,15 +224,13 @@ export class UniversityCoordinators implements OnInit {
         } else {
           this.users = [];
           this.totalRecords = 0;
-          this.notification.warning(response.message);
         }
       },
       error: (error) => {
         this.users = [];
         this.totalRecords = 0;
         this.notification.handleBusinessError(
-          error,
-          'Failed to load university coordinators.'
+          error
         );
       }
     });
@@ -267,6 +268,7 @@ export class UniversityCoordinators implements OnInit {
     event.stopPropagation();
     this.isRoleFilterDropdownOpen = !this.isRoleFilterDropdownOpen;
     this.isUniversityFilterDropdownOpen = false;
+    this.isStatusFilterDropdownOpen = false;
     this.isPageSizeDropdownOpen = false;
   }
 
@@ -295,6 +297,7 @@ export class UniversityCoordinators implements OnInit {
     event.stopPropagation();
     this.isUniversityFilterDropdownOpen = !this.isUniversityFilterDropdownOpen;
     this.isRoleFilterDropdownOpen = false;
+    this.isStatusFilterDropdownOpen = false;
     this.isPageSizeDropdownOpen = false;
   }
 
@@ -316,6 +319,37 @@ export class UniversityCoordinators implements OnInit {
     }
     const uni = this.masterUniversities.find(x => x.universityId === Number(this.selectedUniversityFilter));
     return uni ? uni.universityName || '' : 'All universities';
+  }
+
+  toggleStatusFilterDropdown(event: Event): void {
+    event.stopPropagation();
+    this.isStatusFilterDropdownOpen = !this.isStatusFilterDropdownOpen;
+    this.isRoleFilterDropdownOpen = false;
+    this.isUniversityFilterDropdownOpen = false;
+    this.isPageSizeDropdownOpen = false;
+  }
+
+  selectStatusFilterOption(statusOrAll: string): void {
+    this.selectedStatusFilter = statusOrAll;
+    this.isStatusFilterDropdownOpen = false;
+    if (this.selectedStatusFilter === 'all') {
+      this.filter.isDisabled = undefined;
+    } else if (this.selectedStatusFilter === 'active') {
+      this.filter.isDisabled = false;
+    } else if (this.selectedStatusFilter === 'disabled') {
+      this.filter.isDisabled = true;
+    }
+    this.filter.pageNumber = 1;
+    this.loadData();
+  }
+
+  getSelectedStatusFilterName(): string {
+    if (this.selectedStatusFilter === 'active') {
+      return 'Active';
+    } else if (this.selectedStatusFilter === 'disabled') {
+      return 'Disabled';
+    }
+    return 'All Statuses';
   }
 
   // --- Page Size Dropdown ---
@@ -367,6 +401,7 @@ export class UniversityCoordinators implements OnInit {
     this.tempUserModel.staffSalutation = '';
     this.tempUserModel.universityIds = [];
     (this.tempUserModel as any).isActive = true;
+    (this.tempUserModel as any).isDisabled = false;
     this.modalErrorMessage = '';
     this.isSalutationDropdownOpen = false;
     this.isGenderDropdownOpen = false;

@@ -7,5 +7,6 @@ export class SchoolCoordinatorFilterModel extends BaseFilter {
     roleId?: number;
 
     isActive?: boolean;
+    isDisabled?: boolean;
 
 }

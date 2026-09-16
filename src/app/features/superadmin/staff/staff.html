@@ -28,6 +28,42 @@
         <i class="fas fa-times clear-icon" *ngIf="searchText" (click)="clearSearch()"></i>
     </div>
 
+    <!-- Status Filter Dropdown -->
+    <div class="da-select" [class.da-select-open]="isStatusFilterDropdownOpen" tabindex="0"
+        (click)="$event.stopPropagation()">
+        <div class="da-select-control" (click)="toggleStatusFilterDropdown($event)">
+            <div class="ms-display" [class.has-selection]="selectedStatusFilter !== 'all'"
+                style="display: flex; align-items: center; flex: 1;">
+                <ng-container *ngIf="selectedStatusFilter !== 'all'; else noStatusSelected">
+                    <span class="ms-chip" style="margin: 0;">
+                        {{ getSelectedStatusFilterName() }}
+                        <span class="ms-chip-x"
+                            (click)="selectStatusFilterOption('all'); $event.stopPropagation()">A-</span>
+                    </span>
+                </ng-container>
+                <ng-template #noStatusSelected>
+                    <span class="da-select-value" style="font-size: 13px;">All Statuses</span>
+                </ng-template>
+            </div>
+            <i class="fas da-select-arrow"
+                [ngClass]="isStatusFilterDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+        </div>
+        <div class="da-select-menu" *ngIf="isStatusFilterDropdownOpen">
+            <div class="da-select-option" [class.selected]="selectedStatusFilter === 'all'"
+                (click)="selectStatusFilterOption('all')">
+                All Statuses
+            </div>
+            <div class="da-select-option" [class.selected]="selectedStatusFilter === 'active'"
+                (click)="selectStatusFilterOption('active')">
+                Active
+            </div>
+            <div class="da-select-option" [class.selected]="selectedStatusFilter === 'disabled'"
+                (click)="selectStatusFilterOption('disabled')">
+                Disabled
+            </div>
+        </div>
+    </div>
+
     <!-- Staff Type Filter Dropdown -->
     <div class="da-select" [class.da-select-open]="isStaffTypeFilterDropdownOpen" tabindex="0"
         (click)="$event.stopPropagation()">
@@ -92,8 +128,6 @@
         </div>
     </div>
 
-
-
     <div class="filter-count"
         style="margin-inline-start: auto; font-size: 12.5px; color: var(--da-muted); font-weight: 500;">
         {{ totalRecords }} shown
@@ -109,6 +143,7 @@
                 <th style="width: 180px;">Staff Type</th>
                 <th style="width: 160px;">Mobile Number</th>
                 <th style="width: 160px;">Country</th>
+                <th style="width: 140px;">Status</th>
                 <th style="width: 100px; text-align: center !important;">Action</th>
             </tr>
         </thead>
@@ -128,13 +163,18 @@
                     </span>
                 </td>
                 <td>
-                    <span style="font-size: 13px; color: var(--da-text-2);">
-                        {{ s.mobileNumber || '-' }}
+                    <span style="font-size: 13px; font-weight: 500; color: var(--da-text-2);">
+                        {{ s.mobileNumber ? s.mobileNumber : '-' }}
                     </span>
                 </td>
                 <td>
-                    <span style="font-size: 13px; color: var(--da-text-2);">
-                        {{ s.permCountryName || '-' }}
+                    <span style="font-size: 13px; font-weight: 500; color: var(--da-text-2);">
+                        {{ s.permCountryName ? s.permCountryName : '-' }}
+                    </span>
+                </td>
+                <td>
+                    <span class="chip" [ngClass]="!s.isDisabled ? 'chip-registered' : 'pu-chip-disabled'">
+                        {{ !s.isDisabled ? 'Active' : 'Disabled' }}
                     </span>
                 </td>
                 <td class="row-actions" style="text-align: center !important;">
@@ -462,10 +502,26 @@
                     <div class="field" style="grid-column: span 2;">
                         <label class="field-label">Remarks</label>
                         <textarea name="remarks" class="field-input" placeholder="Add remarks or notes..."
-                            [(ngModel)]="tempStaffModel.remarks" rows="2" style="resize: vertical;" maxlength="500"></textarea>
+                            [(ngModel)]="tempStaffModel.remarks" rows="2" style="resize: vertical;" maxlength="300"></textarea>
                     </div>
                 </div>
 
+                <!-- Row 8: Status -->
+                <div class="modal-form-row">
+                    <div class="field" style="grid-column: span 2;">
+                        <label class="field-label">DISABLED</label>
+                        <div class="seg">
+                            <label class="seg-opt" [class.on]="tempStaffModel.isDisabled === false">
+                                <input type="radio" name="isDisabled" [value]="false" [(ngModel)]="tempStaffModel.isDisabled" hidden>
+                                Active
+                            </label>
+                            <label class="seg-opt" [class.on]="tempStaffModel.isDisabled === true">
+                                <input type="radio" name="isDisabled" [value]="true" [(ngModel)]="tempStaffModel.isDisabled" hidden>
+                                Disabled
+                            </label>
+                        </div>
+                    </div>
+                </div>
 
             </div>
 

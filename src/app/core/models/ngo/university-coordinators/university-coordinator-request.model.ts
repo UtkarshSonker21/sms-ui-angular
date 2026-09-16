@@ -34,6 +34,7 @@ export class UniversityCoordinatorRequestModel {
 
   //status
   isActive:boolean = true;
+  isDisabled:boolean = false;
 
   // Audit
   createdDate?: Date;

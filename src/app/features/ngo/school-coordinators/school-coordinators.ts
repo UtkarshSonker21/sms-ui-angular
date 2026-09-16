@@ -43,6 +43,7 @@ export class SchoolCoordinators implements OnInit {
     this.isGenderDropdownOpen = false;
     this.isRoleDropdownOpen = false;
     this.isRoleFilterDropdownOpen = false;
+    this.isStatusFilterDropdownOpen = false;
     this.isPhoneDropdownOpen = false;
     this.isCountriesDropdownOpen = false;
   }
@@ -71,9 +72,11 @@ export class SchoolCoordinators implements OnInit {
   roles: UsersRoleLookupModel[] = [];
 
   selectedRoleFilter: string = 'all';
+  selectedStatusFilter: string = 'all';
 
   isPageSizeDropdownOpen = false;
   isRoleFilterDropdownOpen = false;
+  isStatusFilterDropdownOpen = false;
 
   // Custom Dropdown States
   isSalutationDropdownOpen = false;
@@ -239,6 +242,7 @@ export class SchoolCoordinators implements OnInit {
   toggleRoleFilterDropdown(event: Event): void {
     event.stopPropagation();
     this.isRoleFilterDropdownOpen = !this.isRoleFilterDropdownOpen;
+    this.isStatusFilterDropdownOpen = false;
     this.isPageSizeDropdownOpen = false;
   }
 
@@ -261,6 +265,36 @@ export class SchoolCoordinators implements OnInit {
     }
     const role = this.roles.find(x => x.roleId === Number(this.selectedRoleFilter));
     return role ? role.roleName || '' : 'All roles';
+  }
+
+  toggleStatusFilterDropdown(event: Event): void {
+    event.stopPropagation();
+    this.isStatusFilterDropdownOpen = !this.isStatusFilterDropdownOpen;
+    this.isRoleFilterDropdownOpen = false;
+    this.isPageSizeDropdownOpen = false;
+  }
+
+  selectStatusFilterOption(statusOrAll: string): void {
+    this.selectedStatusFilter = statusOrAll;
+    this.isStatusFilterDropdownOpen = false;
+    if (this.selectedStatusFilter === 'all') {
+      this.filter.isDisabled = undefined;
+    } else if (this.selectedStatusFilter === 'active') {
+      this.filter.isDisabled = false;
+    } else if (this.selectedStatusFilter === 'disabled') {
+      this.filter.isDisabled = true;
+    }
+    this.filter.pageNumber = 1;
+    this.loadData();
+  }
+
+  getSelectedStatusFilterName(): string {
+    if (this.selectedStatusFilter === 'active') {
+      return 'Active';
+    } else if (this.selectedStatusFilter === 'disabled') {
+      return 'Disabled';
+    }
+    return 'All Statuses';
   }
 
   // --- Page Size Dropdown ---
@@ -312,6 +346,7 @@ export class SchoolCoordinators implements OnInit {
     this.tempUserModel.staffSalutation = '';
     this.tempUserModel.schoolIds = [];
     (this.tempUserModel as any).isActive = true;
+    (this.tempUserModel as any).isDisabled = false;
     this.modalErrorMessage = '';
     this.isSalutationDropdownOpen = false;
     this.isGenderDropdownOpen = false;

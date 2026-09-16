@@ -31,6 +31,7 @@ export class StaffRequestModel {
   remarks?: string;
 
   isActive: boolean = true;
+  isDisabled: boolean = false;
 
   // Response Convenience
   staffTypeName?: string;

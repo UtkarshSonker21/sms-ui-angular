@@ -40,6 +40,7 @@ export class Staff implements OnInit {
     this.isStaffTypeDropdownOpen = false;
     this.isStaffTypeFilterDropdownOpen = false;
     this.isCountryFilterDropdownOpen = false;
+    this.isStatusFilterDropdownOpen = false;
     this.isPhoneDropdownOpen = false;
   }
 
@@ -59,10 +60,12 @@ export class Staff implements OnInit {
 
   selectedStaffTypeFilter: string = 'all';
   selectedCountryFilter: string = 'all';
+  selectedStatusFilter: string = 'all';
 
   isPageSizeDropdownOpen = false;
   isStaffTypeFilterDropdownOpen = false;
   isCountryFilterDropdownOpen = false;
+  isStatusFilterDropdownOpen = false;
 
   // Custom Dropdown States
   isSalutationDropdownOpen = false;
@@ -207,6 +210,7 @@ export class Staff implements OnInit {
     event.stopPropagation();
     this.isStaffTypeFilterDropdownOpen = !this.isStaffTypeFilterDropdownOpen;
     this.isCountryFilterDropdownOpen = false;
+    this.isStatusFilterDropdownOpen = false;
     this.isPageSizeDropdownOpen = false;
   }
 
@@ -234,6 +238,7 @@ export class Staff implements OnInit {
     event.stopPropagation();
     this.isCountryFilterDropdownOpen = !this.isCountryFilterDropdownOpen;
     this.isStaffTypeFilterDropdownOpen = false;
+    this.isStatusFilterDropdownOpen = false;
     this.isPageSizeDropdownOpen = false;
   }
 
@@ -255,6 +260,37 @@ export class Staff implements OnInit {
     }
     const country = this.countries.find(x => x.countryId === Number(this.selectedCountryFilter));
     return country ? country.countryName || '' : 'All countries';
+  }
+
+  toggleStatusFilterDropdown(event: Event): void {
+    event.stopPropagation();
+    this.isStatusFilterDropdownOpen = !this.isStatusFilterDropdownOpen;
+    this.isStaffTypeFilterDropdownOpen = false;
+    this.isCountryFilterDropdownOpen = false;
+    this.isPageSizeDropdownOpen = false;
+  }
+
+  selectStatusFilterOption(statusOrAll: string): void {
+    this.selectedStatusFilter = statusOrAll;
+    this.isStatusFilterDropdownOpen = false;
+    if (this.selectedStatusFilter === 'all') {
+      this.filter.isDisabled = undefined;
+    } else if (this.selectedStatusFilter === 'active') {
+      this.filter.isDisabled = false;
+    } else if (this.selectedStatusFilter === 'disabled') {
+      this.filter.isDisabled = true;
+    }
+    this.filter.pageNumber = 1;
+    this.loadData();
+  }
+
+  getSelectedStatusFilterName(): string {
+    if (this.selectedStatusFilter === 'active') {
+      return 'Active';
+    } else if (this.selectedStatusFilter === 'disabled') {
+      return 'Disabled';
+    }
+    return 'All Statuses';
   }
 
 
@@ -306,6 +342,7 @@ export class Staff implements OnInit {
     this.tempStaffModel.gender = 0;
     this.tempStaffModel.staffSalutation = '';
     this.tempStaffModel.isActive = true;
+    this.tempStaffModel.isDisabled = false;
     this.tempStaffModel.universityIds = [];
     this.tempStaffModel.schoolIds = [];
     this.modalErrorMessage = '';
