@@ -490,17 +490,17 @@
           <div class="field">
             <label class="field-label">Total Score</label>
             <input type="number" class="field-input" name="totalScore" placeholder="e.g. 85"
-              [(ngModel)]="student.totalScore">
+              [(ngModel)]="student.totalScore" (ngModelChange)="calculateRelativeGrade()">
           </div>
           <div class="field">
             <label class="field-label">Max Score</label>
             <input type="number" class="field-input" name="maxScore" placeholder="e.g. 100"
-              [(ngModel)]="student.maxScore">
+              [(ngModel)]="student.maxScore" (ngModelChange)="calculateRelativeGrade()">
           </div>
           <div class="field">
-            <label class="field-label">Relative Grade</label>
-            <input type="number" class="field-input" name="relativeGrade" placeholder="Calculated / Relative"
-              [(ngModel)]="student.relativeGrade">
+            <label class="field-label">Relative Grade / Percentage</label>
+            <input type="text" class="field-input" name="relativeGrade" placeholder="Calculated / Relative"
+              [(ngModel)]="relativeGradeDisplay" (ngModelChange)="relativeGradeDisplay = $event" readonly>
           </div>
           <div class="field">
             <label class="field-label">English Score</label>
