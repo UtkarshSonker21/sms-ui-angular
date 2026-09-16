@@ -43,6 +43,7 @@ export class SchoolCoordinatorRequestModel {
 
     // Status
     isActive: boolean = true;
+    isDisabled: boolean = false;
 
     // Audit
     createdDate?: Date;

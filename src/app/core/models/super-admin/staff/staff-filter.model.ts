@@ -8,4 +8,5 @@ export class StaffFilterModel extends BaseFilter {
   countryId?: number;
 
   isActive?: boolean;
+  isDisabled?: boolean;
 }
