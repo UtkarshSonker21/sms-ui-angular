@@ -42,6 +42,44 @@ export class Students implements OnInit {
 
   validationPatterns = ValidationPatterns;
 
+  get relativeGradeDisplay(): string {
+    if (this.student.relativeGrade == null || isNaN(this.student.relativeGrade)) {
+      return '';
+    }
+    return `${this.student.relativeGrade}%`;
+  }
+
+  set relativeGradeDisplay(value: string) {
+    if (!value) {
+      this.student.relativeGrade = undefined;
+      return;
+    }
+    const parsed = parseFloat(value.replace('%', ''));
+    if (!isNaN(parsed)) {
+      this.student.relativeGrade = parsed;
+    } else {
+      this.student.relativeGrade = undefined;
+    }
+  }
+
+  calculateRelativeGrade(): void {
+    if (
+      this.student.totalScore != null &&
+      this.student.maxScore != null &&
+      this.student.maxScore > 0 &&
+      this.student.totalScore >= 0
+    ) {
+      if (this.student.totalScore <= this.student.maxScore) {
+        const percentage = (this.student.totalScore / this.student.maxScore) * 100;
+        this.student.relativeGrade = parseFloat(percentage.toFixed(2));
+      } else {
+        this.student.relativeGrade = undefined;
+      }
+    } else {
+      this.student.relativeGrade = undefined;
+    }
+  }
+
   activeSection: number = 1;
   isPhoneDropdownOpen = false;
   PhoneCountryId: number | null = null;
@@ -546,6 +584,7 @@ export class Students implements OnInit {
           this.toggleProgramExpand(this.selectedApplyProgram!);
 
           this.closeApplyModal();
+          this.isApplying = false;
 
           return;
         }
@@ -760,8 +799,12 @@ export class Students implements OnInit {
     this.studentProgramService.uploadDocument(applicationId, req).subscribe({
       next: (res) => {
         if (res.success && res.result) {
-          this.activeApplicationDocuments = this.activeApplicationDocuments.filter(d => d.documentTypeId !== doc.documentTypeId);
-          this.activeApplicationDocuments.push(res.result);
+          this.activeApplicationDocuments = [
+            ...this.activeApplicationDocuments.filter(d => d.documentTypeId !== doc.documentTypeId),
+            res.result
+          ];
+          this.expandedProgramDocuments = [...this.activeApplicationDocuments];
+          
           this.notification.success('Document uploaded successfully.');
         } else {
           this.notification.error(
@@ -810,6 +853,7 @@ export class Students implements OnInit {
         next: (res) => {
           if (res.success) {
             this.activeApplicationDocuments = this.activeApplicationDocuments.filter(d => d.documentTypeId !== doc.documentTypeId);
+            this.expandedProgramDocuments = [...this.activeApplicationDocuments];
             this.notification.success('Document removed successfully.');
 
             return;
