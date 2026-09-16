@@ -140,7 +140,7 @@
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  padding: 20px !important;
+  padding: 10px !important;
   box-sizing: border-box !important;
   overflow: hidden !important;
 }
@@ -148,7 +148,7 @@
 .modal-card {
   display: flex !important;
   flex-direction: column !important;
-  max-height: 90vh !important;
+  max-height: 98vh !important;
   overflow: hidden !important;
   box-sizing: border-box !important;
 
@@ -165,12 +165,12 @@
   flex: 1 !important;
   overflow-y: auto !important;
   min-height: 0 !important;
-  padding: 24px !important;
+  padding: 16px 24px !important;
 
   .modal-form-row {
-    padding-top: 6px !important;
-    padding-bottom: 6px !important;
-    margin-bottom: 2px !important;
+    padding-top: 4px !important;
+    padding-bottom: 4px !important;
+    margin-bottom: 0px !important;
 
     &:hover {
       background: transparent !important;
