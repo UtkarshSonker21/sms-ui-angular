@@ -106,19 +106,19 @@ export const COMMITTEE_STATUS_IDS = [
 
     // Awarding
     // StudentStatusEnum.AwardingInProcess,
-    // StudentStatusEnum.Awarded,
+    StudentStatusEnum.Awarded,
     // StudentStatusEnum.AwardingRejected,
 
     // Sponsoring
-    StudentStatusEnum.SponsoringInProcess,
+    //StudentStatusEnum.SponsoringInProcess,
     StudentStatusEnum.Sponsored,
     StudentStatusEnum.SponsoringRejected,
 
     // Student Lifecycle
-    // StudentStatusEnum.Registered,
+    StudentStatusEnum.Registered,
     // StudentStatusEnum.Failed,
     // StudentStatusEnum.Dismissed,
-    // StudentStatusEnum.Graduated
+    StudentStatusEnum.Graduated
 ];
 
 
@@ -258,6 +258,18 @@ export const DONOR_STATUS_IDS = [
     StudentStatusEnum.Registered,
     // StudentStatusEnum.Failed,
     // StudentStatusEnum.Dismissed,
+    StudentStatusEnum.Graduated
+];
+
+
+// NGO
+export const NGO_STATUS_IDS = [
+    StudentStatusEnum.AcceptanceInProcess,
+    StudentStatusEnum.Accepted,
+    StudentStatusEnum.AcceptanceRejected,
+    StudentStatusEnum.Awarded,
+    StudentStatusEnum.Sponsored,
+    StudentStatusEnum.Registered,
     StudentStatusEnum.Graduated
 ];
 

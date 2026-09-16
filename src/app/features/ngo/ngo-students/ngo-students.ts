@@ -17,7 +17,7 @@ import { MasterUniversityRequest } from '../../../core/models/university/master-
 import { AccreditationStatus } from '../../../core/enums/accreditation-status.enum';
 import { StudentStatusEnum } from '../../../core/enums/student-application-status.enum';
 import { StudentStatusService } from '../../../core/services/common/student-status.service';
-import { UNIVERSITY_STATUS_IDS } from '../../../core/constants/student-status.config';
+import { COMMITTEE_STATUS_IDS } from '../../../core/constants/student-status.config';
 import { StudentProgramApplication } from '../../../core/models/school/student-program-application/student-program-application.model';
 import { StudentProgramApplicationFilter } from '../../../core/models/school/student-program-application/student-program-application-filter.model';
 
@@ -49,6 +49,7 @@ export class NgoStudents implements OnInit {
   universityId: number = 0;
 
   // Table Data
+  allStudents: StudentProgramApplication[] = [];
   students: StudentProgramApplication[] = [];
   totalRecords = 0;
   searchText = '';
@@ -61,17 +62,11 @@ export class NgoStudents implements OnInit {
 
   // Tab Counts
   tabAll = 0;
-  tabInProcess = 0;
-  tabAccepted = 0;
-  tabAccRejected = 0;
+  tabAwarded = 0;
   tabSponsored = 0;
   tabSponRejected = 0;
-  tabAwarded = 0;
-  tabAwardedRejected = 0;
   tabRegistered = 0;
-  tabFailed = 0;
-  tabDismissed = 0;
-  tabGraduate = 0;
+  tabGraduated = 0;
 
   activeTab: number | string = 'all';
   studentStatus = StudentStatusEnum;
@@ -83,8 +78,7 @@ export class NgoStudents implements OnInit {
   countries: MasterCountryRequest[] = [];
   universities: MasterUniversityRequest[] = [];
   
-  // NOTE: If there are NGO specific statuses later, we can update this constant.
-  statusOptions = this.studentStatusService.getStatusOptions(UNIVERSITY_STATUS_IDS);
+  statusOptions = this.studentStatusService.getStatusOptions(COMMITTEE_STATUS_IDS);
   
   selectedCountry: number = 0;
   selectedUniversity: number = 0;
@@ -154,7 +148,11 @@ export class NgoStudents implements OnInit {
         if (response.success && response.result) {
           this.students = response.result.items;
           this.totalRecords = response.result.totalCount;
-          this.calculateKPIs(this.students);
+          
+          if (this.selectedStatus === null) {
+            this.allStudents = [...this.students];
+            this.calculateKPIs(this.allStudents);
+          }
         } else {
           this.students = [];
           this.notification.warning(response.message);
@@ -175,14 +173,24 @@ export class NgoStudents implements OnInit {
     this.kpiInProcess = this.studentStatusService.counts(items as any, StudentStatusEnum.AcceptanceInProcess);
     this.kpiSponsored = this.studentStatusService.counts(items as any, StudentStatusEnum.Sponsored);
     this.kpiRegistered = this.studentStatusService.counts(items as any, StudentStatusEnum.Registered);
-    this.tabAccepted = this.studentStatusService.counts(items as any, StudentStatusEnum.Accepted);
-    this.tabAccRejected = this.studentStatusService.counts(items as any, StudentStatusEnum.AcceptanceRejected);
+    
     this.tabAll = items.length;
-    this.tabInProcess = this.kpiInProcess;
-    this.tabSponsored = this.kpiSponsored;
-    this.tabRegistered = this.kpiRegistered;
     this.tabAwarded = this.studentStatusService.counts(items as any, StudentStatusEnum.Awarded);
-    this.tabGraduate = this.studentStatusService.counts(items as any, StudentStatusEnum.Graduated);
+    this.tabSponsored = this.kpiSponsored;
+    this.tabSponRejected = this.studentStatusService.counts(items as any, StudentStatusEnum.SponsoringRejected);
+    this.tabRegistered = this.kpiRegistered;
+    this.tabGraduated = this.studentStatusService.counts(items as any, StudentStatusEnum.Graduated);
+  }
+
+  getTabCount(statusId: number): number {
+    switch (statusId) {
+      case StudentStatusEnum.Awarded: return this.tabAwarded;
+      case StudentStatusEnum.Sponsored: return this.tabSponsored;
+      case StudentStatusEnum.SponsoringRejected: return this.tabSponRejected;
+      case StudentStatusEnum.Registered: return this.tabRegistered;
+      case StudentStatusEnum.Graduated: return this.tabGraduated;
+      default: return 0;
+    }
   }
 
   // --- Search & Filters ---

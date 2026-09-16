@@ -45,26 +45,8 @@
   <div class="tab" [class.active]="activeTab === 'all'" (click)="setTab('all')">
     All <span class="tab-count" style="background: rgba(0,0,0,0.05); color: var(--da-muted);">{{ tabAll }}</span>
   </div>
-  <div class="tab" [class.active]="activeTab === studentStatus.AcceptanceInProcess" (click)="setTab(studentStatus.AcceptanceInProcess)">
-    Acceptance In Process <span class="tab-count {{ getBadgeClassForStatus(studentStatus.AcceptanceInProcess) }}">{{ tabInProcess }}</span>
-  </div>
-  <div class="tab" [class.active]="activeTab === studentStatus.Accepted" (click)="setTab(studentStatus.Accepted)">
-    Accepted <span class="tab-count {{ getBadgeClassForStatus(studentStatus.Accepted) }}">{{ tabAccepted }}</span>
-  </div>
-  <div class="tab" [class.active]="activeTab === studentStatus.AcceptanceRejected" (click)="setTab(studentStatus.AcceptanceRejected)">
-    Acceptance Rejected <span class="tab-count {{ getBadgeClassForStatus(studentStatus.AcceptanceRejected) }}">{{ tabAccRejected }}</span>
-  </div>
-  <div class="tab" [class.active]="activeTab === studentStatus.Awarded" (click)="setTab(studentStatus.Awarded)">
-    Awarded <span class="tab-count {{ getBadgeClassForStatus(studentStatus.Awarded) }}">{{ tabAwarded }}</span>
-  </div>
-  <div class="tab" [class.active]="activeTab === studentStatus.Sponsored" (click)="setTab(studentStatus.Sponsored)">
-    Sponsored <span class="tab-count {{ getBadgeClassForStatus(studentStatus.Sponsored) }}">{{ tabSponsored }}</span>
-  </div>
-  <div class="tab" [class.active]="activeTab === studentStatus.Registered" (click)="setTab(studentStatus.Registered)">
-    Registered <span class="tab-count {{ getBadgeClassForStatus(studentStatus.Registered) }}">{{ tabRegistered }}</span>
-  </div>
-  <div class="tab" [class.active]="activeTab === studentStatus.Graduated" (click)="setTab(studentStatus.Graduated)">
-    Graduated <span class="tab-count {{ getBadgeClassForStatus(studentStatus.Graduated) }}">{{ tabGraduate }}</span>
+  <div class="tab" *ngFor="let s of statusOptions" [class.active]="activeTab === s.id" (click)="setTab(s.id)">
+    {{ s.name }} <span class="tab-count {{ s.badgeClass }}">{{ getTabCount(s.id) }}</span>
   </div>
 </div>
 
