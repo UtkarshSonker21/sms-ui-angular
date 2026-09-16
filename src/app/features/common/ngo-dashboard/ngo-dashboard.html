@@ -50,7 +50,7 @@
                 <td>{{ acc.submittedDate | date:'dd MMM yyyy' }}</td>
                 <td><span class="chip chip-pending">Pending</span></td>
                 <td class="actions-col">
-                  <a class="action-link text-primary" (click)="reviewProgram(acc.programId)">Review</a>
+                  <button type="button" class="btn btn-g" style="padding: 4px 10px; font-size: 12px; height: 28px; display: inline-flex; align-items: center; justify-content: center;" (click)="reviewProgram(acc.programId)">Review <i class="fas fa-arrow-right" style="margin-left: 4px; font-size: 10px;"></i></button>
                 </td>
               </tr>
             </tbody>
@@ -84,7 +84,7 @@
   </div>
 
   <!-- 4. Bottom Section: Tabs & University Accreditation Requests -->
-  <div class="nav-tabs" style="margin-top: 24px;">
+  <!-- <div class="nav-tabs" style="margin-top: 24px;">
     <div class="tab-item active">
       Pending Requests
     </div>
@@ -94,7 +94,7 @@
     <div class="tab-item">
       Rejected
     </div>
-  </div>
+  </div> -->
 
   <div class="card mb-4">
     <div class="card-head">
@@ -109,7 +109,6 @@
         <table class="table">
           <thead>
             <tr>
-              <th>Request ID</th>
               <th>University Name</th>
               <th>Request Type</th>
               <th>Date</th>
@@ -119,13 +118,12 @@
           </thead>
           <tbody>
             <tr *ngFor="let req of universityRequests">
-              <td class="id-col">{{ req.registrationId }}</td>
               <td><div class="project-name">{{ req.universityName }}</div></td>
               <td>New Accreditation</td>
               <td>{{ req.createdDate | date:'dd MMM yyyy' }}</td>
               <td><span class="chip chip-pending">Pending</span></td>
               <td class="actions-col">
-                <a class="action-link text-primary" (click)="reviewUniversity(req.registrationId)">View</a>
+                <button type="button" class="btn btn-g" style="padding: 4px 10px; font-size: 12px; height: 28px; display: inline-flex; align-items: center; justify-content: center;" (click)="reviewUniversity(req.registrationId)">Review <i class="fas fa-arrow-right" style="margin-left: 4px; font-size: 10px;"></i></button>
               </td>
             </tr>
           </tbody>
@@ -141,3 +139,4 @@
   </div>
 
 </div>
+

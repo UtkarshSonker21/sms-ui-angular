@@ -43,6 +43,42 @@
     </div>
 </div>
 
+<div class="tabs" style="margin: 20px 0 18px 0;">
+  <div class="tab" [class.active]="activeTab === 'all'" (click)="setTab('all')">
+    All <span class="tab-count" style="background: rgba(0,0,0,0.05); color: var(--da-muted);">{{ tabAll }}</span>
+  </div>
+  <div class="tab" [class.active]="activeTab === studentStatus.Draft" (click)="setTab(studentStatus.Draft)">
+    Draft <span class="tab-count {{ getBadgeClassForStatus(studentStatus.Draft) }}">{{ tabDraft }}</span>
+  </div>
+  <div class="tab" [class.active]="activeTab === studentStatus.AcceptanceInProcess" (click)="setTab(studentStatus.AcceptanceInProcess)">
+    Acceptance In Process <span class="tab-count {{ getBadgeClassForStatus(studentStatus.AcceptanceInProcess) }}">{{ tabInProcess }}</span>
+  </div>
+  <div class="tab" [class.active]="activeTab === studentStatus.AcceptanceRejected" (click)="setTab(studentStatus.AcceptanceRejected)">
+    Acceptance Rejected <span class="tab-count {{ getBadgeClassForStatus(studentStatus.AcceptanceRejected) }}">{{ tabAccRejected }}</span>
+  </div>
+  <div class="tab" [class.active]="activeTab === studentStatus.Awarded" (click)="setTab(studentStatus.Awarded)">
+    Awarded <span class="tab-count {{ getBadgeClassForStatus(studentStatus.Awarded) }}">{{ tabAwarded }}</span>
+  </div>
+  <div class="tab" [class.active]="activeTab === studentStatus.AwardingRejected" (click)="setTab(studentStatus.AwardingRejected)">
+    Awarding Rejected <span class="tab-count {{ getBadgeClassForStatus(studentStatus.AwardingRejected) }}">{{ tabAwardedRejected }}</span>
+  </div>
+  <div class="tab" [class.active]="activeTab === studentStatus.Sponsored" (click)="setTab(studentStatus.Sponsored)">
+    Sponsored <span class="tab-count {{ getBadgeClassForStatus(studentStatus.Sponsored) }}">{{ tabSponsored }}</span>
+  </div>
+  <div class="tab" [class.active]="activeTab === studentStatus.SponsoringRejected" (click)="setTab(studentStatus.SponsoringRejected)">
+    Sponsoring Rejected <span class="tab-count {{ getBadgeClassForStatus(studentStatus.SponsoringRejected) }}">{{ tabSponRejected }}</span>
+  </div>
+  <div class="tab" [class.active]="activeTab === studentStatus.Registered" (click)="setTab(studentStatus.Registered)">
+    Registered <span class="tab-count {{ getBadgeClassForStatus(studentStatus.Registered) }}">{{ tabRegistered }}</span>
+  </div>
+  <div class="tab" [class.active]="activeTab === studentStatus.Failed" (click)="setTab(studentStatus.Failed)">
+    Failed <span class="tab-count {{ getBadgeClassForStatus(studentStatus.Failed) }}">{{ tabFailed }}</span>
+  </div>
+  <div class="tab" [class.active]="activeTab === studentStatus.Graduated" (click)="setTab(studentStatus.Graduated)">
+    Graduated <span class="tab-count {{ getBadgeClassForStatus(studentStatus.Graduated) }}">{{ tabGraduated }}</span>
+  </div>
+</div>
+
 <div class="filters">
     <div class="search-container">
         <i class="fas fa-search search-icon"></i>
@@ -116,7 +152,7 @@
         </div>
     </div>
 
-    <div class="da-select" [class.da-select-open]="isStatusDropdownOpen" tabindex="0">
+    <!-- <div class="da-select" [class.da-select-open]="isStatusDropdownOpen" tabindex="0">
         <div class="da-select-control" (click)="toggleStatusDropdown($event)" style="padding: 0 12px 0 6px;">
             <div class="ms-display" [class.has-selection]="selectedStatus !== null" style="display: flex; align-items: center; flex: 1;">
                 <ng-container *ngIf="selectedStatus !== null; else noStatusSelected">
@@ -144,7 +180,7 @@
                 {{ status.name }}
             </div>
         </div>
-    </div>
+    </div> -->
     
     <div class="filter-count">
         {{ totalRecords }} nominations
@@ -221,8 +257,9 @@
                     </div>
                 </td>
                 <td style="text-align: center;">
-                    <button type="button" class="btn btn-g" style="padding: 4px 10px; font-size: 12px; height: 28px;" (click)="viewStudent(student.studentId!)">
-                        View
+                    <button type="button" class="btn btn-g" style="padding: 4px 10px; font-size: 12px; height: 28px; display: inline-flex; align-items: center; justify-content: center;" 
+                        (click)="viewStudent(student.studentId!)">
+                        View <i class="fas fa-arrow-right" style="margin-left: 4px; font-size: 10px;"></i>
                     </button>
                 </td>
             </tr>

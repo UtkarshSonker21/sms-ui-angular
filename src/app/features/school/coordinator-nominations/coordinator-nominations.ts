@@ -60,16 +60,16 @@ export class CoordinatorNominations implements OnInit {
 
   // Tab Counts (for internal use/calculations if needed)
   tabAll = 0;
+  tabDraft = 0;
   tabInProcess = 0;
   tabAccRejected = 0;
-  tabSponsored = 0;
-  tabSponRejected = 0;
   tabAwarded = 0;
   tabAwardedRejected = 0;
+  tabSponsored = 0;
+  tabSponRejected = 0;
   tabRegistered = 0;
   tabFailed = 0;
-  tabDismissed = 0;
-  tabGraduate = 0;
+  tabGraduated = 0;
 
   activeTab: number | string = 'all';
   studentStatus = StudentStatusEnum;
@@ -203,19 +203,18 @@ export class CoordinatorNominations implements OnInit {
     this.kpiInProcess = this.studentStatusService.count(items, StudentStatusEnum.AcceptanceInProcess);
     this.kpiSponsored = this.studentStatusService.count(items, StudentStatusEnum.Sponsored);
     this.kpiRegistered = this.studentStatusService.count(items, StudentStatusEnum.Registered);
-    this.tabAccRejected = this.studentStatusService.count(items, StudentStatusEnum.AcceptanceRejected);
 
-    // this.tabAll = this.totalRecords;
-    // this.tabInProcess = this.kpiInProcess;
-    // this.tabAccRejected = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.AcceptanceRejected).length;
-    // this.tabSponsored = this.kpiSponsored;
-    // this.tabSponRejected = items.filter(s => (s as any).studentStatusId === StudentStatusEnum.SponsoredRejected).length;
-    // this.tabAwarded = items.filter(s => (s as any).studentApplicationStatusId === StudentStatusEnum.Awarded).length;
-    // this.tabAwardedRejected = items.filter(s => (s as any).studentApplicationStatusId === StudentStatusEnum.AwardedRejected).length;
-    // this.tabRegistered = this.kpiRegistered;
-    // this.tabFailed = items.filter(s => (s as any).studentApplicationStatusId === StudentStatusEnum.Failed).length;
-    // this.tabDismissed = items.filter(s => (s as any).studentApplicationStatusId === StudentStatusEnum.Dismissed).length;
-    // this.tabGraduate = items.filter(s => (s as any).studentApplicationStatusId === StudentStatusEnum.Graduate).length;
+    this.tabAll = items.length;
+    this.tabDraft = this.studentStatusService.count(items, StudentStatusEnum.Draft);
+    this.tabInProcess = this.kpiInProcess;
+    this.tabAccRejected = this.studentStatusService.count(items, StudentStatusEnum.AcceptanceRejected);
+    this.tabAwarded = this.studentStatusService.count(items, StudentStatusEnum.Awarded);
+    this.tabAwardedRejected = this.studentStatusService.count(items, StudentStatusEnum.AwardingRejected);
+    this.tabSponsored = this.kpiSponsored;
+    this.tabSponRejected = this.studentStatusService.count(items, StudentStatusEnum.SponsoringRejected);
+    this.tabRegistered = this.kpiRegistered;
+    this.tabFailed = this.studentStatusService.count(items, StudentStatusEnum.Failed);
+    this.tabGraduated = this.studentStatusService.count(items, StudentStatusEnum.Graduated);
   }
 
   // --- Search & Filters ---
@@ -321,6 +320,7 @@ export class CoordinatorNominations implements OnInit {
 
   selectStatusOption(id: number | null): void {
     this.selectedStatus = id;
+    this.activeTab = id === null ? 'all' : id;
     this.isStatusDropdownOpen = false;
     this.filter.pageNumber = 1;
     this.loadData();
@@ -329,6 +329,7 @@ export class CoordinatorNominations implements OnInit {
   clearStatusSelection(event: Event): void {
     event.stopPropagation();
     this.selectedStatus = null;
+    this.activeTab = 'all';
     this.isStatusDropdownOpen = false;
     this.filter.pageNumber = 1;
     this.loadData();
@@ -345,6 +346,10 @@ export class CoordinatorNominations implements OnInit {
     this.selectedStatus = tab === 'all' ? null : (tab as number);
     this.filter.pageNumber = 1;
     this.loadData();
+  }
+
+  getBadgeClassForStatus(statusId: number): string {
+    return this.studentStatusService.getBadgeClass(statusId);
   }
 
   // --- Status Badge Helper ---

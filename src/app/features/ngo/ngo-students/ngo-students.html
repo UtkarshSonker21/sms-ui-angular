@@ -41,41 +41,32 @@
 </div>
 
 
-<!-- <div class="tabs" style="margin: 20px 0 18px 0;">
+<div class="tabs" style="margin: 20px 0 18px 0;">
   <div class="tab" [class.active]="activeTab === 'all'" (click)="setTab('all')">
-    All <span class="tab-count">{{ tabAll }}</span>
+    All <span class="tab-count" style="background: rgba(0,0,0,0.05); color: var(--da-muted);">{{ tabAll }}</span>
   </div>
   <div class="tab" [class.active]="activeTab === studentStatus.AcceptanceInProcess" (click)="setTab(studentStatus.AcceptanceInProcess)">
-    Acceptance In Process <span class="tab-count">{{ tabInProcess }}</span>
+    Acceptance In Process <span class="tab-count {{ getBadgeClassForStatus(studentStatus.AcceptanceInProcess) }}">{{ tabInProcess }}</span>
+  </div>
+  <div class="tab" [class.active]="activeTab === studentStatus.Accepted" (click)="setTab(studentStatus.Accepted)">
+    Accepted <span class="tab-count {{ getBadgeClassForStatus(studentStatus.Accepted) }}">{{ tabAccepted }}</span>
   </div>
   <div class="tab" [class.active]="activeTab === studentStatus.AcceptanceRejected" (click)="setTab(studentStatus.AcceptanceRejected)">
-    Acceptance Rejected <span class="tab-count">{{ tabAccRejected }}</span>
-  </div>
-  <div class="tab" [class.active]="activeTab === studentStatus.Sponsored" (click)="setTab(studentStatus.Sponsored)">
-    Sponsored <span class="tab-count">{{ tabSponsored }}</span>
-  </div>
-  <div class="tab" [class.active]="activeTab === studentStatus.SponsoredRejected" (click)="setTab(studentStatus.SponsoredRejected)">
-    Sponsored Rejected <span class="tab-count">{{ tabSponRejected }}</span>
+    Acceptance Rejected <span class="tab-count {{ getBadgeClassForStatus(studentStatus.AcceptanceRejected) }}">{{ tabAccRejected }}</span>
   </div>
   <div class="tab" [class.active]="activeTab === studentStatus.Awarded" (click)="setTab(studentStatus.Awarded)">
-    Awarded <span class="tab-count">{{ tabAwarded }}</span>
+    Awarded <span class="tab-count {{ getBadgeClassForStatus(studentStatus.Awarded) }}">{{ tabAwarded }}</span>
   </div>
-  <div class="tab" [class.active]="activeTab === studentStatus.AwardedRejected" (click)="setTab(studentStatus.AwardedRejected)">
-    Awarded Rejected <span class="tab-count">{{ tabAwardedRejected }}</span>
+  <div class="tab" [class.active]="activeTab === studentStatus.Sponsored" (click)="setTab(studentStatus.Sponsored)">
+    Sponsored <span class="tab-count {{ getBadgeClassForStatus(studentStatus.Sponsored) }}">{{ tabSponsored }}</span>
   </div>
   <div class="tab" [class.active]="activeTab === studentStatus.Registered" (click)="setTab(studentStatus.Registered)">
-    Registered <span class="tab-count">{{ tabRegistered }}</span>
-  </div>
-  <div class="tab" [class.active]="activeTab === studentStatus.Failed" (click)="setTab(studentStatus.Failed)">
-    Failed <span class="tab-count">{{ tabFailed }}</span>
-  </div>
-  <div class="tab" [class.active]="activeTab === studentStatus.Dismissed" (click)="setTab(studentStatus.Dismissed)">
-    Dismissed <span class="tab-count">{{ tabDismissed }}</span>
+    Registered <span class="tab-count {{ getBadgeClassForStatus(studentStatus.Registered) }}">{{ tabRegistered }}</span>
   </div>
   <div class="tab" [class.active]="activeTab === studentStatus.Graduated" (click)="setTab(studentStatus.Graduated)">
-    Graduate <span class="tab-count">{{ tabGraduate }}</span>
+    Graduated <span class="tab-count {{ getBadgeClassForStatus(studentStatus.Graduated) }}">{{ tabGraduate }}</span>
   </div>
-</div> -->
+</div>
 
 
 <div class="filters">
@@ -144,7 +135,7 @@
         </div>
     </div>
 
-    <div class="da-select" [class.da-select-open]="isStatusDropdownOpen" tabindex="0">
+    <!-- <div class="da-select" [class.da-select-open]="isStatusDropdownOpen" tabindex="0">
         <div class="da-select-control" (click)="toggleStatusDropdown($event)" style="padding: 0 12px 0 6px;">
             <div class="ms-display" [class.has-selection]="selectedStatus !== null"
                 style="display: flex; align-items: center; flex: 1;">
@@ -169,7 +160,7 @@
                 {{ status.name }}
             </div>
         </div>
-    </div>
+    </div> -->
 
     <div class="filter-count">
         {{ totalRecords }} students
@@ -242,12 +233,13 @@
                     </div>
                 </td>
                 <td style="text-align: center;">
-                    <button type="button" class="btn btn-g" style="padding: 4px 10px; font-size: 12px; height: 28px;"
+                    <button type="button" class="btn btn-g" style="padding: 4px 10px; font-size: 12px; height: 28px; display: inline-flex; align-items: center; justify-content: center;" 
                         (click)="viewStudent(student.studentId!)">
-                        Review
+                        View <i class="fas fa-arrow-right" style="margin-left: 4px; font-size: 10px;"></i>
                     </button>
                 </td>
             </tr>
+
 
             <tr *ngIf="students.length === 0">
                 <td colspan="5" style="text-align: center; padding: 42px 20px;">
