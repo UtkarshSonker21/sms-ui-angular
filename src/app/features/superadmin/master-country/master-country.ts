@@ -61,7 +61,6 @@ export class MasterCountry implements OnInit {
         } else {
           this.countriesList = [];
           this.totalRecords = 0;
-          this.notification.warning(response.message);
         }
       },
       error: (error) => {

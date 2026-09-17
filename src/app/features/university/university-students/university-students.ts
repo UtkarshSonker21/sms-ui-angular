@@ -114,9 +114,6 @@ export class UniversityStudents implements OnInit {
           return;
         }
         this.faculties = [];
-        this.notification.warning(
-          res.message || 'Failed to load faculties.'
-        );
       },
       error: (error) => {
         this.faculties = [];
@@ -141,9 +138,6 @@ export class UniversityStudents implements OnInit {
           return;
         }
         this.programs = [];
-        this.notification.warning(
-          res.message || 'Failed to load programs.'
-        );
       },
       error: (error) => {
         this.programs = [];
@@ -176,7 +170,6 @@ export class UniversityStudents implements OnInit {
           } else {
             this.allStudents = [];
             this.filteredStudents = [];
-            this.notification.warning(response.message || 'Failed to load students.');
           }
         },
         error: (error) => {

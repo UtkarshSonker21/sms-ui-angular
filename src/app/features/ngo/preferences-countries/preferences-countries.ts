@@ -53,7 +53,6 @@ export class PreferencesCountries implements OnInit {
           this.totalRecords = response.result.totalCount;
         } else {
           this.countries = [];
-          this.notification.warning(response.message);
         }
       },
       error: (error) => {

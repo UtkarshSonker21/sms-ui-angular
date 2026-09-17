@@ -61,7 +61,6 @@ export class GeneralSetting implements OnInit {
         } else {
           this.settingsList = [];
           this.totalRecords = 0;
-          this.notification.warning(response.message);
         }
       },
       error: (error) => {

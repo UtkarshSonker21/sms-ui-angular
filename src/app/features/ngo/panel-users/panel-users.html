@@ -80,14 +80,15 @@
                 All roles
             </div>
             <div class="da-select-option" *ngFor="let role of roles"
-                [class.selected]="selectedRoleFilter === role.roleId.toString()" (click)="selectRoleFilterOption(role.roleId)">
+                [class.selected]="selectedRoleFilter === role.roleId.toString()"
+                (click)="selectRoleFilterOption(role.roleId)">
                 {{ role.roleName }}
             </div>
         </div>
     </div>
 
     <!-- Status Filter Dropdown -->
-    <!-- <div class="da-select" [class.da-select-open]="isStatusFilterDropdownOpen" tabindex="0"
+    <div class="da-select" [class.da-select-open]="isStatusFilterDropdownOpen" tabindex="0"
         (click)="$event.stopPropagation()">
         <div class="da-select-control" (click)="toggleStatusFilterDropdown($event)">
             <div class="ms-display" [class.has-selection]="selectedStatusFilter !== 'all'"
@@ -120,7 +121,7 @@
                 Disabled
             </div>
         </div>
-    </div> -->
+    </div>
 
     <div class="filter-count"
         style="margin-inline-start: auto; font-size: 12.5px; color: var(--da-muted); font-weight: 500;">
@@ -155,8 +156,8 @@
                     </span>
                 </td>
                 <td>
-                    <span class="chip" [ngClass]="user.isActive ? 'chip-registered' : 'pu-chip-disabled'">
-                        {{ user.isActive ? 'Active' : 'Disabled' }}
+                    <span class="chip" [ngClass]="!user.isDisabled ? 'chip-registered' : 'pu-chip-disabled'">
+                        {{ !user.isDisabled ? 'Active' : 'Disabled' }}
                     </span>
                 </td>
                 <td class="row-actions" style="text-align: center !important;">
@@ -272,7 +273,8 @@
                     <div class="field">
                         <label class="field-label required-label">First Name</label>
                         <input type="text" name="staffFirstName" class="field-input" placeholder="First Name" required
-                            [(ngModel)]="tempUserModel.staffFirstName" #firstNameModel="ngModel" [pattern]="validationPatterns.name">
+                            [(ngModel)]="tempUserModel.staffFirstName" #firstNameModel="ngModel"
+                            [pattern]="validationPatterns.name">
                         <div class="validation-error"
                             *ngIf="(firstNameModel.touched || userForm.submitted) && firstNameModel.errors?.['required']">
                             First Name is required.
@@ -289,7 +291,8 @@
                     <div class="field">
                         <label class="field-label required-label">Last Name</label>
                         <input type="text" name="staffLastName" class="field-input" placeholder="Last Name" required
-                            [(ngModel)]="tempUserModel.staffLastName" #lastNameModel="ngModel" [pattern]="validationPatterns.name">
+                            [(ngModel)]="tempUserModel.staffLastName" #lastNameModel="ngModel"
+                            [pattern]="validationPatterns.name">
                         <div class="validation-error"
                             *ngIf="(lastNameModel.touched || userForm.submitted) && lastNameModel.errors?.['required']">
                             Last Name is required.
@@ -330,7 +333,7 @@
                     </div>
                 </div>
 
-                <!-- Row 3: Role & Account Status -->
+                <!-- Row 3: Role  -->
                 <div class="modal-form-row">
                     <div class="field" style="grid-column: span 2;">
                         <label class="field-label required-label">Role</label>
@@ -361,16 +364,6 @@
                             Role is required.
                         </div>
                     </div>
-
-                    <!-- <div class="field">
-                        <label class="field-label">Account status</label>
-                        <div class="pill-group">
-                            <button type="button" class="pill-opt" [class.on-active]="tempUserModel.isActive"
-                                (click)="tempUserModel.isActive = true">Active</button>
-                            <button type="button" class="pill-opt" [class.on-disabled]="!tempUserModel.isActive"
-                                (click)="tempUserModel.isActive = false">Disabled</button>
-                        </div>
-                    </div> -->
                 </div>
 
                 <!-- Row 4: Official Email & Personal Email  -->
@@ -378,8 +371,8 @@
                     <div class="field">
                         <label class="field-label required-label">Official Email</label>
                         <input type="email" name="officialEmail" class="field-input num-ltr"
-                            placeholder="name@directaid.example" required
-                            [(ngModel)]="tempUserModel.officialEmail" #officialEmailModel="ngModel" [pattern]="validationPatterns.email" dir="ltr">
+                            placeholder="name@directaid.example" required [(ngModel)]="tempUserModel.officialEmail"
+                            #officialEmailModel="ngModel" [pattern]="validationPatterns.email" dir="ltr">
                         <div class="validation-error"
                             *ngIf="(officialEmailModel.touched || userForm.submitted) && officialEmailModel.errors?.['required']">
                             Official Email is required.
@@ -407,8 +400,8 @@
                     <div class="field" style="grid-column: span 2;">
                         <label class="field-label">Mobile Number</label>
                         <div class="phone-input-group">
-                            <div class="multi-select" [class.open]="isPhoneDropdownOpen" (click)="togglePhoneDropdown($event)"
-                                tabindex="0">
+                            <div class="multi-select" [class.open]="isPhoneDropdownOpen"
+                                (click)="togglePhoneDropdown($event)" tabindex="0">
                                 <div class="ms-display" [class.has-selection]="PhoneCountryId !== null">
                                     <span>{{ PhoneCountryId ? getPhoneCountryName() : 'Select Code...' }}</span>
                                 </div>
@@ -422,17 +415,22 @@
                                     </div>
                                 </div>
                             </div>
-                            <input type="text" name="mobileNumber" class="field-input phone-number-input num-ltr" placeholder="55554444"
-                                [(ngModel)]="PhoneNumber" dir="ltr" #mobilePhoneModel="ngModel" [appPhoneValidator]="PhoneCountryCode" [phoneCodeModel]="phoneCodeModel">
+                            <input type="text" name="mobileNumber" class="field-input phone-number-input num-ltr"
+                                placeholder="55554444" [(ngModel)]="PhoneNumber" dir="ltr" #mobilePhoneModel="ngModel"
+                                [appPhoneValidator]="PhoneCountryCode" [phoneCodeModel]="phoneCodeModel">
                         </div>
-                        <input type="hidden" name="phoneCountryCode" [ngModel]="PhoneCountryCode ? PhoneCountryCode : ''" #phoneCodeModel="ngModel">
-                        <div class="validation-error" *ngIf="(phoneCodeModel.touched || userForm.submitted) && !phoneCodeModel.valid">
+                        <input type="hidden" name="phoneCountryCode"
+                            [ngModel]="PhoneCountryCode ? PhoneCountryCode : ''" #phoneCodeModel="ngModel">
+                        <div class="validation-error"
+                            *ngIf="(phoneCodeModel.touched || userForm.submitted) && !phoneCodeModel.valid">
                             Phone Code is required.
                         </div>
-                        <div class="validation-error" *ngIf="(mobilePhoneModel.touched || userForm.submitted) && mobilePhoneModel.errors?.['required']">
+                        <div class="validation-error"
+                            *ngIf="(mobilePhoneModel.touched || userForm.submitted) && mobilePhoneModel.errors?.['required']">
                             Phone number is required.
                         </div>
-                        <div class="validation-error" *ngIf="(mobilePhoneModel.touched || userForm.submitted) && mobilePhoneModel.errors?.['pattern']">
+                        <div class="validation-error"
+                            *ngIf="(mobilePhoneModel.touched || userForm.submitted) && mobilePhoneModel.errors?.['pattern']">
                             Please enter a valid phone number.
                         </div>
                     </div>
@@ -446,6 +444,26 @@
                             [(ngModel)]="tempUserModel.remarks" rows="2" style="resize: vertical;"></textarea>
                     </div>
                 </div>
+
+                <!-- Row 7: Account Status -->
+                <div class="modal-form-row">
+                    <div class="field" style="grid-column: span 2;">
+                        <label class="field-label">DISABLED</label>
+                        <div class="seg">
+                            <label class="seg-opt" [class.on]="tempUserModel.isDisabled === false">
+                                <input type="radio" name="isDisabled" [value]="false" [(ngModel)]="tempUserModel.isDisabled"
+                                    hidden>
+                                Active
+                            </label>
+                            <label class="seg-opt" [class.on]="tempUserModel.isDisabled === true">
+                                <input type="radio" name="isDisabled" [value]="true" [(ngModel)]="tempUserModel.isDisabled"
+                                    hidden>
+                                Disabled
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
             <div class="modal-foot">

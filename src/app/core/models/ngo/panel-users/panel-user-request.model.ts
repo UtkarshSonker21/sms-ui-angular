@@ -36,8 +36,7 @@ export class PanelUserRequestModel {
 
   // Status
   isActive: boolean = true;
-  
-  isDisabled: boolean = true;
+  isDisabled: boolean = false;
 
   // Audit Information (Response Only)
   createdDate?: Date;
