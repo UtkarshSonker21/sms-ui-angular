@@ -33,7 +33,19 @@
     <div class="da-select" [class.da-select-open]="isFilterModuleDropdownOpen" tabindex="0"
         (click)="$event.stopPropagation()" style="width: 240px; margin-bottom: 0;">
         <div class="da-select-control" (click)="toggleFilterModuleDropdown($event)">
-            <span class="da-select-value">{{ getFilterModuleSelectionText() }}</span>
+            <div class="ms-display" [class.has-selection]="filter.moduleId"
+                style="display: flex; align-items: center; flex: 1;">
+                <ng-container *ngIf="filter.moduleId; else noModuleSelected">
+                    <span class="ms-chip" style="margin: 0;">
+                        {{ getFilterModuleSelectionText() }}
+                        <span class="ms-chip-x"
+                            (click)="selectFilterModuleOption(null); $event.stopPropagation()">&times;</span>
+                    </span>
+                </ng-container>
+                <ng-template #noModuleSelected>
+                    <span class="da-select-value" style="font-size: 13px;">All Modules</span>
+                </ng-template>
+            </div>
             <i class="fas da-select-arrow"
                 [ngClass]="isFilterModuleDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
         </div>

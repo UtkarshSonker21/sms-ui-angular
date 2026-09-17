@@ -96,12 +96,14 @@ export class CoordinatorSchoolList implements OnInit {
 
   // --- Search & Filters ---
   applySearch(): void {
+    this.filter.searchText = this.searchText.trim() || undefined;
     this.filter.pageNumber = 1;
     this.loadData();
   }
 
   clearSearch(): void {
     this.searchText = '';
+    this.filter.searchText = undefined;
     this.filter.pageNumber = 1;
     this.loadData();
   }
