@@ -59,7 +59,6 @@ export class FacultiesList implements OnInit {
           return;
         } 
         this.faculties = [];
-        this.notification.warning(response.message || 'Failed to load faculties.');
       },
       error: (error) => {
         this.faculties = [];

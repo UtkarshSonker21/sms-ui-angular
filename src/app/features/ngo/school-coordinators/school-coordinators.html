@@ -42,44 +42,8 @@
         <i class="fas fa-times clear-icon" *ngIf="searchText" (click)="clearSearch()"></i>
     </div>
 
-    <!-- Status Filter Dropdown -->
-    <div class="da-select" [class.da-select-open]="isStatusFilterDropdownOpen" tabindex="0"
-        (click)="$event.stopPropagation()">
-        <div class="da-select-control" (click)="toggleStatusFilterDropdown($event)">
-            <div class="ms-display" [class.has-selection]="selectedStatusFilter !== 'all'"
-                style="display: flex; align-items: center; flex: 1;">
-                <ng-container *ngIf="selectedStatusFilter !== 'all'; else noStatusSelected">
-                    <span class="ms-chip" style="margin: 0;">
-                        {{ getSelectedStatusFilterName() }}
-                        <span class="ms-chip-x"
-                            (click)="selectStatusFilterOption('all'); $event.stopPropagation()">A-</span>
-                    </span>
-                </ng-container>
-                <ng-template #noStatusSelected>
-                    <span class="da-select-value" style="font-size: 13px;">All Statuses</span>
-                </ng-template>
-            </div>
-            <i class="fas da-select-arrow"
-                [ngClass]="isStatusFilterDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-        </div>
-        <div class="da-select-menu" *ngIf="isStatusFilterDropdownOpen">
-            <div class="da-select-option" [class.selected]="selectedStatusFilter === 'all'"
-                (click)="selectStatusFilterOption('all')">
-                All Statuses
-            </div>
-            <div class="da-select-option" [class.selected]="selectedStatusFilter === 'active'"
-                (click)="selectStatusFilterOption('active')">
-                Active
-            </div>
-            <div class="da-select-option" [class.selected]="selectedStatusFilter === 'disabled'"
-                (click)="selectStatusFilterOption('disabled')">
-                Disabled
-            </div>
-        </div>
-    </div>
-
     <!-- Role Filter Dropdown -->
-    <div class="da-select" [class.da-select-open]="isRoleFilterDropdownOpen" tabindex="0"
+    <!-- <div class="da-select" [class.da-select-open]="isRoleFilterDropdownOpen" tabindex="0"
         (click)="$event.stopPropagation()">
         <div class="da-select-control" (click)="toggleRoleFilterDropdown($event)">
             <div class="ms-display" [class.has-selection]="selectedRoleFilter !== 'all'"
@@ -106,6 +70,42 @@
             <div class="da-select-option" *ngFor="let role of roles"
                 [class.selected]="selectedRoleFilter === role.roleId.toString()" (click)="selectRoleFilterOption(role.roleId)">
                 {{ role.roleName }}
+            </div>
+        </div>
+    </div> -->
+
+    <!-- Status Filter Dropdown -->
+    <div class="da-select" [class.da-select-open]="isStatusFilterDropdownOpen" tabindex="0"
+        (click)="$event.stopPropagation()">
+        <div class="da-select-control" (click)="toggleStatusFilterDropdown($event)">
+            <div class="ms-display" [class.has-selection]="selectedStatusFilter !== 'all'"
+                style="display: flex; align-items: center; flex: 1;">
+                <ng-container *ngIf="selectedStatusFilter !== 'all'; else noStatusSelected">
+                    <span class="ms-chip" style="margin: 0;">
+                        {{ getSelectedStatusFilterName() }}
+                        <span class="ms-chip-x"
+                            (click)="selectStatusFilterOption('all'); $event.stopPropagation()">×</span>
+                    </span>
+                </ng-container>
+                <ng-template #noStatusSelected>
+                    <span class="da-select-value" style="font-size: 13px;">All Statuses</span>
+                </ng-template>
+            </div>
+            <i class="fas da-select-arrow"
+                [ngClass]="isStatusFilterDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+        </div>
+        <div class="da-select-menu" *ngIf="isStatusFilterDropdownOpen">
+            <div class="da-select-option" [class.selected]="selectedStatusFilter === 'all'"
+                (click)="selectStatusFilterOption('all')">
+                All Statuses
+            </div>
+            <div class="da-select-option" [class.selected]="selectedStatusFilter === 'active'"
+                (click)="selectStatusFilterOption('active')">
+                Active
+            </div>
+            <div class="da-select-option" [class.selected]="selectedStatusFilter === 'disabled'"
+                (click)="selectStatusFilterOption('disabled')">
+                Disabled
             </div>
         </div>
     </div>

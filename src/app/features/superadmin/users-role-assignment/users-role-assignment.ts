@@ -89,7 +89,6 @@ export class UsersRoleAssignment implements OnInit {
         } else {
           this.assignmentsList = [];
           this.totalRecords = 0;
-          this.notification.warning(response.message);
         }
       },
       error: (error) => {

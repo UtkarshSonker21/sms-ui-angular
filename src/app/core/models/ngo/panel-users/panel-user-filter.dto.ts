@@ -7,5 +7,6 @@ export class PanelUserFilterModel extends BaseFilter {
   staffType?: number;
 
   isActive?: boolean;
+  isDisabled?: boolean;
 
 }

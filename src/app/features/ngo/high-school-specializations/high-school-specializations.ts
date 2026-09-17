@@ -54,7 +54,6 @@ export class HighSchoolSpecializations implements OnInit {
           this.totalRecords = response.result.totalCount;
         } else {
           this.specializations = [];
-          this.notification.warning(response.message);
         }
       },
       error: (error) => {

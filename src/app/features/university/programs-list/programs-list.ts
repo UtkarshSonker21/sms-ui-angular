@@ -64,7 +64,6 @@ export class ProgramsList implements OnInit {
           return;
         }
         this.programs = [];
-        this.notification.warning(response.message || 'Failed to load programs.');
       },
       error: (error) => {
         this.programs = [];
@@ -183,7 +182,6 @@ export class ProgramsList implements OnInit {
           return;
         }
         this.faculties = [];
-        this.notification.warning(response.message || 'Failed to load faculties.');
       },
       error: (error) => {
         this.faculties = [];

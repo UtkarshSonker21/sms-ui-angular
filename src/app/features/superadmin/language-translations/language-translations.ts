@@ -103,7 +103,6 @@ export class LanguageTranslations implements OnInit {
           this.managementList = [];
           this.totalRecords = 0;
           this.dynamicLanguages = [];
-          this.notification.warning(response.message);
         }
       },
       error: (error) => {

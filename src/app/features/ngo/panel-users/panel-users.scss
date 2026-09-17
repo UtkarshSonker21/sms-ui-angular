@@ -300,63 +300,6 @@
     box-sizing: border-box !important;
     background: var(--da-surface) !important;
   }
-
-  /* Segmented button status control */
-  .pill-group {
-    display: flex !important;
-    width: 100% !important;
-    height: 34px !important;
-    background: var(--da-surface) !important;
-    border: 1px solid var(--da-border) !important;
-    border-radius: var(--da-radius-sm) !important;
-    padding: 3px !important;
-    box-sizing: border-box !important;
-    gap: 2px !important;
-  }
-
-  .pill-opt {
-    flex: 1 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    height: 100% !important;
-    padding: 0 !important;
-    font-size: 13px !important;
-    font-weight: 600 !important;
-    border-radius: 4px !important;
-    border: none !important;
-    background: transparent !important;
-    color: var(--da-muted) !important;
-    cursor: pointer !important;
-    font-family: inherit !important;
-    transition: all 0.15s ease !important;
-
-    &:hover {
-      color: var(--da-black) !important;
-    }
-
-    &.on-active {
-      background: var(--da-green) !important;
-      color: var(--da-white) !important;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08) !important;
-
-      &:hover {
-        background: var(--da-green-800) !important;
-        color: var(--da-white) !important;
-      }
-    }
-
-    &.on-disabled {
-      background: #6B7280 !important;
-      color: var(--da-white) !important;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08) !important;
-
-      &:hover {
-        background: #4B5563 !important;
-        color: var(--da-white) !important;
-      }
-    }
-  }
 }
 
 .modal-foot {

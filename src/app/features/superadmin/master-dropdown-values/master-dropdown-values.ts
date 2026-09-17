@@ -88,7 +88,6 @@ export class MasterDropdownValues implements OnInit {
         } else {
           this.valuesList = [];
           this.totalRecords = 0;
-          this.notification.warning(response.message);
         }
       },
       error: (error) => {

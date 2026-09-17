@@ -196,7 +196,6 @@ export class PanelUsers implements OnInit {
         } else {
           this.users = [];
           this.totalRecords = 0;
-          this.notification.warning(response.message);
         }
       },
       error: (error) => {
@@ -215,7 +214,7 @@ export class PanelUsers implements OnInit {
     this.kpiTotal = this.totalRecords;
     
     // Active / Role KPI counts are calculated from the current page's list of items
-    this.kpiActive = items.filter(x => x.isActive).length;
+    this.kpiActive = items.filter(x => !x.isDisabled).length;
     this.kpiCommittee = items.filter(x => x.roleId === 2).length;
     this.kpiMarketing = items.filter(x => x.roleId === 5).length;
     this.kpiFinance = items.filter(x => x.roleId === 6).length;
@@ -283,11 +282,11 @@ export class PanelUsers implements OnInit {
     this.selectedStatusFilter = status;
     this.isStatusFilterDropdownOpen = false;
     if (this.selectedStatusFilter === 'all') {
-      this.filter.isActive = undefined;
+      this.filter.isDisabled = undefined;
     } else if (this.selectedStatusFilter === 'active') {
-      this.filter.isActive = true;
+      this.filter.isDisabled = false;
     } else if (this.selectedStatusFilter === 'disabled') {
-      this.filter.isActive = false;
+      this.filter.isDisabled = true;
     }
     this.filter.pageNumber = 1;
     this.loadData();
@@ -350,7 +349,7 @@ export class PanelUsers implements OnInit {
     this.tempUserModel.roleId = 0;
     this.tempUserModel.gender = null;
     this.tempUserModel.staffSalutation = '';
-    this.tempUserModel.isActive = true;
+    this.tempUserModel.isDisabled = false;
     this.modalErrorMessage = '';
     this.isSalutationDropdownOpen = false;
     this.isGenderDropdownOpen = false;
