@@ -156,11 +156,12 @@
             {{ uni.accreditationStatus === AccreditationStatus.Pending ? 'Pending' : uni.accreditationStatus === AccreditationStatus.Accredited ? 'Accredited' : 'Rejected' }}
           </span>
         </td>
-        <td style="text-align: center !important;">
-          <a class="btn btn-t" (click)="viewUniversity(uni.universityId!)">
-            Review &rarr;
-          </a>
-        </td>
+          <td style="text-align: center !important;">
+            <button type="button" class="btn btn-g" style="padding: 4px 10px; font-size: 12px; height: 28px; display: inline-flex; align-items: center; justify-content: center;" 
+                (click)="viewUniversity(uni.universityId!)">
+                Review <i class="fas fa-arrow-right" style="margin-left: 4px; font-size: 10px;"></i>
+            </button>
+          </td>
       </tr>
 
       <tr *ngIf="universities.length === 0">
