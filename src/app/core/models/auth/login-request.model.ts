@@ -5,5 +5,5 @@ export class LoginRequest {
 
   email: string = '';
 
-  rememberMe: boolean = false;
+  rememberMe: boolean = true;
 }
