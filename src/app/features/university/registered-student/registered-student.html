@@ -18,7 +18,7 @@
       <button class="btn btn-faculties-outline" type="button" (click)="viewAcademicRecord()">
         View Academic Record
       </button>
-      <button class="btn btn-p" type="button" (click)="openStatusModal()">
+      <button *ngIf="!isNgoUser" class="btn btn-p" type="button" (click)="openStatusModal()">
         Update Status
       </button>
       <button class="btn btn-faculties-outline" type="button" (click)="goBack()"
