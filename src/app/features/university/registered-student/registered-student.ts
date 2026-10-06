@@ -8,6 +8,8 @@ import { HelperMethods } from '../../../core/helpers/helper-methods';
 import { StudentProgramService } from '../../../core/services/school/student-program.service';
 import { StudentStatusService } from '../../../core/services/common/student-status.service';
 import { StudentProgramApplication } from '../../../core/models/school/student-program-application/student-program-application.model';
+import { CurrentUserProfileService } from '../../../core/services/common/current-user-profile.service';
+import { StaffType } from '../../../core/enums/staff-type.enum';
 
 import { FormsModule } from '@angular/forms';
 
@@ -24,6 +26,7 @@ export class RegisteredStudent implements OnInit {
   private notification = inject(NotificationService);
   private studentProgramService = inject(StudentProgramService);
   private studentStatusService = inject(StudentStatusService);
+  private userProfileService = inject(CurrentUserProfileService);
 
   studentStatus = StudentStatusEnum;
   applicationId: number = 0;
@@ -31,6 +34,7 @@ export class RegisteredStudent implements OnInit {
   photoError: boolean = false;
   isLoading: boolean = true;
   apiGaps = true;
+  isNgoUser: boolean = false;
 
   // Status Update Modal
   showStatusModal: boolean = false;
@@ -38,6 +42,11 @@ export class RegisteredStudent implements OnInit {
   statusNotes: string = '';
 
   ngOnInit(): void {
+    const profile = this.userProfileService.getCurrentUserProfile();
+    if (profile && profile.staffType === StaffType.Ngo) {
+      this.isNgoUser = true;
+    }
+
     const idParam = this.route.snapshot.paramMap.get('id');
     if (idParam) {
       this.applicationId = +idParam;

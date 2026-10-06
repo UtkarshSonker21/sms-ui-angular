@@ -77,9 +77,9 @@ export class NgoStudents implements OnInit {
   // Dropdown States & Data
   countries: MasterCountryRequest[] = [];
   universities: MasterUniversityRequest[] = [];
-  
+
   statusOptions = this.studentStatusService.getStatusOptions(COMMITTEE_STATUS_IDS);
-  
+
   selectedCountry: number = 0;
   selectedUniversity: number = 0;
   selectedStatus: number | null = null;
@@ -148,7 +148,7 @@ export class NgoStudents implements OnInit {
         if (response.success && response.result) {
           this.students = response.result.items;
           this.totalRecords = response.result.totalCount;
-          
+
           if (this.selectedStatus === null) {
             this.allStudents = [...this.students];
             this.calculateKPIs(this.allStudents);
@@ -173,7 +173,7 @@ export class NgoStudents implements OnInit {
     this.kpiInProcess = this.studentStatusService.counts(items as any, StudentStatusEnum.AcceptanceInProcess);
     this.kpiSponsored = this.studentStatusService.counts(items as any, StudentStatusEnum.Sponsored);
     this.kpiRegistered = this.studentStatusService.counts(items as any, StudentStatusEnum.Registered);
-    
+
     this.tabAll = items.length;
     this.tabAwarded = this.studentStatusService.counts(items as any, StudentStatusEnum.Awarded);
     this.tabSponsored = this.kpiSponsored;
@@ -339,14 +339,14 @@ export class NgoStudents implements OnInit {
 
   previousPage(): void {
     if (!this.isPreviousDisabled) {
-      if(this.filter.pageNumber) this.filter.pageNumber--;
+      if (this.filter.pageNumber) this.filter.pageNumber--;
       this.loadData();
     }
   }
 
   nextPage(): void {
     if (!this.isNextDisabled) {
-      if(this.filter.pageNumber) this.filter.pageNumber++;
+      if (this.filter.pageNumber) this.filter.pageNumber++;
       this.loadData();
     }
   }
@@ -370,9 +370,14 @@ export class NgoStudents implements OnInit {
   viewStudent(studentId: number): void {
     const student = this.students.find(x => x.studentId === studentId);
     if (student) {
-      this.router.navigate(['/ngo-student-details', student.applicationId]);
+      if (student.applicationStatusId === StudentStatusEnum.Registered) {
+        this.router.navigate(['/registered-student', student.applicationId]);
+      } else {
+        this.router.navigate(['/ngo-student-details', student.applicationId]);
+      }
     }
   }
+
 
   photoErrors = new Set<number>();
 

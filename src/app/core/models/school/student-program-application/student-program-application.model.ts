@@ -81,7 +81,7 @@ export class StudentProgramApplication {
   // University
   universityId: number = 0;
   universityName: string = '';
-  
+
   // UniversityCountry
   universityCountryId: number = 0;
   universityCountryName: string = '';
@@ -93,5 +93,42 @@ export class StudentProgramApplication {
   canGraduate: boolean = false;
   canEdit: boolean = false;
   canView: boolean = false;
-  
+
+
+  // recently added
+  // Personal Information - Additional
+  tribeName: string = '';
+
+  // Address
+  house: string = '';
+
+  // Student Source
+  fromDaSchool?: boolean;
+  daStudentCode: string = '';
+
+  // Behavioral & Social Evaluation
+  financialNeedStatusId?: number;
+  financialNeedStatusName: string = '';
+
+  selfRelianceLevelId?: number;
+  selfRelianceLevelName: string = '';
+
+  motivationLevelId?: number;
+  motivationLevelName: string = '';
+
+  futureGoalsLevelId?: number;
+  futureGoalsLevelName: string = '';
+
+  // Transfer Student Information
+  transferInstitution: string = '';
+  transferProgram: string = '';
+  transferInstitutionType: string = '';
+  transferCredits?: number;
+  transferLastSemEnd?: Date;
+  transferGpa?: number;
+
+  // Recommendation
+  recommendationLetterPath: string = '';
+  recommendationLetterNotes: string = '';
+
 }

@@ -1,4 +1,4 @@
-﻿
+
 <!--
 ========================================================
 OLD UNIVERSITY STUDENT DETAILS DESIGN
@@ -823,7 +823,7 @@ DO NOT DELETE.
                     <div style="display: flex; flex-direction: column; gap: 12px;">
                         <div>
                             <div style="font-weight: 700; font-size: 15px; color: var(--da-text, #1e293b); margin-bottom: 4px;">Application Review</div>
-                            <div style="display: flex; align-items: center; gap: 6px; color: var(--da-success, #16a34a); font-weight: 600; font-size: 13.5px; margin-bottom: 8px;"><span>ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ Acceptance Completed</span></div>
+                            <div style="display: flex; align-items: center; gap: 6px; color: var(--da-success, #16a34a); font-weight: 600; font-size: 13.5px; margin-bottom: 8px;"><span>Acceptance Completed</span></div>
                             <div style="color: var(--da-muted, #64748b); font-size: 12.5px;">The application has been accepted successfully.</div>
                         </div>
                         <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
@@ -862,7 +862,7 @@ DO NOT DELETE.
                     <div style="display: flex; flex-direction: column; gap: 12px;">
                         <div>
                             <div style="font-weight: 700; font-size: 15px; color: var(--da-text, #1e293b); margin-bottom: 4px;">Application Review</div>
-                            <div style="display: flex; align-items: center; gap: 6px; color: var(--da-success, #16a34a); font-weight: 600; font-size: 13.5px; margin-bottom: 8px; margin-top: 4px;"><span>ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ Awarding Completed</span></div>
+                            <div style="display: flex; align-items: center; gap: 6px; color: var(--da-success, #16a34a); font-weight: 600; font-size: 13.5px; margin-bottom: 8px; margin-top: 4px;"><span>Awarding Completed</span></div>
                             <div style="color: var(--da-muted, #64748b); font-size: 12.5px;">This application has been awarded successfully and has been forwarded to the Direct Aid Committee for sponsorship review.</div>
                         </div>
                         <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
@@ -958,6 +958,18 @@ DO NOT DELETE.
                         <label class="field-label">ORPHAN NUMBER</label>
                         <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.orphanNumber || '-' }}</div>
                     </div>
+                    <div class="field">
+                        <label class="field-label">TRIBE NAME</label>
+                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.tribeName || '-' }}</div>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">FROM DA SCHOOL?</label>
+                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.fromDaSchool ? 'Yes' : 'No' }}</div>
+                    </div>
+                    <div class="field" *ngIf="student.fromDaSchool">
+                        <label class="field-label">DA STUDENT CODE</label>
+                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.daStudentCode || '-' }}</div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -997,6 +1009,10 @@ DO NOT DELETE.
                     <div class="field">
                         <label class="field-label">STREET</label>
                         <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.street || '-' }}</div>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">HOUSE</label>
+                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.house || '-' }}</div>
                     </div>
                 </div>
             </div>
@@ -1042,6 +1058,48 @@ DO NOT DELETE.
                         <label class="field-label">ENGLISH SCORE</label>
                         <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.englishScore !== undefined && student.englishScore !== null ? student.englishScore : '-' }}</div>
                     </div>
+                    
+                    <!-- Transfer Student Info -->
+                    <div class="field" style="grid-column: 1 / -1; margin-top: 16px;">
+                        <h4 style="margin: 0; font-size: 14px; font-weight: 600; color: var(--da-primary);">Transfer Student Information</h4>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">TRANSFER INSTITUTION</label>
+                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.transferInstitution || '-' }}</div>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">TRANSFER PROGRAM</label>
+                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.transferProgram || '-' }}</div>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">INSTITUTION TYPE</label>
+                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.transferInstitutionType || '-' }}</div>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">TRANSFER CREDITS</label>
+                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.transferCredits !== undefined && student.transferCredits !== null ? student.transferCredits : '-' }}</div>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">LAST SEMESTER END</label>
+                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.transferLastSemEnd ? (student.transferLastSemEnd | date:'mediumDate') : '-' }}</div>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">TRANSFER GPA</label>
+                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.transferGpa !== undefined && student.transferGpa !== null ? student.transferGpa : '-' }}</div>
+                    </div>
+                    
+                    <!-- Recommendation Info -->
+                    <div class="field" style="grid-column: 1 / -1; margin-top: 16px;">
+                        <h4 style="margin: 0; font-size: 14px; font-weight: 600; color: var(--da-primary);">Recommendation</h4>
+                    </div>
+                    <div class="field" style="grid-column: 1 / -1;">
+                        <label class="field-label">RECOMMENDATION LETTER NOTES</label>
+                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.recommendationLetterNotes || '-' }}</div>
+                    </div>
+                    <div class="field" style="grid-column: 1 / -1;" *ngIf="student.recommendationLetterPath">
+                        <label class="field-label">RECOMMENDATION LETTER PATH</label>
+                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.recommendationLetterPath }}</div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1060,19 +1118,19 @@ DO NOT DELETE.
                 <div class="form-grid form-grid-2">
                     <div class="field">
                         <label class="field-label">FINANCIAL NEED</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc);">{{ $any(student).financialNeedStatusName || '-' }}</div>
+                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc);">{{ student.financialNeedStatusName || '-' }}</div>
                     </div>
                     <div class="field">
                         <label class="field-label">SELF-RELIANCE LEVEL</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc);">{{ $any(student).selfRelianceLevelName || '-' }}</div>
+                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc);">{{ student.selfRelianceLevelName || '-' }}</div>
                     </div>
                     <div class="field">
                         <label class="field-label">MOTIVATION LEVEL</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc);">{{ $any(student).motivationLevelName || '-' }}</div>
+                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc);">{{ student.motivationLevelName || '-' }}</div>
                     </div>
                     <div class="field">
                         <label class="field-label">FUTURE GOALS ALIGNMENT</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc);">{{ $any(student).futureGoalsLevelName || '-' }}</div>
+                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc);">{{ student.futureGoalsLevelName || '-' }}</div>
                     </div>
                 </div>
             </div>
@@ -1163,3 +1221,4 @@ DO NOT DELETE.
 
     </div>
 </div>
+
