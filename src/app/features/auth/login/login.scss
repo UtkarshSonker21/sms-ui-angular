@@ -169,7 +169,7 @@
   width: 14px;
   height: 14px;
   border: 1px solid var(--da-border-strong);
-  border-radius: var(--da-radius-sm);
+  border-radius: 3px;
   background: var(--da-surface);
   cursor: pointer;
   position: relative;
@@ -188,13 +188,14 @@
 
 .remember-me input[type="checkbox"]:checked::after {
   content: "";
-  width: 4px;
+  width: 3px;
   height: 7px;
   border: solid white;
   border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
   position: absolute;
-  top: 1px;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(45deg);
 }
 
 .remember-me span {
