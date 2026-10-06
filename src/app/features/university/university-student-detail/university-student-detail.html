@@ -766,10 +766,17 @@ DO NOT DELETE.
             <div *ngFor="let doc of documents" style="display: flex; justify-content: space-between; align-items: center; padding: 16px; background: var(--da-surface-2); border: 1px solid var(--da-border); border-radius: 6px; margin-bottom: 12px;">
                 <div>
                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                        <div *ngIf="getUploadedDocStatus(doc.documentTypeId) === 'Uploaded'" style="width: 24px; height: 24px; border-radius: 50%; background: #dcfce7; display: flex; align-items: center; justify-content: center;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </div>
+
                         <strong style="font-size: 14px; color: var(--da-text);">{{ doc.documentTypeName }}</strong>
+
                         <span *ngIf="doc.isRequired" class="badge" style="background: var(--da-danger-bg, #fef2f2); color: var(--da-danger, #dc2626); border: 1px solid var(--da-danger-border, #fecaca); padding: 2px 8px; border-radius: 12px; font-size: 11px;">Required</span>
                         <span *ngIf="!doc.isRequired" class="badge" style="background: var(--da-info-bg, #eff6ff); color: var(--da-info, #2563eb); border: 1px solid var(--da-info-border, #bfdbfe); padding: 2px 8px; border-radius: 12px; font-size: 11px;">Optional</span>
-                        <span class="badge" [ngStyle]="{ 'background': getUploadedDocStatus(doc.documentTypeId) === 'Uploaded' ? '#dcfce7' : '#f1f5f9', 'color': getUploadedDocStatus(doc.documentTypeId) === 'Uploaded' ? '#166534' : '#475569', 'padding': '2px 8px', 'border-radius': '12px', 'font-size': '11px', 'margin-left': '8px' }">
+                        <span *ngIf="getUploadedDocStatus(doc.documentTypeId) !== 'Uploaded'" class="badge" style="background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 12px; font-size: 11px;">
                             {{ getUploadedDocStatus(doc.documentTypeId) }}
                         </span>
                     </div>
