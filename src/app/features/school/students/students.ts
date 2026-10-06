@@ -591,9 +591,12 @@ export class Students implements OnInit {
         this.isApplying = false;
       },
       error: (error) => {
+        // this.notification.handleBusinessError(
+        //   error,
+        //   'Failed to create draft application.'
+        // );
         this.notification.handleBusinessError(
-          error,
-          'Failed to create draft application.'
+          error
         );
         this.isApplying = false;
       }
