@@ -10,6 +10,9 @@ import { StudentStatusEnum } from '../../../core/enums/student-application-statu
 import { HelperMethods } from '../../../core/helpers/helper-methods';
 import { NotificationService } from '../../../core/services/common/notification.service';
 import { CurrentUserProfileService } from '../../../core/services/common/current-user-profile.service';
+import { MatDialog } from '@angular/material/dialog';
+import { StaffType } from '../../../core/enums/staff-type.enum';
+import { AcademicCalendarComponent } from '../../university/academic-calendar/academic-calendar';
 
 export interface DashboardStat {
   title: string;
@@ -50,6 +53,23 @@ export class UniversityDashboard implements OnInit {
   private notification = inject(NotificationService);
   private router = inject(Router);
   private currentUserProfileService = inject(CurrentUserProfileService);
+  private dialog = inject(MatDialog);
+
+  get isUniversityUser(): boolean {
+    return this.currentUserProfileService.getCurrentUserProfile()?.staffType === StaffType.University;
+  }
+
+  openAcademicCalendar(): void {
+    this.dialog.open(AcademicCalendarComponent, {
+      width: '1120px',
+      maxWidth: '96vw',
+      maxHeight: '92vh',
+      panelClass: 'academic-calendar-dialog-panel',
+      autoFocus: true,
+      restoreFocus: true,
+      ariaLabel: 'Academic Calendar Configuration'
+    });
+  }
 
   ngOnInit(): void {
     const profile = this.currentUserProfileService.getCurrentUserProfile();

@@ -259,6 +259,15 @@ export const ApiEndpoints = {
       AcademicRegistrationRegister: 'university/academic-registration/register',
     },
 
+    AcademicCalendars: {
+      Create: 'university/academic-calendars',
+      Update: (academicCalendarId: number) => `university/academic-calendars/${academicCalendarId}`,
+      GetById: (academicCalendarId: number) => `university/academic-calendars/${academicCalendarId}`,
+      GetByUniversity: (universityId: number) => `university/academic-calendars/by-university/${universityId}`,
+      GetByAcademicYear: (universityId: number, academicYearName: string) =>
+        `university/academic-calendars/by-academic-year?universityId=${universityId}&academicYearName=${encodeURIComponent(academicYearName)}`
+    },
+
   },
 
   School: {

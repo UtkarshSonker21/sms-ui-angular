@@ -6,6 +6,15 @@
       <h1 class="page-title">{{ welcomeMessage }}</h1>
       <div class="page-sub">{{ subtitleMessage }}</div>
     </div>
+    <button
+      *ngIf="isUniversityUser"
+      type="button"
+      class="btn btn-p calendar-configure-action"
+      (click)="openAcademicCalendar()"
+      aria-label="Configure Academic Calendar">
+      <i class="far fa-calendar-alt" aria-hidden="true"></i>
+      Configure Academic Calendar
+    </button>
   </div>
 
   <!-- 2. Statistics Cards Grid (Using Kafaat Design System KPI classes) -->

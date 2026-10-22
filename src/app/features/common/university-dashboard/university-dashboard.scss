@@ -11,6 +11,20 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 16px;
+}
+
+.calendar-configure-action {
+  flex-shrink: 0;
+  gap: 8px;
+
+  @media (max-width: 640px) {
+    align-self: flex-start;
+    white-space: normal;
+    height: auto;
+    min-height: 38px;
+    text-align: left;
+  }
 }
 
 /* Statistics Grid - using global .kpi-grid but specifying columns */
