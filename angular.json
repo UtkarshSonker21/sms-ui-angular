@@ -76,8 +76,13 @@
           "defaultConfiguration": "development"
         },
         "test": {
-          "builder": "@angular/build:unit-test"
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "buildTarget": "sms-ui:build:development",
+            "tsConfig": "tsconfig.spec.json",
+            "runner": "vitest"
           }
+        }
         }
       }
     }

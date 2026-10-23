@@ -164,4 +164,254 @@
   }
 }
 
+.semester-confirm-dialog {
+  width: min(1100px, calc(100vw - 40px));
+  max-width: 1100px;
+  box-sizing: border-box;
+  height: min(780px, calc(100vh - 40px));
+  height: min(780px, calc(100dvh - 40px));
+  min-height: min(620px, calc(100vh - 40px));
+  min-height: min(620px, calc(100dvh - 40px));
+  max-height: calc(100vh - 40px);
+  max-height: calc(100dvh - 40px);
+  display: flex;
+  flex-direction: column;
+}
+
+.semester-confirm-dialog .modal-head {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 20px 24px;
+}
+
+.semester-confirm-dialog .modal-head > div:first-child {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.semester-confirm-dialog .modal-title {
+  color: var(--theme-text-primary, var(--da-black));
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.semester-confirm-dialog .modal-sub {
+  max-width: 760px;
+  color: var(--theme-text-muted, var(--da-muted));
+}
+
+.semester-confirm-dialog .modal-close {
+  flex: 0 0 auto;
+  font-size: 13px;
+}
+
+.semester-calendar-select {
+  width: 100%;
+  min-width: 0;
+  color: var(--theme-text-primary, var(--da-black));
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.semester-calendar-field {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  width: 100%;
+  margin-bottom: 14px;
+}
+
+.semester-calendar-content {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+}
+
+.semester-content-area {
+  min-height: 360px;
+}
+
+.semester-loading-state {
+  display: flex;
+  min-height: 360px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--theme-text-muted, var(--da-muted));
+  font-size: 13px;
+}
+
+.semester-loading-spinner {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  border: 2px solid var(--theme-primary, var(--da-green));
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: semester-dialog-spin 0.7s linear infinite;
+}
+
+@keyframes semester-dialog-spin {
+  to { transform: rotate(360deg); }
+}
+
+.semester-calendar-dropdown {
+  position: static !important;
+  inset: auto !important;
+  box-sizing: border-box;
+  width: 100%;
+  max-height: min(240px, 40vh);
+  margin: -8px 0 14px;
+  overflow-y: auto;
+}
+
+.semester-confirm-dialog .semester-calendar-field .form-label {
+  min-width: 0;
+  margin: 0;
+  text-align: left;
+}
+
+.semester-calendar-select .ms-display {
+  min-width: 0;
+  overflow: hidden;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.semester-confirm-dialog .modal-close:focus-visible,
+.semester-confirm-dialog .btn:focus-visible {
+  outline: 2px solid var(--theme-primary, var(--da-green));
+  outline-offset: 2px;
+}
+
+.semester-confirm-dialog .modal-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  overflow: auto;
+  padding: 20px 24px;
+}
+
+.semester-confirm-dialog .modal-foot {
+  flex: 0 0 auto;
+}
+
+.semester-confirm-dialog .form-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--theme-text-secondary, var(--da-text-2));
+  font-size: 12px;
+  font-weight: 600;
+}
+
+@media (max-width: 600px) {
+  .semester-calendar-field {
+    gap: 6px;
+  }
+}
+
+.semester-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+}
+
+.semester-date-table {
+  width: 100%;
+  min-width: 900px;
+  table-layout: fixed;
+  margin-bottom: 0;
+}
+
+.semester-date-table th:first-child,
+.semester-date-table td:first-child {
+  width: 18%;
+}
+
+.semester-date-table th:not(:first-child),
+.semester-date-table td:not(:first-child) {
+  width: 20.5%;
+}
+
+.semester-date-table th {
+  white-space: normal;
+  vertical-align: middle;
+}
+
+.semester-date-table td {
+  vertical-align: middle;
+}
+
+.semester-date-table .app-date-field {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  padding-inline: 7px;
+  pointer-events: auto;
+  cursor: pointer;
+  -webkit-appearance: auto;
+  appearance: auto;
+}
+
+.semester-date-table .app-date-field::-webkit-calendar-picker-indicator {
+  position: relative;
+  z-index: 2;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.semester-date-name {
+  display: block;
+  color: var(--theme-text-primary, var(--da-black));
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.semester-date-year {
+  display: block;
+  margin-top: 3px;
+  color: var(--theme-text-muted, var(--da-muted));
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.semester-confirm-dialog .modal-foot {
+  flex: 0 0 auto;
+  padding: 14px 24px;
+}
+
+@media (max-width: 640px) {
+  .semester-confirm-dialog {
+    height: calc(100vh - 24px);
+    height: calc(100dvh - 24px);
+    min-height: min(560px, calc(100vh - 24px));
+    min-height: min(560px, calc(100dvh - 24px));
+    max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
+  }
+
+  .semester-confirm-dialog .modal-title {
+    white-space: normal;
+  }
+
+  .semester-confirm-dialog .modal-head,
+  .semester-confirm-dialog .modal-body {
+    padding-inline: 16px;
+  }
+
+  .semester-confirm-dialog .modal-foot {
+    padding: 12px 16px;
+  }
+}
 

@@ -1,0 +1,99 @@
+/* Shared date controls for dialogs that opt in with app-date-dialog. */
+.app-date-dialog {
+  color: var(--theme-text-primary, var(--da-black));
+
+  .app-date-field,
+  .app-date-select {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    height: var(--da-control-height, 34px);
+    padding: 0 10px;
+    border: 1px solid var(--theme-border, var(--da-border));
+    border-radius: var(--da-radius-sm, 6px);
+    background-color: var(--theme-bg-surface, var(--da-surface));
+    color: var(--theme-text-primary, var(--da-black));
+    font: inherit;
+    font-size: 13px;
+    line-height: 1.4;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  }
+
+  .app-date-field:hover:not(:disabled),
+  .app-date-select:hover:not(:disabled) {
+    border-color: var(--theme-border-strong, var(--da-border-strong));
+  }
+
+  .app-date-field:focus-visible,
+  .app-date-select:focus-visible {
+    outline: 2px solid var(--theme-primary, var(--da-green));
+    outline-offset: 1px;
+    border-color: var(--theme-primary, var(--da-green));
+  }
+
+  .app-date-field:disabled,
+  .app-date-select:disabled {
+    cursor: not-allowed;
+    background-color: var(--theme-bg-body, var(--da-white));
+    color: var(--theme-text-muted, var(--da-muted));
+    opacity: 0.72;
+  }
+
+  .app-date-field::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.75;
+  }
+
+  .app-date-field:disabled::-webkit-calendar-picker-indicator {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+}
+
+/* The program-semester calendar menu uses the same trigger and option pattern
+   as Academic Configuration, while its explicit class keeps the overlay scoped. */
+.semester-calendar-dropdown {
+  position: static !important;
+  inset: auto !important;
+  box-sizing: border-box;
+  width: 100%;
+  max-height: min(260px, 50vh);
+  overflow-y: auto;
+}
+
+.semester-calendar-dropdown .semester-calendar-option {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: var(--da-radius-sm, 6px);
+  outline: 0;
+  background: transparent;
+  box-shadow: none;
+  appearance: none;
+  color: var(--theme-text-secondary, var(--da-text-2));
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.35;
+  text-align: start;
+  cursor: pointer;
+}
+
+.semester-calendar-dropdown .semester-calendar-option:hover,
+.semester-calendar-dropdown .semester-calendar-option.checked {
+  background: var(--theme-primary-light, var(--da-green-50));
+  color: var(--theme-primary-dark, var(--da-green-800));
+}
+
+.semester-calendar-dropdown .semester-calendar-option.checked {
+  font-weight: 600;
+}
+
+.semester-calendar-dropdown .semester-calendar-option:focus-visible {
+  outline: 2px solid var(--theme-primary, var(--da-green));
+  outline-offset: -2px;
+}

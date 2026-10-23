@@ -90,6 +90,10 @@
                     </div>
                 </td>
                 <td class="row-actions" style="text-align: center !important;">
+                    <button type="button" class="icon-btn" title="Confirm Program Semesters"
+                        (click)="openConfirmProgramSemesters(program)">
+                        <i class="far fa-calendar-check"></i>
+                    </button>
                     <button type="button" class="icon-btn" title="Edit" (click)="openEditProgram(program)">
                         <i class="far fa-edit"></i>
                     </button>
@@ -141,6 +145,114 @@
                     <i class="fas fa-chevron-right" style="font-size: 11px;"></i>
                 </button>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Program Semester Confirmation Modal -->
+<div class="modal-backdrop" *ngIf="showSemesterModal">
+    <div class="modal-card semester-confirm-dialog app-date-dialog">
+        <div class="modal-head">
+            <div>
+                <div class="modal-title">Confirm Program Semesters</div>
+                <div class="modal-sub" *ngIf="programForSemesterConfirmation">
+                    {{ programForSemesterConfirmation.programName }} — review and confirm dates for all
+                    {{ programForSemesterConfirmation.numberOfSemesters }} semesters.
+                </div>
+            </div>
+            <button type="button" class="modal-close" (click)="closeSemesterModal()" [disabled]="isSavingSemesters">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body" (click)="isSemesterCalendarDropdownOpen = false">
+            <div class="modal-error" *ngIf="semesterModalError">{{ semesterModalError }}</div>
+            <div class="semester-calendar-content">
+                <div class="semester-calendar-field">
+                    <label class="form-label" for="semesterCalendar">Academic calendar</label>
+                    <div id="semesterCalendar" class="multi-select semester-calendar-select"
+                        [class.open]="isSemesterCalendarDropdownOpen"
+                        role="combobox" aria-haspopup="listbox" aria-label="Academic calendar"
+                        [attr.aria-expanded]="isSemesterCalendarDropdownOpen" aria-controls="semesterCalendarOptions"
+                        [attr.aria-disabled]="isSavingSemesters" [attr.tabindex]="isSavingSemesters ? -1 : 0"
+                        (click)="toggleSemesterCalendarDropdown($event)" (keydown)="handleSemesterCalendarDropdownKeydown($event)">
+                        <span class="ms-display" [class.has-selection]="selectedAcademicCalendarId != null">{{ semesterCalendarLabel() }}</span>
+                        <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+                    </div>
+                </div>
+                <div *ngIf="isSemesterCalendarDropdownOpen" id="semesterCalendarOptions"
+                    class="ms-panel semester-calendar-dropdown" role="listbox" aria-label="Academic calendar options"
+                    (click)="$event.stopPropagation()">
+                        <button type="button" class="ms-option semester-calendar-option"
+                            [class.checked]="selectedAcademicCalendarId == null" role="option"
+                            [attr.aria-selected]="selectedAcademicCalendarId == null"
+                            (click)="loadSemesterDefaults(null)" (keydown)="handleSemesterCalendarOptionKeydown($event, 0)">
+                            Select an academic calendar to generate dates
+                        </button>
+                        <button type="button" class="ms-option semester-calendar-option" *ngFor="let calendar of academicCalendars; let i = index"
+                            [class.checked]="selectedAcademicCalendarId === calendar.academicCalendarId" role="option"
+                            [attr.aria-selected]="selectedAcademicCalendarId === calendar.academicCalendarId"
+                            (click)="loadSemesterDefaults(calendar.academicCalendarId)"
+                            (keydown)="handleSemesterCalendarOptionKeydown($event, i + 1)">
+                            {{ calendar.academicYearName }} ({{ calendar.periodStartDate | date:'mediumDate' }} – {{ calendar.periodEndDate | date:'mediumDate' }})
+                        </button>
+                </div>
+                <div class="semester-content-area">
+                <div *ngIf="isLoadingSemesters" class="semester-loading-state" role="status" aria-live="polite">
+                    <span class="semester-loading-spinner" aria-hidden="true"></span>
+                    <span>Loading program semesters...</span>
+                </div>
+                <ng-container *ngIf="!isLoadingSemesters">
+                <div class="semester-table-wrap">
+                <table class="table semester-date-table">
+                    <thead>
+                        <tr>
+                            <th>Semester</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Registration Start</th>
+                            <th>Registration End</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let semester of programSemesters">
+                            <td>
+                                <span class="semester-date-name">{{ semester.semesterName }}</span>
+                                <small class="semester-date-year" *ngIf="semester.academicYearName">
+                                    {{ semester.academicYearName }}
+                                </small>
+                            </td>
+                            <td><input type="date" class="form-control app-date-field" [name]="'semesterStart' + semester.semesterNo"
+                                [(ngModel)]="semester.startDate" [disabled]="isSavingSemesters"
+                                (click)="openNativeDatePicker($event)"></td>
+                            <td><input type="date" class="form-control app-date-field" [name]="'semesterEnd' + semester.semesterNo"
+                                [(ngModel)]="semester.endDate" [disabled]="isSavingSemesters"
+                                (click)="openNativeDatePicker($event)"></td>
+                            <td><input type="date" class="form-control app-date-field" [name]="'registrationStart' + semester.semesterNo"
+                                [(ngModel)]="semester.registrationStartDate" [disabled]="isSavingSemesters"
+                                (click)="openNativeDatePicker($event)"></td>
+                            <td><input type="date" class="form-control app-date-field" [name]="'registrationEnd' + semester.semesterNo"
+                                [(ngModel)]="semester.registrationEndDate" [disabled]="isSavingSemesters"
+                                (click)="openNativeDatePicker($event)"></td>
+                        </tr>
+                        <tr *ngIf="programSemesters.length === 0">
+                            <td colspan="5" class="courses-empty">No semesters are configured for this program.</td>
+                        </tr>
+                    </tbody>
+                </table>
+                </div>
+                <p class="text-muted" style="font-size: 12px; margin: 8px 0 0;">
+                    Generated dates follow the selected calendar. Existing saved dates are retained and can be reviewed here.
+                </p>
+                </ng-container>
+                </div>
+            </div>
+        </div>
+        <div class="modal-foot">
+            <button type="button" class="btn btn-g" (click)="closeSemesterModal()" [disabled]="isSavingSemesters">Cancel</button>
+            <button type="button" class="btn btn-p" (click)="saveConfirmedSemesters()"
+                [disabled]="isLoadingSemesters || isSavingSemesters || !selectedAcademicCalendarId || programSemesters.length === 0">
+                {{ isSavingSemesters ? 'Saving...' : 'Confirm Dates' }}
+            </button>
         </div>
     </div>
 </div>

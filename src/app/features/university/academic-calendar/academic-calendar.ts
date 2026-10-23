@@ -13,10 +13,6 @@ import { NotificationService } from '../../../core/services/common/notification.
 import { AcademicCalendarService } from '../../../core/services/university/academic-calendar.service';
 import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
 
-type NewCalendarSourceBaseline = Pick<AcademicCalendarRequest,
-  'academicYearName' | 'periodStartDate' | 'periodEndDate' | 'academicYearStartMonth' |
-  'academicYearEndMonth' | 'termsPerYear' | 'namingStyle' | 'terms'>;
-
 @Component({
   selector: 'app-academic-calendar',
   standalone: true,
@@ -31,31 +27,25 @@ export class AcademicCalendarComponent implements OnInit {
   private readonly confirmDialog = inject(ConfirmDialogService);
   private readonly dialogRef = inject(MatDialogRef<AcademicCalendarComponent>);
   calendars: AcademicCalendarResponse[] = [];
-  sourceCalendars: AcademicCalendarResponse[] = [];
   universityId: number | null = null;
   screen: 'list' | 'form' = 'list';
   formStep: 1 | 2 = 1;
   isLoading = false;
   isSaving = false;
   isLoadingCalendar = false;
-  isLoadingSourceCalendars = false;
-  isLoadingSourceDetails = false;
-  sourceCalendarsError = '';
-  sourceDetailsError = '';
+  isLoadingReusableConfiguration = false;
   dropdownWidth = 0;
   readonly dropdownPositions: ConnectedPosition[] = [
     { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top', offsetY: 4 },
     { originX: 'start', originY: 'top', overlayX: 'start', overlayY: 'bottom', offsetY: -4 },
   ];
-  openDropdown: 'academicYearStartMonth' | 'academicYearEndMonth' | 'termsPerYear' | 'namingStyle' | 'reusedFromCalendarId' | null = null;
+  openDropdown: 'academicYearStartMonth' | 'academicYearEndMonth' | 'termsPerYear' | 'namingStyle' | null = null;
   calendarLoadFailed = false;
   hasLoadError = false;
   loadErrorMessage = '';
   attemptedSubmit = false;
   formErrorMessage = '';
   editingCalendarId: number | null = null;
-  private newCalendarSourceBaseline: NewCalendarSourceBaseline | null = null;
-  private sourceDetailsRequestId = 0;
   calendar = this.createEmptyCalendar();
   readonly namingStyles = ['Term', 'Semester', 'Seasonal', 'Custom'];
   readonly months = [
@@ -91,20 +81,16 @@ export class AcademicCalendarComponent implements OnInit {
         this.isLoading = false;
         if (response.success && response.result) {
           this.calendars = response.result;
-          this.sourceCalendars = response.result;
-          this.sourceCalendarsError = '';
           return;
         }
 
         this.calendars = [];
-        this.sourceCalendars = [];
         this.hasLoadError = true;
         this.loadErrorMessage = response.message || 'Unable to load academic calendars.';
       },
       error: (error) => {
         this.isLoading = false;
         this.calendars = [];
-        this.sourceCalendars = [];
         this.hasLoadError = true;
         this.loadErrorMessage = error?.error?.message ?? error?.error?.Message ?? 'Unable to load academic calendars.';
         this.notification.handleBusinessError(error, 'Failed to load academic calendars.');
@@ -117,30 +103,21 @@ export class AcademicCalendarComponent implements OnInit {
     if (!this.universityId) return;
     this.editingCalendarId = null;
     this.calendar = this.createEmptyCalendar();
-    this.newCalendarSourceBaseline = null;
-    this.isLoadingSourceDetails = false;
-    this.sourceDetailsError = '';
-    this.sourceDetailsRequestId++;
     this.resetFormState();
     this.calendarLoadFailed = false;
     this.formStep = 1;
     this.screen = 'form';
-    this.refreshSourceCalendars();
+    this.loadReusableConfiguration();
   }
 
   editCalendar(item: AcademicCalendarResponse): void {
     this.syncUniversityContext();
     this.editingCalendarId = item.academicCalendarId;
-    this.newCalendarSourceBaseline = null;
-    this.isLoadingSourceDetails = false;
-    this.sourceDetailsError = '';
-    this.sourceDetailsRequestId++;
     this.resetFormState();
     this.calendarLoadFailed = false;
     this.formStep = 1;
     this.isLoadingCalendar = true;
     this.screen = 'form';
-    this.refreshSourceCalendars();
     this.calendarService.getCalendarById(item.academicCalendarId).subscribe({
       next: (response) => {
         this.isLoadingCalendar = false;
@@ -160,18 +137,12 @@ export class AcademicCalendarComponent implements OnInit {
         this.calendar.academicYearEndMonth = source.academicYearEndMonth;
         this.calendar.termsPerYear = source.termsPerYear;
         this.calendar.namingStyle = this.isNamingStyle(source.namingStyle) ? source.namingStyle : 'Term';
-        this.calendar.reusePreviousCalendar = source.reusePreviousCalendar;
-        this.calendar.reusedFromCalendarId = source.reusedFromCalendarId ?? null;
         this.calendar.terms = source.terms
           .slice()
           .sort((a, b) => a.termSequence - b.termSequence)
           .map(term => ({
             termSequence: term.termSequence,
-            termName: term.termName,
-            startDate: term.startDate,
-            endDate: term.endDate,
-            registrationStartDate: term.registrationStartDate,
-            registrationEndDate: term.registrationEndDate,
+            termName: term.termName
           }));
       },
       error: (error) => {
@@ -191,9 +162,7 @@ export class AcademicCalendarComponent implements OnInit {
     const currentCount = this.calendar.termsPerYear;
     if (count < currentCount) {
       const removedTerms = this.calendar.terms.slice(count);
-      const hasEnteredData = removedTerms.some(term =>
-        !!(term.termName || term.startDate || term.endDate || term.registrationStartDate || term.registrationEndDate)
-      );
+      const hasEnteredData = removedTerms.some(term => !!term.termName);
 
       if (hasEnteredData) {
         const confirmed = await this.confirmDialog.confirm({
@@ -222,21 +191,10 @@ export class AcademicCalendarComponent implements OnInit {
     this.calendar.terms.forEach((term, index) => term.termSequence = index + 1);
   }
 
-  setReusePreviousCalendar(enabled: boolean): void {
-    this.calendar.reusePreviousCalendar = enabled;
-    if (!enabled) {
-      this.sourceDetailsRequestId++;
-      this.isLoadingSourceDetails = false;
-      this.sourceDetailsError = '';
-      this.calendar.reusedFromCalendarId = null;
-      this.restoreNewCalendarSourceBaseline();
-    }
-  }
-
   goToTerms(form: NgForm): void {
     this.attemptedSubmit = true;
     form.control.markAllAsTouched();
-    if (form.invalid || this.isLoadingSourceDetails || this.getAcademicYearValidationErrors().length > 0) return;
+    if (form.invalid || this.isLoadingReusableConfiguration || this.getAcademicYearValidationErrors().length > 0) return;
 
     this.attemptedSubmit = false;
     this.formStep = 2;
@@ -248,12 +206,6 @@ export class AcademicCalendarComponent implements OnInit {
     this.formErrorMessage = '';
   }
 
-  availableSourceCalendars(): AcademicCalendarResponse[] {
-    return this.sourceCalendars.filter(item =>
-      item.universityId === this.universityId && item.academicCalendarId !== this.editingCalendarId
-    );
-  }
-
   @HostListener('document:click')
   closeDropdowns(): void {
     this.openDropdown = null;
@@ -261,7 +213,6 @@ export class AcademicCalendarComponent implements OnInit {
 
   toggleDropdown(name: NonNullable<AcademicCalendarComponent['openDropdown']>, event: Event): void {
     event.stopPropagation();
-    if (name === 'reusedFromCalendarId' && (!this.calendar.reusePreviousCalendar || this.isLoadingSourceDetails)) return;
     if (this.openDropdown === name) {
       this.openDropdown = null;
       return;
@@ -303,118 +254,6 @@ export class AcademicCalendarComponent implements OnInit {
     this.openDropdown = null;
   }
 
-  selectSourceCalendar(value: number | null): void {
-    this.openDropdown = null;
-    if (!this.calendar.reusePreviousCalendar || this.isLoadingSourceDetails) return;
-
-    const previousSourceId = this.calendar.reusedFromCalendarId ?? null;
-    if (value === null) {
-      this.sourceDetailsRequestId++;
-      this.isLoadingSourceDetails = false;
-      this.sourceDetailsError = '';
-      this.calendar.reusedFromCalendarId = null;
-      if (!this.editingCalendarId) this.restoreNewCalendarSourceBaseline();
-      return;
-    }
-
-    if (previousSourceId === value) {
-      this.sourceDetailsError = '';
-      return;
-    }
-
-    this.calendar.reusedFromCalendarId = value;
-    this.sourceDetailsError = '';
-    if (this.editingCalendarId) return;
-
-    if (!this.newCalendarSourceBaseline) this.newCalendarSourceBaseline = this.captureNewCalendarSourceBaseline();
-    const requestId = ++this.sourceDetailsRequestId;
-    this.isLoadingSourceDetails = true;
-    this.calendarService.getCalendarById(value).subscribe({
-      next: response => {
-        if (requestId !== this.sourceDetailsRequestId) return;
-        this.isLoadingSourceDetails = false;
-        if (!response.success || !response.result) {
-          const message = response.message || 'Unable to load the selected source calendar.';
-          this.failSourceCalendarLoad(previousSourceId, message);
-          this.notification.warning(message);
-          return;
-        }
-
-        const source = response.result;
-        if (!Array.isArray(source.terms) || source.terms.length !== source.termsPerYear) {
-          const message = 'The selected source calendar does not contain its complete term schedule.';
-          this.failSourceCalendarLoad(previousSourceId, message);
-          this.notification.warning(message);
-          return;
-        }
-
-        const nextPeriodStartDate = this.advanceDateByOneCalendarYear(source.periodStartDate);
-        const nextPeriodEndDate = this.advanceDateByOneCalendarYear(source.periodEndDate);
-        if (!nextPeriodStartDate || !nextPeriodEndDate) {
-          const message = 'The selected source calendar has a missing or invalid period date, so the next year could not be generated.';
-          this.failSourceCalendarLoad(previousSourceId, message);
-          this.notification.warning(message);
-          return;
-        }
-
-        const nextTerms = source.terms
-          .slice()
-          .sort((a, b) => a.termSequence - b.termSequence)
-          .map(term => {
-            const startDate = this.advanceDateByOneCalendarYear(term.startDate);
-            const endDate = this.advanceDateByOneCalendarYear(term.endDate);
-            const registrationStartDate = this.advanceDateByOneCalendarYear(term.registrationStartDate);
-            const registrationEndDate = this.advanceDateByOneCalendarYear(term.registrationEndDate);
-            if (!startDate || !endDate || !registrationStartDate || !registrationEndDate) return null;
-
-            const copiedTerm = new AcademicTermRequest();
-            copiedTerm.termSequence = term.termSequence;
-            copiedTerm.termName = term.termName;
-            copiedTerm.startDate = startDate;
-            copiedTerm.endDate = endDate;
-            copiedTerm.registrationStartDate = registrationStartDate;
-            copiedTerm.registrationEndDate = registrationEndDate;
-            return copiedTerm;
-          });
-        if (nextTerms.some(term => term === null)) {
-          const message = 'The selected source calendar has a missing or invalid term date, so the next year could not be generated.';
-          this.failSourceCalendarLoad(previousSourceId, message);
-          this.notification.warning(message);
-          return;
-        }
-
-        this.calendar.academicYearName = this.generateNextAcademicYearName(
-          source.academicYearName,
-          nextPeriodStartDate,
-          nextPeriodEndDate
-        );
-        this.calendar.periodStartDate = nextPeriodStartDate;
-        this.calendar.periodEndDate = nextPeriodEndDate;
-        this.calendar.academicYearStartMonth = source.academicYearStartMonth;
-        this.calendar.academicYearEndMonth = source.academicYearEndMonth;
-        this.calendar.termsPerYear = source.termsPerYear;
-        this.calendar.namingStyle = this.isNamingStyle(source.namingStyle) ? source.namingStyle : 'Term';
-        this.calendar.terms = nextTerms.filter((term): term is AcademicTermRequest => term !== null);
-      },
-      error: error => {
-        if (requestId !== this.sourceDetailsRequestId) return;
-        this.isLoadingSourceDetails = false;
-        const message = error?.error?.message ?? error?.error?.Message ?? 'Unable to load the selected source calendar.';
-        this.failSourceCalendarLoad(previousSourceId, message);
-        this.notification.handleBusinessError(error, 'Failed to load source calendar details.');
-      }
-    });
-  }
-
-  sourceCalendarLabel(calendarId: number): string {
-    return this.sourceCalendars.find(item => item.academicCalendarId === calendarId)?.academicYearName ?? 'No source calendar';
-  }
-
-  retrySourceCalendars(event: Event): void {
-    event.stopPropagation();
-    this.refreshSourceCalendars();
-  }
-
   monthLabel(value: number): string {
     return this.months.find(month => month.value === value)?.label ?? '';
   }
@@ -429,7 +268,7 @@ export class AcademicCalendarComponent implements OnInit {
     this.formErrorMessage = '';
     form.control.markAllAsTouched();
 
-    if (form.invalid || this.getValidationErrors().length > 0 || this.isSaving || this.isLoadingCalendar || this.isLoadingSourceDetails) return;
+    if (form.invalid || this.getValidationErrors().length > 0 || this.isSaving || this.isLoadingCalendar || this.isLoadingReusableConfiguration) return;
     if (!this.universityId) {
       this.formErrorMessage = 'No University is associated with the current account.';
       return;
@@ -473,23 +312,6 @@ export class AcademicCalendarComponent implements OnInit {
       const label = `Term ${index + 1}`;
       if (!term.termName.trim()) errors.push(`${label} name is required.`);
       if (term.termName.trim().length > 100) errors.push(`${label} name cannot exceed 100 characters.`);
-      if (!term.startDate || !term.endDate || !term.registrationStartDate || !term.registrationEndDate) {
-        errors.push(`${label} requires all term and registration dates.`);
-      }
-      if (term.startDate && term.endDate && term.startDate > term.endDate) {
-        errors.push(`${label} start date must be on or before its end date.`);
-      }
-      if (term.registrationStartDate && term.registrationEndDate && term.registrationStartDate > term.registrationEndDate) {
-        errors.push(`${label} registration start date must be on or before its end date.`);
-      }
-      if ((term.startDate && this.calendar.periodStartDate && term.startDate < this.calendar.periodStartDate) ||
-          (term.endDate && this.calendar.periodEndDate && term.endDate > this.calendar.periodEndDate)) {
-        errors.push(`${label} dates must be within the academic calendar period.`);
-      }
-      if ((term.registrationStartDate && this.calendar.periodStartDate && term.registrationStartDate < this.calendar.periodStartDate) ||
-          (term.registrationEndDate && this.calendar.periodEndDate && term.registrationEndDate > this.calendar.periodEndDate)) {
-        errors.push(`${label} registration dates must be within the academic calendar period.`);
-      }
     });
 
     return errors;
@@ -502,6 +324,12 @@ export class AcademicCalendarComponent implements OnInit {
     if (!this.calendar.periodStartDate || !this.calendar.periodEndDate) errors.push('Enter both academic period dates.');
     if (this.calendar.periodStartDate && this.calendar.periodEndDate && this.calendar.periodStartDate > this.calendar.periodEndDate) {
       errors.push('Academic period start date must be on or before its end date.');
+    }
+    if (this.calendar.periodStartDate && Number(this.calendar.periodStartDate.slice(5, 7)) !== this.calendar.academicYearStartMonth) {
+      errors.push('Academic period start date month must match the configured academic year start month.');
+    }
+    if (this.calendar.periodEndDate && Number(this.calendar.periodEndDate.slice(5, 7)) !== this.calendar.academicYearEndMonth) {
+      errors.push('Academic period end date month must match the configured academic year end month.');
     }
     return errors;
   }
@@ -518,32 +346,6 @@ export class AcademicCalendarComponent implements OnInit {
       return term;
     });
     return model;
-  }
-
-  private captureNewCalendarSourceBaseline(): NewCalendarSourceBaseline {
-    return {
-      academicYearName: this.calendar.academicYearName,
-      periodStartDate: this.calendar.periodStartDate,
-      periodEndDate: this.calendar.periodEndDate,
-      academicYearStartMonth: this.calendar.academicYearStartMonth,
-      academicYearEndMonth: this.calendar.academicYearEndMonth,
-      termsPerYear: this.calendar.termsPerYear,
-      namingStyle: this.calendar.namingStyle,
-      terms: this.calendar.terms.map(term => this.copyTerm(term)),
-    };
-  }
-
-  private restoreNewCalendarSourceBaseline(): void {
-    if (!this.newCalendarSourceBaseline) return;
-    this.calendar.academicYearName = this.newCalendarSourceBaseline.academicYearName;
-    this.calendar.periodStartDate = this.newCalendarSourceBaseline.periodStartDate;
-    this.calendar.periodEndDate = this.newCalendarSourceBaseline.periodEndDate;
-    this.calendar.academicYearStartMonth = this.newCalendarSourceBaseline.academicYearStartMonth;
-    this.calendar.academicYearEndMonth = this.newCalendarSourceBaseline.academicYearEndMonth;
-    this.calendar.termsPerYear = this.newCalendarSourceBaseline.termsPerYear;
-    this.calendar.namingStyle = this.newCalendarSourceBaseline.namingStyle;
-    this.calendar.terms = this.newCalendarSourceBaseline.terms.map(term => this.copyTerm(term));
-    this.newCalendarSourceBaseline = null;
   }
 
   private generateNextAcademicYearName(sourceName: string, nextPeriodStartDate: string, nextPeriodEndDate: string): string {
@@ -584,16 +386,7 @@ export class AcademicCalendarComponent implements OnInit {
     const copy = new AcademicTermRequest();
     copy.termSequence = term.termSequence;
     copy.termName = term.termName;
-    copy.startDate = term.startDate;
-    copy.endDate = term.endDate;
-    copy.registrationStartDate = term.registrationStartDate;
-    copy.registrationEndDate = term.registrationEndDate;
     return copy;
-  }
-
-  private failSourceCalendarLoad(previousSourceId: number | null, message: string): void {
-    this.calendar.reusedFromCalendarId = previousSourceId;
-    this.sourceDetailsError = message;
   }
 
   private resetFormState(): void {
@@ -608,36 +401,65 @@ export class AcademicCalendarComponent implements OnInit {
     this.universityId = profile?.universityIds?.[0] ?? null;
   }
 
-  refreshSourceCalendars(): void {
+  private loadReusableConfiguration(): void {
     if (!this.universityId) {
-      this.sourceCalendars = [];
-      this.sourceCalendarsError = 'No University is associated with the current account.';
       return;
     }
 
     const requestedUniversityId = this.universityId;
-    this.isLoadingSourceCalendars = true;
-    this.sourceCalendarsError = '';
+    this.isLoadingReusableConfiguration = true;
     this.calendarService.getCalendarsByUniversity(requestedUniversityId).subscribe({
       next: response => {
         if (this.universityId !== requestedUniversityId) return;
-        this.isLoadingSourceCalendars = false;
-        if (response.success && response.result) {
-          this.sourceCalendars = response.result.filter(item => item.universityId === requestedUniversityId);
-          this.sourceCalendarsError = '';
+        const latest = response.success && response.result
+          ? response.result
+            .filter(item => item.universityId === requestedUniversityId)
+            .sort((a, b) => b.periodStartDate.localeCompare(a.periodStartDate))[0]
+          : undefined;
+        if (!latest) {
+          this.isLoadingReusableConfiguration = false;
+          if (!response.success) this.notification.warning(response.message || 'Unable to load academic calendar defaults.');
           return;
         }
 
-        this.sourceCalendars = [];
-        this.sourceCalendarsError = response.message || 'Unable to load source calendars.';
-        this.notification.warning(this.sourceCalendarsError);
+        this.calendarService.getCalendarById(latest.academicCalendarId).subscribe({
+          next: detail => {
+            this.isLoadingReusableConfiguration = false;
+            if (!detail.success || !detail.result || this.universityId !== requestedUniversityId) {
+              this.notification.warning(detail.message || 'Unable to load reusable academic calendar settings.');
+              return;
+            }
+
+            const source = detail.result;
+            const nextStart = this.advanceDateByOneCalendarYear(source.periodStartDate);
+            const nextEnd = this.advanceDateByOneCalendarYear(source.periodEndDate);
+            if (!nextStart || !nextEnd || source.terms.length !== source.termsPerYear) {
+              this.notification.warning('The latest academic calendar does not contain valid reusable settings.');
+              return;
+            }
+
+            this.calendar.academicYearName = this.generateNextAcademicYearName(source.academicYearName, nextStart, nextEnd);
+            this.calendar.periodStartDate = nextStart;
+            this.calendar.periodEndDate = nextEnd;
+            this.calendar.academicYearStartMonth = source.academicYearStartMonth;
+            this.calendar.academicYearEndMonth = source.academicYearEndMonth;
+            this.calendar.termsPerYear = source.termsPerYear;
+            this.calendar.namingStyle = this.isNamingStyle(source.namingStyle) ? source.namingStyle : 'Term';
+            this.calendar.terms = source.terms
+              .slice()
+              .sort((a, b) => a.termSequence - b.termSequence)
+              .map(term => this.copyTerm(term));
+          },
+          error: error => {
+            this.isLoadingReusableConfiguration = false;
+            this.notification.handleBusinessError(error, 'Failed to load reusable academic calendar settings.');
+          }
+        });
       },
       error: error => {
         if (this.universityId !== requestedUniversityId) return;
-        this.isLoadingSourceCalendars = false;
-        this.sourceCalendars = [];
-        this.sourceCalendarsError = error?.error?.message ?? error?.error?.Message ?? 'Unable to load source calendars.';
-        this.notification.handleBusinessError(error, 'Failed to load source calendars.');
+        this.isLoadingReusableConfiguration = false;
+        this.notification.handleBusinessError(error, 'Failed to load reusable academic calendar settings.');
       }
     });
   }

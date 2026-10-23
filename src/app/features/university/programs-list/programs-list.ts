@@ -1,4 +1,5 @@
 import { Component, inject, OnInit, HostListener } from '@angular/core';
+import { ConnectedPosition, OverlayModule } from '@angular/cdk/overlay';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -7,6 +8,9 @@ import { NotificationService } from '../../../core/services/common/notification.
 import { ProgramService } from '../../../core/services/university/programs.service';
 import { ProgramFilter } from '../../../core/models/university/programs/program-filter.model';
 import { ProgramRequest } from '../../../core/models/university/programs/program-request.model';
+import { ProgramSemester } from '../../../core/models/university/programs/program-semester.model';
+import { AcademicCalendarResponse } from '../../../core/models/university/academic-calendar/academic-calendar-response.model';
+import { AcademicCalendarService } from '../../../core/services/university/academic-calendar.service';
 import { FacultyService } from '../../../core/services/university/faculty.service';
 import { FacultyFilter } from '../../../core/models/university/faculties/faculty-filter.model';
 import { FacultyRequest } from '../../../core/models/university/faculties/faculty-request.model';
@@ -17,7 +21,7 @@ import { AppRoutes } from '../../../core/constants/app-routes';
 @Component({
   selector: 'app-programs-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, DisableAutocompleteDirective],
+  imports: [CommonModule, FormsModule, OverlayModule, DisableAutocompleteDirective],
   templateUrl: './programs-list.html',
   styleUrl: './programs-list.scss',
 })
@@ -27,9 +31,11 @@ export class ProgramsList implements OnInit {
   onDocumentClick(event: MouseEvent): void {
     this.isPageSizeDropdownOpen = false;
     this.isFacultyDropdownOpen = false;
+    this.isSemesterCalendarDropdownOpen = false;
   }
 
   private programService = inject(ProgramService);
+  private academicCalendarService = inject(AcademicCalendarService);
   private facultyService = inject(FacultyService);
   private notification = inject(NotificationService);
   private router = inject(Router);
@@ -200,6 +206,267 @@ export class ProgramsList implements OnInit {
   programToDelete?: ProgramRequest;
   showDeleteModal = false;
   modalErrorMessage = '';
+
+  programForSemesterConfirmation?: ProgramRequest;
+  programSemesters: ProgramSemester[] = [];
+  academicCalendars: AcademicCalendarResponse[] = [];
+  selectedAcademicCalendarId: number | null = null;
+  showSemesterModal = false;
+  isLoadingSemesters = false;
+  isSavingSemesters = false;
+  semesterModalError = '';
+  isSemesterCalendarDropdownOpen = false;
+  semesterCalendarDropdownWidth = 0;
+  readonly semesterCalendarDropdownPositions: ConnectedPosition[] = [
+    { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top', offsetY: 4 },
+    { originX: 'start', originY: 'top', overlayX: 'start', overlayY: 'bottom', offsetY: -4 },
+  ];
+
+  openConfirmProgramSemesters(program: ProgramRequest): void {
+    if (!program.programId) return;
+
+    this.programForSemesterConfirmation = program;
+    this.programSemesters = [];
+    this.academicCalendars = [];
+    this.selectedAcademicCalendarId = null;
+    this.semesterModalError = '';
+    this.showSemesterModal = true;
+    this.isLoadingSemesters = true;
+
+    this.academicCalendarService.getCalendarsByUniversity(program.universityId).subscribe({
+      next: response => {
+        if (!response.success || !response.result) {
+          this.semesterModalError = response.message || 'Unable to load university academic calendars.';
+          return;
+        }
+        this.academicCalendars = response.result
+          .filter(calendar => calendar.universityId === program.universityId)
+          .sort((a, b) => b.periodStartDate.localeCompare(a.periodStartDate));
+        if (this.academicCalendars.length === 0)
+          this.semesterModalError = 'Configure an academic calendar before generating program semester dates.';
+      },
+      error: error => {
+        this.semesterModalError = error?.error?.message || 'Unable to load university academic calendars.';
+        this.notification.handleBusinessError(error, 'Failed to load academic calendars.');
+      }
+    });
+
+    this.programService.getSemesterByProgramId(program.programId).subscribe({
+      next: response => {
+        this.isLoadingSemesters = false;
+        const existing = Array.isArray(response.result) ? response.result : [];
+        const byNumber = new Map(existing.map(item => [item.semesterNo, item]));
+        this.programSemesters = Array.from(
+          { length: Math.max(0, program.numberOfSemesters || 0) },
+          (_, index) => {
+            const semesterNo = index + 1;
+            const saved = byNumber.get(semesterNo);
+            return {
+              programSemesterId: saved?.programSemesterId ?? 0,
+              semesterNo,
+              semesterName: saved?.semesterName || `Semester ${semesterNo}`,
+              academicTermId: saved?.academicTermId ?? null,
+              academicCalendarId: saved?.academicCalendarId ?? null,
+              academicYearName: saved?.academicYearName ?? null,
+              termSequence: saved?.termSequence ?? null,
+              termName: saved?.termName ?? null,
+              startDate: this.toDateInput(saved?.startDate),
+              endDate: this.toDateInput(saved?.endDate),
+              registrationStartDate: this.toDateInput(saved?.registrationStartDate),
+              registrationEndDate: this.toDateInput(saved?.registrationEndDate)
+            };
+          }
+        );
+      },
+      error: error => {
+        this.isLoadingSemesters = false;
+        this.semesterModalError = error?.error?.message || 'Failed to load program semesters.';
+        this.notification.handleBusinessError(error, 'Failed to load program semesters.');
+      }
+    });
+  }
+
+  loadSemesterDefaults(academicCalendarId: number | null): void {
+    this.isSemesterCalendarDropdownOpen = false;
+    const programId = this.programForSemesterConfirmation?.programId;
+    this.selectedAcademicCalendarId = academicCalendarId;
+    if (academicCalendarId == null) {
+      this.semesterModalError = '';
+      this.programSemesters = this.programSemesters.map(semester => ({
+        ...semester,
+        semesterName: `Semester ${semester.semesterNo}`,
+        academicTermId: null,
+        academicCalendarId: null,
+        academicYearName: null,
+        termSequence: null,
+        termName: null,
+        startDate: null,
+        endDate: null,
+        registrationStartDate: null,
+        registrationEndDate: null
+      }));
+      return;
+    }
+    if (!programId) return;
+
+    this.isLoadingSemesters = true;
+    this.semesterModalError = '';
+    this.programService.getProgramSemesterDefaults(programId, academicCalendarId).subscribe({
+      next: response => {
+        this.isLoadingSemesters = false;
+        if (!response.success || !response.result) {
+          this.semesterModalError = response.message || 'Unable to generate semester defaults.';
+          return;
+        }
+        this.programSemesters = response.result.map(item => ({
+          ...item,
+          startDate: this.toDateInput(item.startDate),
+          endDate: this.toDateInput(item.endDate),
+          registrationStartDate: this.toDateInput(item.registrationStartDate),
+          registrationEndDate: this.toDateInput(item.registrationEndDate)
+        }));
+      },
+      error: error => {
+        this.isLoadingSemesters = false;
+        this.semesterModalError = error?.error?.message || 'Unable to generate semester defaults.';
+        this.notification.handleBusinessError(error, 'Failed to generate semester defaults.');
+      }
+    });
+  }
+
+  saveConfirmedSemesters(): void {
+    const programId = this.programForSemesterConfirmation?.programId;
+    if (!programId || !this.selectedAcademicCalendarId || this.isSavingSemesters) return;
+
+    this.semesterModalError = this.validateProgramSemesters();
+    if (this.semesterModalError) return;
+
+    this.isSavingSemesters = true;
+    this.programService.saveProgramSemesters(programId, this.programSemesters, this.selectedAcademicCalendarId).subscribe({
+      next: response => {
+        this.isSavingSemesters = false;
+        if (!response.success) {
+          this.semesterModalError = response.message || 'Failed to save semester dates.';
+          return;
+        }
+        this.notification.success('Program semester dates saved successfully.');
+        this.showSemesterModal = false;
+        this.loadData();
+      },
+      error: error => {
+        this.isSavingSemesters = false;
+        this.semesterModalError = error?.error?.message || 'Failed to save semester dates.';
+        this.notification.handleBusinessError(error, 'Failed to save semester dates.');
+      }
+    });
+  }
+
+  closeSemesterModal(): void {
+    if (this.isSavingSemesters) return;
+    this.showSemesterModal = false;
+    this.isSemesterCalendarDropdownOpen = false;
+    this.programForSemesterConfirmation = undefined;
+    this.programSemesters = [];
+    this.academicCalendars = [];
+    this.selectedAcademicCalendarId = null;
+    this.semesterModalError = '';
+  }
+
+  openNativeDatePicker(event: MouseEvent): void {
+    const input = event.currentTarget as HTMLInputElement;
+    if (input.disabled || input.readOnly) return;
+
+    const showPicker = (input as HTMLInputElement & { showPicker?: () => void }).showPicker;
+    if (typeof showPicker !== 'function') return;
+
+    try {
+      showPicker.call(input);
+      event.preventDefault();
+    } catch {
+      // Let the browser's regular date-input click behavior handle unsupported or restricted cases.
+    }
+  }
+
+  toggleSemesterCalendarDropdown(event: Event): void {
+    event.stopPropagation();
+    if (this.isSavingSemesters || this.isSemesterCalendarDropdownOpen) {
+      this.isSemesterCalendarDropdownOpen = false;
+      return;
+    }
+    this.semesterCalendarDropdownWidth = (event.currentTarget as HTMLElement).getBoundingClientRect().width;
+    this.isSemesterCalendarDropdownOpen = true;
+  }
+
+  handleSemesterCalendarDropdownKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Escape') {
+      this.isSemesterCalendarDropdownOpen = false;
+      (event.currentTarget as HTMLElement).focus();
+      return;
+    }
+    if (event.key === 'Enter' || event.key === ' ' || event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      this.semesterCalendarDropdownWidth = (event.currentTarget as HTMLElement).getBoundingClientRect().width;
+      this.isSemesterCalendarDropdownOpen = true;
+      this.focusSemesterCalendarOption(event.key === 'ArrowUp' ? this.academicCalendars.length : 0);
+    }
+  }
+
+  handleSemesterCalendarOptionKeydown(event: KeyboardEvent, index: number): void {
+    const options = Array.from(document.querySelectorAll<HTMLButtonElement>('#semesterCalendarOptions .semester-calendar-option'));
+    let nextIndex = index;
+    if (event.key === 'ArrowDown') nextIndex = Math.min(index + 1, options.length - 1);
+    else if (event.key === 'ArrowUp') nextIndex = Math.max(index - 1, 0);
+    else if (event.key === 'Home') nextIndex = 0;
+    else if (event.key === 'End') nextIndex = options.length - 1;
+    else if (event.key === 'Escape') {
+      event.preventDefault();
+      this.isSemesterCalendarDropdownOpen = false;
+      document.getElementById('semesterCalendar')?.focus();
+      return;
+    } else {
+      return;
+    }
+    event.preventDefault();
+    options[nextIndex]?.focus();
+  }
+
+  private focusSemesterCalendarOption(index: number): void {
+    setTimeout(() => {
+      const options = document.querySelectorAll<HTMLButtonElement>('#semesterCalendarOptions .semester-calendar-option');
+      options[Math.min(index, Math.max(options.length - 1, 0))]?.focus();
+    });
+  }
+
+  semesterCalendarLabel(): string {
+    if (this.selectedAcademicCalendarId == null) return 'Select an academic calendar to generate dates';
+    const selected = this.academicCalendars.find(calendar => calendar.academicCalendarId === this.selectedAcademicCalendarId);
+    if (!selected) return 'Select an academic calendar to generate dates';
+    const formatDate = (value: string): string => new Date(`${value}T00:00:00`).toLocaleDateString(undefined, {
+      year: 'numeric', month: 'short', day: 'numeric'
+    });
+    return `${selected.academicYearName} (${formatDate(selected.periodStartDate)} – ${formatDate(selected.periodEndDate)})`;
+  }
+
+  private toDateInput(value?: string | null): string | null {
+    if (!value) return null;
+    return value.slice(0, 10);
+  }
+
+  private validateProgramSemesters(): string {
+    for (const semester of this.programSemesters) {
+      if (!semester.startDate || !semester.endDate ||
+          !semester.registrationStartDate || !semester.registrationEndDate) {
+        return `Enter all four dates for ${semester.semesterName}.`;
+      }
+      if (semester.startDate > semester.endDate) {
+        return `${semester.semesterName} start date must be on or before its end date.`;
+      }
+      if (semester.registrationStartDate > semester.registrationEndDate) {
+        return `${semester.semesterName} registration start date must be on or before its end date.`;
+      }
+    }
+    return '';
+  }
 
   openDeleteProgramModal(program: ProgramRequest): void {
     this.programToDelete = program;

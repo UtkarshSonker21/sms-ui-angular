@@ -11,7 +11,5 @@ export class AcademicCalendarRequest {
   academicYearEndMonth = 1;
   termsPerYear: 2 | 3 | 4 = 2;
   namingStyle: AcademicCalendarNamingStyle = 'Term';
-  reusePreviousCalendar = true;
-  reusedFromCalendarId: number | null = null;
   terms: AcademicTermRequest[] = [];
 }

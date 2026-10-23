@@ -10,8 +10,6 @@ export class AcademicCalendarResponse {
   academicYearEndMonth = 1;
   termsPerYear: 2 | 3 | 4 = 2;
   namingStyle = '';
-  reusePreviousCalendar = true;
-  reusedFromCalendarId?: number | null;
   createdOn = '';
   updatedOn?: string | null;
   terms: AcademicTermResponse[] = [];

@@ -1,4 +1,4 @@
-<section class="calendar-dialog-shell" aria-labelledby="calendar-dialog-title">
+<section class="calendar-dialog-shell app-date-dialog" aria-labelledby="calendar-dialog-title">
   <header class="calendar-dialog-header">
     <div>
       <h2 id="calendar-dialog-title">Academic Calendar Configuration</h2>
@@ -107,13 +107,13 @@
             </div>
             <div class="field">
               <label class="field-label required-label" for="periodStartDate">Period Start Date</label>
-              <input id="periodStartDate" name="periodStartDate" class="field-input" type="date" required
+              <input id="periodStartDate" name="periodStartDate" class="field-input app-date-field" type="date" required
                 [(ngModel)]="calendar.periodStartDate" #periodStartDate="ngModel">
               <div class="validation-error" *ngIf="periodStartDate.touched && periodStartDate.errors?.['required']">Start date is required.</div>
             </div>
             <div class="field">
               <label class="field-label required-label" for="periodEndDate">Period End Date</label>
-              <input id="periodEndDate" name="periodEndDate" class="field-input" type="date" required
+              <input id="periodEndDate" name="periodEndDate" class="field-input app-date-field" type="date" required
                 [(ngModel)]="calendar.periodEndDate" #periodEndDate="ngModel">
               <div class="validation-error" *ngIf="periodEndDate.touched && periodEndDate.errors?.['required']">End date is required.</div>
               <div class="validation-error" *ngIf="attemptedSubmit && calendar.periodStartDate && calendar.periodEndDate && calendar.periodStartDate > calendar.periodEndDate">
@@ -192,58 +192,11 @@
                 </div>
               </ng-template>
             </div>
-            <div class="field field-wide reuse-field">
-              <label class="reuse-toggle">
-                <input type="checkbox" name="reusePreviousCalendar" [ngModel]="calendar.reusePreviousCalendar"
-                  (ngModelChange)="setReusePreviousCalendar($event)">
-                <span>Reuse previous calendar</span>
-              </label>
-              <div class="form-hint">You can optionally link a source calendar. A source is not required.</div>
-              <div class="field source-field">
-                <label class="field-label" for="reusedFromCalendarId">Source Calendar <span>(optional)</span></label>
-                <div id="reusedFromCalendarId" class="multi-select calendar-select" [class.open]="openDropdown === 'reusedFromCalendarId'"
-                  cdkOverlayOrigin #sourceCalendarOrigin="cdkOverlayOrigin"
-                  [class.disabled]="!calendar.reusePreviousCalendar || isLoadingSourceDetails"
-                  role="combobox" aria-haspopup="listbox"
-                  [attr.aria-expanded]="openDropdown === 'reusedFromCalendarId'"
-                  [attr.aria-disabled]="!calendar.reusePreviousCalendar || isLoadingSourceDetails"
-                  aria-label="Source Calendar, optional"
-                  [attr.tabindex]="calendar.reusePreviousCalendar && !isLoadingSourceDetails ? 0 : -1"
-                  (click)="toggleDropdown('reusedFromCalendarId', $event)" (keydown)="handleDropdownKeydown('reusedFromCalendarId', $event)">
-                  <div class="ms-display has-selection">
-                    <ng-container *ngIf="calendar.reusedFromCalendarId == null">No source calendar</ng-container>
-                    <ng-container *ngIf="calendar.reusedFromCalendarId != null">{{ sourceCalendarLabel(calendar.reusedFromCalendarId) }}</ng-container>
-                  </div>
-                  <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
-                  <span class="source-detail-spinner" *ngIf="isLoadingSourceDetails" role="status" aria-label="Loading selected calendar details"></span>
-                </div>
-                <ng-template cdkConnectedOverlay [cdkConnectedOverlayOrigin]="sourceCalendarOrigin"
-                  [cdkConnectedOverlayOpen]="openDropdown === 'reusedFromCalendarId'" [cdkConnectedOverlayPositions]="dropdownPositions"
-                  [cdkConnectedOverlayPush]="true" [cdkConnectedOverlayWidth]="dropdownWidth" (overlayOutsideClick)="closeDropdowns()">
-                  <div class="ms-panel calendar-dropdown-panel" role="listbox" aria-label="Source Calendar options" (click)="$event.stopPropagation()">
-                    <button type="button" class="ms-option" role="option" [class.checked]="calendar.reusedFromCalendarId == null"
-                      [attr.aria-selected]="calendar.reusedFromCalendarId == null" (click)="selectSourceCalendar(null)">No source calendar</button>
-                    <div class="calendar-select-status" *ngIf="isLoadingSourceCalendars" role="status">Loading calendars…</div>
-                    <button type="button" class="ms-option" role="option" *ngFor="let source of availableSourceCalendars()"
-                      [class.checked]="calendar.reusedFromCalendarId === source.academicCalendarId"
-                      [attr.aria-selected]="calendar.reusedFromCalendarId === source.academicCalendarId"
-                      (click)="selectSourceCalendar(source.academicCalendarId)">{{ source.academicYearName }}</button>
-                    <div class="calendar-select-status" *ngIf="!isLoadingSourceCalendars && !sourceCalendarsError && availableSourceCalendars().length === 0" role="status">
-                      No other calendars are available for this University.
-                    </div>
-                    <div class="calendar-select-status calendar-select-error" *ngIf="sourceCalendarsError" role="alert">
-                      {{ sourceCalendarsError }}
-                      <button type="button" class="calendar-select-retry" (click)="retrySourceCalendars($event)">Try again</button>
-                    </div>
-                  </div>
-                </ng-template>
-              </div>
-            </div>
           </div>
         </section>
 
         <footer class="form-footer">
-          <button type="submit" class="btn btn-p next-step-button" [disabled]="isLoadingSourceDetails">Next <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
+          <button type="submit" class="btn btn-p next-step-button" [disabled]="isLoadingReusableConfiguration">Next <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
         </footer>
         </ng-container>
 
@@ -253,7 +206,7 @@
             <span class="section-number">2</span>
             <div>
               <h4 id="terms-heading">Term schedule</h4>
-              <p>Enter the term and registration windows. Term names are editable.</p>
+              <p>Configure the term sequence and names.</p>
             </div>
           </div>
 
@@ -263,10 +216,6 @@
                 <tr>
                   <th scope="col" class="sequence-column">Sequence</th>
                   <th scope="col" class="name-column">Term Name</th>
-                  <th scope="col">Term Start Date</th>
-                  <th scope="col">Term End Date</th>
-                  <th scope="col">Registration Start Date</th>
-                  <th scope="col">Registration End Date</th>
                 </tr>
               </thead>
               <tbody>
@@ -280,26 +229,6 @@
                       [(ngModel)]="term.termName" #termName="ngModel" [attr.aria-label]="'Term ' + (i + 1) + ' name'" placeholder="Term name">
                     <div class="validation-error" *ngIf="termName.touched && termName.errors?.['required']">Term name is required.</div>
                     <div class="validation-error" *ngIf="termName.touched && termName.errors?.['maxlength']">Maximum 100 characters.</div>
-                  </td>
-                  <td>
-                    <input [id]="'termStart' + i" [name]="'termStart' + i" class="field-input term-date-input" type="date" required
-                      [(ngModel)]="term.startDate" #termStart="ngModel" [attr.aria-label]="'Term ' + (i + 1) + ' start date'">
-                    <div class="validation-error" *ngIf="termStart.touched && termStart.errors?.['required']">Term start date is required.</div>
-                  </td>
-                  <td>
-                    <input [id]="'termEnd' + i" [name]="'termEnd' + i" class="field-input term-date-input" type="date" required
-                      [(ngModel)]="term.endDate" #termEnd="ngModel" [attr.aria-label]="'Term ' + (i + 1) + ' end date'">
-                    <div class="validation-error" *ngIf="termEnd.touched && termEnd.errors?.['required']">Term end date is required.</div>
-                  </td>
-                  <td>
-                    <input [id]="'registrationStart' + i" [name]="'registrationStart' + i" class="field-input term-date-input" type="date" required
-                      [(ngModel)]="term.registrationStartDate" #registrationStart="ngModel" [attr.aria-label]="'Term ' + (i + 1) + ' registration start date'">
-                    <div class="validation-error" *ngIf="registrationStart.touched && registrationStart.errors?.['required']">Registration start date is required.</div>
-                  </td>
-                  <td>
-                    <input [id]="'registrationEnd' + i" [name]="'registrationEnd' + i" class="field-input term-date-input" type="date" required
-                      [(ngModel)]="term.registrationEndDate" #registrationEnd="ngModel" [attr.aria-label]="'Term ' + (i + 1) + ' registration end date'">
-                    <div class="validation-error" *ngIf="registrationEnd.touched && registrationEnd.errors?.['required']">Registration end date is required.</div>
                   </td>
                 </tr>
               </tbody>
@@ -316,7 +245,7 @@
           <button type="button" class="btn btn-g" (click)="goToAcademicYear()" [disabled]="isSaving">
             <i class="fas fa-arrow-left" aria-hidden="true"></i> Back
           </button>
-          <button type="submit" class="btn btn-p" [disabled]="isSaving || isLoadingCalendar || isLoadingSourceDetails">
+          <button type="submit" class="btn btn-p" [disabled]="isSaving || isLoadingCalendar || isLoadingReusableConfiguration">
             <span *ngIf="isSaving" class="button-spinner" aria-hidden="true"></span>
             {{ isSaving ? 'Saving…' : editingCalendarId ? 'Update Calendar' : 'Save Calendar' }}
           </button>

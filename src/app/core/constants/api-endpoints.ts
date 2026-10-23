@@ -228,6 +228,10 @@ export const ApiEndpoints = {
       Search: 'university/programs/search',
       GetById: (id: number) => `university/programs/getById/${id}`,
       GetSemesterByProgramId: (id: number) => `university/programs/semesters/${id}`,
+      GetSemesterDefaults: (id: number, academicCalendarId: number) =>
+        `university/programs/semesters/${id}/defaults?academicCalendarId=${academicCalendarId}`,
+      SaveSemesters: (id: number, academicCalendarId?: number) =>
+        `university/programs/semesters/${id}${academicCalendarId ? `?academicCalendarId=${academicCalendarId}` : ''}`,
       Create: 'university/programs/create',
       Update: (id: number) => `university/programs/update/${id}`,
       Delete: (id: number) => `university/programs/delete/${id}`
