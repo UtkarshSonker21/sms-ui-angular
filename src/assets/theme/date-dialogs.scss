@@ -97,3 +97,142 @@
   outline: 2px solid var(--theme-primary, var(--da-green));
   outline-offset: -2px;
 }
+
+/* Shared Angular Material calendar popup used only by app-themed-date-picker. */
+.app-themed-datepicker {
+  --mat-datepicker-calendar-date-selected-state-background-color: var(--theme-primary, var(--da-green));
+  --mat-datepicker-calendar-date-selected-state-text-color: var(--theme-text-inverse, #fff);
+  --mat-datepicker-calendar-date-today-outline-color: var(--theme-primary, var(--da-green));
+  box-sizing: border-box;
+  width: 100%;
+  max-width: calc(100vw - 24px);
+  padding: 10px 12px 6px;
+  overflow: hidden;
+  border: 1px solid var(--theme-border, var(--da-border));
+  border-radius: var(--da-radius, 12px);
+  background: var(--theme-bg-surface, #fff);
+  box-shadow: 0 12px 32px rgba(25, 42, 58, .16);
+  color: var(--theme-text-primary, var(--da-black));
+  font-family: inherit;
+}
+
+.app-themed-datepicker .mat-calendar {
+  width: 100%;
+  height: 354px;
+  font-family: inherit;
+}
+
+.app-themed-datepicker .mat-calendar-header {
+  padding: 4px 4px 10px;
+}
+
+.app-themed-datepicker .mat-calendar-period-button,
+.app-themed-datepicker .mat-calendar-previous-button,
+.app-themed-datepicker .mat-calendar-next-button {
+  color: var(--theme-text-primary, var(--da-black));
+  font-family: inherit;
+}
+
+.app-themed-datepicker .mat-calendar-period-button {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.app-themed-datepicker .mat-calendar-table-header {
+  background: var(--theme-primary-light, var(--da-green-50));
+  color: var(--theme-primary-dark, var(--da-green-800));
+}
+
+.app-themed-datepicker .mat-calendar-table-header th {
+  height: 28px;
+  padding: 0;
+  line-height: 28px;
+  vertical-align: middle;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.app-themed-datepicker .mat-calendar-table-header-divider {
+  height: 0;
+  padding: 0;
+  border: 0;
+}
+
+.app-themed-datepicker .mat-calendar-body-cell-content {
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.app-themed-datepicker .mat-calendar-body-selected {
+  background-color: var(--theme-primary, var(--da-green));
+  color: var(--theme-text-inverse, #fff);
+}
+
+.app-themed-datepicker .mat-calendar-body-today:not(.mat-calendar-body-selected) {
+  border-color: var(--theme-primary, var(--da-green));
+}
+
+.app-themed-datepicker .mat-calendar-body-cell:not(.mat-calendar-body-active) .mat-calendar-body-cell-content {
+  color: var(--theme-text-primary, var(--da-black));
+}
+
+.app-themed-datepicker-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  margin-top: 4px;
+  padding: 4px 6px 0;
+  border-top: 1px solid var(--theme-border, var(--da-border));
+}
+
+.app-themed-datepicker-actions button {
+  min-height: 34px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--da-radius-sm, 6px);
+  background: transparent;
+  color: var(--theme-primary-dark, var(--da-green-800));
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.app-themed-datepicker-actions button:hover,
+.app-themed-datepicker-actions button:focus-visible {
+  background: var(--theme-primary-light, var(--da-green-50));
+  outline: 2px solid var(--theme-primary, var(--da-green));
+  outline-offset: 1px;
+}
+
+.themed-date-picker-control .app-date-field {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: var(--da-control-height, 34px);
+  padding: 0 38px 0 10px;
+  border: 1px solid var(--theme-border, var(--da-border));
+  border-radius: var(--da-radius-sm, 6px);
+  background: var(--theme-bg-surface, #fff);
+  color: var(--theme-text-primary, var(--da-black));
+  font: inherit;
+  font-size: 13px;
+}
+
+.themed-date-picker-control .app-date-field:focus-visible {
+  outline: none;
+  border-color: var(--theme-primary, var(--da-green));
+  box-shadow: 0 0 0 1px var(--theme-primary, var(--da-green));
+}
+
+.themed-date-picker-control:focus-within .app-date-field {
+  outline: none;
+  border-color: var(--theme-primary, var(--da-green));
+  box-shadow: 0 0 0 1px var(--theme-primary, var(--da-green));
+}
+
+@media (max-width: 480px) {
+  .app-themed-datepicker { padding: 8px 8px 4px; }
+}

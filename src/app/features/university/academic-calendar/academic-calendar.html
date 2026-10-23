@@ -9,7 +9,7 @@
     </button>
   </header>
 
-  <main class="calendar-dialog-body">
+  <main class="calendar-dialog-body" cdkScrollable>
     <ng-container *ngIf="screen === 'list'; else calendarFormScreen">
       <div class="screen-heading">
         <div>
@@ -107,14 +107,14 @@
             </div>
             <div class="field">
               <label class="field-label required-label" for="periodStartDate">Period Start Date</label>
-              <input id="periodStartDate" name="periodStartDate" class="field-input app-date-field" type="date" required
-                [(ngModel)]="calendar.periodStartDate" #periodStartDate="ngModel">
+              <app-themed-date-picker inputId="periodStartDate" name="periodStartDate" [useInputAsOrigin]="true" required
+                [(ngModel)]="calendar.periodStartDate" #periodStartDate="ngModel" ariaLabel="Period Start Date"></app-themed-date-picker>
               <div class="validation-error" *ngIf="periodStartDate.touched && periodStartDate.errors?.['required']">Start date is required.</div>
             </div>
             <div class="field">
               <label class="field-label required-label" for="periodEndDate">Period End Date</label>
-              <input id="periodEndDate" name="periodEndDate" class="field-input app-date-field" type="date" required
-                [(ngModel)]="calendar.periodEndDate" #periodEndDate="ngModel">
+              <app-themed-date-picker inputId="periodEndDate" name="periodEndDate" [useInputAsOrigin]="true" required
+                [(ngModel)]="calendar.periodEndDate" #periodEndDate="ngModel" ariaLabel="Period End Date"></app-themed-date-picker>
               <div class="validation-error" *ngIf="periodEndDate.touched && periodEndDate.errors?.['required']">End date is required.</div>
               <div class="validation-error" *ngIf="attemptedSubmit && calendar.periodStartDate && calendar.periodEndDate && calendar.periodStartDate > calendar.periodEndDate">
                 Period end date must be on or after the start date.

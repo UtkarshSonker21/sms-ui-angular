@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, HostListener } from '@angular/core';
 import { ConnectedPosition, OverlayModule } from '@angular/cdk/overlay';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -17,11 +18,12 @@ import { FacultyRequest } from '../../../core/models/university/faculties/facult
 import { HelperMethods } from '../../../core/helpers/helper-methods';
 import { DisableAutocompleteDirective } from '../../../shared/directives/disable-autocomplete.directive';
 import { AppRoutes } from '../../../core/constants/app-routes';
+import { ThemedDatePickerComponent } from '../../../shared/components/themed-date-picker/themed-date-picker';
 
 @Component({
   selector: 'app-programs-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, OverlayModule, DisableAutocompleteDirective],
+  imports: [CommonModule, FormsModule, OverlayModule, ScrollingModule, DisableAutocompleteDirective, ThemedDatePickerComponent],
   templateUrl: './programs-list.html',
   styleUrl: './programs-list.scss',
 })
@@ -370,21 +372,6 @@ export class ProgramsList implements OnInit {
     this.academicCalendars = [];
     this.selectedAcademicCalendarId = null;
     this.semesterModalError = '';
-  }
-
-  openNativeDatePicker(event: MouseEvent): void {
-    const input = event.currentTarget as HTMLInputElement;
-    if (input.disabled || input.readOnly) return;
-
-    const showPicker = (input as HTMLInputElement & { showPicker?: () => void }).showPicker;
-    if (typeof showPicker !== 'function') return;
-
-    try {
-      showPicker.call(input);
-      event.preventDefault();
-    } catch {
-      // Let the browser's regular date-input click behavior handle unsupported or restricted cases.
-    }
   }
 
   toggleSemesterCalendarDropdown(event: Event): void {

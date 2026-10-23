@@ -1,0 +1,41 @@
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.themed-date-picker-control {
+  position: relative;
+  width: 100%;
+}
+
+.themed-date-picker-input {
+  cursor: pointer;
+  padding-inline-end: 40px !important;
+}
+
+.themed-date-picker-icon {
+  position: absolute;
+  inset-inline-end: 8px;
+  top: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 4px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--theme-text-secondary, var(--da-text-2));
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.themed-date-picker-icon:hover,
+.themed-date-picker-icon:focus-visible {
+  color: var(--theme-primary, var(--da-green));
+}
+
+.themed-date-picker-icon:disabled { cursor: not-allowed; }
+.themed-date-picker-icon svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; }

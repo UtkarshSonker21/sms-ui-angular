@@ -3,6 +3,7 @@ import { Component, HostListener, OnInit, inject } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { ConnectedPosition, OverlayModule } from '@angular/cdk/overlay';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 
 import { AcademicCalendarRequest } from '../../../core/models/university/academic-calendar/academic-calendar-request.model';
 import { AcademicCalendarResponse } from '../../../core/models/university/academic-calendar/academic-calendar-response.model';
@@ -12,11 +13,12 @@ import { CurrentUserProfileService } from '../../../core/services/common/current
 import { NotificationService } from '../../../core/services/common/notification.service';
 import { AcademicCalendarService } from '../../../core/services/university/academic-calendar.service';
 import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
+import { ThemedDatePickerComponent } from '../../../shared/components/themed-date-picker/themed-date-picker';
 
 @Component({
   selector: 'app-academic-calendar',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatDialogModule, OverlayModule],
+  imports: [CommonModule, FormsModule, MatDialogModule, OverlayModule, ScrollingModule, ThemedDatePickerComponent],
   templateUrl: './academic-calendar.html',
   styleUrl: './academic-calendar.scss',
 })

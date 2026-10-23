@@ -164,7 +164,7 @@
                 <i class="fas fa-times"></i>
             </button>
         </div>
-        <div class="modal-body" (click)="isSemesterCalendarDropdownOpen = false">
+        <div class="modal-body" cdkScrollable (click)="isSemesterCalendarDropdownOpen = false">
             <div class="modal-error" *ngIf="semesterModalError">{{ semesterModalError }}</div>
             <div class="semester-calendar-content">
                 <div class="semester-calendar-field">
@@ -221,18 +221,14 @@
                                     {{ semester.academicYearName }}
                                 </small>
                             </td>
-                            <td><input type="date" class="form-control app-date-field" [name]="'semesterStart' + semester.semesterNo"
-                                [(ngModel)]="semester.startDate" [disabled]="isSavingSemesters"
-                                (click)="openNativeDatePicker($event)"></td>
-                            <td><input type="date" class="form-control app-date-field" [name]="'semesterEnd' + semester.semesterNo"
-                                [(ngModel)]="semester.endDate" [disabled]="isSavingSemesters"
-                                (click)="openNativeDatePicker($event)"></td>
-                            <td><input type="date" class="form-control app-date-field" [name]="'registrationStart' + semester.semesterNo"
-                                [(ngModel)]="semester.registrationStartDate" [disabled]="isSavingSemesters"
-                                (click)="openNativeDatePicker($event)"></td>
-                            <td><input type="date" class="form-control app-date-field" [name]="'registrationEnd' + semester.semesterNo"
-                                [(ngModel)]="semester.registrationEndDate" [disabled]="isSavingSemesters"
-                                (click)="openNativeDatePicker($event)"></td>
+                            <td><app-themed-date-picker class="semester-date-picker" [inputId]="'semesterStart' + semester.semesterNo" [name]="'semesterStart' + semester.semesterNo"
+                                [(ngModel)]="semester.startDate" [disabled]="isSavingSemesters" ariaLabel="Start Date"></app-themed-date-picker></td>
+                            <td><app-themed-date-picker class="semester-date-picker" [inputId]="'semesterEnd' + semester.semesterNo" [name]="'semesterEnd' + semester.semesterNo"
+                                [(ngModel)]="semester.endDate" [disabled]="isSavingSemesters" ariaLabel="End Date"></app-themed-date-picker></td>
+                            <td><app-themed-date-picker class="semester-date-picker" [inputId]="'registrationStart' + semester.semesterNo" [name]="'registrationStart' + semester.semesterNo"
+                                [(ngModel)]="semester.registrationStartDate" [disabled]="isSavingSemesters" ariaLabel="Registration Start"></app-themed-date-picker></td>
+                            <td><app-themed-date-picker class="semester-date-picker" [inputId]="'registrationEnd' + semester.semesterNo" [name]="'registrationEnd' + semester.semesterNo"
+                                [(ngModel)]="semester.registrationEndDate" [disabled]="isSavingSemesters" ariaLabel="Registration End"></app-themed-date-picker></td>
                         </tr>
                         <tr *ngIf="programSemesters.length === 0">
                             <td colspan="5" class="courses-empty">No semesters are configured for this program.</td>
