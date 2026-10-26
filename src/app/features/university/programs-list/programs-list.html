@@ -168,10 +168,11 @@
             <div class="modal-error" *ngIf="semesterModalError">{{ semesterModalError }}</div>
             <div class="semester-calendar-content">
                 <div class="semester-calendar-field">
-                    <label class="form-label" for="semesterCalendar">Academic calendar</label>
+                    <label class="form-label" id="semesterCalendarLabel">Academic calendar</label>
                     <div id="semesterCalendar" class="multi-select semester-calendar-select"
                         [class.open]="isSemesterCalendarDropdownOpen"
-                        role="combobox" aria-haspopup="listbox" aria-label="Academic calendar"
+                        cdkOverlayOrigin #semesterCalendarOrigin="cdkOverlayOrigin"
+                        role="combobox" aria-haspopup="listbox" aria-labelledby="semesterCalendarLabel"
                         [attr.aria-expanded]="isSemesterCalendarDropdownOpen" aria-controls="semesterCalendarOptions"
                         [attr.aria-disabled]="isSavingSemesters" [attr.tabindex]="isSavingSemesters ? -1 : 0"
                         (click)="toggleSemesterCalendarDropdown($event)" (keydown)="handleSemesterCalendarDropdownKeydown($event)">
@@ -179,9 +180,15 @@
                         <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
                     </div>
                 </div>
-                <div *ngIf="isSemesterCalendarDropdownOpen" id="semesterCalendarOptions"
-                    class="ms-panel semester-calendar-dropdown" role="listbox" aria-label="Academic calendar options"
-                    (click)="$event.stopPropagation()">
+                <ng-template cdkConnectedOverlay [cdkConnectedOverlayOrigin]="semesterCalendarOrigin"
+                    [cdkConnectedOverlayOpen]="isSemesterCalendarDropdownOpen"
+                    [cdkConnectedOverlayPositions]="semesterCalendarDropdownPositions"
+                    [cdkConnectedOverlayWidth]="semesterCalendarDropdownWidth"
+                    [cdkConnectedOverlayPush]="true" [cdkConnectedOverlayViewportMargin]="8"
+                    [cdkConnectedOverlayFlexibleDimensions]="true"
+                    (overlayOutsideClick)="isSemesterCalendarDropdownOpen = false">
+                <div id="semesterCalendarOptions" class="ms-panel semester-calendar-dropdown"
+                    role="listbox" aria-label="Academic calendar options" (click)="$event.stopPropagation()">
                         <button type="button" class="ms-option semester-calendar-option"
                             [class.checked]="selectedAcademicCalendarId == null" role="option"
                             [attr.aria-selected]="selectedAcademicCalendarId == null"
@@ -196,6 +203,7 @@
                             {{ calendar.academicYearName }} ({{ calendar.periodStartDate | date:'mediumDate' }} – {{ calendar.periodEndDate | date:'mediumDate' }})
                         </button>
                 </div>
+                </ng-template>
                 <div class="semester-content-area">
                 <div *ngIf="isLoadingSemesters" class="semester-loading-state" role="status" aria-live="polite">
                     <span class="semester-loading-spinner" aria-hidden="true"></span>

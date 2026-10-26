@@ -99,26 +99,13 @@
 
           <div class="form-grid">
             <div class="field field-wide">
-              <label class="field-label required-label" for="academicYearName">Academic Year Name</label>
+              <label class="field-label required-label" for="academicYearName">Academic Calendar Name</label>
               <input id="academicYearName" name="academicYearName" class="field-input" type="text" maxlength="40" required
-                [(ngModel)]="calendar.academicYearName" #academicYearName="ngModel" placeholder="e.g. 2026–2027">
+                [(ngModel)]="calendar.academicYearName" #academicYearName="ngModel" placeholder="Standard Academic Calendar"
+                (ngModelChange)="onAcademicYearNameChange($event)">
+              <p class="form-hint">Define the academic-year structure and term settings used to generate default program semester dates. Actual semester dates can be reviewed and adjusted later.</p>
               <div class="validation-error" *ngIf="(academicYearName.touched || attemptedSubmit) && (academicYearName.errors?.['required'] || !calendar.academicYearName.trim())">Academic year name is required.</div>
               <div class="validation-error" *ngIf="academicYearName.touched && academicYearName.errors?.['maxlength']">Maximum 40 characters.</div>
-            </div>
-            <div class="field">
-              <label class="field-label required-label" for="periodStartDate">Period Start Date</label>
-              <app-themed-date-picker inputId="periodStartDate" name="periodStartDate" [useInputAsOrigin]="true" required
-                [(ngModel)]="calendar.periodStartDate" #periodStartDate="ngModel" ariaLabel="Period Start Date"></app-themed-date-picker>
-              <div class="validation-error" *ngIf="periodStartDate.touched && periodStartDate.errors?.['required']">Start date is required.</div>
-            </div>
-            <div class="field">
-              <label class="field-label required-label" for="periodEndDate">Period End Date</label>
-              <app-themed-date-picker inputId="periodEndDate" name="periodEndDate" [useInputAsOrigin]="true" required
-                [(ngModel)]="calendar.periodEndDate" #periodEndDate="ngModel" ariaLabel="Period End Date"></app-themed-date-picker>
-              <div class="validation-error" *ngIf="periodEndDate.touched && periodEndDate.errors?.['required']">End date is required.</div>
-              <div class="validation-error" *ngIf="attemptedSubmit && calendar.periodStartDate && calendar.periodEndDate && calendar.periodStartDate > calendar.periodEndDate">
-                Period end date must be on or after the start date.
-              </div>
             </div>
             <div class="field">
               <label class="field-label required-label" for="academicYearStartMonth">Academic Year Start Month</label>

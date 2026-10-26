@@ -13,12 +13,11 @@ import { CurrentUserProfileService } from '../../../core/services/common/current
 import { NotificationService } from '../../../core/services/common/notification.service';
 import { AcademicCalendarService } from '../../../core/services/university/academic-calendar.service';
 import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
-import { ThemedDatePickerComponent } from '../../../shared/components/themed-date-picker/themed-date-picker';
 
 @Component({
   selector: 'app-academic-calendar',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatDialogModule, OverlayModule, ScrollingModule, ThemedDatePickerComponent],
+  imports: [CommonModule, FormsModule, MatDialogModule, OverlayModule, ScrollingModule],
   templateUrl: './academic-calendar.html',
   styleUrl: './academic-calendar.scss',
 })
@@ -242,7 +241,17 @@ export class AcademicCalendarComponent implements OnInit {
 
   selectMonth(field: 'academicYearStartMonth' | 'academicYearEndMonth', value: number): void {
     this.calendar[field] = value;
+    this.updatePeriodDateForMonth(field);
     this.openDropdown = null;
+  }
+
+  onAcademicYearNameChange(name: string): void {
+    this.calendar.academicYearName = name;
+    // While creating a calendar, keep generated period dates aligned with a
+    // recognizable year range as the year name is entered or edited.
+    if (!this.editingCalendarId && this.getAcademicYearYears(false)) {
+      this.recalculatePeriodDates();
+    }
   }
 
   selectTermsPerYear(value: 2 | 3 | 4): void {
@@ -269,6 +278,8 @@ export class AcademicCalendarComponent implements OnInit {
     this.attemptedSubmit = true;
     this.formErrorMessage = '';
     form.control.markAllAsTouched();
+
+    if (!this.editingCalendarId) this.recalculatePeriodDates();
 
     if (form.invalid || this.getValidationErrors().length > 0 || this.isSaving || this.isLoadingCalendar || this.isLoadingReusableConfiguration) return;
     if (!this.universityId) {
@@ -348,6 +359,53 @@ export class AcademicCalendarComponent implements OnInit {
       return term;
     });
     return model;
+  }
+
+  private updatePeriodDateForMonth(field: 'academicYearStartMonth' | 'academicYearEndMonth'): void {
+    const years = this.getAcademicYearYears(true);
+    if (!years) return;
+
+    if (field === 'academicYearStartMonth') {
+      this.calendar.periodStartDate = this.makePeriodDate(years.startYear, this.calendar.academicYearStartMonth, 1);
+    } else {
+      const lastDay = this.daysInMonth(years.endYear, this.calendar.academicYearEndMonth);
+      this.calendar.periodEndDate = this.makePeriodDate(years.endYear, this.calendar.academicYearEndMonth, lastDay);
+    }
+  }
+
+  private recalculatePeriodDates(): void {
+    const years = this.getAcademicYearYears(true);
+    if (!years) return;
+
+    this.calendar.periodStartDate = this.makePeriodDate(years.startYear, this.calendar.academicYearStartMonth, 1);
+    const lastDay = this.daysInMonth(years.endYear, this.calendar.academicYearEndMonth);
+    this.calendar.periodEndDate = this.makePeriodDate(years.endYear, this.calendar.academicYearEndMonth, lastDay);
+  }
+
+  private getAcademicYearYears(useStoredDateFallback: boolean): { startYear: number; endYear: number } | null {
+    const yearRange = /(?:^|\D)(\d{4})\s*[-/–]\s*(\d{4})(?:\D|$)/.exec(this.calendar.academicYearName);
+    if (yearRange) {
+      return { startYear: Number(yearRange[1]), endYear: Number(yearRange[2]) };
+    }
+
+    if (!useStoredDateFallback) return null;
+
+    const storedStartYear = this.getDateYear(this.calendar.periodStartDate);
+    const storedEndYear = this.getDateYear(this.calendar.periodEndDate);
+    const startYear = storedStartYear ?? storedEndYear;
+    if (startYear === null) return null;
+
+    const endYear = storedEndYear ?? (this.calendar.academicYearEndMonth < this.calendar.academicYearStartMonth ? startYear + 1 : startYear);
+    return { startYear, endYear };
+  }
+
+  private getDateYear(value: string): number | null {
+    const match = /^(\d{4})-\d{2}-\d{2}(?:$|T)/.exec(value ?? '');
+    return match ? Number(match[1]) : null;
+  }
+
+  private makePeriodDate(year: number, month: number, day: number): string {
+    return `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
   }
 
   private generateNextAcademicYearName(sourceName: string, nextPeriodStartDate: string, nextPeriodEndDate: string): string {
@@ -451,6 +509,7 @@ export class AcademicCalendarComponent implements OnInit {
               .slice()
               .sort((a, b) => a.termSequence - b.termSequence)
               .map(term => this.copyTerm(term));
+            this.recalculatePeriodDates();
           },
           error: error => {
             this.isLoadingReusableConfiguration = false;

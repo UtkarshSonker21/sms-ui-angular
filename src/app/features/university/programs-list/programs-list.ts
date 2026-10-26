@@ -293,6 +293,7 @@ export class ProgramsList implements OnInit {
     const programId = this.programForSemesterConfirmation?.programId;
     this.selectedAcademicCalendarId = academicCalendarId;
     if (academicCalendarId == null) {
+      this.isLoadingSemesters = false;
       this.semesterModalError = '';
       this.programSemesters = this.programSemesters.map(semester => ({
         ...semester,
@@ -311,10 +312,14 @@ export class ProgramsList implements OnInit {
     }
     if (!programId) return;
 
+    const namingStyle = this.getCalendarNamingStyle(academicCalendarId);
+    this.applyStandardSemesterNames(namingStyle);
+
     this.isLoadingSemesters = true;
     this.semesterModalError = '';
     this.programService.getProgramSemesterDefaults(programId, academicCalendarId).subscribe({
       next: response => {
+        if (this.selectedAcademicCalendarId !== academicCalendarId) return;
         this.isLoadingSemesters = false;
         if (!response.success || !response.result) {
           this.semesterModalError = response.message || 'Unable to generate semester defaults.';
@@ -322,6 +327,9 @@ export class ProgramsList implements OnInit {
         }
         this.programSemesters = response.result.map(item => ({
           ...item,
+          semesterName: namingStyle === 'custom'
+            ? item.semesterName
+            : `${this.semesterNamePrefix(namingStyle)} ${item.semesterNo}`,
           startDate: this.toDateInput(item.startDate),
           endDate: this.toDateInput(item.endDate),
           registrationStartDate: this.toDateInput(item.registrationStartDate),
@@ -329,6 +337,7 @@ export class ProgramsList implements OnInit {
         }));
       },
       error: error => {
+        if (this.selectedAcademicCalendarId !== academicCalendarId) return;
         this.isLoadingSemesters = false;
         this.semesterModalError = error?.error?.message || 'Unable to generate semester defaults.';
         this.notification.handleBusinessError(error, 'Failed to generate semester defaults.');
@@ -432,6 +441,30 @@ export class ProgramsList implements OnInit {
       year: 'numeric', month: 'short', day: 'numeric'
     });
     return `${selected.academicYearName} (${formatDate(selected.periodStartDate)} – ${formatDate(selected.periodEndDate)})`;
+  }
+
+  private getCalendarNamingStyle(academicCalendarId: number): string {
+    const style = this.academicCalendars
+      .find(calendar => calendar.academicCalendarId === academicCalendarId)
+      ?.namingStyle?.trim().toLowerCase();
+    return style === 'term' || style === 'seasonal' || style === 'custom' || style === 'semester'
+      ? style
+      : 'semester';
+  }
+
+  private applyStandardSemesterNames(namingStyle: string): void {
+    if (namingStyle === 'custom') return;
+    const prefix = this.semesterNamePrefix(namingStyle);
+    this.programSemesters = this.programSemesters.map(semester => ({
+      ...semester,
+      semesterName: `${prefix} ${semester.semesterNo}`
+    }));
+  }
+
+  private semesterNamePrefix(namingStyle: string): string {
+    if (namingStyle === 'term') return 'Term';
+    if (namingStyle === 'seasonal') return 'Seasonal';
+    return 'Semester';
   }
 
   private toDateInput(value?: string | null): string | null {
