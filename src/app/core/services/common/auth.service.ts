@@ -32,6 +32,7 @@ export class AuthService {
     private storageService = inject(StorageService);
     private currentUserProfileService = inject(CurrentUserProfileService);
     private router = inject(Router);
+    private logoutInProgress = false;
 
 
     // api calls
@@ -118,11 +119,20 @@ export class AuthService {
     }
 
     // public helper methods 
-    public logout(): void {
-        this.logoutApi().subscribe({
-            next: () => this.finishLogout(),
-            error: () => this.finishLogout()
-        });
+    public logout(redirectToLogin = true): boolean {
+        if (this.logoutInProgress) {
+            return false;
+        }
+
+        const hadAuthToken = !!this.storageService.getToken();
+        this.logoutInProgress = true;
+
+        if (hadAuthToken) {
+            this.logoutApi().subscribe({ error: () => undefined });
+        }
+
+        this.finishLogout(redirectToLogin);
+        return hadAuthToken;
     }
 
     public isUserLoggedIn(): boolean {
@@ -137,6 +147,7 @@ export class AuthService {
     }
 
     public saveLoginData(loginResponse: LoginResponse, rememberMe: boolean): void {
+        this.logoutInProgress = false;
 
         if (rememberMe) {
 
@@ -241,9 +252,12 @@ export class AuthService {
 
     // private helper methods 
 
-    private finishLogout(): void {
+    private finishLogout(redirectToLogin: boolean): void {
         this.clearUserSession();
-        this.router.navigate(['/login']);
+        this.currentUserProfileService.clear();
+        if (redirectToLogin) {
+            void this.router.navigate(['/login']);
+        }
     }
 
     private clearUserSession(): void {

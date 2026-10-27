@@ -1,39 +1,203 @@
 <div class="page-head">
     <div>
         <div class="crumb">
-            <a href="#">Dashboard</a>
+            <a href="/dashboard">Dashboard</a>
             <span class="sep">/</span>
             <span class="text-muted">Academic Registration</span>
         </div>
-        <h2 class="page-title">Academic Registration</h2>
+        <h1 class="page-title">Academic Registration</h1>
         <p class="page-sub">
             Open the registration window for an upcoming semester, then enroll sponsored students one by one.
         </p>
     </div>
-    <div class="page-actions" style="display: flex; gap: 12px; align-items: center;">
-        <!-- <button type="button" class="btn btn-g">Close Current</button> -->
-        <button type="button" class="btn btn-g">Upload Results</button>
-        <!-- <button type="button" class="btn btn-p">Open Registration</button> -->
+    <div class="page-actions">
+        <button type="button" class="btn btn-g" *ngIf="currentlyOpenWindows.length" (click)="openCentralWindowDialog(true)">
+            Close current
+        </button>
+        <button type="button" class="btn btn-g" (click)="openUploadResultsDialog()">Upload Results</button>
+        <button type="button" class="btn btn-p" (click)="openCentralWindowDialog()" [disabled]="isLoadingCentralWindows || !universities.length">
+            {{ currentlyOpenWindows.length ? 'Change semester' : '+ Open Registration' }}
+        </button>
     </div>
 </div>
 
-<div class="approval-banner">
-    <div class="approval-banner-icon">
-        <svg viewBox="0 0 24 24">
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-            <line x1="12" y1="9" x2="12" y2="13"/>
-            <line x1="12" y1="17" x2="12.01" y2="17"/>
-        </svg>
-    </div>
-    <div class="approval-banner-content">
-        <div class="approval-banner-title">
-            Academic Registration Information
+<section class="central-registration-card" aria-labelledby="central-registration-title">
+    <div class="central-registration-head">
+        <div>
+            <h3 id="central-registration-title">University Registration Windows</h3>
+            <p>Manage the university-wide registration opening for an academic period.</p>
         </div>
-        <div class="approval-banner-subtitle">
-            Please ensure you have selected the correct semester and verified student details before proceeding with registration.
+        <div class="central-registration-head-actions">
+            <label class="central-university-filter" *ngIf="universities.length > 1">
+                <span>University</span>
+                <select [(ngModel)]="selectedUniversityId" (ngModelChange)="syncSelectedCentralWindow()">
+                    <option *ngFor="let university of universities" [ngValue]="university.universityId">{{ university.universityName }}</option>
+                </select>
+            </label>
+            <button type="button" class="btn btn-g central-history-toggle" (click)="showCentralWindowHistory = !showCentralWindowHistory"
+                [attr.aria-expanded]="showCentralWindowHistory" aria-controls="central-window-history">
+                {{ showCentralWindowHistory ? 'Hide History' : 'View History' }}
+            </button>
+        </div>
+    </div>
+    <div class="central-registration-banner" *ngIf="currentlyOpenWindows.length; else centralWindowClosed">
+        <span class="central-status-dot"></span>
+        <div>
+            <strong>{{ currentlyOpenWindows.length === 1 ? 'Registration is open for ' + activeCentralWindow?.periodLabel : 'Registration is open' }}</strong>
+            <span *ngIf="activeCentralWindow && currentlyOpenWindows.length === 1">Window: {{ activeCentralWindow.registrationFrom | date:'dd MMM yyyy' }} → {{ activeCentralWindow.registrationTo | date:'dd MMM yyyy' }} · Students can be enrolled from the list below.</span>
+            <span *ngIf="currentlyOpenWindows.length > 1">{{ currentlyOpenWindows.length }} academic periods currently open</span>
+        </div>
+    </div>
+    <ng-template #centralWindowClosed>
+        <div class="central-registration-banner is-closed">
+            <span class="central-closed-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+            </span>
+            <div><strong>No semester is currently open for registration</strong><span>Click "Open Registration" to choose a semester and a deadline.</span></div>
+        </div>
+    </ng-template>
+    <div id="central-window-history" *ngIf="showCentralWindowHistory">
+      <div class="central-window-loading" *ngIf="isLoadingCentralWindows">Loading registration windows…</div>
+      <div class="central-window-list" *ngIf="!isLoadingCentralWindows && visibleCentralWindows.length">
+        <div class="central-window-row" *ngFor="let registrationWindow of visibleCentralWindows">
+            <div>
+                <strong>{{ registrationWindow.periodLabel }}</strong>
+                <span>Window {{ registrationWindow.registrationFrom ? (registrationWindow.registrationFrom | date:'dd MMM yyyy') : '—' }} → {{ registrationWindow.registrationTo | date:'dd MMM yyyy' }}</span>
+            </div>
+            <span class="central-window-state" [class.open]="isCentralWindowCurrentlyOpen(registrationWindow)">
+                {{ centralWindowStatus(registrationWindow) }}
+            </span>
+        </div>
+      </div>
+      <div class="central-window-empty" *ngIf="!isLoadingCentralWindows && !visibleCentralWindows.length">No registration periods have been configured.</div>
+    </div>
+</section>
+
+<div class="modal-backdrop central-registration-backdrop" *ngIf="showCentralWindowDialog" (click)="closeCentralWindowDialog()">
+    <div class="modal-card central-registration-modal" role="dialog" aria-modal="true" aria-labelledby="central-window-title" (click)="$event.stopPropagation()">
+        <div class="modal-head">
+            <div>
+                <div class="modal-title" id="central-window-title">Open Registration</div>
+                <div class="modal-sub">Choose the semester to open and set a deadline for university registration.</div>
+            </div>
+            <button type="button" class="modal-close" aria-label="Close" (click)="closeCentralWindowDialog()" [disabled]="isSavingCentralWindow || isClosingCentralWindow">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body central-registration-fields">
+            <label class="field central-window-field central-window-wide" *ngIf="universities.length > 1">
+                <span class="field-label">University</span>
+                <select [(ngModel)]="selectedUniversityId" (ngModelChange)="syncSelectedCentralWindow()">
+                    <option *ngFor="let university of universities" [ngValue]="university.universityId">{{ university.universityName }}</option>
+                </select>
+            </label>
+            <div class="field central-window-field">
+                <span class="field-label">Academic period</span>
+                <div class="multi-select central-themed-select" [class.open]="isPeriodDropdownOpen" tabindex="0" role="combobox" aria-haspopup="listbox" [attr.aria-expanded]="isPeriodDropdownOpen" aria-controls="central-period-options" [attr.aria-activedescendant]="isPeriodDropdownOpen ? 'central-period-option-' + activePeriodOption : null" (click)="toggleCentralDropdown('period', $event)" (keydown)="handleCentralDropdownKeydown('period', $event)">
+                    <div class="ms-display has-selection">{{ selectedCentralPeriodLabel }}</div>
+                    <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+                    <div class="ms-panel" id="central-period-options" role="listbox" *ngIf="isPeriodDropdownOpen" (click)="$event.stopPropagation()">
+                        <button type="button" class="ms-option central-dropdown-option" role="option" tabindex="-1" *ngFor="let period of academicPeriods; let index = index" [id]="'central-period-option-' + index" [class.checked]="period.value === selectedPeriodType" [class.active]="index === activePeriodOption" [attr.aria-selected]="period.value === selectedPeriodType" (click)="$event.stopPropagation(); selectCentralPeriod(period.value)">{{ period.label }}</button>
+                    </div>
+                </div>
+            </div>
+            <div class="field central-window-field">
+                <span class="field-label">Academic year</span>
+                <div class="multi-select central-themed-select" [class.open]="isAcademicYearDropdownOpen" tabindex="0" role="combobox" aria-haspopup="listbox" [attr.aria-expanded]="isAcademicYearDropdownOpen" aria-controls="central-year-options" [attr.aria-activedescendant]="isAcademicYearDropdownOpen ? 'central-year-option-' + activeAcademicYearOption : null" (click)="toggleCentralDropdown('year', $event)" (keydown)="handleCentralDropdownKeydown('year', $event)">
+                    <div class="ms-display has-selection">{{ selectedPeriodType === 3 ? selectedAcademicYearStart : selectedAcademicYearStart + '/' + (selectedAcademicYearStart + 1) }}</div>
+                    <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+                    <div class="ms-panel" id="central-year-options" role="listbox" *ngIf="isAcademicYearDropdownOpen" (click)="$event.stopPropagation()">
+                        <button type="button" class="ms-option central-dropdown-option" role="option" tabindex="-1" *ngFor="let year of academicYearStarts; let index = index" [id]="'central-year-option-' + index" [class.checked]="year === selectedAcademicYearStart" [class.active]="index === activeAcademicYearOption" [attr.aria-selected]="year === selectedAcademicYearStart" (click)="$event.stopPropagation(); selectCentralAcademicYear(year)">{{ selectedPeriodType === 3 ? year : year + '/' + (year + 1) }}</button>
+                    </div>
+                </div>
+            </div>
+            <label class="field central-window-field central-window-wide">
+                <span class="field-label required-label">Registration From</span>
+                <input type="date" class="field-input" [(ngModel)]="centralRegistrationFrom" required>
+            </label>
+            <label class="field central-window-field central-window-wide">
+                <span class="field-label required-label">Registration To</span>
+                <input type="date" class="field-input" [(ngModel)]="centralRegistrationTo" [min]="todayDate" required>
+            </label>
+            <label class="field central-window-field central-window-notes">
+                <span class="field-label">Notes <small>(optional)</small></span>
+                <textarea class="field-input" [(ngModel)]="centralWindowNotes" maxlength="500" rows="3" placeholder="Internal notes"></textarea>
+            </label>
+        </div>
+        <div class="modal-foot">
+            <button type="button" class="btn btn-g" *ngIf="centralWindowFormMode === 'existing' && selectedCentralWindow?.isOpen" (click)="closeSelectedCentralWindow()" [disabled]="isClosingCentralWindow || isSavingCentralWindow">
+                {{ isClosingCentralWindow ? 'Closing…' : 'Close Registration' }}
+            </button>
+            <button type="button" class="btn btn-g" (click)="closeCentralWindowDialog()" [disabled]="isSavingCentralWindow || isClosingCentralWindow">Cancel</button>
+            <button type="button" class="btn btn-p" (click)="saveCentralWindow()" [disabled]="isSavingCentralWindow || isClosingCentralWindow">
+                {{ isSavingCentralWindow ? 'Saving…' : 'Open Registration' }}
+            </button>
         </div>
     </div>
 </div>
+
+<!-- Upload Student Results dialog (UI only; processing is intentionally not implemented). -->
+<div class="modal-backdrop upload-results-backdrop" *ngIf="showUploadResultsDialog" (click)="closeUploadResultsDialog()">
+    <div class="modal-card upload-card" role="dialog" aria-modal="true" aria-labelledby="upload-results-title" (click)="$event.stopPropagation()">
+        <div class="modal-head">
+            <div>
+                <h2 class="modal-title" id="upload-results-title">Upload Student Results</h2>
+                <p class="modal-sub">Batch update course results for sponsored students from an Excel file.</p>
+            </div>
+            <button type="button" class="modal-close" aria-label="Close" (click)="closeUploadResultsDialog()">
+                <i class="fas fa-times" aria-hidden="true"></i>
+            </button>
+        </div>
+        <div class="modal-body upload-results-body">
+            <label class="file-drop" for="student-results-file" [class.file-drop-hidden]="!!selectedResultsFile">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="12" y1="18" x2="12" y2="12"/>
+                    <polyline points="9 15 12 12 15 15"/>
+                </svg>
+                <span class="fd-title">Click to choose an Excel file</span>
+                <span class="fd-sub">Accepted formats: <b>.xlsx · .xls · .csv</b></span>
+                <input #resultsFileInput id="student-results-file" type="file" accept=".xlsx,.xls,.csv" (change)="onResultsFileSelected($event)">
+            </label>
+            <div class="file-picked" *ngIf="selectedResultsFile">
+                <span class="fp-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                </span>
+                <span class="fp-body">
+                    <span class="fp-name">{{ selectedResultsFile.name }}</span>
+                    <span class="fp-meta">{{ formatFileSize(selectedResultsFile.size) }} · selected</span>
+                </span>
+                <button type="button" class="file-remove" aria-label="Remove selected file" (click)="removeResultsFile(resultsFileInput)">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+            </div>
+            <button type="button" class="upload-template-link" (click)="downloadResultsTemplate()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                Download template
+            </button>
+            <div class="upload-hint">
+                <b>Template columns:</b>
+                Student ID · Course Code · Result (pass / fail) · Grade (optional) · Note (optional). One row per (student, course). Existing results are overwritten.
+            </div>
+        </div>
+        <div class="modal-foot upload-results-footer">
+            <button type="button" class="btn btn-g" (click)="closeUploadResultsDialog()">Cancel</button>
+            <button type="button" class="btn btn-p" [disabled]="!selectedResultsFile" (click)="processResultsUpload()">Upload &amp; Process</button>
+        </div>
+    </div>
+</div>
+
 
 <div class="filters">
     <div class="search-container">
@@ -49,18 +213,41 @@
 </div>
 
 <div class="card" style="border-radius: var(--da-radius); overflow: visible; margin-bottom: 20px; border: 1px solid var(--da-border, #e0e0e0); background: var(--da-surface, #ffffff); box-shadow: 0 10px 40px rgba(5,5,5,0.04);">
+    <div class="card-head student-table-head">
+        <div>
+            <div class="card-title">Sponsored Students Awaiting Registration</div>
+            <div class="card-sub">{{ totalRecords }} sponsored student{{ totalRecords === 1 ? '' : 's' }} · Click Register to enroll one student, or tick the boxes to bulk-register.</div>
+        </div>
+        <div class="student-selection-actions" *ngIf="selectedEligibleVisibleStudents.length">
+            <span>{{ selectedEligibleVisibleStudents.length }} selected</span>
+            <button type="button" class="btn btn-p btn-sm" (click)="registerSelectedStudents()">Register selected</button>
+        </div>
+    </div>
     <table class="table">
         <thead>
               <tr>
+                  <th class="selection-column">
+                      <input type="checkbox" aria-label="Select all eligible students on this page"
+                          [checked]="allVisibleEligibleStudentsSelected"
+                          [indeterminate]="someVisibleEligibleStudentsSelected"
+                          [disabled]="!eligibleVisibleStudents.length"
+                          (change)="toggleVisibleStudentSelection($any($event.target).checked)">
+                  </th>
                   <th style="width: 30%;">Student</th>
                   <th style="width: 25%;">Program</th>
                   <th style="width: 15%;">Awarded Date</th>
                   <th style="width: 15%;">Status</th>
-                  <th style="width: 15%; text-align: center !important;">Actions</th>
+                  <th style="width: 15%; text-align: center !important;" *ngIf="hasVisibleRegisterableStudents">Actions</th>
               </tr>
         </thead>
         <tbody>
             <tr *ngFor="let student of students">
+                  <td class="selection-column">
+                      <input type="checkbox" [attr.aria-label]="'Select ' + student.studentName"
+                          [checked]="isStudentSelected(student)"
+                          [disabled]="!canRegisterStudent(student)"
+                          (change)="toggleStudentSelection(student, $any($event.target).checked)">
+                  </td>
                   <td>
                       <div style="display: flex; align-items: center; gap: 12px;">
                           <img *ngIf="student.photoPath && !hasPhotoError(student.id)" [src]="getPhotoUrl(student.photoPath)" (error)="handlePhotoError(student.id)" class="profile-photo" alt="Photo" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
@@ -95,22 +282,22 @@
                           {{ student.applicationStatusName || 'Sponsored' }}
                       </span>
                   </td>
-                <td style="text-align: center;">
-                    <button type="button" class="btn btn-g" style="padding: 4px 10px; font-size: 12px; height: 28px;" (click)="openRegisterDialog(student)">
+                <td style="text-align: center;" *ngIf="hasVisibleRegisterableStudents">
+                    <button type="button" class="btn btn-g" style="padding: 4px 10px; font-size: 12px; height: 28px;" *ngIf="canRegisterStudent(student)" (click)="openRegisterDialog(student)">
                         Register
                     </button>
                 </td>
             </tr>
             
             <tr *ngIf="students.length === 0">
-                <td colspan="5" style="text-align: center; padding: 42px 20px;">
+                <td [attr.colspan]="hasVisibleRegisterableStudents ? 6 : 5" style="text-align: center; padding: 42px 20px;">
                     <div style="font-size: 15px; font-weight: 600; color: var(--da-black);">No students found</div>
                     <div style="font-size: 13px; color: var(--da-text-2); margin-top: 4px;">Adjust your search or filter to find what you're looking for.</div>
                 </td>
             </tr>
         </tbody>
     </table>
-    
+
     <div class="pagination-footer">
         <div style="display: flex; align-items: center; gap: 8px;">
             <span class="text-muted" style="font-size: 13px; font-weight: 500;">Show</span>

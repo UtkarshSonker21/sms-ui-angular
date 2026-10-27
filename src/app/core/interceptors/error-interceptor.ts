@@ -49,8 +49,7 @@ export const errorInterceptor: HttpInterceptorFn =
             break;
 
           case 401:
-            if (authService.isUserLoggedIn()) {
-              authService.logout();
+            if (authService.logout()) {
               notification.error('Your session has expired.');
             }
             break;

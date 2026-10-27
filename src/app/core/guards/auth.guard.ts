@@ -12,6 +12,6 @@ export const authGuard: CanActivateFn = () => {
         return true;
     }
 
-    authService.logout();
+    authService.logout(false);
     return router.createUrlTree([AppRoutes.Common.Login]);
 };

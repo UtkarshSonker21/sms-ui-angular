@@ -242,6 +242,12 @@ export const ApiEndpoints = {
       Save: 'program-registration-window'
     },
 
+    UniversityRegistrationWindows: {
+      Get: 'university/registration-windows',
+      OpenOrUpdate: 'university/registration-windows',
+      Close: (id: number) => `university/registration-windows/${id}/close`
+    },
+
     DocumentTypes: {
       Search: 'university/document-types/search',
       GetById: (id: number) => `university/document-types/getById/${id}`,
