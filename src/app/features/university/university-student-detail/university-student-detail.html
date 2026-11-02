@@ -678,7 +678,7 @@ DO NOT DELETE.
                     <img *ngIf="student.photoPath && !photoError" [src]="getPhotoUrl(student.photoPath)"
                         (error)="handlePhotoError()" style="width: 100%; height: 100%; object-fit: cover;">
                     <div *ngIf="!student.photoPath || photoError"
-                        style="font-size: 22px; font-weight: 500; color: #16a34a;">
+                        style="font-size: 18px; font-weight: 450; color: #16a34a;">
                         {{ student.firstName ? student.firstName.charAt(0).toUpperCase() : 'S' }}{{ student.lastName ? student.lastName.charAt(0).toUpperCase() : 'T' }}
                     </div>
                 </div>
@@ -707,87 +707,127 @@ DO NOT DELETE.
         </div>
 
             <!-- Workflow Action Bar (Acceptance/Awarding transition) -->
-            <div *ngIf="student.applicationStatusId === studentStatus.AcceptanceInProcess || student.applicationStatusId === studentStatus.Accepted || student.applicationStatusId === studentStatus.AwardingInProcess || student.applicationStatusId === studentStatus.Awarded"
-                style="display: flex; justify-content: space-between; align-items: flex-start; padding: 20px 24px; background: var(--da-success-bg, #f0fdf4); border: 1px solid var(--da-success-border, #bbf7d0); border-left: 5px solid var(--da-success, #16a34a); border-radius: 6px; margin-bottom: 14px;">
+            <div class="application-review-card" style="padding: 20px 24px; background: #ffffff; border: 1px solid var(--da-border, #e2e8f0); border-left: 5px solid var(--da-success, #16a34a); border-radius: 6px; margin-bottom: 14px; position: relative; overflow: visible !important;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 14px; margin-bottom: 16px;">
+                    <div>
+                        <div style="font-weight: 700; font-size: 15px; color: var(--da-text, #1e293b); margin-bottom: 4px;">Application Review</div>
+                        <div style="color: var(--da-muted, #64748b); font-size: 12.5px;">
+                            <ng-container *ngIf="student.applicationStatusId === studentStatus.AcceptanceInProcess">
+                                Review the submitted documents and choose the appropriate action for this application.
+                            </ng-container>
+                            <ng-container *ngIf="student.applicationStatusId === studentStatus.Accepted">
+                                The application has been accepted successfully. Move to Awarded or select a new status.
+                            </ng-container>
+                            <ng-container *ngIf="student.applicationStatusId === studentStatus.AwardingInProcess">
+                                The application is currently under awarding review. Review the application and choose the appropriate action.
+                            </ng-container>
+                            <ng-container *ngIf="student.applicationStatusId === studentStatus.Awarded">
+                                This application has been awarded successfully and has been forwarded to the Direct Aid Committee for sponsorship review.
+                            </ng-container>
+                            <ng-container *ngIf="student.applicationStatusId !== studentStatus.AcceptanceInProcess && student.applicationStatusId !== studentStatus.Accepted && student.applicationStatusId !== studentStatus.AwardingInProcess && student.applicationStatusId !== studentStatus.Awarded">
+                                Move this student to another stage of the application journey.
+                            </ng-container>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-weight: 600; font-size: 13px; color: var(--da-text, #1e293b);">Current Status:</span>
+                        <span class="chip {{ getStatusBadgeClass(student) }}" style="font-size: 11px;">{{ student.applicationStatusName }}</span>
+                    </div>
+                </div>
 
-                <!-- Content for AcceptanceInProcess -->
-                <ng-container *ngIf="student.applicationStatusId === studentStatus.AcceptanceInProcess">
-                    <div style="display: flex; flex-direction: column; gap: 12px;">
-                        <div>
-                            <div style="font-weight: 700; font-size: 15px; color: var(--da-text, #1e293b); margin-bottom: 4px;">Application Review</div>
-                            <div style="color: var(--da-muted, #64748b); font-size: 12.5px;">Review the submitted documents and choose the appropriate action for this application.</div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-                            <span style="font-weight: 600; font-size: 13px; color: var(--da-text, #1e293b);">Current Status:</span>
-                            <span class="chip {{ getStatusBadgeClass(student) }}" style="font-size: 11px;">{{ student.applicationStatusName }}</span>
-                        </div>
+                <!-- Sponsorship review waiting notice when Awarded -->
+                <div *ngIf="isAwarded" class="alert sponsorship-waiting-alert">
+                    <div>
+                        <strong>Waiting for the Kafa'at Committee.</strong>
+                        <ng-container *ngIf="committeeSubmissionDate; else noDateAlert">
+                            Sent for sponsorship approval automatically on <span class="num-ltr">{{ committeeSubmissionDate | date:'yyyy/MM/dd' }}</span>. Once the committee approves, the student moves to Sponsored.
+                        </ng-container>
+                        <ng-template #noDateAlert>
+                            Sent for sponsorship approval automatically. Once the committee approves, the student moves to Sponsored.
+                        </ng-template>
                     </div>
-                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
-                        <span style="color: var(--da-muted, #64748b); font-size: 12px; font-weight: 500;">Available Actions</span>
-                        <div style="display: flex; gap: 12px;">
-                            <button type="button" class="btn btn-faculties-outline btn-danger-outline" (click)="rejectApplication()">Reject</button>
-                            <button type="button" class="btn btn-p" (click)="acceptApplication()">Accept</button>
-                        </div>
-                    </div>
-                </ng-container>
+                </div>
 
-                <!-- Content for Accepted -->
-                <ng-container *ngIf="student.applicationStatusId === studentStatus.Accepted">
-                    <div style="display: flex; flex-direction: column; gap: 12px;">
-                        <div>
-                            <div style="font-weight: 700; font-size: 15px; color: var(--da-text, #1e293b); margin-bottom: 4px;">Application Review</div>
-                            <div style="display: flex; align-items: center; gap: 6px; color: var(--da-success, #16a34a); font-weight: 600; font-size: 13.5px; margin-bottom: 8px;"><span>Acceptance Completed</span></div>
-                            <div style="color: var(--da-muted, #64748b); font-size: 12.5px;">The application has been accepted successfully.</div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-                            <span style="font-weight: 600; font-size: 13px; color: var(--da-text, #1e293b);">Next Step:</span>
-                            <span style="color: var(--da-text, #1e293b); font-size: 13px;">Submit this application for Awarding Review.</span>
-                        </div>
+                <!-- Kafa'at Committee decision banner when Sponsored -->
+                <div *ngIf="isSponsored" class="alert info committee-decision-banner">
+                    <div>
+                        <ng-container *ngIf="committeeDecisionDate; else noDateDecision">
+                            <strong>Kafa'at Committee decision (<span class="num-ltr">{{ committeeDecisionDate | date:'yyyy/MM/dd' }}</span>):</strong> Sponsored
+                        </ng-container>
+                        <ng-template #noDateDecision>
+                            <strong>Kafa'at Committee decision:</strong> Sponsored
+                        </ng-template>
                     </div>
-                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px; align-self: center;">
-                        <button type="button" class="btn btn-p" (click)="submitForAwardingReview()">Submit for Awarding Review</button>
-                    </div>
-                </ng-container>
+                </div>
 
-                <!-- Content for AwardingInProcess -->
-                <ng-container *ngIf="student.applicationStatusId === studentStatus.AwardingInProcess">
-                    <div style="display: flex; flex-direction: column; gap: 12px;">
-                        <div>
-                            <div style="font-weight: 700; font-size: 15px; color: var(--da-text, #1e293b); margin-bottom: 4px;">Application Review</div>
-                            <div style="color: var(--da-muted, #64748b); font-size: 12.5px;">The application is currently under awarding review. Review the application and choose the appropriate action.</div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-                            <span style="font-weight: 600; font-size: 13px; color: var(--da-text, #1e293b);">Current Status:</span>
-                            <span class="chip {{ getStatusBadgeClass(student) }}" style="font-size: 11px;">{{ student.applicationStatusName }}</span>
-                        </div>
-                    </div>
-                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
-                        <span style="color: var(--da-muted, #64748b); font-size: 12px; font-weight: 500;">Available Actions</span>
-                        <div style="display: flex; gap: 12px;">
-                            <button type="button" class="btn btn-faculties-outline btn-danger-outline" (click)="rejectAwardingApplication()">Reject</button>
-                            <button type="button" class="btn btn-p" (click)="awardApplication()">Award</button>
-                        </div>
-                    </div>
-                </ng-container>
+                <!-- Status Update Form with Custom Dropdown -->
+                <div class="ss-form" *ngIf="availableStatusOptions.length > 0 || isAwarded"
+                     style="display: flex; align-items: flex-end; gap: 14px; flex-wrap: wrap; padding-top: 14px; border-top: 1px solid var(--da-border, #e2e8f0);">
 
-                <!-- Content for Awarded -->
-                <ng-container *ngIf="student.applicationStatusId === studentStatus.Awarded">
-                    <div style="display: flex; flex-direction: column; gap: 12px;">
-                        <div>
-                            <div style="font-weight: 700; font-size: 15px; color: var(--da-text, #1e293b); margin-bottom: 4px;">Application Review</div>
-                            <div style="display: flex; align-items: center; gap: 6px; color: var(--da-success, #16a34a); font-weight: 600; font-size: 13.5px; margin-bottom: 8px; margin-top: 4px;"><span>Awarding Completed</span></div>
-                            <div style="color: var(--da-muted, #64748b); font-size: 12.5px;">This application has been awarded successfully and has been forwarded to the Direct Aid Committee for sponsorship review.</div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-                            <span style="font-weight: 600; font-size: 13px; color: var(--da-text, #1e293b);">Current Status:</span>
-                            <span class="chip {{ getStatusBadgeClass(student) }}" style="font-size: 11px;">{{ student.applicationStatusName }}</span>
+                    <!-- Custom Styled 'New Status' Dropdown (matching Faculty/Program dropdown UI) -->
+                    <div class="field ss-field" style="display: flex; flex-direction: column; gap: 6px; min-width: 220px; flex: 1 1 220px; position: relative;">
+                        <label class="field-label" id="newStatusLabel" style="font-size: 12px; font-weight: 600; color: var(--da-text, #1e293b); margin: 0;">New Status</label>
+                        <div class="da-select"
+                             [class.da-select-open]="isStatusDropdownOpen && !isAwarded"
+                             [class.is-disabled]="isAwarded"
+                             style="width: 100%; min-width: 0;"
+                             [attr.tabindex]="isAwarded ? -1 : 0">
+                            <div class="da-select-control" role="combobox"
+                                 [attr.tabindex]="isAwarded ? -1 : 0"
+                                 aria-labelledby="newStatusLabel"
+                                 aria-haspopup="listbox"
+                                 [attr.aria-expanded]="isStatusDropdownOpen && !isAwarded"
+                                 [attr.aria-disabled]="isAwarded"
+                                 aria-label="New Status"
+                                 (click)="!isAwarded && toggleStatusDropdown($event)"
+                                 (keydown)="!isAwarded && handleStatusDropdownKeydown($event)">
+                                <span class="da-select-value" [style.color]="selectedNewStatusId ? 'var(--da-text, #1e293b)' : 'var(--da-muted, #64748b)'">
+                                    {{ getSelectedNewStatusName() || (isAwarded ? 'Status editing locked' : 'Choose a status…') }}
+                                </span>
+                                <i class="fas da-select-arrow" [ngClass]="isStatusDropdownOpen && !isAwarded ? 'fa-chevron-up' : 'fa-chevron-down'" aria-hidden="true"></i>
+                            </div>
+                            <div class="da-select-menu" role="listbox" *ngIf="isStatusDropdownOpen && !isAwarded">
+                                <div class="da-select-option" role="option"
+                                     [class.selected]="selectedNewStatusId === null"
+                                     [class.keyboard-active]="isStatusDropdownOpen && activeOptionIndex === -1"
+                                     [attr.aria-selected]="selectedNewStatusId === null"
+                                     (mouseenter)="activeOptionIndex = -1"
+                                     (click)="selectNewStatusOption(null, $event)">
+                                    Choose a status…
+                                </div>
+                                <div *ngFor="let opt of availableStatusOptions; let i = index"
+                                     class="da-select-option" role="option"
+                                     [class.selected]="selectedNewStatusId === opt.id"
+                                     [class.keyboard-active]="isStatusDropdownOpen && activeOptionIndex === i"
+                                     [attr.aria-selected]="selectedNewStatusId === opt.id"
+                                     (mouseenter)="activeOptionIndex = i"
+                                     (click)="selectNewStatusOption(opt.id, $event)">
+                                    {{ opt.name }}
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px; align-self: center;">
-                        <span style="color: var(--da-muted, #64748b); font-size: 12px; font-weight: 500; margin-bottom: 4px;">Workflow Complete</span>
-                        <div style="color: var(--da-text, #1e293b); font-size: 12.5px; font-weight: 500; padding: 6px 12px; background: var(--da-surface-2, #f8fafc); border-radius: 4px; border: 1px solid var(--da-border, #e2e8f0);">No further action required.</div>
+
+                    <!-- Note (Optional) Field -->
+                    <div class="field ss-note" style="display: flex; flex-direction: column; gap: 6px; min-width: 260px; flex: 2 1 280px;">
+                        <label class="field-label" style="font-size: 12px; font-weight: 600; color: var(--da-text, #1e293b); margin: 0;">Note (Optional)</label>
+                        <input type="text" class="field-input" [(ngModel)]="statusNotes"
+                               [disabled]="isAwarded"
+                               placeholder="Reason or internal note for the record" maxlength="300"
+                               style="height: 34px; padding: 0 12px; font-size: 13px; border: 1px solid var(--da-border); border-radius: var(--da-radius-sm); background: white;" />
                     </div>
-                </ng-container>
+
+                    <!-- Update Status Action Button -->
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <button type="button" class="btn btn-p" [disabled]="isAwarded || !selectedNewStatusId || isUpdatingStatus"
+                                (click)="updateStatus()"
+                                style="height: 34px; padding: 0 16px; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;">
+                            <i *ngIf="isUpdatingStatus" class="fas fa-spinner fa-spin"></i>
+                            <span>{{ isUpdatingStatus ? 'Updating…' : 'Update Status' }}</span>
+                        </button>
+                    </div>
+
+                </div>
             </div>
 
                 <!-- 2. Applied Program -->

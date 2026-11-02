@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -35,6 +35,225 @@ export class UniversityStudentDetail implements OnInit {
 
   photoError: boolean = false;
 
+  // Status dropdown state
+  selectedNewStatusId: number | null = null;
+  statusNotes: string = '';
+  isStatusDropdownOpen = false;
+  isUpdatingStatus = false;
+  activeOptionIndex = -1;
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.isStatusDropdownOpen = false;
+  }
+
+  get isSponsored(): boolean {
+    return this.student?.applicationStatusId === StudentStatusEnum.Sponsored;
+  }
+
+  get committeeDecisionDate(): Date | null {
+    if (!this.student || this.student.applicationStatusId !== StudentStatusEnum.Sponsored) {
+      return null;
+    }
+
+    if (this.studentHistory && this.studentHistory.length > 0) {
+      const sponsoredItem = this.studentHistory.find(h => {
+        const title = (h.title || '').toLowerCase();
+        const desc = (h.description || '').toLowerCase();
+        return title.includes('sponsored') || desc.includes('sponsored') || h.historyType === StudentStatusEnum.Sponsored;
+      });
+      if (sponsoredItem?.createdDate) {
+        return new Date(sponsoredItem.createdDate);
+      }
+    }
+
+    if (this.student.actionDate) {
+      return new Date(this.student.actionDate);
+    }
+
+    return null;
+  }
+
+  get isAwarded(): boolean {
+    return this.student?.applicationStatusId === StudentStatusEnum.Awarded;
+  }
+
+  get committeeSubmissionDate(): Date | null {
+    if (!this.student || this.student.applicationStatusId !== StudentStatusEnum.Awarded) {
+      return null;
+    }
+
+    if (this.studentHistory && this.studentHistory.length > 0) {
+      const awardedItem = this.studentHistory.find(h => {
+        const title = (h.title || '').toLowerCase();
+        const desc = (h.description || '').toLowerCase();
+        return title.includes('awarded') || desc.includes('awarded') || h.historyType === StudentStatusEnum.Awarded;
+      });
+      if (awardedItem?.createdDate) {
+        return new Date(awardedItem.createdDate);
+      }
+    }
+
+    if (this.student.actionDate) {
+      return new Date(this.student.actionDate);
+    }
+
+    return null;
+  }
+
+  // Allowed transitions per status
+  readonly statusTransitions: { [key: number]: number[] } = {
+    [StudentStatusEnum.Draft]: [StudentStatusEnum.AcceptanceInProcess],
+    [StudentStatusEnum.AcceptanceInProcess]: [StudentStatusEnum.Accepted, StudentStatusEnum.AcceptanceRejected],
+    [StudentStatusEnum.Accepted]: [StudentStatusEnum.AwardingInProcess, StudentStatusEnum.Awarded, StudentStatusEnum.AwardingRejected],
+    [StudentStatusEnum.AcceptanceRejected]: [StudentStatusEnum.AcceptanceInProcess, StudentStatusEnum.Accepted],
+    [StudentStatusEnum.AwardingInProcess]: [StudentStatusEnum.Awarded, StudentStatusEnum.AwardingRejected],
+    [StudentStatusEnum.Awarded]: [],
+    [StudentStatusEnum.AwardingRejected]: [StudentStatusEnum.AwardingInProcess, StudentStatusEnum.Awarded],
+    [StudentStatusEnum.SponsoringInProcess]: [StudentStatusEnum.Sponsored, StudentStatusEnum.SponsoringRejected],
+    [StudentStatusEnum.Sponsored]: [StudentStatusEnum.Registered],
+    [StudentStatusEnum.SponsoringRejected]: [StudentStatusEnum.Awarded],
+    [StudentStatusEnum.Registered]: [StudentStatusEnum.Graduated],
+  };
+
+  get availableStatusOptions(): { id: number; name: string }[] {
+    if (this.isAwarded) {
+      return [];
+    }
+    const currentId = this.student?.applicationStatusId;
+    if (currentId !== undefined && currentId !== null && this.statusTransitions[currentId]?.length) {
+      return this.statusTransitions[currentId].map(id => ({
+        id,
+        name: this.studentStatusService.getName(id)
+      }));
+    }
+    if (currentId !== undefined && currentId !== null) {
+      return this.studentStatusService.getUniversityStatuses()
+        .filter(s => s.id !== currentId)
+        .map(s => ({ id: s.id, name: s.name }));
+    }
+    return [];
+  }
+
+  toggleStatusDropdown(event?: Event): void {
+    if (this.isAwarded) return;
+    if (event) {
+      event.stopPropagation();
+    }
+    this.isStatusDropdownOpen = !this.isStatusDropdownOpen;
+    if (this.isStatusDropdownOpen) {
+      if (this.selectedNewStatusId !== null) {
+        this.activeOptionIndex = this.availableStatusOptions.findIndex(o => o.id === this.selectedNewStatusId);
+      } else {
+        this.activeOptionIndex = -1;
+      }
+    } else {
+      this.activeOptionIndex = -1;
+    }
+  }
+
+  selectNewStatusOption(id: number | null, event?: Event): void {
+    if (this.isAwarded) return;
+    if (event) {
+      event.stopPropagation();
+    }
+    this.selectedNewStatusId = id;
+    this.isStatusDropdownOpen = false;
+  }
+
+  getSelectedNewStatusName(): string {
+    if (this.isAwarded) return 'Status editing locked';
+    if (this.selectedNewStatusId === null) return '';
+    const opt = this.availableStatusOptions.find(x => x.id === this.selectedNewStatusId);
+    return opt ? opt.name : this.studentStatusService.getName(this.selectedNewStatusId);
+  }
+
+  handleStatusDropdownKeydown(event: KeyboardEvent): void {
+    if (this.isAwarded) return;
+    const options = this.availableStatusOptions;
+
+    switch (event.key) {
+      case 'Enter':
+      case ' ':
+        event.preventDefault();
+        if (!this.isStatusDropdownOpen) {
+          this.isStatusDropdownOpen = true;
+          this.activeOptionIndex = this.selectedNewStatusId !== null
+            ? options.findIndex(o => o.id === this.selectedNewStatusId)
+            : -1;
+        } else {
+          if (this.activeOptionIndex === -1) {
+            this.selectNewStatusOption(null);
+          } else if (this.activeOptionIndex >= 0 && this.activeOptionIndex < options.length) {
+            this.selectNewStatusOption(options[this.activeOptionIndex].id);
+          }
+        }
+        break;
+      case 'ArrowDown':
+        event.preventDefault();
+        if (!this.isStatusDropdownOpen) {
+          this.isStatusDropdownOpen = true;
+          this.activeOptionIndex = -1;
+        } else {
+          if (this.activeOptionIndex < options.length - 1) {
+            this.activeOptionIndex++;
+          } else {
+            this.activeOptionIndex = -1;
+          }
+        }
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        if (!this.isStatusDropdownOpen) {
+          this.isStatusDropdownOpen = true;
+          this.activeOptionIndex = options.length - 1;
+        } else {
+          if (this.activeOptionIndex > -1) {
+            this.activeOptionIndex--;
+          } else {
+            this.activeOptionIndex = options.length - 1;
+          }
+        }
+        break;
+      case 'Escape':
+        event.preventDefault();
+        this.isStatusDropdownOpen = false;
+        break;
+      case 'Tab':
+        this.isStatusDropdownOpen = false;
+        break;
+    }
+  }
+
+  updateStatus(): void {
+    if (this.isAwarded) return;
+    if (!this.student || this.selectedNewStatusId === null || this.isUpdatingStatus) return;
+
+    this.isUpdatingStatus = true;
+    const newStatusName = this.getSelectedNewStatusName();
+
+    this.studentProgramService.changeStatus(this.studentId, {
+      applicationStatusId: this.selectedNewStatusId,
+      remarks: this.statusNotes ? this.statusNotes.trim() : (null as any)
+    }).subscribe({
+      next: (res) => {
+        this.isUpdatingStatus = false;
+        if (res.success) {
+          this.notification.success(`Status updated to "${newStatusName}" successfully.`);
+          this.selectedNewStatusId = null;
+          this.statusNotes = '';
+          this.refreshApplicationWorkflow();
+        } else {
+          this.notification.error(res.message || 'Failed to update student status.');
+        }
+      },
+      error: (error) => {
+        this.isUpdatingStatus = false;
+        this.notification.handleBusinessError(error, 'An error occurred while updating status.');
+      }
+    });
+  }
+
   // Placeholder for when timeline API is provided
   documents: StudentProgramDocument[] = [];
   studentHistory: any[] = [];
@@ -57,6 +276,8 @@ export class UniversityStudentDetail implements OnInit {
         if (res.success && res.result) {
           this.student = res.result;
           this.photoError = false;
+          this.selectedNewStatusId = null;
+          this.statusNotes = '';
 
           // Fallback simple timeline for now using actionDate
           if (this.student.actionDate) {
@@ -70,6 +291,8 @@ export class UniversityStudentDetail implements OnInit {
           if (this.student.applicationId) {
             this.loadDocuments(this.student.applicationId);
           }
+
+          this.loadHistory();
 
           return;
         }
@@ -88,6 +311,20 @@ export class UniversityStudentDetail implements OnInit {
 
   getPhotoUrl(path?: string): string {
     return HelperMethods.getFileUrl(path);
+  }
+
+  loadHistory(): void {
+    if (!this.studentId) return;
+    this.studentProgramService.getHistory(this.studentId).subscribe({
+      next: (res) => {
+        if (res.success && res.result && res.result.length > 0) {
+          this.studentHistory = res.result;
+        }
+      },
+      error: () => {
+        // Fallback simple history already set from actionDate if available
+      }
+    });
   }
 
   loadDocuments(applicationId: number): void {
