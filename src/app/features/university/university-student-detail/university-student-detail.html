@@ -706,100 +706,6 @@ DO NOT DELETE.
             </div>
         </div>
 
-                <!-- 2. Applied Program -->
-        <section class="form-section">
-            <div class="form-section-head" style="cursor: default;">
-                <div class="form-section-num">1</div>
-                <div>
-                    <div class="form-section-title">Applied Program</div>
-                    <div class="form-section-sub">Applied program information.</div>
-                </div>
-                <div class="form-section-spacer"></div>
-            </div>
-            <div class="form-section-body" style="display: block;">
-            
-            <div class="card"
-                style="border: 2px solid var(--da-primary); border-radius: 6px; background: white; overflow: hidden; padding: 16px; display: flex; align-items: center; gap: 16px;">
-                <div
-                    style="flex: 0 0 48px; height: 48px; border-radius: 8px; background: #dcfce7; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2">
-                        <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-                        <path d="M6 12v5c3 3 9 3 12 0v-5" />
-                    </svg>
-                </div>
-                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
-                    <h4
-                        style="margin: 0 0 4px 0; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-                        {{ student.programName || '-' }}
-                        <span class="badge" *ngIf="student.applicationStatusName"
-                            style="background: var(--da-primary); color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px;">Status:
-                            {{ student.applicationStatusName }}</span>
-                    </h4>
-                    <div style="color: var(--da-muted); font-size: 13px; margin-bottom: 4px;">{{ student.programCode
-                        || '-' }}</div>
-                    <div style="display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px;">
-                        <div><strong>Faculty:</strong> {{ student.facultyName || '-' }}</div>
-                        <div><strong>University:</strong> {{ student.universityName || '-' }}</div>
-                    </div>
-                </div>
-            </div>
-                    </div>
-        </section>
-
-                <!-- 3. Submitted Documents -->
-        <section class="form-section">
-            <div class="form-section-head" style="cursor: default;">
-                <div class="form-section-num">2</div>
-                <div>
-                    <div class="form-section-title">Submitted Documents</div>
-                    <div class="form-section-sub">Submitted documents and application files.</div>
-                </div>
-                <div class="form-section-spacer"></div>
-            </div>
-            <div class="form-section-body" style="display: block;">
-
-            <div *ngIf="documents.length === 0" style="padding: 32px; text-align: center; border: 1px dashed var(--da-border); border-radius: 6px;">
-                <div style="font-weight: 500; font-size: 14px; margin-bottom: 4px;">No documents available</div>
-                <div style="color: var(--da-muted); font-size: 13px;">There are currently no documents fetched from the API for this application.</div>
-            </div>
-
-            <div *ngFor="let doc of documents" style="display: flex; justify-content: space-between; align-items: center; padding: 16px; background: var(--da-surface-2); border: 1px solid var(--da-border); border-radius: 6px; margin-bottom: 12px;">
-                <div>
-                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-                        <div *ngIf="getUploadedDocStatus(doc.documentTypeId) === 'Uploaded'" style="width: 24px; height: 24px; border-radius: 50%; background: #dcfce7; display: flex; align-items: center; justify-content: center;">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="20 6 9 17 4 12"></polyline>
-                            </svg>
-                        </div>
-
-                        <strong style="font-size: 14px; color: var(--da-text);">{{ doc.documentTypeName }}</strong>
-
-                        <span *ngIf="doc.isRequired" class="badge" style="background: var(--da-danger-bg, #fef2f2); color: var(--da-danger, #dc2626); border: 1px solid var(--da-danger-border, #fecaca); padding: 2px 8px; border-radius: 12px; font-size: 11px;">Required</span>
-                        <span *ngIf="!doc.isRequired" class="badge" style="background: var(--da-info-bg, #eff6ff); color: var(--da-info, #2563eb); border: 1px solid var(--da-info-border, #bfdbfe); padding: 2px 8px; border-radius: 12px; font-size: 11px;">Optional</span>
-                        <span *ngIf="getUploadedDocStatus(doc.documentTypeId) !== 'Uploaded'" class="badge" style="background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 12px; font-size: 11px;">
-                            {{ getUploadedDocStatus(doc.documentTypeId) }}
-                        </span>
-                    </div>
-                    <div style="color: var(--da-muted); font-size: 13px;">
-                        <span *ngIf="doc.originalFileName || doc.storedFileName">{{ doc.originalFileName || doc.storedFileName }} - </span>
-                        <span *ngIf="doc.uploadedDate">uploaded {{ doc.uploadedDate | date:'yyyy-MM-dd' }}</span>
-                        <span *ngIf="!doc.originalFileName && !doc.storedFileName && !doc.uploadedDate">{{ doc.description || 'Student provided document.' }}</span>
-                    </div>
-                </div>
-                <div style="display: flex; gap: 12px; align-items: center;">
-                    <div (click)="openDiscussionModal(doc.documentTypeId)" style="cursor: pointer; display: flex; align-items: center; gap: 6px; color: var(--da-muted); font-size: 13px; padding: 6px 12px; border-radius: 4px; background: white; border: 1px solid var(--da-border);">
-                        {{ getDiscussionCount(doc.documentTypeId) }} Remarks
-                    </div>
-                    <ng-container *ngIf="getUploadedDocStatus(doc.documentTypeId) === 'Uploaded'">
-                        <button type="button" class="btn btn-sm btn-faculties-outline btn-info-outline" (click)="previewDocument(doc.documentTypeId); $event.stopPropagation()">
-                            Preview
-                        </button>
-                    </ng-container>
-                </div>
-                        </div>
-            </div>
-        </section>
-
             <!-- Workflow Action Bar (Acceptance/Awarding transition) -->
             <div *ngIf="student.applicationStatusId === studentStatus.AcceptanceInProcess || student.applicationStatusId === studentStatus.Accepted || student.applicationStatusId === studentStatus.AwardingInProcess || student.applicationStatusId === studentStatus.Awarded"
                 style="display: flex; justify-content: space-between; align-items: flex-start; padding: 20px 24px; background: var(--da-success-bg, #f0fdf4); border: 1px solid var(--da-success-border, #bbf7d0); border-left: 5px solid var(--da-success, #16a34a); border-radius: 6px; margin-bottom: 14px;">
@@ -883,6 +789,99 @@ DO NOT DELETE.
                     </div>
                 </ng-container>
             </div>
+
+                <!-- 2. Applied Program -->
+        <section class="form-section">
+            <div class="form-section-head" style="cursor: default;">
+                <div class="form-section-num">1</div>
+                <div>
+                    <div class="form-section-title">Applied Program</div>
+                    <div class="form-section-sub">Applied program information.</div>
+                </div>
+                <div class="form-section-spacer"></div>
+            </div>
+            <div class="form-section-body" style="display: block;">
+
+            <div class="card applied-program-card">
+                <div class="applied-program-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2">
+                        <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                        <path d="M6 12v5c3 3 9 3 12 0v-5" />
+                    </svg>
+                </div>
+                <div class="applied-program-details">
+                    <div class="applied-program-heading">
+                        <h4>
+                            {{ student.programName || '-' }}
+                        </h4>
+                        <span class="applied-program-code">{{ student.programCode || '-' }}</span>
+                    </div>
+                    <div class="applied-program-meta">
+                        <div><strong>Faculty:</strong> {{ student.facultyName || '-' }}</div>
+                        <div><strong>University:</strong> {{ student.universityName || '-' }}</div>
+                    </div>
+                </div>
+                <span class="badge applied-program-status" *ngIf="student.applicationStatusName"
+                    style="background: var(--da-primary); color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px;">
+                    Status: {{ student.applicationStatusName }}
+                </span>
+            </div>
+                    </div>
+        </section>
+
+                <!-- 3. Submitted Documents -->
+        <section class="form-section">
+            <div class="form-section-head" style="cursor: default;">
+                <div class="form-section-num">2</div>
+                <div>
+                    <div class="form-section-title">Submitted Documents</div>
+                    <div class="form-section-sub">Submitted documents and application files.</div>
+                </div>
+                <div class="form-section-spacer"></div>
+            </div>
+            <div class="form-section-body" style="display: block;">
+
+            <div *ngIf="documents.length === 0" style="padding: 32px; text-align: center; border: 1px dashed var(--da-border); border-radius: 6px;">
+                <div style="font-weight: 500; font-size: 14px; margin-bottom: 4px;">No documents available</div>
+                <div style="color: var(--da-muted); font-size: 13px;">There are currently no documents fetched from the API for this application.</div>
+            </div>
+
+            <div *ngFor="let doc of documents" style="display: flex; justify-content: space-between; align-items: center; padding: 16px; background: var(--da-surface-2); border: 1px solid var(--da-border); border-radius: 6px; margin-bottom: 12px;">
+                <div>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                        <div *ngIf="getUploadedDocStatus(doc.documentTypeId) === 'Uploaded'" style="width: 24px; height: 24px; border-radius: 50%; background: #dcfce7; display: flex; align-items: center; justify-content: center;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </div>
+
+                        <strong style="font-size: 14px; color: var(--da-text);">{{ doc.documentTypeName }}</strong>
+
+                        <span *ngIf="doc.isRequired" class="badge" style="background: var(--da-danger-bg, #fef2f2); color: var(--da-danger, #dc2626); border: 1px solid var(--da-danger-border, #fecaca); padding: 2px 8px; border-radius: 12px; font-size: 11px;">Required</span>
+                        <span *ngIf="!doc.isRequired" class="badge" style="background: var(--da-info-bg, #eff6ff); color: var(--da-info, #2563eb); border: 1px solid var(--da-info-border, #bfdbfe); padding: 2px 8px; border-radius: 12px; font-size: 11px;">Optional</span>
+                        <span *ngIf="getUploadedDocStatus(doc.documentTypeId) !== 'Uploaded'" class="badge" style="background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 12px; font-size: 11px;">
+                            {{ getUploadedDocStatus(doc.documentTypeId) }}
+                        </span>
+                    </div>
+                    <div style="color: var(--da-muted); font-size: 13px;">
+                        <span *ngIf="doc.originalFileName || doc.storedFileName">{{ doc.originalFileName || doc.storedFileName }} - </span>
+                        <span *ngIf="doc.uploadedDate">uploaded {{ doc.uploadedDate | date:'yyyy-MM-dd' }}</span>
+                        <span *ngIf="!doc.originalFileName && !doc.storedFileName && !doc.uploadedDate">{{ doc.description || 'Student provided document.' }}</span>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <div (click)="openDiscussionModal(doc.documentTypeId)" style="cursor: pointer; display: flex; align-items: center; gap: 6px; color: var(--da-muted); font-size: 13px; padding: 6px 12px; border-radius: 4px; background: white; border: 1px solid var(--da-border);">
+                        {{ getDiscussionCount(doc.documentTypeId) }} Remarks
+                    </div>
+                    <ng-container *ngIf="getUploadedDocStatus(doc.documentTypeId) === 'Uploaded'">
+                        <button type="button" class="btn btn-sm btn-faculties-outline btn-info-outline" (click)="previewDocument(doc.documentTypeId); $event.stopPropagation()">
+                            Preview
+                        </button>
+                    </ng-container>
+                </div>
+                        </div>
+            </div>
+        </section>
 
             <!-- Discussion Modal -->
             <div *ngIf="isDiscussionModalOpen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">

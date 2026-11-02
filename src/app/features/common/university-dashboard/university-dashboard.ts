@@ -23,12 +23,12 @@ export interface DashboardStat {
   subtextClass?: string;
 }
 
-export interface UpcomingDeadline {
-  month: string;
-  date: string;
+export interface DashboardDeadline {
+  id: number;
   title: string;
-  subtitle: string;
-  type: 'danger' | 'warning' | 'info';
+  date: string;
+  description: string;
+  badgeStyle: 'success' | 'warning' | 'neutral';
 }
 
 @Component({
@@ -44,7 +44,29 @@ export class UniversityDashboard implements OnInit {
 
   dashboardStats: DashboardStat[] = [];
   recentApplications: StudentProgramApplication[] = [];
-  upcomingDeadlines: UpcomingDeadline[] = [];
+  upcomingDeadlines: DashboardDeadline[] = [
+    {
+      id: 1,
+      title: 'Registration closes',
+      date: '2026-11-14',
+      description: 'Semester 1 — all programs',
+      badgeStyle: 'success'
+    },
+    {
+      id: 2,
+      title: 'Submit prior semester results',
+      date: '2026-11-22',
+      description: 'Spring 2024/2025 grades',
+      badgeStyle: 'warning'
+    },
+    {
+      id: 3,
+      title: 'Payment report to Direct Aid',
+      date: '2026-12-03',
+      description: 'Q4 reconciliation',
+      badgeStyle: 'neutral'
+    }
+  ];
 
   isLoading = true;
 
@@ -77,7 +99,6 @@ export class UniversityDashboard implements OnInit {
     this.welcomeMessage = `Welcome — ${name}`;
 
     this.loadData();
-    this.loadUpcomingDeadlines();
   }
 
   loadData(): void {
@@ -168,8 +189,15 @@ export class UniversityDashboard implements OnInit {
     ];
   }
 
-  loadUpcomingDeadlines(): void {
-    this.upcomingDeadlines = [];
+  getDeadlineMonth(date: string): string {
+    const month = Number(date.slice(5, 7));
+    return month >= 1 && month <= 12
+      ? new Date(2000, month - 1, 1).toLocaleString('en-US', { month: 'short' }).toUpperCase()
+      : '';
+  }
+
+  getDeadlineDay(date: string): string {
+    return date.slice(8, 10);
   }
 
   getStatusBadgeClass(student: StudentProgramApplication): string {

@@ -151,6 +151,12 @@ export const ApiEndpoints = {
 
   Ngo: {
 
+    FailingCoreCases: {
+      GetAll: 'ngo/failing-core-cases',
+      GetById: (id: number) => `ngo/failing-core-cases/${id}`,
+      RecordDecision: (id: number) => `ngo/failing-core-cases/${id}/decision`
+    },
+
     Accreditation: {
       AccreditSchool: 'ngo/accreditation/school',
       AccreditUniversity: 'ngo/accreditation/university',
@@ -176,6 +182,14 @@ export const ApiEndpoints = {
     SponsorshipMatrix: {
       GetMatrix: 'ngo/sponsorship-matrix',
       Toggle: 'ngo/sponsorship-matrix/toggle'
+    },
+
+    SponsorshipAssignments: {
+      GetOptionsByCategory: (studentCategoryId: number) => `ngo/student-sponsorship-assignments/options/by-category/${studentCategoryId}`,
+      GetByApplication: (applicationId: number) => `ngo/student-sponsorship-assignments/applications/${applicationId}`,
+      Create: (applicationId: number) => `ngo/student-sponsorship-assignments/applications/${applicationId}`,
+      Update: (assignmentId: number) => `ngo/student-sponsorship-assignments/${assignmentId}`,
+      Deactivate: (assignmentId: number) => `ngo/student-sponsorship-assignments/${assignmentId}/deactivate`
     },
 
     PanelUsers: {
@@ -267,6 +281,21 @@ export const ApiEndpoints = {
     AcademicRegistration: {
       AcademicRegistrationSearch: 'university/academic-registration/search',
       AcademicRegistrationRegister: 'university/academic-registration/register',
+      GetResultsByApplication: (applicationId: number) =>
+        `university/academic-registration/by-application/${applicationId}/results`,
+      GetHistoryByApplication: (applicationId: number) =>
+        `university/academic-registration/by-application/${applicationId}/history`,
+      GetResults: (academicRegistrationId: number) =>
+        `university/academic-registration/${academicRegistrationId}/results`,
+      SaveResults: (academicRegistrationId: number) =>
+        `university/academic-registration/${academicRegistrationId}/results`,
+      FinalizeResults: (academicRegistrationId: number) =>
+        `university/academic-registration/${academicRegistrationId}/results/finalize`,
+      ProgressToNextSemester: (academicRegistrationId: number) =>
+        `university/academic-registration/${academicRegistrationId}/progress`,
+      ResultsImportTemplate: 'university/academic-registration/results/import-template',
+      PreviewResultsImport: 'university/academic-registration/results/import/preview',
+      ImportResults: 'university/academic-registration/results/import',
     },
 
     AcademicCalendars: {

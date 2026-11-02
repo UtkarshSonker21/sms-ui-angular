@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, HostListener, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -11,6 +11,15 @@ import { StudentStatusService } from '../../../core/services/common/student-stat
 import { StudentProgramDocument } from '../../../core/models/school/student-program-application/student-program-document.model';
 import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
 import { StudentProgramApplication } from '../../../core/models/school/student-program-application/student-program-application.model';
+import { SponsorshipAssignmentService } from '../../../core/services/ngo/sponsorship-assignment.service';
+import { StudentCategoryService } from '../../../core/services/ngo/student-category.service';
+import { StudentCategoryFilter } from '../../../core/models/ngo/student-category/student-category-filter.model';
+import { StudentCategoryRequest } from '../../../core/models/ngo/student-category/student-category.request.model';
+import {
+  CreateSponsorshipAssignmentRequest,
+  SponsorshipAssignment,
+  SponsorshipAssignmentOption
+} from '../../../core/models/ngo/sponsorshipMatrix/sponsorship-assignment.model';
 
 @Component({
   selector: 'app-ngo-student-detail',
@@ -26,6 +35,8 @@ export class NgoStudentDetail implements OnInit {
   private studentProgramService = inject(StudentProgramService);
   private studentStatusService = inject(StudentStatusService);
   private confirmDialog = inject(ConfirmDialogService);
+  private sponsorshipAssignmentService = inject(SponsorshipAssignmentService);
+  private studentCategoryService = inject(StudentCategoryService);
 
   studentStatus = StudentStatusEnum;
 
@@ -37,6 +48,24 @@ export class NgoStudentDetail implements OnInit {
   // Placeholder for when timeline API is provided
   documents: StudentProgramDocument[] = [];
   studentHistory: any[] = [];
+
+  sponsorshipAssignments: SponsorshipAssignment[] = [];
+  sponsorshipCategories: StudentCategoryRequest[] = [];
+  sponsorshipAssignmentOptions: SponsorshipAssignmentOption[] = [];
+  isLoadingSponsorshipAssignments = false;
+  isLoadingSponsorshipCategories = false;
+  isLoadingSponsorshipOptions = false;
+  isSponsorshipAssignmentModalOpen = false;
+  isSavingSponsorshipAssignment = false;
+  editingSponsorshipAssignmentId: number | null = null;
+  deactivatingAssignmentId: number | null = null;
+  selectedSponsorshipCategoryId: number | null = null;
+  isSponsorshipCategoryDropdownOpen = false;
+  activeSponsorshipCategoryOptionIndex = 0;
+  sponsorshipAssignmentRemarks = '';
+  sponsorshipAssignmentsError = '';
+  sponsorshipOptionsError = '';
+  private sponsorshipOptionsRequestVersion = 0;
   
   // Section toggle state (mirroring coordinator student edit)
   activeSection: number = 1;
@@ -67,6 +96,8 @@ export class NgoStudentDetail implements OnInit {
 
           if (this.student.applicationId) {
             this.loadDocuments(this.student.applicationId);
+            this.loadSponsorshipAssignments(this.student.applicationId);
+            this.loadSponsorshipCategories();
           }
         } else {
           this.notification.error(res.message || 'Failed to load student details.');
@@ -79,6 +110,286 @@ export class NgoStudentDetail implements OnInit {
           'Failed to load student details.'
         );
       }
+    });
+  }
+
+  private loadSponsorshipAssignments(applicationId: number): void {
+    this.isLoadingSponsorshipAssignments = true;
+    this.sponsorshipAssignmentsError = '';
+    this.sponsorshipAssignmentService.getByApplication(applicationId).subscribe({
+      next: (res) => {
+        this.sponsorshipAssignments = res.success && res.result ? res.result : [];
+        this.isLoadingSponsorshipAssignments = false;
+        if (!res.success) {
+          this.sponsorshipAssignmentsError = res.message || 'Sponsorship assignments could not be loaded.';
+        }
+      },
+      error: (error) => {
+        this.sponsorshipAssignments = [];
+        this.sponsorshipAssignmentsError = 'Sponsorship assignments could not be loaded.';
+        this.isLoadingSponsorshipAssignments = false;
+        this.notification.handleBusinessError(error, this.sponsorshipAssignmentsError);
+      }
+    });
+  }
+
+  private loadSponsorshipCategories(): void {
+    this.isLoadingSponsorshipCategories = true;
+    const filter = new StudentCategoryFilter();
+    filter.isActive = true;
+    filter.pageSize = 1000;
+
+    this.studentCategoryService.getStudentCategories(filter).subscribe({
+      next: (res) => {
+        this.sponsorshipCategories = res.success
+          ? (res.result?.items || []).filter(category => category.isActive && category.studentCategoryId != null)
+          : [];
+        this.isLoadingSponsorshipCategories = false;
+        if (!res.success) this.notification.error(res.message || 'Sponsorship categories could not be loaded.');
+      },
+      error: (error) => {
+        this.sponsorshipCategories = [];
+        this.isLoadingSponsorshipCategories = false;
+        this.notification.handleBusinessError(error, 'Sponsorship categories could not be loaded.');
+      }
+    });
+  }
+
+  onSponsorshipCategoryChange(categoryId: number | null): void {
+    this.selectedSponsorshipCategoryId = categoryId;
+    this.sponsorshipAssignmentOptions = [];
+    this.sponsorshipOptionsError = '';
+    const requestVersion = ++this.sponsorshipOptionsRequestVersion;
+
+    if (!categoryId || categoryId <= 0) {
+      this.isLoadingSponsorshipOptions = false;
+      return;
+    }
+
+    this.isLoadingSponsorshipOptions = true;
+    this.sponsorshipAssignmentService.getOptionsByCategory(categoryId).subscribe({
+      next: (res) => {
+        if (requestVersion !== this.sponsorshipOptionsRequestVersion) return;
+        this.sponsorshipAssignmentOptions = res.success && res.result ? res.result : [];
+        this.isLoadingSponsorshipOptions = false;
+        if (!res.success) {
+          this.sponsorshipOptionsError = res.message || 'Sponsorship options could not be loaded.';
+          this.notification.error(this.sponsorshipOptionsError);
+        }
+      },
+      error: (error) => {
+        if (requestVersion !== this.sponsorshipOptionsRequestVersion) return;
+        this.sponsorshipAssignmentOptions = [];
+        this.sponsorshipOptionsError = 'Sponsorship options could not be loaded.';
+        this.isLoadingSponsorshipOptions = false;
+        this.notification.handleBusinessError(error, this.sponsorshipOptionsError);
+      }
+    });
+  }
+
+  @HostListener('document:click')
+  closeSponsorshipCategoryDropdown(): void {
+    this.isSponsorshipCategoryDropdownOpen = false;
+  }
+
+  toggleSponsorshipCategoryDropdown(event: Event): void {
+    event.stopPropagation();
+    if (this.isSavingSponsorshipAssignment || this.isLoadingSponsorshipCategories || this.sponsorshipCategories.length === 0) return;
+
+    this.isSponsorshipCategoryDropdownOpen = !this.isSponsorshipCategoryDropdownOpen;
+    if (this.isSponsorshipCategoryDropdownOpen) {
+      const selectedIndex = this.sponsorshipCategories.findIndex(
+        category => category.studentCategoryId === this.selectedSponsorshipCategoryId
+      );
+      this.activeSponsorshipCategoryOptionIndex = selectedIndex >= 0 ? selectedIndex : 0;
+    }
+  }
+
+  handleSponsorshipCategoryDropdownKeydown(event: KeyboardEvent): void {
+    if (this.isSavingSponsorshipAssignment || this.isLoadingSponsorshipCategories || this.sponsorshipCategories.length === 0) return;
+
+    const lastIndex = this.sponsorshipCategories.length - 1;
+    switch (event.key) {
+      case 'ArrowDown':
+        event.preventDefault();
+        if (!this.isSponsorshipCategoryDropdownOpen) {
+          this.isSponsorshipCategoryDropdownOpen = true;
+          const selectedIndex = this.sponsorshipCategories.findIndex(
+            category => category.studentCategoryId === this.selectedSponsorshipCategoryId
+          );
+          this.activeSponsorshipCategoryOptionIndex = selectedIndex >= 0 ? selectedIndex : 0;
+        } else {
+          this.activeSponsorshipCategoryOptionIndex = (this.activeSponsorshipCategoryOptionIndex + 1) % this.sponsorshipCategories.length;
+        }
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        if (!this.isSponsorshipCategoryDropdownOpen) {
+          this.isSponsorshipCategoryDropdownOpen = true;
+          const selectedIndex = this.sponsorshipCategories.findIndex(
+            category => category.studentCategoryId === this.selectedSponsorshipCategoryId
+          );
+          this.activeSponsorshipCategoryOptionIndex = selectedIndex >= 0 ? selectedIndex : lastIndex;
+        } else {
+          this.activeSponsorshipCategoryOptionIndex = this.activeSponsorshipCategoryOptionIndex <= 0
+            ? lastIndex
+            : this.activeSponsorshipCategoryOptionIndex - 1;
+        }
+        break;
+      case 'Home':
+        event.preventDefault();
+        this.isSponsorshipCategoryDropdownOpen = true;
+        this.activeSponsorshipCategoryOptionIndex = 0;
+        break;
+      case 'End':
+        event.preventDefault();
+        this.isSponsorshipCategoryDropdownOpen = true;
+        this.activeSponsorshipCategoryOptionIndex = lastIndex;
+        break;
+      case 'Enter':
+      case ' ':
+        event.preventDefault();
+        if (!this.isSponsorshipCategoryDropdownOpen) {
+          this.isSponsorshipCategoryDropdownOpen = true;
+          const selectedIndex = this.sponsorshipCategories.findIndex(
+            category => category.studentCategoryId === this.selectedSponsorshipCategoryId
+          );
+          this.activeSponsorshipCategoryOptionIndex = selectedIndex >= 0 ? selectedIndex : 0;
+        } else {
+          const activeCategory = this.sponsorshipCategories[this.activeSponsorshipCategoryOptionIndex];
+          if (activeCategory) this.selectSponsorshipCategory(activeCategory.studentCategoryId);
+        }
+        break;
+      case 'Escape':
+        event.preventDefault();
+        this.isSponsorshipCategoryDropdownOpen = false;
+        break;
+      case 'Tab':
+        this.isSponsorshipCategoryDropdownOpen = false;
+        break;
+    }
+  }
+
+  selectSponsorshipCategory(categoryId: number): void {
+    if (this.isSavingSponsorshipAssignment) return;
+    this.selectedSponsorshipCategoryId = categoryId;
+    this.isSponsorshipCategoryDropdownOpen = false;
+    this.onSponsorshipCategoryChange(categoryId);
+  }
+
+  getSelectedSponsorshipCategoryName(): string {
+    return this.sponsorshipCategories.find(
+      category => category.studentCategoryId === this.selectedSponsorshipCategoryId
+    )?.categoryName || '';
+  }
+
+  openSponsorshipAssignmentModal(): void {
+    if (this.isLoadingSponsorshipCategories || this.sponsorshipCategories.length === 0) return;
+    this.editingSponsorshipAssignmentId = null;
+    this.selectedSponsorshipCategoryId = null;
+    this.isSponsorshipCategoryDropdownOpen = false;
+    this.sponsorshipAssignmentOptions = [];
+    this.sponsorshipOptionsError = '';
+    this.sponsorshipAssignmentRemarks = '';
+    this.isSponsorshipAssignmentModalOpen = true;
+  }
+
+  closeSponsorshipAssignmentModal(): void {
+    if (this.isSavingSponsorshipAssignment) return;
+    ++this.sponsorshipOptionsRequestVersion;
+    this.isSponsorshipAssignmentModalOpen = false;
+    this.editingSponsorshipAssignmentId = null;
+    this.selectedSponsorshipCategoryId = null;
+    this.isSponsorshipCategoryDropdownOpen = false;
+    this.sponsorshipAssignmentOptions = [];
+    this.sponsorshipAssignmentRemarks = '';
+  }
+
+  saveSponsorshipAssignment(): void {
+    const applicationId = this.student?.applicationId;
+    if (!applicationId || !this.selectedSponsorshipCategoryId || this.isLoadingSponsorshipOptions
+      || this.sponsorshipOptionsError || this.sponsorshipAssignmentOptions.length === 0
+      || this.isSavingSponsorshipAssignment) return;
+
+    const request: CreateSponsorshipAssignmentRequest = {
+      studentCategoryId: this.selectedSponsorshipCategoryId,
+      remarks: this.sponsorshipAssignmentRemarks.trim() || null
+    };
+
+    this.isSavingSponsorshipAssignment = true;
+    const saveRequest = this.editingSponsorshipAssignmentId
+      ? this.sponsorshipAssignmentService.update(this.editingSponsorshipAssignmentId, request)
+      : this.sponsorshipAssignmentService.create(applicationId, request);
+
+    saveRequest.subscribe({
+      next: (res) => {
+        this.isSavingSponsorshipAssignment = false;
+        if (res.success) {
+          this.isSponsorshipAssignmentModalOpen = false;
+          this.editingSponsorshipAssignmentId = null;
+          this.notification.success(res.message || 'DA Pool sponsorship assignment saved successfully.');
+          this.loadSponsorshipAssignments(applicationId);
+        } else {
+          this.notification.error(res.message || 'Failed to save the sponsorship assignment.');
+        }
+      },
+      error: (error) => {
+        this.isSavingSponsorshipAssignment = false;
+        this.notification.handleBusinessError(error, 'Failed to save the sponsorship assignment.');
+      }
+    });
+  }
+
+  editSponsorshipAssignment(assignment: SponsorshipAssignment): void {
+    if (!assignment.isActive || this.isLoadingSponsorshipCategories || this.isSavingSponsorshipAssignment) return;
+    if (!this.sponsorshipCategories.some(category => category.studentCategoryId === assignment.studentCategoryId)) {
+      this.notification.error('This assignment category is no longer active and cannot be selected for editing.');
+      return;
+    }
+
+    this.editingSponsorshipAssignmentId = assignment.assignmentId;
+    this.selectedSponsorshipCategoryId = assignment.studentCategoryId;
+    this.sponsorshipAssignmentRemarks = assignment.remarks || '';
+    this.sponsorshipOptionsError = '';
+    this.isSponsorshipAssignmentModalOpen = true;
+    this.onSponsorshipCategoryChange(assignment.studentCategoryId);
+  }
+
+  getSponsorshipFrequencyLabel(frequencyType: number): string {
+    if (frequencyType === 1) return 'Per semester';
+    if (frequencyType === 2) return 'One-time';
+    return `Frequency ${frequencyType}`;
+  }
+
+  deactivateSponsorshipAssignment(assignment: SponsorshipAssignment): void {
+    if (!assignment.isActive || this.deactivatingAssignmentId != null) return;
+
+    this.confirmDialog.confirm({
+      title: 'Deactivate sponsorship assignment?',
+      message: `Deactivate ${assignment.sponsorshipName} — ${assignment.categoryName}? The assignment record will be retained in history.`,
+      confirmText: 'Deactivate',
+      cancelText: 'Cancel'
+    }).then(confirmed => {
+      if (!confirmed) return;
+
+      this.deactivatingAssignmentId = assignment.assignmentId;
+      this.sponsorshipAssignmentService.deactivate(assignment.assignmentId).subscribe({
+        next: (res) => {
+          this.deactivatingAssignmentId = null;
+          if (res.success) {
+            this.notification.success(res.message || 'Sponsorship assignment deactivated.');
+            if (this.student?.applicationId) {
+              this.loadSponsorshipAssignments(this.student.applicationId);
+            }
+          } else {
+            this.notification.error(res.message || 'Failed to deactivate the sponsorship assignment.');
+          }
+        },
+        error: (error) => {
+          this.deactivatingAssignmentId = null;
+          this.notification.handleBusinessError(error, 'Failed to deactivate the sponsorship assignment.');
+        }
+      });
     });
   }
 

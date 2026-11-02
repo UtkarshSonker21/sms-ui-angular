@@ -907,6 +907,157 @@ DO NOT DELETE.
 
                 </div>
 
+            <section class="form-section sponsorship-assignment-section" *ngIf="student.applicationId">
+                <div class="form-section-head">
+                    <div class="form-section-num">DA</div>
+                    <div>
+                        <div class="form-section-title">DA Pool Sponsorship Assignments</div>
+                        <div class="form-section-sub">Category assignments and the sponsorship types currently permitted by the Sponsorship Matrix.</div>
+                    </div>
+                    <div class="form-section-spacer"></div>
+                    <button type="button" class="btn btn-p"
+                        [disabled]="isLoadingSponsorshipCategories || sponsorshipCategories.length === 0"
+                        (click)="openSponsorshipAssignmentModal()">
+                        Assign Category
+                    </button>
+                </div>
+                <div class="form-section-body" style="display: block;">
+                    <div class="sponsorship-assignment-hint">
+                        The category shown is the selected Sponsorship Matrix category. This student record has no linked sponsorship category, so the selection does not verify eligibility.
+                    </div>
+                    <div *ngIf="isLoadingSponsorshipAssignments" class="sponsorship-assignment-state" role="status">
+                        Loading sponsorship assignments…
+                    </div>
+                    <div *ngIf="isLoadingSponsorshipOptions" class="sponsorship-assignment-state" role="status">
+                        Loading permitted sponsorship types…
+                    </div>
+                    <div *ngIf="isLoadingSponsorshipCategories" class="sponsorship-assignment-state" role="status">
+                        Loading sponsorship categories…
+                    </div>
+                    <div *ngIf="!isLoadingSponsorshipCategories && sponsorshipCategories.length === 0"
+                        class="sponsorship-assignment-state">
+                        No active sponsorship categories are available.
+                    </div>
+                    <div *ngIf="!isLoadingSponsorshipAssignments && sponsorshipAssignmentsError"
+                        class="sponsorship-assignment-state sponsorship-assignment-error" role="alert">
+                        {{ sponsorshipAssignmentsError }}
+                    </div>
+                    <div *ngIf="!isLoadingSponsorshipAssignments && !sponsorshipAssignmentsError && sponsorshipAssignments.length === 0"
+                        class="sponsorship-assignment-state">
+                        No DA Pool sponsorship category is assigned to this application.
+                    </div>
+                    <div *ngFor="let assignment of sponsorshipAssignments"
+                        class="sponsorship-assignment-row">
+                        <div class="sponsorship-assignment-details">
+                            <div class="sponsorship-assignment-title">{{ assignment.categoryName }}</div>
+                            <div class="sponsorship-assignment-meta">
+                                Assigned {{ assignment.assignedDate | date:'mediumDate' }}
+                                <span *ngIf="assignment.remarks"> · {{ assignment.remarks }}</span>
+                            </div>
+                            <div class="sponsorship-assignment-meta" *ngIf="assignment.permittedSponsorshipTypes?.length">
+                                Permitted:
+                                <span *ngFor="let type of assignment.permittedSponsorshipTypes; let last = last">
+                                    {{ type.sponsorshipName }} ({{ getSponsorshipFrequencyLabel(type.frequencyType) }})<span *ngIf="!last">, </span>
+                                </span>
+                            </div>
+                        </div>
+                        <span class="sponsorship-assignment-status" [class.inactive]="!assignment.isActive">
+                            {{ assignment.isActive ? 'Active' : 'Inactive' }}
+                        </span>
+                        <button *ngIf="assignment.isActive" type="button" class="btn btn-faculties-outline btn-danger-outline"
+                            [disabled]="deactivatingAssignmentId !== null || isLoadingSponsorshipCategories"
+                            (click)="editSponsorshipAssignment(assignment)">
+                            Edit
+                        </button>
+                        <button *ngIf="assignment.isActive" type="button" class="btn btn-faculties-outline btn-danger-outline"
+                            [disabled]="deactivatingAssignmentId !== null"
+                            (click)="deactivateSponsorshipAssignment(assignment)">
+                            {{ deactivatingAssignmentId === assignment.assignmentId ? 'Deactivating…' : 'Deactivate' }}
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <div *ngIf="isSponsorshipAssignmentModalOpen" class="sponsorship-assignment-backdrop" role="presentation">
+                <section class="sponsorship-assignment-modal" role="dialog" aria-modal="true"
+                    aria-labelledby="sponsorship-assignment-title">
+                    <header class="sponsorship-assignment-modal-header">
+                        <div>
+                            <h2 id="sponsorship-assignment-title">{{ editingSponsorshipAssignmentId ? 'Edit DA Pool Sponsorship' : 'Assign DA Pool Sponsorship' }}</h2>
+                            <p>Assigning a category permits every active sponsorship type configured for it in the Sponsorship Matrix. The selected category is not verified student eligibility.</p>
+                        </div>
+                        <button type="button" class="sponsorship-assignment-close" aria-label="Close"
+                            [disabled]="isSavingSponsorshipAssignment" (click)="closeSponsorshipAssignmentModal()">×</button>
+                    </header>
+                    <div class="sponsorship-assignment-modal-body">
+                        <label id="sponsorshipCategoryLabel" class="field-label">Student sponsorship category</label>
+                        <div class="da-select sponsorship-category-dropdown"
+                            [class.da-select-open]="isSponsorshipCategoryDropdownOpen"
+                            [class.is-disabled]="isSavingSponsorshipAssignment || isLoadingSponsorshipCategories || sponsorshipCategories.length === 0">
+                            <div id="sponsorshipCategory" class="da-select-control" role="combobox"
+                                [attr.tabindex]="isSavingSponsorshipAssignment || isLoadingSponsorshipCategories || sponsorshipCategories.length === 0 ? -1 : 0"
+                                aria-labelledby="sponsorshipCategoryLabel" aria-required="true"
+                                aria-haspopup="listbox" aria-controls="sponsorship-category-options"
+                                [attr.aria-expanded]="isSponsorshipCategoryDropdownOpen"
+                                [attr.aria-disabled]="isSavingSponsorshipAssignment || isLoadingSponsorshipCategories || sponsorshipCategories.length === 0"
+                                [attr.aria-activedescendant]="isSponsorshipCategoryDropdownOpen && sponsorshipCategories.length ? 'sponsorship-category-option-' + activeSponsorshipCategoryOptionIndex : null"
+                                (click)="toggleSponsorshipCategoryDropdown($event)"
+                                (keydown)="handleSponsorshipCategoryDropdownKeydown($event)">
+                                <span class="da-select-value">{{ getSelectedSponsorshipCategoryName() || 'Select a category' }}</span>
+                                <i class="fas da-select-arrow" [ngClass]="isSponsorshipCategoryDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'" aria-hidden="true"></i>
+                            </div>
+                            <div id="sponsorship-category-options" class="da-select-menu" role="listbox"
+                                *ngIf="isSponsorshipCategoryDropdownOpen">
+                                <div *ngFor="let category of sponsorshipCategories; let i = index"
+                                    class="da-select-option" role="option"
+                                    [id]="'sponsorship-category-option-' + i"
+                                    [class.selected]="selectedSponsorshipCategoryId === category.studentCategoryId"
+                                    [class.keyboard-active]="isSponsorshipCategoryDropdownOpen && activeSponsorshipCategoryOptionIndex === i"
+                                    [attr.aria-selected]="selectedSponsorshipCategoryId === category.studentCategoryId"
+                                    (mouseenter)="activeSponsorshipCategoryOptionIndex = i"
+                                    (click)="selectSponsorshipCategory(category.studentCategoryId)">
+                                    {{ category.categoryName }}
+                                </div>
+                            </div>
+                        </div>
+                        <div *ngIf="sponsorshipOptionsError" class="sponsorship-assignment-state sponsorship-assignment-error" role="alert">
+                            {{ sponsorshipOptionsError }}
+                        </div>
+                        <div *ngIf="isLoadingSponsorshipOptions" class="sponsorship-assignment-state" role="status">
+                            Loading active sponsorship types for this category…
+                        </div>
+                        <div *ngIf="selectedSponsorshipCategoryId && !isLoadingSponsorshipOptions && !sponsorshipOptionsError && sponsorshipAssignmentOptions.length === 0"
+                            class="sponsorship-assignment-hint">
+                            No active sponsorship types are configured for this category.
+                        </div>
+                        <div *ngIf="selectedSponsorshipCategoryId && !isLoadingSponsorshipOptions && !sponsorshipOptionsError && sponsorshipAssignmentOptions.length > 0"
+                            class="sponsorship-assignment-permitted-types" aria-live="polite">
+                            <div class="field-label">All currently permitted sponsorship types</div>
+                            <ul>
+                                <li *ngFor="let option of sponsorshipAssignmentOptions">
+                                    {{ option.sponsorshipName }} — {{ getSponsorshipFrequencyLabel(option.frequencyType) }}
+                                </li>
+                            </ul>
+                        </div>
+                        <label class="field-label" for="sponsorshipAssignmentRemarks">Remarks (optional)</label>
+                        <textarea id="sponsorshipAssignmentRemarks" class="field-input" rows="3" maxlength="500"
+                            [(ngModel)]="sponsorshipAssignmentRemarks" name="sponsorshipAssignmentRemarks"
+                            [disabled]="isSavingSponsorshipAssignment"
+                            placeholder="Add a note for this assignment"></textarea>
+                        <div class="sponsorship-assignment-char-count">{{ sponsorshipAssignmentRemarks.length }}/500</div>
+                    </div>
+                    <footer class="sponsorship-assignment-modal-footer">
+                        <button type="button" class="btn btn-faculties-outline"
+                            [disabled]="isSavingSponsorshipAssignment" (click)="closeSponsorshipAssignmentModal()">Cancel</button>
+                        <button type="button" class="btn btn-p"
+                            [disabled]="!selectedSponsorshipCategoryId || isLoadingSponsorshipOptions || sponsorshipOptionsError || sponsorshipAssignmentOptions.length === 0 || isSavingSponsorshipAssignment"
+                            (click)="saveSponsorshipAssignment()">
+                            {{ isSavingSponsorshipAssignment ? 'Saving…' : editingSponsorshipAssignmentId ? 'Save Changes' : 'Save Assignment' }}
+                        </button>
+                    </footer>
+                </section>
+            </div>
+
             <!-- Discussion Modal -->
             <div *ngIf="isDiscussionModalOpen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
                 <div class="card" style="width: 800px; max-width: 90%; background: white; padding: 24px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">

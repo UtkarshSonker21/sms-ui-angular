@@ -69,6 +69,11 @@
   font-weight: 600;
 }
 
+.student-profile-placeholder {
+  background: var(--da-green-50, #edf7ef);
+  color: var(--da-green, #2c9942);
+}
+
 .icon-btn:disabled,
 .btn-pagination:disabled {
   opacity: 0.4;

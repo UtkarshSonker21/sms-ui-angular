@@ -157,6 +157,7 @@ export class Students implements OnInit {
   activeTab: 'current' | 'available' = 'current';
   candidatePrograms: CandidateProgram[] = [];
   filteredCandidatePrograms: CandidateProgram[] = [];
+  candidateProgramsLoadState: 'idle' | 'loading' | 'loaded' | 'error' = 'idle';
   uploadingDocs = new Set<number>();
   uniqueFaculties: string[] = [];
   uniqueUniversities: string[] = [];
@@ -174,6 +175,7 @@ export class Students implements OnInit {
   expandedProgramDocuments: StudentProgramDocument[] = [];
   activeApplicationDocuments: StudentProgramDocument[] = [];
   isDocumentsLoading = false;
+  applicationDocumentsLoadFailed = false;
 
   get activeCandidateProgram(): CandidateProgram | undefined {
     return this.candidatePrograms.find(p => p.applicationId && p.applicationStatus !== undefined);
@@ -438,15 +440,19 @@ export class Students implements OnInit {
   loadCandidatePrograms(): void {
     if (!this.student.studentId) return;
 
+    this.candidateProgramsLoadState = 'loading';
     this.activeApplicationDocuments = [];
     this.expandedProgramDocuments = [];
     this.expandedProgramId = null;
+    this.isDocumentsLoading = false;
+    this.applicationDocumentsLoadFailed = false;
     this.hasActiveApplication = false;
 
     this.studentProgramService.getCandidatePrograms(this.student.studentId).subscribe({
       next: (res) => {
         if (res.success && res.result) {
           this.candidatePrograms = res.result;
+          this.candidateProgramsLoadState = 'loaded';
           this.hasActiveApplication = this.candidatePrograms.some(p => p.applicationId && p.applicationStatus !== undefined);
           this.activeTab = this.hasActiveApplication ? 'current' : 'available';
 
@@ -457,20 +463,26 @@ export class Students implements OnInit {
 
           const activeApp = this.candidatePrograms.find(p => p.applicationId && p.applicationStatus !== undefined);
           if (activeApp && activeApp.applicationId) {
+            this.isDocumentsLoading = true;
 
             this.studentProgramService.getDocuments(activeApp.applicationId).subscribe({
               next: (docRes) => {
                 if (docRes.success && docRes.result) {
                   this.activeApplicationDocuments = docRes.result;
+                  this.applicationDocumentsLoadFailed = false;
                   if (this.expandedProgramId === activeApp.programId) {
                     this.expandedProgramDocuments = docRes.result;
                   }
                 } else {
                   this.activeApplicationDocuments = [];
+                  this.applicationDocumentsLoadFailed = true;
                 }
+                this.isDocumentsLoading = false;
               },
               error: (error) => {
                 this.activeApplicationDocuments = [];
+                this.applicationDocumentsLoadFailed = true;
+                this.isDocumentsLoading = false;
 
                 this.notification.handleBusinessError(
                   error,
@@ -481,11 +493,15 @@ export class Students implements OnInit {
 
           } else {
             this.activeApplicationDocuments = [];
+            this.isDocumentsLoading = false;
+            this.applicationDocumentsLoadFailed = false;
           }
-
+        } else {
+          this.candidateProgramsLoadState = 'error';
         }
       },
       error: (error) => {
+        this.candidateProgramsLoadState = 'error';
         this.notification.handleBusinessError(
           error,
           'Failed to load candidate programs.'
@@ -701,6 +717,7 @@ export class Students implements OnInit {
 
     this.expandedProgramId = prog.programId;
     this.expandedProgramDocuments = [];
+    this.applicationDocumentsLoadFailed = false;
 
     if (prog.applicationId) {
 
@@ -711,6 +728,9 @@ export class Students implements OnInit {
           if (res.success && res.result) {
             this.expandedProgramDocuments = res.result;
             this.activeApplicationDocuments = res.result;
+            this.applicationDocumentsLoadFailed = false;
+          } else {
+            this.applicationDocumentsLoadFailed = true;
           }
           this.isDocumentsLoading = false;
         },
@@ -720,6 +740,7 @@ export class Students implements OnInit {
             'Failed to load documents.'
           );
           this.isDocumentsLoading = false;
+          this.applicationDocumentsLoadFailed = true;
         }
       });
 

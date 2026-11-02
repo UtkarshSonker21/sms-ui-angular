@@ -2,6 +2,19 @@
   <div class="spinner"></div>
 </div>
 
+<div *ngIf="!isLoading && !student" class="semester-card record-state" role="alert">
+  <div class="semester-head">
+    <div class="semester-title-group">
+      <div class="semester-name">Student application unavailable</div>
+    </div>
+  </div>
+  <div class="record-state-text">{{ studentLoadMessage || 'Student details could not be loaded.' }}</div>
+  <div class="record-state-actions">
+    <button *ngIf="applicationId" class="btn btn-g" type="button" (click)="loadStudentDetails()">Retry</button>
+    <button class="btn btn-g" type="button" (click)="goBack()">Back</button>
+  </div>
+</div>
+
 <div *ngIf="!isLoading && student" class="courses-page" data-lang="en">
 
   <div class="page-head">
@@ -12,15 +25,9 @@
         <span>{{ student.firstName }} {{ student.lastName }}</span>
       </div>
       <h1 class="page-title">Student Academic Record</h1>
-      <div class="page-sub">View the student's complete academic history and course performance.</div>
+      <div class="page-sub">View courses and results for the selected academic registration.</div>
     </div>
     <div class="page-actions" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-      <button class="btn btn-faculties-outline" type="button" (click)="downloadPdf()">
-        Download PDF
-      </button>
-      <button class="btn btn-p" type="button" (click)="submitSemesterResults()">
-        Submit Semester Results
-      </button>
       <button class="btn btn-faculties-outline" type="button" (click)="goBack()"
           style="display: flex; align-items: center; gap: 8px;">
           <i class="fas fa-arrow-left"></i> Back to Student Profile
@@ -71,19 +78,284 @@
       </div>
     </div>
 
-    <!-- 3. Semester History -->
     <div class="semesters-list">
-      
-      <!-- Empty state placeholder (since API is pending) -->
-      <div class="semester-card">
+
+      <div *ngIf="historyState === 'loading'" class="semester-card record-state" role="status">
+        <div class="record-state-text">Loading academic history…</div>
+      </div>
+
+      <div *ngIf="historyState === 'not-found' || historyState === 'unauthorized' || historyState === 'conflict' || historyState === 'error'"
+           class="semester-card record-state" role="alert">
         <div class="semester-head">
           <div class="semester-title-group">
-            <div class="semester-name">No academic record available</div>
+            <div class="semester-name">{{ historyState === 'unauthorized' ? 'Access unavailable' : historyState === 'conflict' ? 'Academic history needs attention' : historyState === 'not-found' ? 'Application unavailable' : 'Academic history unavailable' }}</div>
           </div>
         </div>
-        <div style="padding: 40px; text-align: center; color: var(--da-muted);">
-          <div style="font-size: 15px; font-weight: 500;">Academic history is empty</div>
-          <div style="font-size: 13px; margin-top: 6px;">There are no registered courses or semesters for this student.</div>
+        <div class="record-state-text">{{ historyMessage }}</div>
+        <div class="record-state-actions">
+          <button *ngIf="historyState === 'error'" class="btn btn-g" type="button" (click)="loadAcademicHistory()">
+            Retry
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="historyState === 'loaded' && history?.registrations?.length === 0"
+           class="semester-card record-state" role="status">
+        <div class="semester-head">
+          <div class="semester-title-group">
+            <div class="semester-name">No academic history available</div>
+          </div>
+        </div>
+        <div class="record-state-text">There are no academic registrations for this student within your assigned universities.</div>
+      </div>
+
+      <div *ngIf="historyState === 'loaded' && history?.registrations?.length" class="semester-card history-card">
+        <div class="semester-head">
+          <div class="semester-title-group">
+            <div class="semester-name">Semesters &amp; results</div>
+            <span class="semester-term">{{ history?.registrations?.length }} registration{{ history?.registrations?.length === 1 ? '' : 's' }}</span>
+          </div>
+        </div>
+        <div class="academic-history-table-wrap">
+          <table class="da-table">
+            <thead>
+              <tr>
+                <th scope="col">Program</th>
+                <th scope="col">Semester</th>
+                <th scope="col">Term</th>
+                <th scope="col">Dates</th>
+                <th scope="col">Results</th>
+                <th scope="col">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let registration of history?.registrations"
+                  [class.selected-history-row]="selectedAcademicRegistrationId === registration.academicRegistrationId">
+                <td>
+                  <div class="course-name-primary">{{ registration.programName }}</div>
+                  <div class="academic-course-code">{{ registration.programCode }}</div>
+                </td>
+                <td>
+                  <div>{{ registration.semesterName || ('Semester ' + registration.semesterNo) }}</div>
+                  <div *ngIf="registration.scheduleLinkStatus !== 'Resolved' && registration.scheduleLinkStatus !== 'ResolvedLegacy'"
+                       class="history-data-issue" role="status">
+                    {{ registration.scheduleLinkStatus }}
+                  </div>
+                </td>
+                <td>
+                  <div>{{ registration.termName || '—' }}</div>
+                  <div class="academic-course-code">{{ registration.academicYearName || '—' }}</div>
+                </td>
+                <td>
+                  <div>
+                    <span *ngIf="registration.startDate && registration.endDate">
+                      {{ registration.startDate | date:'mediumDate' }} – {{ registration.endDate | date:'mediumDate' }}
+                    </span>
+                    <span *ngIf="!registration.startDate || !registration.endDate">—</span>
+                  </div>
+                  <div class="academic-course-code">Registered {{ registration.registrationDate | date:'mediumDate' }}</div>
+                </td>
+                <td>
+                  <div>{{ historyStatus(registration) }}</div>
+                  <div *ngIf="registration.semesterResult?.semesterGpa !== null && registration.semesterResult?.semesterGpa !== undefined"
+                       class="academic-course-code">
+                    GPA {{ registration.semesterResult?.semesterGpa | number:'1.2-2' }}
+                  </div>
+                  <div *ngFor="let issue of registration.dataIssues" class="history-data-issue" role="status">
+                    {{ issue }}
+                  </div>
+                </td>
+                <td>
+                  <button class="btn btn-g" type="button"
+                          [disabled]="isSavingResults || isFinalizingResults || isProgressingRegistration || selectedAcademicRegistrationId === registration.academicRegistrationId"
+                          [attr.aria-pressed]="selectedAcademicRegistrationId === registration.academicRegistrationId"
+                          (click)="selectAcademicRegistration(registration.academicRegistrationId)">
+                    {{ selectedAcademicRegistrationId === registration.academicRegistrationId ? 'Selected' : 'View results' }}
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div *ngIf="historyState === 'loaded' && (history?.registrations?.length ?? 0) > 1 && !selectedAcademicRegistrationId"
+           class="semester-card record-state" role="status">
+        <div class="record-state-text">Select a registration above to view its courses and edit Draft results.</div>
+      </div>
+
+      <div *ngIf="resultsState === 'loading'" class="semester-card record-state" role="status">
+        <div class="record-state-text">Loading enrolled courses and results…</div>
+      </div>
+
+      <div *ngIf="resultsState === 'not-found'" class="semester-card record-state" role="status">
+        <div class="semester-head">
+          <div class="semester-title-group">
+            <div class="semester-name">No academic registration found</div>
+          </div>
+        </div>
+        <div class="record-state-text">{{ resultsMessage || 'This application does not have an academic registration yet.' }}</div>
+      </div>
+
+      <div *ngIf="resultsState === 'unauthorized' || resultsState === 'conflict' || resultsState === 'error'"
+           class="semester-card record-state" role="alert">
+        <div class="semester-head">
+          <div class="semester-title-group">
+            <div class="semester-name">{{ resultsState === 'unauthorized' ? 'Access unavailable' : resultsState === 'conflict' ? 'Academic record needs attention' : 'Academic results unavailable' }}</div>
+          </div>
+        </div>
+        <div class="record-state-text">{{ resultsMessage }}</div>
+        <div class="record-state-actions">
+          <button *ngIf="resultsState === 'error'" class="btn btn-g" type="button" (click)="retrySelectedRegistration()">
+            Retry
+          </button>
+          <button *ngIf="resultsState === 'conflict'" class="btn btn-g" type="button" (click)="goBack()">
+            Back to Student Profile
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="resultsState === 'loaded' && results" class="semester-card">
+        <div class="semester-head">
+          <div class="semester-title-group">
+            <div class="semester-heading">
+              <div class="semester-name">{{ semesterSchedule?.semesterName || ('Semester ' + results.semesterNo) }}</div>
+              <div class="semester-schedule" role="status">
+                <span *ngIf="scheduleLoading">Loading semester schedule…</span>
+                <ng-container *ngIf="!scheduleLoading && (semesterSchedule?.termName || semesterSchedule?.academicYearName || (semesterSchedule?.startDate && semesterSchedule?.endDate)); else scheduleDetailsUnavailable">
+                  <span *ngIf="semesterSchedule?.termName">{{ semesterSchedule?.termName }}</span>
+                  <span *ngIf="semesterSchedule?.academicYearName">{{ semesterSchedule?.termName ? ' · ' : '' }}{{ semesterSchedule?.academicYearName }}</span>
+                  <span *ngIf="semesterSchedule?.startDate && semesterSchedule?.endDate">
+                    {{ semesterSchedule?.termName || semesterSchedule?.academicYearName ? ' · ' : '' }}
+                    {{ semesterSchedule?.startDate | date:'mediumDate' }} – {{ semesterSchedule?.endDate | date:'mediumDate' }}
+                  </span>
+                </ng-container>
+                <ng-template #scheduleDetailsUnavailable>
+                  <span *ngIf="!scheduleLoading && scheduleUnavailable">Semester dates and term details are not available.</span>
+                </ng-template>
+              </div>
+            </div>
+            <span class="semester-term">{{ results.submissionStatus || 'Results not saved' }}</span>
+            <span *ngIf="results.submissionStatus === 'Finalized' && results.submittedOn" class="semester-term">
+              Finalized {{ results.submittedOn | date:'medium' }}
+            </span>
+          </div>
+          <div class="semester-meta">
+            <div class="semester-gpa">
+              <span class="semester-gpa-label">GPA</span>
+              <span>{{ results.semesterGpa === null ? '—' : (results.semesterGpa | number:'1.2-2') }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="results.submissionStatus === 'Finalized'" class="results-progression" role="status">
+          <p *ngIf="hasFailedCourses" class="results-readonly">
+            Progression is blocked because this finalized semester contains failed courses. Resolve failed courses before continuing.
+          </p>
+          <ng-container *ngIf="!hasFailedCourses">
+            <p *ngIf="nextSemesterSchedule" class="results-readonly">
+              Next semester: {{ nextSemesterSchedule.semesterName || ('Semester ' + nextSemesterSchedule.semesterNo) }}
+              <span *ngIf="nextSemesterSchedule.termName">· {{ nextSemesterSchedule.termName }}</span>
+              <span *ngIf="nextSemesterSchedule.academicYearName">· {{ nextSemesterSchedule.academicYearName }}</span>
+              <span *ngIf="nextSemesterSchedule.startDate && nextSemesterSchedule.endDate">
+                · {{ nextSemesterSchedule.startDate | date:'mediumDate' }} – {{ nextSemesterSchedule.endDate | date:'mediumDate' }}
+              </span>
+            </p>
+            <p *ngIf="results.programSemesterId === null" class="results-readonly">
+              Progression is unavailable because this registration has no persisted program-semester link.
+            </p>
+            <p *ngIf="results.programSemesterId !== null && !scheduleLoading && !nextSemesterSchedule" class="results-readonly">
+              No unique next-semester schedule is available. Review the program semester configuration before progressing.
+            </p>
+            <div class="results-actions" *ngIf="isProgressionEligible || isProgressingRegistration">
+              <button class="btn btn-p" type="button" (click)="progressToNextSemester()"
+                      [disabled]="isProgressingRegistration || resultsLoading || isFinalizingResults || isSavingResults">
+                {{ isProgressingRegistration ? 'Registering…' : 'Progress to Next Semester' }}
+              </button>
+            </div>
+          </ng-container>
+        </div>
+
+        <div *ngIf="resultsRequiresRefresh" class="results-refresh-notice" role="alert">
+          <p>{{ resultsRefreshMessage }}</p>
+          <button class="btn btn-g" type="button" (click)="reloadLatestResults()"
+                  [disabled]="resultsLoading || isSavingResults || isFinalizingResults || isProgressingRegistration">
+            {{ resultsLoading ? 'Loading latest results…' : 'Load latest server results' }}
+          </button>
+        </div>
+
+        <div *ngIf="results.courses.length === 0" class="record-state-text">
+          No courses are enrolled in this academic registration.
+        </div>
+
+        <div *ngIf="results.courses.length > 0" class="academic-results-table-wrap">
+          <table class="da-table">
+            <thead>
+              <tr>
+                <th scope="col">Type</th>
+                <th scope="col">Course</th>
+                <th scope="col">Credits</th>
+                <th scope="col">Pass / Fail</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let course of results.courses">
+                <td><span class="semester-term">{{ courseTypeName(course.courseType) }}</span></td>
+                <td>
+                  <div class="course-name-primary">{{ course.courseName }}</div>
+                  <div class="academic-course-code">{{ course.courseCode }}</div>
+                </td>
+                <td>{{ course.credits }}</td>
+                <td>
+                  <select class="field-input result-outcome"
+                          [ngModel]="course.isPassed"
+                          (ngModelChange)="course.isPassed = $event"
+                          [ngModelOptions]="{ standalone: true }"
+                          [disabled]="!canEditResults || isSavingResults"
+                          [attr.aria-label]="'Result for ' + course.courseName">
+                    <option [ngValue]="null">Select result</option>
+                    <option [ngValue]="true">Pass</option>
+                    <option [ngValue]="false">Fail</option>
+                  </select>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div *ngIf="results.courses.length > 0" class="results-editor">
+          <label class="field">
+            <span class="field-label">Semester GPA (optional)</span>
+            <input class="field-input" type="number" min="0" max="4" step="0.01"
+                   [(ngModel)]="semesterGpa" [ngModelOptions]="{ standalone: true }"
+                   [disabled]="!canEditResults || isSavingResults"
+                   aria-label="Semester GPA" placeholder="0.00–4.00">
+          </label>
+          <label class="field results-note">
+            <span class="field-label">Internal note (optional)</span>
+            <textarea class="field-input" maxlength="1000" rows="3"
+                      [(ngModel)]="internalNote" [ngModelOptions]="{ standalone: true }"
+                      [disabled]="!canEditResults || isSavingResults"
+                      aria-label="Internal note" placeholder="Add an internal note for this semester"></textarea>
+            <span class="results-note-count">{{ internalNote.length }}/1000</span>
+          </label>
+          <p *ngIf="validationMessage" class="validation-error" role="alert">{{ validationMessage }}</p>
+          <p *ngIf="!canEditResults" class="results-readonly" role="status">
+            These results are read-only because their status is not Draft.
+          </p>
+          <p *ngIf="results.submissionStatus === 'Draft' && hasUnsavedDraftChanges" class="results-readonly" role="status">
+            Save your draft changes before finalizing results.
+          </p>
+          <div class="results-actions">
+            <button class="btn btn-p" type="button" (click)="saveResults()"
+                    [disabled]="!canEditResults || isSavingResults || isFinalizingResults || resultsLoading">
+              {{ isSavingResults ? 'Saving…' : 'Save Draft' }}
+            </button>
+            <button *ngIf="canFinalizeResults" class="btn btn-p" type="button" (click)="finalizeResults()"
+                    [disabled]="isFinalizingResults || isSavingResults || resultsLoading">
+              {{ isFinalizingResults ? 'Finalizing…' : 'Finalize Results' }}
+            </button>
+          </div>
         </div>
       </div>
 

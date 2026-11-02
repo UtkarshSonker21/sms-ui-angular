@@ -1,4 +1,81 @@
 /* Accordion Collapsible Logic */
+.applied-program-card {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--da-green-100, #dcfce7);
+  border-radius: 8px;
+  background: var(--da-green-50, #f0fdf4);
+}
+
+.applied-program-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--da-green-100, #dcfce7);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.applied-program-details {
+  min-width: 0;
+}
+
+.applied-program-heading,
+.applied-program-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.applied-program-heading h4 {
+  margin: 0;
+  color: var(--da-text);
+  font-size: 16px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.applied-program-code {
+  padding: 2px 8px;
+  border: 1px solid var(--da-green-100, #dcfce7);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--da-muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.applied-program-meta {
+  margin-top: 6px;
+  gap: 8px 16px;
+  color: var(--da-text-2);
+  font-size: 13px;
+}
+
+.applied-program-status {
+  justify-self: end;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .applied-program-card {
+    grid-template-columns: 48px minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .applied-program-status {
+    grid-column: 2;
+    justify-self: start;
+  }
+}
+
+/* Accordion Collapsible Logic */
 .form-section.collapsible .form-section-body {
   display: none;
 }

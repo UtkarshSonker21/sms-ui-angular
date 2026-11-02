@@ -25,3 +25,211 @@
 .chev {
   width: 24px; height: 24px; color: var(--da-muted);
 }
+
+.sponsorship-assignment-section {
+  margin-bottom: 14px;
+}
+
+.sponsorship-assignment-state,
+.sponsorship-assignment-hint {
+  padding: 12px 14px;
+  color: var(--da-muted, #64748b);
+  font-size: 13px;
+}
+
+.sponsorship-assignment-error {
+  color: var(--da-danger, #dc2626);
+}
+
+.sponsorship-assignment-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--da-border, #e2e8f0);
+  border-radius: 6px;
+  background: var(--da-surface, #ffffff);
+  margin-bottom: 8px;
+}
+
+.sponsorship-assignment-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.sponsorship-assignment-title {
+  color: var(--da-text, #1e293b);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.sponsorship-assignment-meta {
+  color: var(--da-muted, #64748b);
+  font-size: 12px;
+  margin-top: 4px;
+  overflow-wrap: anywhere;
+}
+
+.sponsorship-assignment-status {
+  color: var(--da-success, #15803d);
+  background: var(--da-success-bg, #f0fdf4);
+  border-radius: 999px;
+  padding: 4px 9px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.sponsorship-assignment-status.inactive {
+  color: var(--da-muted, #64748b);
+  background: var(--da-surface-2, #f8fafc);
+}
+
+.sponsorship-assignment-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.sponsorship-assignment-modal {
+  width: min(560px, 100%);
+  overflow: hidden;
+  border: 1px solid var(--da-border, #e2e8f0);
+  border-radius: 8px;
+  background: var(--da-surface, #ffffff);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18);
+}
+
+.sponsorship-assignment-modal-header,
+.sponsorship-assignment-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 22px;
+}
+
+.sponsorship-assignment-modal-header {
+  border-bottom: 1px solid var(--da-border, #e2e8f0);
+}
+
+.sponsorship-assignment-modal-header h2 {
+  margin: 0;
+  color: var(--da-text, #1e293b);
+  font-size: 18px;
+  font-weight: 650;
+}
+
+.sponsorship-assignment-modal-header p {
+  margin: 5px 0 0;
+  color: var(--da-muted, #64748b);
+  font-size: 13px;
+}
+
+.sponsorship-assignment-close {
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--da-border, #e2e8f0);
+  border-radius: 6px;
+  color: var(--da-text, #1e293b);
+  background: var(--da-surface, #ffffff);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.sponsorship-assignment-modal-body {
+  display: grid;
+  gap: 8px;
+  padding: 20px 22px;
+}
+
+.sponsorship-assignment-modal-body .field-input {
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 8px;
+}
+
+.sponsorship-category-dropdown {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  margin-bottom: 8px;
+}
+
+.sponsorship-category-dropdown .da-select-control {
+  font: inherit;
+  color: var(--da-text, #1e293b);
+  text-align: left;
+}
+
+.sponsorship-category-dropdown .da-select-control:focus-visible {
+  outline: 2px solid var(--da-green, #2c9942);
+  outline-offset: 2px;
+}
+
+.sponsorship-category-dropdown.is-disabled .da-select-control {
+  background-color: var(--da-surface-2, #f8fafc) !important;
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.sponsorship-category-dropdown.is-disabled .da-select-control:hover {
+  border-color: var(--da-border, #e2e8f0) !important;
+}
+
+.sponsorship-category-dropdown .da-select-option.keyboard-active {
+  background-color: var(--da-green-50, #f0fdf4);
+  color: var(--da-green-800, #166534);
+}
+
+.sponsorship-assignment-modal-footer {
+  justify-content: flex-end;
+  border-top: 1px solid var(--da-border, #e2e8f0);
+  background: var(--da-surface-2, #f8fafc);
+}
+
+.sponsorship-assignment-char-count {
+  color: var(--da-muted, #64748b);
+  font-size: 11px;
+  text-align: right;
+}
+
+.sponsorship-assignment-permitted-types {
+  padding: 10px 12px;
+  border: 1px solid var(--da-border, #e2e8f0);
+  border-radius: 6px;
+  background: var(--da-surface-2, #f8fafc);
+}
+
+.sponsorship-assignment-permitted-types ul {
+  margin: 4px 0 0;
+  padding-left: 20px;
+  color: var(--da-text, #1e293b);
+  font-size: 13px;
+}
+
+@media (max-width: 640px) {
+  .sponsorship-assignment-row {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .sponsorship-assignment-row .btn {
+    margin-left: auto;
+  }
+
+  .sponsorship-assignment-modal-header,
+  .sponsorship-assignment-modal-footer {
+    padding: 16px;
+  }
+
+  .sponsorship-assignment-modal-body {
+    padding: 16px;
+  }
+}

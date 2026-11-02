@@ -176,5 +176,9 @@ export class SchoolDashboard implements OnInit {
     this.router.navigate([AppRoutes.School.CoordinatorEditStudent, id]);
   }
 
+  viewAllStudents(): void {
+    this.router.navigate(['/', AppRoutes.School.CoordinatorStudents]);
+  }
+
   
 }

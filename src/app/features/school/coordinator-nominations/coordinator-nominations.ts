@@ -172,9 +172,12 @@ export class CoordinatorNominations implements OnInit {
     this.studentService.getStudents(this.filter).subscribe({
       next: (response) => {
         if (response.success && response.result) {
-          this.students = response.result.items;
+          const pageRecords = response.result.items || [];
           this.totalRecords = response.result.totalCount;
-          this.calculateKPIs(this.students);
+          this.calculateKPIs(pageRecords);
+          this.students = pageRecords.filter(
+            student => student.studentApplicationStatusId === StudentStatusEnum.AcceptanceInProcess
+          );
 
           if (!this.students.length) {
             this.notification.warning(

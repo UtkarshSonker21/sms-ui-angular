@@ -361,12 +361,191 @@
 }
 .upload-hint b { color: var(--da-info); }
 .upload-results-footer { display: flex; gap: 10px; justify-content: flex-end; padding: 14px 22px 18px; border-top: 1px solid var(--da-border); }
-.selection-column { width: 38px; text-align: center; }
+.import-error { margin-top: 12px; padding: 10px 12px; border: 1px solid color-mix(in srgb, var(--da-danger) 30%, transparent); border-radius: var(--da-radius-sm); color: var(--da-danger); background: var(--da-surface); font-size: 13px; }
+.import-preview { margin-top: 14px; border: 1px solid var(--da-border); border-radius: var(--da-radius-sm); background: var(--da-surface); overflow: hidden; }
+.import-preview-summary { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 10px 12px; border-bottom: 1px solid var(--da-border); color: var(--da-text-2); font-size: 12px; }
+.import-preview-summary strong { color: var(--da-black); }
+.import-valid { color: var(--da-green-800); font-weight: 600; }
+.import-invalid { color: var(--da-danger); font-weight: 600; }
+.import-preview-message, .import-submit-note { margin: 10px 12px; color: var(--da-text-2); font-size: 12px; line-height: 1.5; }
+.import-preview-table-wrap { max-height: 220px; overflow: auto; }
+.import-preview-table { min-width: 540px; margin: 0; font-size: 12px; }
+.import-preview-table th, .import-preview-table td { padding: 8px 10px; }
+.import-submit-note { margin-bottom: 12px; color: var(--da-green-800); }
+.selection-column,
+.student-selection-cell {
+  width: 40px !important;
+  min-width: 40px !important;
+  max-width: 40px !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
 .selection-column input[type="checkbox"] { cursor: pointer; accent-color: var(--da-green); }
+.student-selection-checkbox {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 auto;
+  width: 14px;
+  height: 14px;
+  accent-color: var(--da-green, #2c9942);
+  cursor: pointer;
+}
 .selection-column input[type="checkbox"]:disabled { cursor: not-allowed; }
+.student-profile-placeholder {
+  background: var(--da-green-50, #edf7ef);
+  color: var(--da-green, #2c9942);
+}
 .student-table-head { justify-content: space-between; gap: 14px; flex-wrap: wrap; }
 .student-table-head > div:first-child { min-width: 0; }
 .student-selection-actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 10px; color: var(--da-muted); font-size: 11.5px; }
+
+.register-student-modal {
+  width: min(980px, calc(100vw - 32px));
+  max-height: min(90vh, 900px);
+  display: flex;
+  flex-direction: column;
+}
+
+.register-student-body {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.register-info-notice,
+.register-course-notice,
+.register-results-note {
+  border: 1px solid var(--da-border);
+  border-radius: var(--da-radius-sm);
+  background: var(--da-info-50);
+  color: var(--da-text-2);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.register-info-notice { margin-bottom: 14px; padding: 10px 12px; }
+
+.register-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.register-summary-card {
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid var(--da-border);
+  border-radius: var(--da-radius-sm);
+  background: var(--da-surface);
+  color: var(--da-text-2);
+  font-size: 12px;
+}
+
+.register-summary-card strong { color: var(--da-black); font-size: 13px; overflow-wrap: anywhere; }
+.register-summary-card > span { color: var(--da-muted); }
+.register-summary-label { color: var(--da-muted); font-size: 10px; font-weight: 700; letter-spacing: .04em; }
+.register-summary-semester { grid-column: span 1; }
+
+.register-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.register-form-grid .field-wrapper { min-width: 0; }
+.required-mark { color: var(--da-danger); }
+
+.register-load-state {
+  padding: 12px;
+  border: 1px solid var(--da-border);
+  border-radius: var(--da-radius-sm);
+  color: var(--da-text-2);
+  font-size: 12px;
+  text-align: center;
+}
+
+.register-load-error { border-color: color-mix(in srgb, var(--da-danger) 35%, transparent); color: var(--da-danger); }
+
+.register-course-section {
+  margin-top: 14px;
+  border: 1px solid var(--da-border);
+  border-radius: var(--da-radius-sm);
+  overflow: hidden;
+}
+
+.register-course-head,
+.register-course-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 13px;
+}
+
+.register-course-head { border-bottom: 1px solid var(--da-border); }
+.register-course-head h3 { margin: 0; color: var(--da-black); font-size: 14px; }
+.register-course-head p { margin: 3px 0 0; color: var(--da-muted); font-size: 11.5px; }
+.register-preview-badge { flex: 0 0 auto; padding: 4px 8px; border-radius: 999px; background: var(--da-green-50); color: var(--da-green-800); font-size: 10px; font-weight: 700; }
+.register-course-notice { margin: 10px 12px; padding: 8px 10px; }
+.register-course-toolbar { color: var(--da-muted); font-size: 11px; }
+.register-select-all { display: inline-flex; align-items: center; gap: 7px; color: var(--da-text-2); cursor: pointer; }
+.register-select-all input,
+.register-course-row > input { accent-color: var(--da-green); }
+.register-course-list { padding: 0 12px 10px; }
+
+.register-course-row {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  border-top: 1px solid var(--da-border);
+}
+
+.register-course-details { min-width: 0; display: grid; gap: 3px; }
+.register-course-details strong { overflow: hidden; color: var(--da-black); font-size: 12.5px; text-overflow: ellipsis; white-space: nowrap; }
+.register-course-details span { color: var(--da-muted); font-family: var(--da-font-mono, monospace); font-size: 10.5px; }
+.register-course-type { padding: 4px 7px; border-radius: 999px; background: var(--da-surface-2); color: var(--da-text-2); font-size: 10px; white-space: nowrap; }
+.register-course-type.core { background: var(--da-green-50); color: var(--da-green-800); }
+.register-course-type.elective { background: var(--da-info-50); color: var(--da-info); }
+.register-course-credits { color: var(--da-muted); font-size: 11px; white-space: nowrap; }
+.register-results-note { margin-top: 14px; padding: 9px 11px; }
+.register-remarks-field { margin-top: 14px; }
+.register-student-modal .modal-foot { flex: 0 0 auto; }
+
+.bulk-registration-backdrop { z-index: 1200; }
+.bulk-registration-modal { width: min(620px, calc(100vw - 32px)); max-height: min(86vh, 760px); display: flex; flex-direction: column; }
+.bulk-registration-body { min-height: 0; overflow-y: auto; }
+.bulk-registration-context,
+.bulk-registration-note,
+.bulk-registration-progress { display: grid; gap: 5px; padding: 10px 12px; border: 1px solid var(--da-border); border-radius: var(--da-radius-sm); background: var(--da-info-50); color: var(--da-text-2); font-size: 12px; line-height: 1.5; }
+.bulk-registration-context { margin-bottom: 14px; }
+.bulk-registration-context strong { color: var(--da-black); }
+.bulk-registration-context > span { color: var(--da-green-800); font-weight: 600; }
+.bulk-registration-context small { color: var(--da-muted); }
+.bulk-semester-field { margin-bottom: 14px; }
+.bulk-registration-student-list { max-height: 180px; margin-bottom: 12px; overflow-y: auto; border: 1px solid var(--da-border); border-radius: var(--da-radius-sm); }
+.bulk-registration-student { display: grid; gap: 2px; padding: 8px 11px; border-bottom: 1px solid var(--da-border); color: var(--da-text-2); font-size: 12px; }
+.bulk-registration-student:last-child { border-bottom: 0; }
+.bulk-registration-student > span { color: var(--da-black); font-weight: 600; }
+.bulk-registration-student small { color: var(--da-muted); }
+.bulk-registration-note { margin-top: 12px; }
+.bulk-registration-progress { margin-top: 10px; border-color: color-mix(in srgb, var(--da-green) 35%, transparent); color: var(--da-green-800); }
+.bulk-result-counts { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+.bulk-result-counts span { padding: 8px 10px; border-radius: var(--da-radius-sm); font-size: 12px; font-weight: 700; }
+.bulk-result-success { background: var(--da-green-50); color: var(--da-green-800); }
+.bulk-result-failure { background: color-mix(in srgb, var(--da-danger) 8%, transparent); color: var(--da-danger); }
+.bulk-failure-list { display: grid; gap: 8px; max-height: 260px; overflow-y: auto; }
+.bulk-failure-item { display: grid; gap: 3px; padding: 10px 12px; border: 1px solid color-mix(in srgb, var(--da-danger) 25%, transparent); border-radius: var(--da-radius-sm); background: var(--da-surface); font-size: 12px; }
+.bulk-failure-item strong { color: var(--da-black); }
+.bulk-failure-item span { color: var(--da-danger); overflow-wrap: anywhere; }
+.bulk-registration-modal .modal-foot { flex: 0 0 auto; }
 
 @media (max-width: 768px) {
   .page-head { align-items: stretch; flex-direction: column; }
@@ -379,4 +558,17 @@
   .central-window-wide,
   .central-window-notes { grid-column: auto; }
   .upload-results-body { padding: 16px 18px 8px; }
+  .register-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .register-summary-semester { grid-column: 1 / -1; }
+  .register-course-toolbar { align-items: flex-start; flex-direction: column; }
+}
+
+@media (max-width: 560px) {
+  .register-student-modal { width: calc(100vw - 20px); max-height: 94vh; }
+  .register-summary-grid,
+  .register-form-grid { grid-template-columns: minmax(0, 1fr); }
+  .register-summary-semester { grid-column: auto; }
+  .register-course-row { grid-template-columns: 18px minmax(0, 1fr) auto; gap: 8px; }
+  .register-course-credits { grid-column: 2 / -1; padding-bottom: 8px; }
+  .bulk-registration-modal { width: calc(100vw - 20px); max-height: 94vh; }
 }

@@ -240,6 +240,12 @@ export class ProgramAccreditation implements OnInit {
     return found ? found.displayText : 'All Degrees';
   }
 
+  getProgramDegreeName(degreeId: number | null | undefined): string {
+    if (degreeId == null) return '—';
+    const degree = this.degrees.find(option => option.uniqueId === degreeId);
+    return degree?.displayText?.trim() || '—';
+  }
+
   getDegrees(): void {
     this.masterDropDownService
       .getByParentId(MainDropdown.Degrees)

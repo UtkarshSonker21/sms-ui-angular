@@ -3,7 +3,7 @@
   <!-- 1. Page Header -->
   <div class="page-head">
     <div>
-      <h1 class="page-title">{{ welcomeMessage }}</h1>
+      <h1 class="page-title">{{ welcomeMessage }} Schools Coordinator</h1>
       <div class="page-sub">Your Kafaat nominations &bull; Nomination window open until Dec 10.</div>
     </div>
     <!-- TODO: Re-enable Search & Export when features are ready
@@ -62,6 +62,7 @@
         <h2 class="card-title">Nominee Tracking</h2>
         <div class="card-sub">Recent updates to your nominated students</div>
       </div>
+      <a class="view-all-link" (click)="viewAllStudents()">View all &rarr;</a>
     </div>
     <div class="card-body">
       <div class="table-responsive">
@@ -83,7 +84,7 @@
                   <ng-container *ngIf="student.photoPath && !hasPhotoError(student.id)">
                     <img [src]="getPhotoUrl(student.photoPath)" (error)="handlePhotoError(student.id)" class="profile-photo" alt="Photo" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
                   </ng-container>
-                  <div *ngIf="!student.photoPath || hasPhotoError(student.id)" class="avatar" [attr.data-name]="student.avatar">{{ student.avatar }}</div>
+                  <div *ngIf="!student.photoPath || hasPhotoError(student.id)" class="avatar avatar-placeholder" [attr.data-name]="student.avatar">{{ student.avatar }}</div>
                   <div>
                     <div class="student-name">{{ student.studentName }}</div>
                     <div class="student-id">{{ student.studentId }}</div>

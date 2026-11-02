@@ -155,6 +155,7 @@ export class CoordinatorStudentsList implements OnInit {
   isDataLoaded = false;
   allStudents: StudentRequest[] = [];
   filteredStudents: StudentRequest[] = [];
+  selectedStudentIds = new Set<number>();
 
   loadData(): void {
     if (!this.isDataLoaded) {
@@ -174,12 +175,14 @@ export class CoordinatorStudentsList implements OnInit {
           } else {
             this.allStudents = [];
             this.filteredStudents = [];
+            this.selectedStudentIds.clear();
             this.notification.warning(response.message || 'Failed to load students.');
           }
         },
         error: (error) => {
           this.allStudents = [];
           this.filteredStudents = [];
+          this.selectedStudentIds.clear();
           if (this.notification.handleBusinessError(error)) {
             return;
           }
@@ -216,8 +219,52 @@ export class CoordinatorStudentsList implements OnInit {
 
     const start = (this.filter.pageNumber - 1) * this.filter.pageSize;
     const end = start + this.filter.pageSize;
-    this.filteredStudents = result.slice(start, end);
+    const nextPage = result.slice(start, end);
+    if (!this.haveSameStudentIds(this.filteredStudents, nextPage)) this.selectedStudentIds.clear();
+    this.filteredStudents = nextPage;
     this.students = this.filteredStudents;
+  }
+
+  get areAllVisibleStudentsSelected(): boolean {
+    return this.filteredStudents.length > 0 && this.filteredStudents.every(student => !!student.studentId && this.selectedStudentIds.has(student.studentId));
+  }
+
+  get isVisibleStudentSelectionIndeterminate(): boolean {
+    const selectedCount = this.filteredStudents.reduce((count, student) => count + Number(!!student.studentId && this.selectedStudentIds.has(student.studentId)), 0);
+    return selectedCount > 0 && selectedCount < this.filteredStudents.length;
+  }
+
+  isStudentSelected(studentId?: number): boolean {
+    return !!studentId && this.selectedStudentIds.has(studentId);
+  }
+
+  toggleStudentSelection(studentId: number | undefined, event: Event): void {
+    if (!studentId) return;
+    const checked = (event.target as HTMLInputElement).checked;
+    const updated = new Set(this.selectedStudentIds);
+    if (checked) updated.add(studentId);
+    else updated.delete(studentId);
+    this.selectedStudentIds = updated;
+  }
+
+  setVisibleStudentsSelected(event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    const updated = new Set(this.selectedStudentIds);
+    for (const student of this.filteredStudents) {
+      if (student.studentId) {
+        if (checked) updated.add(student.studentId);
+        else updated.delete(student.studentId);
+      }
+    }
+    this.selectedStudentIds = updated;
+  }
+
+  private haveSameStudentIds(previous: StudentRequest[], next: StudentRequest[]): boolean {
+    return previous.length === next.length && previous.every((student, index) => student.studentId === next[index].studentId);
+  }
+
+  onBulkAction(): void {
+    // TODO: Implement bulk actions when their behavior is defined.
   }
 
   calculateKPIs(items: StudentRequest[]): void {
@@ -247,12 +294,14 @@ export class CoordinatorStudentsList implements OnInit {
 
   // --- Search & Filters ---
   applySearch(): void {
+    this.selectedStudentIds.clear();
     this.filter.searchText = this.searchText.trim() || undefined;
     this.filter.pageNumber = 1;
     this.loadData();
   }
 
   clearSearch(): void {
+    this.selectedStudentIds.clear();
     this.searchText = '';
     this.filter.searchText = undefined;
     this.filter.pageNumber = 1;
@@ -275,6 +324,7 @@ export class CoordinatorStudentsList implements OnInit {
   }
 
   selectSchoolOption(id: number): void {
+    this.selectedStudentIds.clear();
     this.selectedSchool = id;
     this.filter.pageNumber = 1;
     this.loadData();
@@ -282,6 +332,7 @@ export class CoordinatorStudentsList implements OnInit {
 
   clearSchoolSelection(event: Event): void {
     event.stopPropagation();
+    this.selectedStudentIds.clear();
     this.selectedSchool = 0;
     this.isSchoolDropdownOpen = false;
     this.filter.pageNumber = 1;
@@ -301,6 +352,7 @@ export class CoordinatorStudentsList implements OnInit {
   }
 
   selectSpecOption(specName: string): void {
+    this.selectedStudentIds.clear();
     this.selectedSpec = specName;
     this.isSpecDropdownOpen = false;
     this.filter.pageNumber = 1;
@@ -309,6 +361,7 @@ export class CoordinatorStudentsList implements OnInit {
 
   clearSpecSelection(event: Event): void {
     event.stopPropagation();
+    this.selectedStudentIds.clear();
     this.selectedSpec = '';
     this.isSpecDropdownOpen = false;
     this.filter.pageNumber = 1;
@@ -323,6 +376,7 @@ export class CoordinatorStudentsList implements OnInit {
   }
 
   selectStatusOption(id: number | null): void {
+    this.selectedStudentIds.clear();
     this.selectedStatus = id;
     this.isStatusDropdownOpen = false;
     this.filter.pageNumber = 1;
@@ -331,6 +385,7 @@ export class CoordinatorStudentsList implements OnInit {
 
   clearStatusSelection(event: Event): void {
     event.stopPropagation();
+    this.selectedStudentIds.clear();
     this.selectedStatus = null;
     this.isStatusDropdownOpen = false;
     this.filter.pageNumber = 1;
@@ -344,6 +399,7 @@ export class CoordinatorStudentsList implements OnInit {
   }
 
   setTab(tab: string | number): void {
+    this.selectedStudentIds.clear();
     this.activeTab = tab;
     this.selectedStatus = tab === 'all' ? null : (tab as number);
     this.filter.pageNumber = 1;
@@ -367,6 +423,7 @@ export class CoordinatorStudentsList implements OnInit {
 
   previousPage(): void {
     if (!this.isPreviousDisabled) {
+      this.selectedStudentIds.clear();
       this.filter.pageNumber--;
       this.loadData();
     }
@@ -374,6 +431,7 @@ export class CoordinatorStudentsList implements OnInit {
 
   nextPage(): void {
     if (!this.isNextDisabled) {
+      this.selectedStudentIds.clear();
       this.filter.pageNumber++;
       this.loadData();
     }
@@ -385,6 +443,7 @@ export class CoordinatorStudentsList implements OnInit {
   }
 
   selectPageSize(size: number): void {
+    this.selectedStudentIds.clear();
     this.filter.pageSize = size;
     this.filter.pageNumber = 1;
     this.isPageSizeDropdownOpen = false;

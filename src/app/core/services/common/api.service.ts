@@ -14,8 +14,16 @@ export class ApiService {
     return this.http.get<T>(`${environment.apiUrl}${endpoint}`);
   }
 
+  getBlob(endpoint: string) {
+    return this.http.get(`${environment.apiUrl}${endpoint}`, { responseType: 'blob' });
+  }
+
   post<T>(endpoint: string, body: any) 
   {
+    return this.http.post<T>(`${environment.apiUrl}${endpoint}`, body);
+  }
+
+  postForm<T>(endpoint: string, body: FormData) {
     return this.http.post<T>(`${environment.apiUrl}${endpoint}`, body);
   }
 

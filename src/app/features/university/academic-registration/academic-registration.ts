@@ -17,6 +17,13 @@ import {
   UniversityRegistrationWindow
 } from '../../../core/models/university/academic-registration/university-registration-window.model';
 import { NotificationService } from '../../../core/services/common/notification.service';
+import { AcademicResultsImportPreviewModel } from '../../../core/models/university/academic-registration/academic-results.model';
+import { ProgramService } from '../../../core/services/university/programs.service';
+import { ProgramRequest } from '../../../core/models/university/programs/program-request.model';
+import { ProgramSemester } from '../../../core/models/university/programs/program-semester.model';
+import { ProgramCourse } from '../../../core/models/university/programs/program-course.model';
+import { firstValueFrom, forkJoin } from 'rxjs';
+import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
 
 @Component({
   selector: 'app-academic-registration',
@@ -43,15 +50,22 @@ export class AcademicRegistration implements OnInit, OnDestroy {
   private centralWindowService = inject(UniversityRegistrationWindowService);
   private notification = inject(NotificationService);
   private studentStatusService = inject(StudentStatusService);
+  private programService = inject(ProgramService);
+  private confirmDialog = inject(ConfirmDialogService);
 
   // Table Data
   students: AcademicRegistrationModel[] = [];
   totalRecords = 0;
   readonly selectedStudentIds = new Set<number>();
 
-  // Upload Student Results dialog state (processing is intentionally not implemented).
+  // Results import state. The server parses and validates the workbook before submission.
   showUploadResultsDialog = false;
   selectedResultsFile: File | null = null;
+  resultsImportPreview: AcademicResultsImportPreviewModel | null = null;
+  isPreviewingResultsImport = false;
+  isSubmittingResultsImport = false;
+  resultsImportError = '';
+  readonly maxResultsImportBytes = 5 * 1024 * 1024;
 
   // Filter
   filter: AcademicRegistrationFilterModel = new AcademicRegistrationFilterModel();
@@ -69,8 +83,29 @@ export class AcademicRegistration implements OnInit, OnDestroy {
   // Registration Dialog State
   showRegisterDialog = false;
   isSaving = false;
+  isConfirmingRegistration = false;
   selectedStudent: AcademicRegistrationModel | null = null;
   registerRequest: RegisterStudentRequestModel = new RegisterStudentRequestModel();
+  registerProgram: ProgramRequest | null = null;
+  registerSemesters: ProgramSemester[] = [];
+  registerCourses: ProgramCourse[] = [];
+  readonly previewSelectedCourseIds = new Set<number>();
+  isLoadingRegisterDetails = false;
+  registerDetailsError = '';
+  private registerDetailsRequestId = 0;
+  showBulkRegistrationDialog = false;
+  isPreparingBulkRegistration = false;
+  isConfirmingBulkRegistration = false;
+  isBulkRegistering = false;
+  bulkCompletedCount = 0;
+  bulkSemesterNo: number | null = null;
+  bulkSemesterChoices: Array<{ semesterNo: number; label: string }> = [];
+  bulkStudents: AcademicRegistrationModel[] = [];
+  bulkPeriodSummary = '';
+  bulkRegistrationResults: {
+    successes: AcademicRegistrationModel[];
+    failures: Array<{ student: AcademicRegistrationModel; message: string }>;
+  } | null = null;
 
   // Central university-wide registration window state
   universities: UniversityOption[] = [];
@@ -278,26 +313,46 @@ export class AcademicRegistration implements OnInit, OnDestroy {
   }
 
   openUploadResultsDialog(): void {
-    this.selectedResultsFile = null;
+    this.resetResultsImport();
     this.showUploadResultsDialog = true;
   }
 
   closeUploadResultsDialog(): void {
+    if (this.isPreviewingResultsImport || this.isSubmittingResultsImport) return;
     this.showUploadResultsDialog = false;
-    this.selectedResultsFile = null;
+    this.resetResultsImport();
   }
 
   onResultsFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0] || null;
     const extension = file?.name.split('.').pop()?.toLowerCase();
-    this.selectedResultsFile = file && ['xlsx', 'xls', 'csv'].includes(extension || '') ? file : null;
-    if (file && !this.selectedResultsFile) input.value = '';
+    this.resultsImportPreview = null;
+    this.resultsImportError = '';
+    this.selectedResultsFile = file && extension === 'xlsx' && file.size <= this.maxResultsImportBytes ? file : null;
+    if (file && !this.selectedResultsFile) {
+      input.value = '';
+      this.resultsImportError = extension !== 'xlsx'
+        ? 'Only .xlsx workbooks are supported.'
+        : 'The workbook must be no larger than 5 MB.';
+      this.notification.warning(this.resultsImportError);
+    }
   }
 
   removeResultsFile(input: HTMLInputElement): void {
+    if (this.isPreviewingResultsImport || this.isSubmittingResultsImport) return;
     this.selectedResultsFile = null;
+    this.resultsImportPreview = null;
+    this.resultsImportError = '';
     input.value = '';
+  }
+
+  private resetResultsImport(): void {
+    this.selectedResultsFile = null;
+    this.resultsImportPreview = null;
+    this.resultsImportError = '';
+    this.isPreviewingResultsImport = false;
+    this.isSubmittingResultsImport = false;
   }
 
   formatFileSize(bytes: number): string {
@@ -306,11 +361,275 @@ export class AcademicRegistration implements OnInit, OnDestroy {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }
 
-  downloadResultsTemplate(): void { }
+  downloadResultsTemplate(): void {
+    this.registrationService.downloadResultsImportTemplate().subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = 'sms-academic-results-template.xlsx';
+        anchor.click();
+        URL.revokeObjectURL(url);
+      },
+      error: (error) => this.notification.handleBusinessError(error, 'Failed to download the results template.')
+    });
+  }
 
-  processResultsUpload(): void { }
+  processResultsUpload(): void {
+    if (!this.selectedResultsFile || this.isPreviewingResultsImport || this.isSubmittingResultsImport) return;
+    this.resultsImportPreview = null;
+    this.resultsImportError = '';
+    this.isPreviewingResultsImport = true;
+    this.registrationService.previewResultsImport(this.selectedResultsFile).subscribe({
+      next: (response) => {
+        this.isPreviewingResultsImport = false;
+        if (response.success && response.result) {
+          this.resultsImportPreview = response.result;
+          if (!response.result.canSubmit) this.resultsImportError = response.result.message || 'Correct workbook errors before submitting.';
+          return;
+        }
+        this.resultsImportError = response.message || 'The workbook could not be validated.';
+        this.notification.warning(this.resultsImportError);
+      },
+      error: (error) => {
+        this.isPreviewingResultsImport = false;
+        this.resultsImportError = this.apiErrorMessage(error, 'The workbook could not be validated.');
+        if (!this.notification.handleBusinessError(error, this.resultsImportError)) this.notification.error(this.resultsImportError);
+      }
+    });
+  }
 
-  registerSelectedStudents(): void { }
+  submitResultsImport(): void {
+    if (!this.selectedResultsFile || !this.resultsImportPreview?.canSubmit || this.isSubmittingResultsImport) return;
+    this.isSubmittingResultsImport = true;
+    this.registrationService.importResults(
+      this.selectedResultsFile,
+      this.resultsImportPreview.previewToken,
+      this.resultsImportPreview.expectedUpdatedOn
+    ).subscribe({
+      next: (response) => {
+        this.isSubmittingResultsImport = false;
+        if (!response.success || !response.result) {
+          this.resultsImportError = response.message || 'The results import was not saved.';
+          this.notification.error(this.resultsImportError);
+          return;
+        }
+        this.notification.success(response.message || 'Results saved as a Draft. Review them in Academic Record before finalizing.');
+        this.showUploadResultsDialog = false;
+        this.resetResultsImport();
+      },
+      error: (error) => {
+        this.isSubmittingResultsImport = false;
+        this.resultsImportError = this.apiErrorMessage(error, 'The results import was not saved.');
+        if (error?.status === 409) this.notification.warning(`${this.resultsImportError} Reload the latest Academic Record before retrying.`);
+        else if (!this.notification.handleBusinessError(error, this.resultsImportError)) this.notification.error(this.resultsImportError);
+      }
+    });
+  }
+
+  async registerSelectedStudents(): Promise<void> {
+    if (this.isPreparingBulkRegistration || this.isConfirmingBulkRegistration || this.isBulkRegistering) return;
+
+    this.currentTime = Date.now();
+    this.reconcileSelectedStudents();
+    const selectedByApplication = new Map<number, AcademicRegistrationModel>();
+    for (const student of this.selectedEligibleVisibleStudents) {
+      if (!selectedByApplication.has(student.applicationId)) selectedByApplication.set(student.applicationId, student);
+    }
+    const selectedStudents = [...selectedByApplication.values()];
+    if (!selectedStudents.length) {
+      this.notification.warning('Select at least one eligible sponsored student.');
+      return;
+    }
+
+    this.bulkStudents = selectedStudents;
+    this.bulkSemesterNo = null;
+    this.bulkSemesterChoices = [];
+    this.bulkRegistrationResults = null;
+    this.bulkPeriodSummary = this.getBulkPeriodSummary(selectedStudents);
+    this.isPreparingBulkRegistration = true;
+
+    try {
+      const programIds = [...new Set(selectedStudents.map(student => student.programId))];
+      const programConfigurations = await firstValueFrom(forkJoin(
+        programIds.map(programId => forkJoin({
+          program: this.programService.getProgramById(programId),
+          semesters: this.programService.getSemesterByProgramId(programId)
+        }))
+      ));
+
+      const semestersByProgram = new Map<number, ProgramSemester[]>();
+      const semesterCountByProgram = new Map<number, number>();
+      programConfigurations.forEach((configuration, index) => {
+        const programId = programIds[index];
+        if (!configuration.program.success || !configuration.program.result) {
+          const apiMessage = configuration.program.message?.trim();
+          throw new Error(
+            `Program configuration could not be loaded for program ${programId}.${apiMessage ? ` ${apiMessage}` : ''}`
+          );
+        }
+        const configuredCount = configuration.program.result.numberOfSemesters;
+        if (!Number.isInteger(configuredCount) || configuredCount < 1) {
+          throw new Error(`Program ${programId} has an invalid configured semester count.`);
+        }
+        if (!Array.isArray(configuration.semesters.result)) {
+          const apiMessage = configuration.semesters.message?.trim();
+          throw new Error(
+            `Configured semesters could not be loaded for program ${programId}.${apiMessage ? ` ${apiMessage}` : ''}`
+          );
+        }
+        if (configuration.semesters.result.length === 0) {
+          throw new Error(`No configured semesters are available for program ${programId}. Configure persisted program semesters before registering students.`);
+        }
+        if (!configuration.semesters.success) {
+          const apiMessage = configuration.semesters.message?.trim();
+          throw new Error(
+            `Configured semesters could not be loaded for program ${programId}.${apiMessage ? ` ${apiMessage}` : ''}`
+          );
+        }
+        semesterCountByProgram.set(programId, configuredCount);
+        semestersByProgram.set(programId, configuration.semesters.result);
+      });
+
+      const commonSemesterNumbers = (semestersByProgram.get(programIds[0]) || [])
+        .map(semester => semester.semesterNo)
+        .filter((semesterNo, index, values) => values.indexOf(semesterNo) === index)
+        .filter(semesterNo => Number.isInteger(semesterNo) && semesterNo >= 1)
+        .filter(semesterNo => programIds.every(programId => {
+          const configuredCount = semesterCountByProgram.get(programId) || 0;
+          return semesterNo <= configuredCount &&
+            (semestersByProgram.get(programId) || []).filter(item => item.semesterNo === semesterNo).length === 1;
+        }))
+        .sort((a, b) => a - b);
+
+      this.bulkSemesterChoices = commonSemesterNumbers.map(semesterNo => {
+        const scheduleLabels = programIds.map(programId => {
+          const semester = (semestersByProgram.get(programId) || []).find(item => item.semesterNo === semesterNo)!;
+          const term = [semester.termName, semester.academicYearName].filter(Boolean).join(' ');
+          const label = term || semester.semesterName || `Semester ${semesterNo}`;
+          const programName = selectedStudents.find(student => student.programId === programId)?.programName || `Program ${programId}`;
+          return `${programName}: ${label}`;
+        });
+        return {
+          semesterNo,
+          label: `Semester ${semesterNo} — ${[...new Set(scheduleLabels)].join('; ')}`
+        };
+      });
+
+      if (!this.bulkSemesterChoices.length) {
+        throw new Error('The selected students’ programs do not share an unambiguous configured semester number. Select students from compatible programs and try again.');
+      }
+
+      this.showBulkRegistrationDialog = true;
+    } catch (error: any) {
+      this.notification.error(this.bulkRegistrationErrorMessage(error) || 'Could not prepare bulk registration.');
+    } finally {
+      this.isPreparingBulkRegistration = false;
+    }
+  }
+
+  closeBulkRegistrationDialog(): void {
+    if (this.isConfirmingBulkRegistration || this.isBulkRegistering) return;
+    this.showBulkRegistrationDialog = false;
+    this.bulkSemesterNo = null;
+    this.bulkSemesterChoices = [];
+    this.bulkStudents = [];
+    this.bulkRegistrationResults = null;
+  }
+
+  async confirmBulkRegistration(): Promise<void> {
+    if (this.isConfirmingBulkRegistration || this.isBulkRegistering || this.bulkSemesterNo == null) return;
+    const semesterNo = this.bulkSemesterNo;
+    const selectedChoice = this.bulkSemesterChoices.find(choice => choice.semesterNo === semesterNo);
+    if (!selectedChoice || !this.bulkStudents.length) return;
+
+    this.currentTime = Date.now();
+    const noLongerEligible = this.bulkStudents.filter(student => !this.canRegisterStudent(student));
+    if (noLongerEligible.length) {
+      this.reconcileSelectedStudents();
+      this.notification.warning('One or more students are no longer eligible under the current registration window. Review the list and prepare the selection again.');
+      this.closeBulkRegistrationDialog();
+      return;
+    }
+
+    this.isConfirmingBulkRegistration = true;
+    let confirmed = false;
+    try {
+      confirmed = await this.confirmDialog.confirm({
+        title: 'Confirm Bulk Registration',
+        message: `You are about to register ${this.bulkStudents.length} student${this.bulkStudents.length === 1 ? '' : 's'} for ${selectedChoice.label}. Current central registration period(s): ${this.bulkPeriodSummary}. Continue? The API will validate each application and automatically enroll all active courses configured for the selected semester.`,
+        confirmText: 'Confirm Registration',
+        cancelText: 'Cancel',
+        variant: 'info'
+      });
+    } catch {
+      this.notification.error('Could not open the registration confirmation.');
+      this.isConfirmingBulkRegistration = false;
+      return;
+    }
+    this.isConfirmingBulkRegistration = false;
+    if (!confirmed) return;
+
+    this.isBulkRegistering = true;
+    this.bulkCompletedCount = 0;
+    const successes: AcademicRegistrationModel[] = [];
+    const failures: Array<{ student: AcademicRegistrationModel; message: string }> = [];
+    try {
+      for (const student of this.bulkStudents) {
+        const request = new RegisterStudentRequestModel();
+        request.applicationId = student.applicationId;
+        request.semesterNo = semesterNo;
+        request.registrationDate = student.registrationDate ? new Date(student.registrationDate) : new Date();
+
+        try {
+          const response = await firstValueFrom(this.registrationService.registerStudent(request));
+          if (response.success) successes.push(student);
+          else failures.push({ student, message: response.message || 'The registration request was not accepted.' });
+        } catch (error: any) {
+          failures.push({
+            student,
+            message: this.bulkRegistrationErrorMessage(error)
+          });
+        } finally {
+          this.bulkCompletedCount++;
+        }
+      }
+
+      successes.forEach(student => this.selectedStudentIds.delete(student.studentId));
+      this.bulkRegistrationResults = { successes, failures };
+      this.loadData();
+
+      if (failures.length === 0) {
+        this.notification.success(`Successfully registered ${successes.length} student${successes.length === 1 ? '' : 's'}.`);
+      } else if (successes.length > 0) {
+        this.notification.warning(`Successfully registered ${successes.length}; ${failures.length} failed. Review the details in this dialog.`);
+      } else {
+        this.notification.error(`All ${failures.length} registration requests failed. Review the details in this dialog.`);
+      }
+    } finally {
+      this.isBulkRegistering = false;
+    }
+  }
+
+  private getBulkPeriodSummary(students: AcademicRegistrationModel[]): string {
+    const universityIds = new Set(students.map(student => student.universityId));
+    const labels: string[] = [];
+    for (const universityId of universityIds) {
+      const windows = this.centralWindows.filter(window =>
+        window.universityId === universityId && this.isCentralWindowCurrentlyOpen(window)
+      );
+      const universityName = windows[0]?.universityName ||
+        students.find(student => student.universityId === universityId)?.universityName || `University ${universityId}`;
+      const periods = [...new Set(windows.map(window => window.periodLabel))];
+      labels.push(`${universityName}: ${periods.length ? periods.join(', ') : 'no open period'}`);
+    }
+    return labels.join('; ');
+  }
+
+  bulkRegistrationErrorMessage(error: any): string {
+    const message = HelperMethods.getApiErrorMessage(error);
+    return message === 'Something went wrong.' ? 'Registration failed.' : message;
+  }
 
   periodLabel(periodType: number, yearStart: number): string {
     const period = this.academicPeriods.find(item => item.value === periodType)?.label || 'Period';
@@ -327,6 +646,10 @@ export class AcademicRegistration implements OnInit, OnDestroy {
   private formatDateInput(date: Date): string {
     const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
     return local.toISOString().slice(0, 10);
+  }
+
+  private apiErrorMessage(error: any, fallback: string): string {
+    return error?.error?.message || error?.message || fallback;
   }
 
   toggleCentralDropdown(kind: 'period' | 'year', event: Event): void {
@@ -545,19 +868,159 @@ export class AcademicRegistration implements OnInit, OnDestroy {
     this.registerRequest.applicationId = student.applicationId;
     this.registerRequest.registrationDate = student.registrationDate ? new Date(student.registrationDate) : new Date();
     this.registerRequest.semesterNo = student.semesterNo || 1;
+    this.registerProgram = null;
+    this.registerSemesters = [];
+    this.registerCourses = [];
+    this.previewSelectedCourseIds.clear();
+    this.registerDetailsError = '';
     this.showRegisterDialog = true;
+    this.loadRegisterDetails(student.programId);
   }
 
   closeRegisterDialog(): void {
+    if (this.isSaving || this.isConfirmingRegistration) return;
+    this.registerDetailsRequestId++;
     this.showRegisterDialog = false;
     this.selectedStudent = null;
   }
 
-  registerStudent(): void {
+  private loadRegisterDetails(programId: number): void {
+    const requestId = ++this.registerDetailsRequestId;
+    this.isLoadingRegisterDetails = true;
+
+    forkJoin({
+      program: this.programService.getProgramById(programId),
+      semesters: this.programService.getSemesterByProgramId(programId)
+    }).subscribe({
+      next: ({ program, semesters }) => {
+        if (requestId !== this.registerDetailsRequestId) return;
+        this.isLoadingRegisterDetails = false;
+        if (!program.success || !program.result) {
+          this.registerDetailsError = program.message || 'Program details are unavailable.';
+          return;
+        }
+        if (!Array.isArray(semesters.result)) {
+          this.registerDetailsError = semesters.message || 'Configured semesters could not be loaded for this program.';
+          return;
+        }
+        if (!semesters.success && semesters.result.length > 0) {
+          this.registerDetailsError = semesters.message || 'Configured semesters could not be loaded for this program.';
+          return;
+        }
+
+        this.registerProgram = program.result;
+        const configuredCount = program.result.numberOfSemesters;
+        this.registerSemesters = semesters.result
+          .filter(semester => Number.isInteger(semester.semesterNo) &&
+            semester.semesterNo >= 1 &&
+            semester.semesterNo <= configuredCount &&
+            semesters.result.filter(item => item.semesterNo === semester.semesterNo).length === 1)
+          .slice()
+          .sort((a, b) => a.semesterNo - b.semesterNo);
+        if (semesters.result.length > 0 && this.registerSemesters.length === 0) {
+          this.registerDetailsError = 'No valid, unambiguous persisted semesters are available within this program’s configured semester range.';
+          return;
+        }
+        const requestedSemester = this.registerSemesters.find(
+          semester => semester.semesterNo === this.registerRequest.semesterNo
+        );
+        if (!requestedSemester) {
+          this.registerRequest.semesterNo = 0;
+        }
+        this.refreshRegisterCourses();
+      },
+      error: (error) => {
+        if (requestId !== this.registerDetailsRequestId) return;
+        this.isLoadingRegisterDetails = false;
+        this.registerDetailsError = HelperMethods.getApiErrorMessage(error) || 'Program semester and course details could not be loaded.';
+        this.notification.handleBusinessError(error, this.registerDetailsError);
+      }
+    });
+  }
+
+  onRegisterSemesterChanged(value: number | string): void {
+    this.registerRequest.semesterNo = Number(value) || 0;
+    this.refreshRegisterCourses();
+  }
+
+  private refreshRegisterCourses(): void {
+    this.registerCourses = (this.registerProgram?.courses || [])
+      .filter(course => course.semesterNo === Number(this.registerRequest.semesterNo))
+      .slice()
+      .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
+    this.previewSelectedCourseIds.clear();
+  }
+
+  get selectedRegisterSemester(): ProgramSemester | undefined {
+    return this.registerSemesters.find(
+      semester => semester.semesterNo === Number(this.registerRequest.semesterNo)
+    );
+  }
+
+  get allPreviewCoursesSelected(): boolean {
+    return this.registerCourses.length > 0 && this.registerCourses.every(course =>
+      this.previewSelectedCourseIds.has(this.previewCourseKey(course))
+    );
+  }
+
+  togglePreviewCourse(course: ProgramCourse, selected: boolean): void {
+    const key = this.previewCourseKey(course);
+    if (selected) this.previewSelectedCourseIds.add(key);
+    else this.previewSelectedCourseIds.delete(key);
+  }
+
+  toggleAllPreviewCourses(selected: boolean): void {
+    this.previewSelectedCourseIds.clear();
+    if (selected) {
+      this.registerCourses.forEach(course => this.previewSelectedCourseIds.add(this.previewCourseKey(course)));
+    }
+  }
+
+  private previewCourseKey(course: ProgramCourse): number {
+    return course.programCourseId ?? course.courseId;
+  }
+
+  courseTypeLabel(courseType: number): string {
+    if (courseType === 1) return 'Core';
+    if (courseType === 2) return 'Elective';
+    return 'Optional';
+  }
+
+  async registerStudent(): Promise<void> {
+    if (this.isSaving || this.isConfirmingRegistration) return;
     if (!this.registerRequest.semesterNo || !this.registerRequest.registrationDate) {
       this.notification.warning('Semester and Registration Date are required.');
       return;
     }
+
+    if (!this.selectedRegisterSemester) {
+      this.notification.warning('Select a configured program semester before registering the student.');
+      return;
+    }
+
+    const student = this.selectedStudent;
+    const semester = this.selectedRegisterSemester;
+    if (!student || !semester) return;
+
+    const termLabel = [semester.termName, semester.academicYearName].filter(Boolean).join(' ');
+    const semesterLabel = `${semester.semesterName} (Semester ${semester.semesterNo})${termLabel ? ` — ${termLabel}` : ''}`;
+    this.isConfirmingRegistration = true;
+    let confirmed = false;
+    try {
+      confirmed = await this.confirmDialog.confirm({
+        title: 'Confirm Student Registration',
+        message: `Register ${student.studentName} for ${semesterLabel}? Registration period(s): ${this.getBulkPeriodSummary([student])}. The API will validate eligibility and enroll all active courses configured for the selected semester.`,
+        confirmText: 'Confirm Registration',
+        cancelText: 'Cancel',
+        variant: 'info'
+      });
+    } catch {
+      this.notification.error('Could not open the registration confirmation.');
+      this.isConfirmingRegistration = false;
+      return;
+    }
+    this.isConfirmingRegistration = false;
+    if (!confirmed) return;
 
     this.isSaving = true;
     this.registrationService.registerStudent(this.registerRequest).subscribe({
@@ -569,7 +1032,8 @@ export class AcademicRegistration implements OnInit, OnDestroy {
           this.loadData();
 
           return;
-        } 
+        }
+        this.notification.warning(response.message || 'The registration request was not accepted.');
       },
       error: (error) => {
         this.isSaving = false;

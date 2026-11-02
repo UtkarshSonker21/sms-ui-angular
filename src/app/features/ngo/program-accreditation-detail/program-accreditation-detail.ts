@@ -37,6 +37,7 @@ export class ProgramAccreditationDetail implements OnInit {
   selectedStatus = 1; // 1 = Pending, 2 = Accredited (Accepted), 3 = Rejected
   comment = '';
   isStatusDropdownOpen = false;
+  isSubmittingDecision = false;
 
   ngOnInit(): void {
     const programId = Number(this.route.snapshot.params['programId']);
@@ -94,7 +95,7 @@ export class ProgramAccreditationDetail implements OnInit {
         return 'Pending';
 
       case AccreditationStatus.Accredited:
-        return 'Accepted';
+        return 'Accredited';
 
       case AccreditationStatus.Rejected:
         return 'Rejected';
@@ -124,24 +125,43 @@ export class ProgramAccreditationDetail implements OnInit {
   }
 
   updateDecision(): void {
+    if (this.isSubmittingDecision || !this.program.programId) return;
 
     const payload = new ProgramAccreditationModel();
 
-    payload.programId = this.program.programId!;
+    payload.programId = this.program.programId;
     payload.accreditationStatus = this.selectedStatus;
     payload.committeeComment = this.comment;
     payload.updatedBy = 0; // backend/current-user handling if applicable
 
+    this.isSubmittingDecision = true;
     this.accreditationService.accreditProgram(payload).subscribe({
       next: (response) => {
         if (response.success) {
           this.notification.success('Accreditation decision updated successfully.');
-          this.loadProgram(this.program.programId!);
+          void this.router.navigate([AppRoutes.Ngo.ProgramAccreditation]).then(
+            (navigated) => {
+              if (navigated) {
+                document.querySelector<HTMLElement>('.main-layout__content')?.scrollTo({
+                  top: 0,
+                  left: 0,
+                  behavior: 'auto'
+                });
+              } else {
+                this.isSubmittingDecision = false;
+              }
+            },
+            () => {
+              this.isSubmittingDecision = false;
+            }
+          );
         } else {
+          this.isSubmittingDecision = false;
           this.notification.error(response.message || 'Failed to update decision.');
         }
       },
       error: (error) => {
+        this.isSubmittingDecision = false;
         this.notification.handleBusinessError(
           error,
           'Failed to update accreditation decision.'

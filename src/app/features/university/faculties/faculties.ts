@@ -161,8 +161,7 @@ export class Faculties implements OnInit {
       },
       error: (error) => {
         this.notification.handleBusinessError(
-          error,
-          'Failed to save faculty.'
+          error
         );
       }
     });

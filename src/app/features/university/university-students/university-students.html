@@ -41,29 +41,37 @@
 </div> -->
 
 
-<div class="tabs" style="margin: 20px 0 18px 0;">
+<div class="tabs student-status-tabs">
   <div class="tab" [class.active]="activeTab === 'all'" (click)="setTab('all')">
+    <span class="student-status-indicator student-status-indicator-neutral" aria-hidden="true"></span>
     All <span class="tab-count" style="background: rgba(0,0,0,0.05); color: var(--da-muted);">{{ tabAll }}</span>
   </div>
   <div class="tab" [class.active]="activeTab === studentStatus.AcceptanceInProcess" (click)="setTab(studentStatus.AcceptanceInProcess)">
+    <span class="student-status-indicator {{ getBadgeClassForStatus(studentStatus.AcceptanceInProcess) }}" aria-hidden="true"></span>
     Acceptance In Process <span class="tab-count {{ getBadgeClassForStatus(studentStatus.AcceptanceInProcess) }}">{{ tabInProcess }}</span>
   </div>
   <div class="tab" [class.active]="activeTab === studentStatus.Accepted" (click)="setTab(studentStatus.Accepted)">
+    <span class="student-status-indicator {{ getBadgeClassForStatus(studentStatus.Accepted) }}" aria-hidden="true"></span>
     Accepted <span class="tab-count {{ getBadgeClassForStatus(studentStatus.Accepted) }}">{{ tabAccepted }}</span>
   </div>
   <div class="tab" [class.active]="activeTab === studentStatus.AcceptanceRejected" (click)="setTab(studentStatus.AcceptanceRejected)">
+    <span class="student-status-indicator {{ getBadgeClassForStatus(studentStatus.AcceptanceRejected) }}" aria-hidden="true"></span>
     Acceptance Rejected <span class="tab-count {{ getBadgeClassForStatus(studentStatus.AcceptanceRejected) }}">{{ tabAccRejected }}</span>
   </div>
   <div class="tab" [class.active]="activeTab === studentStatus.Awarded" (click)="setTab(studentStatus.Awarded)">
+    <span class="student-status-indicator {{ getBadgeClassForStatus(studentStatus.Awarded) }}" aria-hidden="true"></span>
     Awarded <span class="tab-count {{ getBadgeClassForStatus(studentStatus.Awarded) }}">{{ tabAwarded }}</span>
   </div>
   <div class="tab" [class.active]="activeTab === studentStatus.Sponsored" (click)="setTab(studentStatus.Sponsored)">
+    <span class="student-status-indicator {{ getBadgeClassForStatus(studentStatus.Sponsored) }}" aria-hidden="true"></span>
     Sponsored <span class="tab-count {{ getBadgeClassForStatus(studentStatus.Sponsored) }}">{{ tabSponsored }}</span>
   </div>
   <div class="tab" [class.active]="activeTab === studentStatus.Registered" (click)="setTab(studentStatus.Registered)">
+    <span class="student-status-indicator {{ getBadgeClassForStatus(studentStatus.Registered) }}" aria-hidden="true"></span>
     Registered <span class="tab-count {{ getBadgeClassForStatus(studentStatus.Registered) }}">{{ tabRegistered }}</span>
   </div>
   <div class="tab" [class.active]="activeTab === studentStatus.Graduated" (click)="setTab(studentStatus.Graduated)">
+    <span class="student-status-indicator {{ getBadgeClassForStatus(studentStatus.Graduated) }}" aria-hidden="true"></span>
     Graduated <span class="tab-count {{ getBadgeClassForStatus(studentStatus.Graduated) }}">{{ tabGraduate }}</span>
   </div>
 </div>
@@ -176,6 +184,12 @@
     <table class="table">
         <thead>
               <tr>
+                  <th class="student-selection-cell" style="width: 40px; text-align: center !important;">
+                      <input class="student-selection-checkbox" type="checkbox" aria-label="Select all students on this page"
+                          [checked]="areAllVisibleStudentsSelected"
+                          [indeterminate]="isVisibleStudentSelectionIndeterminate"
+                          (change)="setVisibleStudentsSelected($event)">
+                  </th>
                   <th style="width: 30%;">Student</th>
                   <th style="width: 25%;">Program</th>
                   <th style="width: 15%;">Status</th>
@@ -185,10 +199,16 @@
         </thead>
         <tbody>
             <tr *ngFor="let student of filteredStudents">
+                  <td class="student-selection-cell">
+                      <input class="student-selection-checkbox" type="checkbox"
+                          [attr.aria-label]="'Select ' + student.fullName"
+                          [checked]="isStudentSelected(student.studentId)"
+                          (change)="toggleStudentSelection(student.studentId, $event)">
+                  </td>
                   <td>
                       <div style="display: flex; align-items: center; gap: 12px;">
                           <img *ngIf="student.photoPath && !hasPhotoError(student.studentId!)" [src]="getPhotoUrl(student.photoPath)" (error)="handlePhotoError(student.studentId!)" class="profile-photo" alt="Photo" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
-                          <div *ngIf="!student.photoPath || hasPhotoError(student.studentId!)" style="width: 36px; height: 36px; border-radius: 50%; background: var(--da-green); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 13px; font-weight: 600;">
+                          <div *ngIf="!student.photoPath || hasPhotoError(student.studentId!)" class="student-profile-placeholder" style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600;">
                               {{ student.fullName ? student.fullName.charAt(0).toUpperCase() : '?' }}
                           </div>
                           <div>
@@ -238,7 +258,7 @@
             </tr>
             
             <tr *ngIf="filteredStudents.length === 0">
-                <td colspan="5" style="text-align: center; padding: 42px 20px;">
+                <td colspan="6" style="text-align: center; padding: 42px 20px;">
                     <div style="font-size: 15px; font-weight: 600; color: var(--da-black);">No students found</div>
                     <div style="font-size: 13px; color: var(--da-text-2); margin-top: 4px;">Adjust your search or filter to find what you're looking for.</div>
                 </td>

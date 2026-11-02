@@ -171,7 +171,8 @@
                             class="profile-photo" alt="Photo"
                             style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
                         <div *ngIf="!student.photoPath || hasPhotoError(student.studentId!)"
-                            style="width: 36px; height: 36px; border-radius: 50%; background: var(--da-green); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 13px; font-weight: 600;">
+                            class="student-profile-placeholder"
+                            style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600;">
                             {{ student.fullName ? student.fullName.charAt(0).toUpperCase() : '?' }}
                         </div>
                         <div>

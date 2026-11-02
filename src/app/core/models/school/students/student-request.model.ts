@@ -170,6 +170,11 @@ export class StudentRequest {
     studentAssignedUniversityId?: number;
     studentApplicationStatusId?: StudentStatusEnum;
 
+    // Document Completion
+    requiredDocumentCount?: number;
+    submittedDocumentCount?: number;
+    missingDocumentCount?: number;
+    allDocumentsSubmitted?: boolean;
 
 }
 

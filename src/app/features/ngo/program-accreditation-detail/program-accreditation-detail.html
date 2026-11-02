@@ -282,9 +282,9 @@
     </div><!-- /pd-decision-grid -->
 
     <div class="pd-foot">
-      <button class="btn btn-p" type="button" (click)="updateDecision()"
+      <button class="btn btn-p" type="button" (click)="updateDecision()" [disabled]="isSubmittingDecision"
         style="background: var(--da-green) !important; height: 36px; padding: 0 20px; border-radius: 4px; font-weight: 600; color: white;">
-        Update
+        {{ isSubmittingDecision ? 'Saving…' : 'Update' }}
       </button>
     </div>
 

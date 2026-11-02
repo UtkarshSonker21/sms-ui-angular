@@ -69,6 +69,92 @@
   font-weight: 600;
 }
 
+.student-status-tabs {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  margin: 0 0 18px;
+  border-bottom: 1px solid var(--da-border);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+}
+
+.student-status-tabs .tab {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: -1px;
+  padding: 10px 14px;
+  border-bottom: 2px solid transparent;
+  color: var(--da-muted);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.student-status-tabs .tab.active {
+  border-bottom-color: var(--da-green);
+  color: var(--da-green);
+  font-weight: 700;
+}
+
+.student-status-tabs .tab-count {
+  flex: 0 0 auto;
+  padding: 2px 7px;
+  border-radius: 100px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.student-status-indicator {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 7px;
+  padding: 0;
+  border: 0 !important;
+  border-radius: 50%;
+  background-color: currentColor !important;
+}
+
+.student-status-indicator-neutral {
+  background: var(--da-muted, #64748b) !important;
+}
+
+.table th.student-selection-cell,
+.table td.student-selection-cell,
+.student-selection-cell {
+  width: 40px !important;
+  min-width: 40px !important;
+  max-width: 40px !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.student-selection-checkbox {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 auto;
+  width: 14px;
+  height: 14px;
+  accent-color: var(--da-green, #2c9942);
+  cursor: pointer;
+}
+
+.student-status-tabs .tab.active .tab-count:not([class*="chip-"]) {
+  background: var(--da-green-50);
+  color: var(--da-green-800);
+}
+
+.student-profile-placeholder {
+  background: var(--da-green-50, #edf7ef);
+  color: var(--da-green, #2c9942);
+}
+
 .icon-btn:disabled,
 .btn-pagination:disabled {
   opacity: 0.4;

@@ -43,7 +43,7 @@
 <!-- Tabs placed outside card container matching Blazor screenshot -->
 <div class="tabs" style="margin: 20px 0 18px 0;">
   <div class="tab" [class.active]="activeTab === 'all'" (click)="setTab('all')">
-    All <span class="tab-count">{{ kpiTotal }}</span>
+    All <span class="tab-count tab-count-all">{{ kpiTotal }}</span>
   </div>
   <div class="tab" [class.active]="activeTab === 'pending'" (click)="setTab('pending')">
     Pending <span class="tab-count">{{ kpiPending }}</span>
@@ -154,7 +154,7 @@
         </td>
         <td>
           <span style="font-size: 13px; color: var(--da-text-2);">
-            {{ prog.degreeName || '-' }}
+            {{ getProgramDegreeName(prog.degree) }}
           </span>
         </td>
         <td class="num">

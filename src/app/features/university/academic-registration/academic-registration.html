@@ -140,13 +140,13 @@
     </div>
 </div>
 
-<!-- Upload Student Results dialog (UI only; processing is intentionally not implemented). -->
+<!-- Excel results import: server validates the workbook before any Draft is saved. -->
 <div class="modal-backdrop upload-results-backdrop" *ngIf="showUploadResultsDialog" (click)="closeUploadResultsDialog()">
     <div class="modal-card upload-card" role="dialog" aria-modal="true" aria-labelledby="upload-results-title" (click)="$event.stopPropagation()">
         <div class="modal-head">
             <div>
                 <h2 class="modal-title" id="upload-results-title">Upload Student Results</h2>
-                <p class="modal-sub">Batch update course results for sponsored students from an Excel file.</p>
+                <p class="modal-sub">Import one academic registration per .xlsx workbook. Results are saved as a Draft only.</p>
             </div>
             <button type="button" class="modal-close" aria-label="Close" (click)="closeUploadResultsDialog()">
                 <i class="fas fa-times" aria-hidden="true"></i>
@@ -160,9 +160,9 @@
                     <line x1="12" y1="18" x2="12" y2="12"/>
                     <polyline points="9 15 12 12 15 15"/>
                 </svg>
-                <span class="fd-title">Click to choose an Excel file</span>
-                <span class="fd-sub">Accepted formats: <b>.xlsx · .xls · .csv</b></span>
-                <input #resultsFileInput id="student-results-file" type="file" accept=".xlsx,.xls,.csv" (change)="onResultsFileSelected($event)">
+                <span class="fd-title">Click to choose an .xlsx workbook</span>
+                <span class="fd-sub">Maximum file size: <b>5 MB</b></span>
+                <input #resultsFileInput id="student-results-file" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" [disabled]="isPreviewingResultsImport || isSubmittingResultsImport" (change)="onResultsFileSelected($event)">
             </label>
             <div class="file-picked" *ngIf="selectedResultsFile">
                 <span class="fp-icon" aria-hidden="true">
@@ -173,9 +173,9 @@
                 </span>
                 <span class="fp-body">
                     <span class="fp-name">{{ selectedResultsFile.name }}</span>
-                    <span class="fp-meta">{{ formatFileSize(selectedResultsFile.size) }} · selected</span>
+                <span class="fp-meta">{{ formatFileSize(selectedResultsFile.size) }} · selected · one registration</span>
                 </span>
-                <button type="button" class="file-remove" aria-label="Remove selected file" (click)="removeResultsFile(resultsFileInput)">
+                <button type="button" class="file-remove" aria-label="Remove selected file" [disabled]="isPreviewingResultsImport || isSubmittingResultsImport" (click)="removeResultsFile(resultsFileInput)">
                     <i class="fas fa-times" aria-hidden="true"></i>
                 </button>
             </div>
@@ -187,13 +187,44 @@
                 Download template
             </button>
             <div class="upload-hint">
-                <b>Template columns:</b>
-                Student ID · Course Code · Result (pass / fail) · Grade (optional) · Note (optional). One row per (student, course). Existing results are overwritten.
+                <b>Workbook columns:</b>
+                AcademicRegistrationId · CourseCode · Result (Pass/Fail) · SemesterGpa (optional) · InternalNote (optional).
+                Use one registration per workbook and one row per enrolled course. Existing finalized results cannot be changed.
             </div>
+            <div class="import-error" *ngIf="resultsImportError" role="alert">{{ resultsImportError }}</div>
+            <section class="import-preview" *ngIf="resultsImportPreview as preview" aria-live="polite">
+                <div class="import-preview-summary">
+                    <strong>Registration {{ preview.academicRegistrationId }}</strong>
+                    <span>{{ preview.totalRows }} rows</span>
+                    <span class="import-valid">{{ preview.validRows }} valid</span>
+                    <span class="import-invalid" *ngIf="preview.invalidRows">{{ preview.invalidRows }} invalid</span>
+                </div>
+                <p *ngIf="preview.message" class="import-preview-message">{{ preview.message }}</p>
+                <div class="import-preview-table-wrap">
+                    <table class="table import-preview-table">
+                        <thead><tr><th>Excel row</th><th>Course code</th><th>Result</th><th>Validation</th></tr></thead>
+                        <tbody>
+                            <tr *ngFor="let row of preview.rows">
+                                <td>{{ row.rowNumber }}</td><td>{{ row.courseCode || '—' }}</td><td>{{ row.result || '—' }}</td>
+                                <td><span *ngIf="row.isValid" class="import-valid">Valid</span><span *ngIf="!row.isValid" class="import-invalid">{{ row.errors.join(' ') }}</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p *ngIf="preview.canSubmit" class="import-submit-note">
+                    A complete valid import will save a Draft for registration {{ preview.academicRegistrationId }}. Review it in Academic Record before finalizing.
+                </p>
+            </section>
         </div>
         <div class="modal-foot upload-results-footer">
-            <button type="button" class="btn btn-g" (click)="closeUploadResultsDialog()">Cancel</button>
-            <button type="button" class="btn btn-p" [disabled]="!selectedResultsFile" (click)="processResultsUpload()">Upload &amp; Process</button>
+            <button type="button" class="btn btn-g" [disabled]="isPreviewingResultsImport || isSubmittingResultsImport" (click)="closeUploadResultsDialog()">Cancel</button>
+            <button type="button" class="btn btn-g" [disabled]="!selectedResultsFile || isPreviewingResultsImport || isSubmittingResultsImport" (click)="processResultsUpload()">
+                {{ isPreviewingResultsImport ? 'Validating…' : 'Validate &amp; Preview' }}
+            </button>
+            <button type="button" class="btn btn-p" *ngIf="resultsImportPreview?.canSubmit"
+                    [disabled]="isPreviewingResultsImport || isSubmittingResultsImport" (click)="submitResultsImport()">
+                {{ isSubmittingResultsImport ? 'Saving Draft…' : 'Save Draft Results' }}
+            </button>
         </div>
     </div>
 </div>
@@ -220,17 +251,20 @@
         </div>
         <div class="student-selection-actions" *ngIf="selectedEligibleVisibleStudents.length">
             <span>{{ selectedEligibleVisibleStudents.length }} selected</span>
-            <button type="button" class="btn btn-p btn-sm" (click)="registerSelectedStudents()">Register selected</button>
+            <button type="button" class="btn btn-p btn-sm" (click)="registerSelectedStudents()" [disabled]="isPreparingBulkRegistration || isConfirmingBulkRegistration || isBulkRegistering">
+              <span *ngIf="isPreparingBulkRegistration"><i class="fas fa-spinner fa-spin"></i> Preparing…</span>
+              <span *ngIf="!isPreparingBulkRegistration">Register selected</span>
+            </button>
         </div>
     </div>
     <table class="table">
         <thead>
               <tr>
-                  <th class="selection-column">
-                      <input type="checkbox" aria-label="Select all eligible students on this page"
+                  <th class="selection-column student-selection-cell">
+                      <input class="student-selection-checkbox" type="checkbox" aria-label="Select all eligible students on this page"
                           [checked]="allVisibleEligibleStudentsSelected"
                           [indeterminate]="someVisibleEligibleStudentsSelected"
-                          [disabled]="!eligibleVisibleStudents.length"
+                          [disabled]="!eligibleVisibleStudents.length || isPreparingBulkRegistration || isConfirmingBulkRegistration || isBulkRegistering"
                           (change)="toggleVisibleStudentSelection($any($event.target).checked)">
                   </th>
                   <th style="width: 30%;">Student</th>
@@ -242,16 +276,16 @@
         </thead>
         <tbody>
             <tr *ngFor="let student of students">
-                  <td class="selection-column">
-                      <input type="checkbox" [attr.aria-label]="'Select ' + student.studentName"
+                  <td class="selection-column student-selection-cell">
+                      <input class="student-selection-checkbox" type="checkbox" [attr.aria-label]="'Select ' + student.studentName"
                           [checked]="isStudentSelected(student)"
-                          [disabled]="!canRegisterStudent(student)"
+                          [disabled]="!canRegisterStudent(student) || isPreparingBulkRegistration || isConfirmingBulkRegistration || isBulkRegistering"
                           (change)="toggleStudentSelection(student, $any($event.target).checked)">
                   </td>
                   <td>
                       <div style="display: flex; align-items: center; gap: 12px;">
                           <img *ngIf="student.photoPath && !hasPhotoError(student.id)" [src]="getPhotoUrl(student.photoPath)" (error)="handlePhotoError(student.id)" class="profile-photo" alt="Photo" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
-                          <div *ngIf="!student.photoPath || hasPhotoError(student.id)" style="width: 36px; height: 36px; border-radius: 50%; background: var(--da-green); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 13px; font-weight: 600;">
+                          <div *ngIf="!student.photoPath || hasPhotoError(student.id)" class="student-profile-placeholder" style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600;">
                               {{ getInitials(student.studentName) }}
                           </div>
                           <div>
@@ -337,43 +371,194 @@
 
 <!-- Register Dialog -->
 <div class="modal-backdrop" *ngIf="showRegisterDialog">
-  <div class="modal-card" style="max-width: 500px;">
+  <div class="modal-card register-student-modal" role="dialog" aria-modal="true" aria-labelledby="register-student-title">
     <div class="modal-head">
       <div>
-        <div class="modal-title">Register Student</div>
-        <div class="modal-sub">Register {{ selectedStudent?.studentName }} for the upcoming semester.</div>
+        <div class="modal-title" id="register-student-title">Register Student for Semester</div>
+        <div class="modal-sub">Review {{ selectedStudent?.studentName }}'s program semester and confirm registration.</div>
       </div>
-      <div class="modal-close" (click)="closeRegisterDialog()">
+      <button type="button" class="modal-close" aria-label="Close" [disabled]="isSaving || isConfirmingRegistration" (click)="closeRegisterDialog()">
         <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body register-student-body">
+      <div class="register-info-notice" role="note">
+        Registration is available for sponsored students while the university registration window is open. The selected semester must be configured, and an existing initial registration prevents duplicate registration.
+      </div>
+
+      <div class="register-summary-grid">
+        <section class="register-summary-card">
+          <div class="register-summary-label">STUDENT</div>
+          <strong>{{ selectedStudent?.studentName || '—' }}</strong>
+          <span>ID: {{ selectedStudent?.studentCode || selectedStudent?.studentId || '—' }}</span>
+        </section>
+        <section class="register-summary-card">
+          <div class="register-summary-label">PROGRAM</div>
+          <strong>{{ selectedStudent?.programName || '—' }}</strong>
+          <span>{{ selectedStudent?.facultyName || '—' }}</span>
+        </section>
+        <section class="register-summary-card register-summary-semester">
+          <div class="register-summary-label">SELECTED SEMESTER</div>
+          <strong>{{ selectedRegisterSemester?.semesterName || 'Choose a configured semester' }}</strong>
+          <span *ngIf="selectedRegisterSemester">Semester {{ selectedRegisterSemester.semesterNo }}</span>
+          <span *ngIf="selectedRegisterSemester?.academicYearName || selectedRegisterSemester?.termName">
+            {{ selectedRegisterSemester?.termName }} {{ selectedRegisterSemester?.academicYearName }}
+          </span>
+          <span *ngIf="selectedRegisterSemester?.startDate || selectedRegisterSemester?.endDate">
+            Study period: {{ selectedRegisterSemester?.startDate | date:'dd MMM yyyy' }} – {{ selectedRegisterSemester?.endDate | date:'dd MMM yyyy' }}
+          </span>
+          <span *ngIf="selectedRegisterSemester?.registrationStartDate || selectedRegisterSemester?.registrationEndDate">
+            Semester registration dates: {{ selectedRegisterSemester?.registrationStartDate | date:'dd MMM yyyy' }} – {{ selectedRegisterSemester?.registrationEndDate | date:'dd MMM yyyy' }}
+          </span>
+        </section>
+      </div>
+
+      <div class="register-form-grid">
+        <div class="field-wrapper">
+          <label class="field-label" for="register-semester">Semester <span class="required-mark">*</span></label>
+          <select id="register-semester" class="field-input" [ngModel]="registerRequest.semesterNo" (ngModelChange)="onRegisterSemesterChanged($event)" [disabled]="isLoadingRegisterDetails || !registerSemesters.length" required>
+            <option [ngValue]="0" disabled>Select a configured semester</option>
+            <option *ngFor="let semester of registerSemesters" [ngValue]="semester.semesterNo">
+              {{ semester.semesterName }} (Semester {{ semester.semesterNo }})
+            </option>
+          </select>
+        </div>
+        <div class="field-wrapper">
+          <label class="field-label" for="register-date">Registration Date <span class="required-mark">*</span></label>
+          <input id="register-date" type="date" class="field-input" [ngModel]="registerRequest.registrationDate | date:'yyyy-MM-dd'" (ngModelChange)="registerRequest.registrationDate = $event" required>
+        </div>
+      </div>
+
+      <div class="register-load-state" *ngIf="isLoadingRegisterDetails" role="status">Loading configured semesters and courses…</div>
+      <div class="register-load-state register-load-error" *ngIf="registerDetailsError" role="alert">{{ registerDetailsError }}</div>
+      <div class="register-load-state" *ngIf="!isLoadingRegisterDetails && !registerDetailsError && registerProgram && !registerSemesters.length" role="status">
+        No persisted program semesters are available. Registration cannot continue until a semester is configured.
+      </div>
+
+      <section class="register-course-section" *ngIf="selectedRegisterSemester && !isLoadingRegisterDetails && !registerDetailsError">
+        <div class="register-course-head">
+          <div>
+            <h3>{{ selectedRegisterSemester.semesterName }} Courses</h3>
+            <p>Configured course mappings for Semester {{ selectedRegisterSemester.semesterNo }}</p>
+          </div>
+          <span class="register-preview-badge">Preview only</span>
+        </div>
+        <div class="register-course-notice">
+          These checkboxes are for review only. Confirm Registration automatically enrolls all active courses configured for this semester; changing this selection does not change enrollment.
+        </div>
+        <div class="register-course-toolbar" *ngIf="registerCourses.length">
+          <label class="register-select-all">
+            <input type="checkbox" [checked]="allPreviewCoursesSelected" (change)="toggleAllPreviewCourses($any($event.target).checked)">
+            <span>Select all for preview</span>
+          </label>
+          <span>{{ previewSelectedCourseIds.size }} selected for preview · {{ registerCourses.length }} configured</span>
+        </div>
+        <div class="register-course-list" *ngIf="registerCourses.length; else noConfiguredCourses">
+          <div class="register-course-row" *ngFor="let course of registerCourses">
+            <input type="checkbox" [attr.aria-label]="'Preview ' + (course.courseNameEn || course.courseCode || 'course')" [checked]="previewSelectedCourseIds.has(course.programCourseId ?? course.courseId)" (change)="togglePreviewCourse(course, $any($event.target).checked)">
+            <div class="register-course-details">
+              <strong>{{ course.courseNameEn || course.courseNameAr || 'Course' }}</strong>
+              <span>{{ course.courseCode || 'Code unavailable' }}</span>
+            </div>
+            <span class="register-course-type" [class.core]="course.courseType === 1" [class.elective]="course.courseType === 2">{{ courseTypeLabel(course.courseType) }}</span>
+            <span class="register-course-credits">{{ course.credits }} credits</span>
+          </div>
+        </div>
+        <ng-template #noConfiguredCourses>
+          <div class="register-load-state">No course mappings are returned for this semester. The API will validate active course configuration when registration is submitted.</div>
+        </ng-template>
+      </section>
+
+      <div class="register-results-note">
+        Course Pass/Fail results and semester GPA are recorded separately in Academic Record after registration. They are not saved by this action.
+      </div>
+
+      <div class="field-wrapper register-remarks-field">
+        <label class="field-label" for="register-remarks">Remarks</label>
+        <textarea id="register-remarks" class="field-input" [(ngModel)]="registerRequest.remarks" rows="2" placeholder="Optional remarks..."></textarea>
       </div>
     </div>
-    
-    <div class="modal-body">
-      <div class="modal-form-row" style="grid-template-columns: 1fr;">
-          <div class="field-wrapper">
-              <label class="field-label">Semester <span style="color: red;">*</span></label>
-              <input type="number" class="field-input" [(ngModel)]="registerRequest.semesterNo" required placeholder="e.g. 1">
-          </div>
-      </div>
-      <div class="modal-form-row" style="grid-template-columns: 1fr;">
-          <div class="field-wrapper">
-              <label class="field-label">Registration Date <span style="color: red;">*</span></label>
-              <input type="date" class="field-input" [ngModel]="registerRequest.registrationDate | date:'yyyy-MM-dd'" (ngModelChange)="registerRequest.registrationDate = $event" required>
-          </div>
-      </div>
-      <div class="modal-form-row" style="grid-template-columns: 1fr;">
-          <div class="field-wrapper">
-              <label class="field-label">Remarks</label>
-              <textarea class="field-input" [(ngModel)]="registerRequest.remarks" rows="3" placeholder="Optional remarks..."></textarea>
-          </div>
-      </div>
-    </div>
-    
+
     <div class="modal-foot">
-      <button type="button" class="btn btn-g" (click)="closeRegisterDialog()">Cancel</button>
-      <button type="button" class="btn btn-p" (click)="registerStudent()" [disabled]="isSaving">
+      <button type="button" class="btn btn-g" (click)="closeRegisterDialog()" [disabled]="isSaving || isConfirmingRegistration">Cancel</button>
+      <button type="button" class="btn btn-p" (click)="registerStudent()" [disabled]="isSaving || isConfirmingRegistration || isLoadingRegisterDetails || !selectedRegisterSemester">
         <span *ngIf="isSaving"><i class="fas fa-spinner fa-spin"></i> Saving...</span>
-        <span *ngIf="!isSaving">Register Student</span>
+        <span *ngIf="isConfirmingRegistration"><i class="fas fa-spinner fa-spin"></i> Confirming...</span>
+        <span *ngIf="!isSaving && !isConfirmingRegistration">Confirm Registration</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Bulk registration semester selection and results -->
+<div class="modal-backdrop bulk-registration-backdrop" *ngIf="showBulkRegistrationDialog">
+  <div class="modal-card bulk-registration-modal" role="dialog" aria-modal="true" aria-labelledby="bulk-registration-title">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title" id="bulk-registration-title">Prepare Bulk Registration</div>
+        <div class="modal-sub">{{ bulkStudents.length }} eligible student{{ bulkStudents.length === 1 ? '' : 's' }} selected.</div>
+      </div>
+      <button type="button" class="modal-close" aria-label="Close" [disabled]="isConfirmingBulkRegistration || isBulkRegistering" (click)="closeBulkRegistrationDialog()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body bulk-registration-body">
+      <ng-container *ngIf="!bulkRegistrationResults; else bulkRegistrationSummary">
+        <div class="bulk-registration-context">
+          <strong>Open central registration period(s)</strong>
+          <span>{{ bulkPeriodSummary }}</span>
+          <small>The program semester below is selected from persisted schedules shared by all selected programs. The API checks each student's registration window independently.</small>
+        </div>
+
+        <div class="field-wrapper bulk-semester-field">
+          <label class="field-label" for="bulk-semester">Program semester <span class="required-mark">*</span></label>
+          <select id="bulk-semester" class="field-input" [(ngModel)]="bulkSemesterNo" [disabled]="isConfirmingBulkRegistration || isBulkRegistering" required>
+            <option [ngValue]="null" disabled>Select a common configured semester</option>
+            <option *ngFor="let choice of bulkSemesterChoices" [ngValue]="choice.semesterNo">{{ choice.label }}</option>
+          </select>
+        </div>
+
+        <div class="bulk-registration-student-list">
+          <div class="bulk-registration-student" *ngFor="let student of bulkStudents">
+            <span>{{ student.studentName }}</span>
+            <small>{{ student.programName }} · {{ student.universityName }}</small>
+          </div>
+        </div>
+
+        <div class="bulk-registration-note">
+          Each student is submitted separately using the existing registration API. It enrolls all active courses configured for that student's selected program semester; preview checkboxes and course outcomes do not filter enrollment.
+        </div>
+        <div class="bulk-registration-progress" *ngIf="isBulkRegistering" role="status">
+          Processing registrations… {{ bulkCompletedCount }} of {{ bulkStudents.length }} complete.
+        </div>
+      </ng-container>
+
+      <ng-template #bulkRegistrationSummary>
+        <div class="bulk-result-counts" role="status">
+          <span class="bulk-result-success">Successfully registered: {{ bulkRegistrationResults?.successes?.length || 0 }}</span>
+          <span class="bulk-result-failure">Failed: {{ bulkRegistrationResults?.failures?.length || 0 }}</span>
+        </div>
+        <div class="bulk-failure-list" *ngIf="bulkRegistrationResults?.failures?.length">
+          <div class="bulk-failure-item" *ngFor="let failure of bulkRegistrationResults?.failures">
+            <strong>{{ failure.student.studentName }}</strong>
+            <span>{{ failure.message }}</span>
+          </div>
+        </div>
+        <div class="bulk-registration-note" *ngIf="bulkRegistrationResults?.failures?.length">
+          Failed students remain selected only if they are still eligible. Correct the issue or wait for an open registration window before retrying.
+        </div>
+      </ng-template>
+    </div>
+
+    <div class="modal-foot">
+      <button type="button" class="btn btn-g" (click)="closeBulkRegistrationDialog()" [disabled]="isConfirmingBulkRegistration || isBulkRegistering">
+        {{ bulkRegistrationResults ? 'Done' : 'Cancel' }}
+      </button>
+      <button type="button" class="btn btn-p" *ngIf="!bulkRegistrationResults" (click)="confirmBulkRegistration()" [disabled]="bulkSemesterNo == null || isConfirmingBulkRegistration || isBulkRegistering">
+        <span *ngIf="isBulkRegistering"><i class="fas fa-spinner fa-spin"></i> Registering…</span>
+        <span *ngIf="!isBulkRegistering">Review and Confirm</span>
       </button>
     </div>
   </div>

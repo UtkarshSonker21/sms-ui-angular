@@ -6,6 +6,11 @@
   box-sizing: border-box;
 }
 
+.dashboard-page > .page-head,
+.dashboard-page > .kpi-grid {
+  margin-bottom: 0;
+}
+
 /* Page Header positioning */
 .page-head {
   display: flex;
@@ -85,6 +90,26 @@
     padding: 16px;
     display: flex;
     flex-direction: column;
+  }
+}
+
+.tracking-card .card-head > div:first-child {
+  min-width: 0;
+}
+
+.view-all-link {
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--da-green, #2c9942);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: var(--da-green-800, #1e6d2e);
+    text-decoration: underline;
   }
 }
 
@@ -216,6 +241,11 @@
       color: var(--da-muted);
       margin-top: 1px;
     }
+  }
+
+  .student-info .avatar.avatar-placeholder {
+    background: var(--da-green-50, #edf7ef);
+    color: var(--da-green, #2c9942);
   }
 
   /* Program Column */

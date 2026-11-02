@@ -43,38 +43,49 @@
     </div>
 </div> -->
 
-<div class="tabs" style="margin: 20px 0 18px 0;">
+<div class="tabs student-status-tabs">
   <div class="tab" [class.active]="activeTab === 'all'" (click)="setTab('all')">
+    <span class="student-status-indicator student-status-indicator-neutral" aria-hidden="true"></span>
     All <span class="tab-count" style="background: rgba(0,0,0,0.05); color: var(--da-muted);">{{ tabAll }}</span>
   </div>
   <div class="tab" [class.active]="activeTab === studentStatus.Draft" (click)="setTab(studentStatus.Draft)">
+    <span class="student-status-indicator {{ getBadgeClassForStatus(studentStatus.Draft) }}" aria-hidden="true"></span>
     Draft <span class="tab-count {{ getBadgeClassForStatus(studentStatus.Draft) }}">{{ tabDraft }}</span>
   </div>
   <div class="tab" [class.active]="activeTab === studentStatus.AcceptanceInProcess" (click)="setTab(studentStatus.AcceptanceInProcess)">
+    <span class="student-status-indicator {{ getBadgeClassForStatus(studentStatus.AcceptanceInProcess) }}" aria-hidden="true"></span>
     Acceptance In Process <span class="tab-count {{ getBadgeClassForStatus(studentStatus.AcceptanceInProcess) }}">{{ tabInProcess }}</span>
   </div>
   <div class="tab" [class.active]="activeTab === studentStatus.AcceptanceRejected" (click)="setTab(studentStatus.AcceptanceRejected)">
+    <span class="student-status-indicator {{ getBadgeClassForStatus(studentStatus.AcceptanceRejected) }}" aria-hidden="true"></span>
     Acceptance Rejected <span class="tab-count {{ getBadgeClassForStatus(studentStatus.AcceptanceRejected) }}">{{ tabAccRejected }}</span>
   </div>
   <div class="tab" [class.active]="activeTab === studentStatus.Awarded" (click)="setTab(studentStatus.Awarded)">
+    <span class="student-status-indicator {{ getBadgeClassForStatus(studentStatus.Awarded) }}" aria-hidden="true"></span>
     Awarded <span class="tab-count {{ getBadgeClassForStatus(studentStatus.Awarded) }}">{{ tabAwarded }}</span>
   </div>
   <div class="tab" [class.active]="activeTab === studentStatus.AwardingRejected" (click)="setTab(studentStatus.AwardingRejected)">
+    <span class="student-status-indicator {{ getBadgeClassForStatus(studentStatus.AwardingRejected) }}" aria-hidden="true"></span>
     Awarding Rejected <span class="tab-count {{ getBadgeClassForStatus(studentStatus.AwardingRejected) }}">{{ tabAwardedRejected }}</span>
   </div>
   <div class="tab" [class.active]="activeTab === studentStatus.Sponsored" (click)="setTab(studentStatus.Sponsored)">
+    <span class="student-status-indicator {{ getBadgeClassForStatus(studentStatus.Sponsored) }}" aria-hidden="true"></span>
     Sponsored <span class="tab-count {{ getBadgeClassForStatus(studentStatus.Sponsored) }}">{{ tabSponsored }}</span>
   </div>
   <div class="tab" [class.active]="activeTab === studentStatus.SponsoringRejected" (click)="setTab(studentStatus.SponsoringRejected)">
+    <span class="student-status-indicator {{ getBadgeClassForStatus(studentStatus.SponsoringRejected) }}" aria-hidden="true"></span>
     Sponsoring Rejected <span class="tab-count {{ getBadgeClassForStatus(studentStatus.SponsoringRejected) }}">{{ tabSponRejected }}</span>
   </div>
   <div class="tab" [class.active]="activeTab === studentStatus.Registered" (click)="setTab(studentStatus.Registered)">
+    <span class="student-status-indicator {{ getBadgeClassForStatus(studentStatus.Registered) }}" aria-hidden="true"></span>
     Registered <span class="tab-count {{ getBadgeClassForStatus(studentStatus.Registered) }}">{{ tabRegistered }}</span>
   </div>
   <div class="tab" [class.active]="activeTab === studentStatus.Failed" (click)="setTab(studentStatus.Failed)">
+    <span class="student-status-indicator {{ getBadgeClassForStatus(studentStatus.Failed) }}" aria-hidden="true"></span>
     Failed <span class="tab-count {{ getBadgeClassForStatus(studentStatus.Failed) }}">{{ tabFailed }}</span>
   </div>
   <div class="tab" [class.active]="activeTab === studentStatus.Graduated" (click)="setTab(studentStatus.Graduated)">
+    <span class="student-status-indicator {{ getBadgeClassForStatus(studentStatus.Graduated) }}" aria-hidden="true"></span>
     Graduated <span class="tab-count {{ getBadgeClassForStatus(studentStatus.Graduated) }}">{{ tabGraduate }}</span>
   </div>
 </div>
@@ -178,6 +189,12 @@
     <table class="table">
         <thead>
             <tr>
+                <th class="student-selection-cell" style="width: 40px; text-align: center !important;">
+                    <input class="student-selection-checkbox" type="checkbox" aria-label="Select all students on this page"
+                        [checked]="areAllVisibleStudentsSelected"
+                        [indeterminate]="isVisibleStudentSelectionIndeterminate"
+                        (change)="setVisibleStudentsSelected($event)">
+                </th>
                 <th style="width: 25%;">Student</th>
                 <th style="width: 15%;">School</th>
                 <th style="width: 15%;">Specialization</th>
@@ -189,6 +206,12 @@
         </thead>
         <tbody>
             <tr *ngFor="let student of filteredStudents">
+                <td class="student-selection-cell">
+                    <input class="student-selection-checkbox" type="checkbox"
+                        [attr.aria-label]="'Select ' + student.firstName + ' ' + student.lastName"
+                        [checked]="isStudentSelected(student.studentId)"
+                        (change)="toggleStudentSelection(student.studentId, $event)">
+                </td>
                 <td>
                     <div style="display: flex; align-items: center; gap: 12px;">
                         <img *ngIf="student.photoPath && !hasPhotoError(student.studentId!)"
@@ -196,7 +219,8 @@
                             class="profile-photo" alt="Photo"
                             style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
                         <div *ngIf="!student.photoPath || hasPhotoError(student.studentId!)"
-                            style="width: 36px; height: 36px; border-radius: 50%; background: var(--da-green); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 13px; font-weight: 600;">
+                            class="student-profile-placeholder"
+                            style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600;">
                             {{ student.firstName ? student.firstName.charAt(0).toUpperCase() : '?' }}
                         </div>
                         <div>
@@ -206,6 +230,20 @@
                             <div style="font-size: 12.5px; color: var(--da-green); margin-top: 1.5px;">
                                 Std Code: {{ student.studentCode || '-' }}
                             </div>
+                            <span *ngIf="student.requiredDocumentCount === 0" class="doc-flag ok">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                No Documents Required
+                            </span>
+                            <ng-container *ngIf="student.requiredDocumentCount && student.requiredDocumentCount > 0">
+                                <span *ngIf="student.allDocumentsSubmitted" class="doc-flag ok">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                    All documents submitted
+                                </span>
+                                <span *ngIf="!student.allDocumentsSubmitted && student.missingDocumentCount && student.missingDocumentCount > 0" class="doc-flag missing">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                    Missing {{ student.missingDocumentCount }} document{{ student.missingDocumentCount === 1 ? '' : 's' }}
+                                </span>
+                            </ng-container>
                         </div>
                     </div>
                 </td>
@@ -264,7 +302,7 @@
             </tr>
 
             <tr *ngIf="filteredStudents.length === 0">
-                <td colspan="7" style="text-align: center; padding: 42px 20px;">
+                <td colspan="8" style="text-align: center; padding: 42px 20px;">
                     <div style="font-size: 15px; font-weight: 600; color: var(--da-black);">No students found</div>
                     <div style="font-size: 13px; color: var(--da-text-2); margin-top: 4px;">Adjust your search or filter
                         to find what you're looking for.</div>

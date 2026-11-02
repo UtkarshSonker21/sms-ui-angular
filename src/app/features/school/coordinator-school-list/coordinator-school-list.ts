@@ -114,9 +114,17 @@ export class CoordinatorSchoolList implements OnInit {
     }
   }
 
-  setTab(tab: string | number): void {
+  setTab(tab: string): void {
     this.activeTab = tab;
-    this.filter.accreditationStatus = tab === 'all' ? undefined : (tab as number);
+    if (tab === 'pending') {
+      this.filter.accreditationStatus = AccreditationStatus.Pending;
+    } else if (tab === 'accepted') {
+      this.filter.accreditationStatus = AccreditationStatus.Accredited;
+    } else if (tab === 'rejected') {
+      this.filter.accreditationStatus = AccreditationStatus.Rejected;
+    } else {
+      this.filter.accreditationStatus = undefined;
+    }
     this.filter.pageNumber = 1;
     this.loadData();
   }

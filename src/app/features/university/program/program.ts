@@ -70,6 +70,7 @@ export class Program implements OnInit {
   isAddDocDropdownOpen = false;
   isAddCourseDropdownOpen = false;
   selectedCourseToAdd = 0;
+  courseSearchTerm = '';
   openSemesterDropdownCourseId: number | null = null;
 
   currentStaffType?: StaffType;
@@ -502,23 +503,29 @@ export class Program implements OnInit {
   }
 
   getRecurringTotal(): number {
-    if (!this.program.costs || !this.sponsorshipTypes) return 0;
-    return this.program.costs
-      .filter(c => {
-        const st = this.sponsorshipTypes.find(t => t.sponsorshipTypeId === c.sponsorshipTypeId);
-        return (st && st.frequencyType === 2) || c.frequencyTypeId === 2;
-      })
-      .reduce((sum, c) => sum + (c.amount || 0), 0);
+    return this.getConfiguredCostTotal(2);
   }
 
   getOneTimeTotal(): number {
-    if (!this.program.costs || !this.sponsorshipTypes) return 0;
+    return this.getConfiguredCostTotal(1);
+  }
+
+  private getConfiguredCostTotal(frequencyType: number): number {
+    if (!this.program.costs) return 0;
+
     return this.program.costs
-      .filter(c => {
-        const st = this.sponsorshipTypes.find(t => t.sponsorshipTypeId === c.sponsorshipTypeId);
-        return (st && st.frequencyType === 1) || c.frequencyTypeId === 1;
-      })
-      .reduce((sum, c) => sum + (c.amount || 0), 0);
+      .filter(cost => cost.frequencyTypeId === frequencyType)
+      .reduce((sum, cost) => {
+        const amount = Number(cost.amount ?? 0);
+        return sum + (Number.isFinite(amount) ? amount : 0);
+      }, 0);
+  }
+
+  getConfiguredSemesterCount(): number {
+    const semesterCount = Number(this.program.numberOfSemesters);
+    return Number.isSafeInteger(semesterCount) && semesterCount > 0
+      ? semesterCount
+      : 0;
   }
 
   getTotalCredits(): number {
@@ -529,12 +536,12 @@ export class Program implements OnInit {
   getGrandTotal(): number {
     const recurringTotal = this.getRecurringTotal();
     const oneTimeTotal = this.getOneTimeTotal();
-    const semCount = this.program.numberOfSemesters > 0 ? this.program.numberOfSemesters : 8;
+    const semCount = this.getConfiguredSemesterCount();
     return (recurringTotal * semCount) + oneTimeTotal;
   }
 
   getAveragePerSemester(): number {
-    const semCount = this.program.numberOfSemesters > 0 ? this.program.numberOfSemesters : 8;
+    const semCount = this.getConfiguredSemesterCount();
     return semCount > 0 ? this.getGrandTotal() / semCount : 0;
   }
 
@@ -589,12 +596,26 @@ export class Program implements OnInit {
     const isOpen = this.isAddCourseDropdownOpen;
     this.closeAllDropdowns();
     this.isAddCourseDropdownOpen = !isOpen;
+    if (!isOpen) {
+      this.courseSearchTerm = '';
+    }
+  }
+
+  getFilteredCourses(): CourseRequest[] {
+    const query = this.courseSearchTerm.trim().toLowerCase();
+    if (!query) return this.courses;
+
+    return this.courses.filter(course =>
+      [course.courseNameEn, course.courseNameAr, course.courseCode]
+        .some(value => (value || '').toLowerCase().includes(query))
+    );
   }
 
   selectCourseToAdd(id: number, event: Event): void {
     event.stopPropagation();
     this.selectedCourseToAdd = id;
     this.isAddCourseDropdownOpen = false;
+    this.courseSearchTerm = '';
   }
 
   addCourseToProgram(): void {
@@ -627,6 +648,7 @@ export class Program implements OnInit {
     this.program.courses.push(newProgCourse);
     this.recalculateDisplayOrders();
     this.selectedCourseToAdd = 0;
+    this.courseSearchTerm = '';
   }
 
   removeCourse(c: ProgramCourse): void {
@@ -650,7 +672,8 @@ export class Program implements OnInit {
     }
   }
 
-  selectSemesterForCourse(c: ProgramCourse, semesterNo: number): void {
+  selectSemesterForCourse(c: ProgramCourse, semesterNo: number, event: Event): void {
+    event.stopPropagation();
     c.semesterNo = semesterNo;
     this.openSemesterDropdownCourseId = null;
   }

@@ -1,25 +1,15 @@
-import { Component, inject, OnInit, HostListener } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
+import { FailingCoreCaseService } from '../../../core/services/ngo/failing-core-case.service';
+import {
+  FailingCoreCaseModel,
+  FailingCoreCaseStatus
+} from '../../../core/models/ngo/failing-core-cases/failing-core-case.model';
 
-import { NotificationService } from '../../../core/services/common/notification.service';
-import { HelperMethods } from '../../../core/helpers/helper-methods';
-import { StudentProgramService } from '../../../core/services/school/student-program.service';
-import { MasterCountryService } from '../../../core/services/superadmin/master-country.service';
-import { MasterUniversityService } from '../../../core/services/university/master-university.service';
-import { CurrentUserProfileService } from '../../../core/services/common/current-user-profile.service';
-
-import { MasterCountryFilter } from '../../../core/models/super-admin/master-country/master-country-filter.model';
-import { MasterUniversityFilter } from '../../../core/models/university/master-university/university-registration-filter.model';
-import { MasterCountryRequest } from '../../../core/models/super-admin/master-country/master-country-request.model';
-import { MasterUniversityRequest } from '../../../core/models/university/master-university/university-registration.model';
-import { AccreditationStatus } from '../../../core/enums/accreditation-status.enum';
-import { StudentStatusEnum } from '../../../core/enums/student-application-status.enum';
-import { StudentStatusService } from '../../../core/services/common/student-status.service';
-import { UNIVERSITY_STATUS_IDS } from '../../../core/constants/student-status.config';
-import { StudentProgramApplication } from '../../../core/models/school/student-program-application/student-program-application.model';
-import { StudentProgramApplicationFilter } from '../../../core/models/school/student-program-application/student-program-application-filter.model';
+type CaseTab = 'all' | 'pending' | 'approved' | 'denied';
+type CaseDataState = 'loading' | 'error' | 'empty' | 'ready';
 
 @Component({
   selector: 'app-failing-core-cases',
@@ -29,346 +19,154 @@ import { StudentProgramApplicationFilter } from '../../../core/models/school/stu
   styleUrl: './failing-core-cases.scss',
 })
 export class FailingCoreCases implements OnInit {
+  private readonly casesApi = inject(FailingCoreCaseService);
 
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent): void {
-    this.isCountryDropdownOpen = false;
-    this.isUniversityDropdownOpen = false;
-    this.isStatusDropdownOpen = false;
-    this.isPageSizeDropdownOpen = false;
-  }
+  readonly tabs: { id: CaseTab; label: string }[] = [
+    { id: 'all', label: 'All' },
+    { id: 'pending', label: 'Pending' },
+    { id: 'approved', label: 'Approved' },
+    { id: 'denied', label: 'Denied' }
+  ];
 
-  private studentService = inject(StudentProgramService);
-  private countryService = inject(MasterCountryService);
-  private universityService = inject(MasterUniversityService);
-  private currentUserProfileService = inject(CurrentUserProfileService);
-  private notification = inject(NotificationService);
-  private studentStatusService = inject(StudentStatusService);
-  private router = inject(Router);
-
-  universityId: number = 0;
-
-  // Table Data
-  students: StudentProgramApplication[] = [];
-  totalRecords = 0;
-  searchText = '';
-
-  // KPI Summary
-  kpiTotal = 0;
-  kpiInProcess = 0;
-  kpiSponsored = 0;
-  kpiRegistered = 0;
-
-  // Tab Counts
-  tabAll = 0;
-  tabInProcess = 0;
-  tabAccRejected = 0;
-  tabSponsored = 0;
-  tabSponRejected = 0;
-  tabAwarded = 0;
-  tabAwardedRejected = 0;
-  tabRegistered = 0;
-  tabFailed = 0;
-  tabDismissed = 0;
-  tabGraduate = 0;
-
-  activeTab: number | string = 'all';
-  studentStatus = StudentStatusEnum;
-
-  // Filter
-  filter: StudentProgramApplicationFilter = new StudentProgramApplicationFilter();
-
-  // Dropdown States & Data
-  countries: MasterCountryRequest[] = [];
-  universities: MasterUniversityRequest[] = [];
-  
-  // Display only Failed status options
-  statusOptions = this.studentStatusService.getStatusOptions([StudentStatusEnum.Failed]);
-  
-  selectedCountry: number = 0;
-  selectedUniversity: number = 0;
-  selectedStatus: number | null = StudentStatusEnum.Failed;
-
-  isCountryDropdownOpen = false;
-  isUniversityDropdownOpen = false;
-  isStatusDropdownOpen = false;
-  isPageSizeDropdownOpen = false;
+  cases: FailingCoreCaseModel[] = [];
+  activeTab: CaseTab = 'all';
+  dataState: CaseDataState = 'loading';
+  selectedCase: FailingCoreCaseModel | null = null;
+  detailLoading = false;
+  detailError = '';
+  listError = '';
+  decisionComment = '';
+  isSavingDecision = false;
+  successMessage = '';
 
   ngOnInit(): void {
-    this.filter.pageNumber = 1;
-    this.filter.pageSize = 25;
-    this.getCountries();
-    this.getUniversities();
-    this.loadData();
+    this.loadCases();
   }
 
-  getCountries(): void {
-    const cFilter = new MasterCountryFilter();
-    cFilter.pageNumber = 1;
-    cFilter.pageSize = 1000;
-    this.countryService.getMasterCountries(cFilter).subscribe({
-      next: (res) => {
-        if (res.success && res.result) {
-          this.countries = res.result.items;
-        }
-      },
-      error: (error) => {
-        this.notification.handleBusinessError(
-          error,
-          'Failed to load countries.'
-        );
-      }
-    });
+  get filteredCases(): FailingCoreCaseModel[] {
+    if (this.activeTab === 'all') return this.cases;
+    return this.cases.filter(item => item.status.toLowerCase() === this.activeTab);
   }
 
-  getUniversities(): void {
-    const uFilter = new MasterUniversityFilter();
-    uFilter.pageNumber = 1;
-    uFilter.pageSize = 1000;
-    uFilter.accreditationStatus = AccreditationStatus.Accredited;
-    uFilter.countryId = this.selectedCountry || undefined;
-    this.universityService.getMasterUniversities(uFilter).subscribe({
-      next: (res) => {
-        if (res.success && res.result) {
-          this.universities = res.result.items;
-        }
-      },
-      error: (error) => {
-        this.notification.handleBusinessError(
-          error,
-          'Failed to load universities.'
-        );
-      }
-    });
+  get pendingCount(): number {
+    return this.cases.filter(item => item.status === 'Pending').length;
   }
 
-  loadData(): void {
-    this.filter.countryId = this.selectedCountry || undefined;
-    this.filter.universityId = this.selectedUniversity || undefined;
-    
-    // Always filter by StudentStatusEnum.Failed to represent only failed students
-    this.filter.applicationStatusId = StudentStatusEnum.Failed;
-
-    this.studentService.search(this.filter).subscribe({
-      next: (response) => {
-        if (response.success && response.result) {
-          this.students = response.result.items;
-          this.totalRecords = response.result.totalCount;
-          this.calculateKPIs(this.students);
-        } else {
-          this.students = [];
-          this.notification.warning(response.message);
-        }
-      },
-      error: (error) => {
-        this.students = [];
-        this.notification.handleBusinessError(
-          error,
-          'Failed to load student cases.'
-        );
-      }
-    });
+  get approvedCount(): number {
+    return this.cases.filter(item => item.status === 'Approved').length;
   }
 
-  calculateKPIs(items: StudentProgramApplication[]): void {
-    this.kpiTotal = this.totalRecords;
-    this.kpiInProcess = this.studentStatusService.counts(items as any, StudentStatusEnum.AcceptanceInProcess);
-    this.kpiSponsored = this.studentStatusService.counts(items as any, StudentStatusEnum.Sponsored);
-    this.kpiRegistered = this.studentStatusService.counts(items as any, StudentStatusEnum.Registered);
-    this.tabAccRejected = this.studentStatusService.counts(items as any, StudentStatusEnum.AcceptanceRejected);
+  get deniedCount(): number {
+    return this.cases.filter(item => item.status === 'Denied').length;
   }
 
-  // --- Search & Filters ---
-  applySearch(): void {
-    this.filter.searchText = this.searchText.trim() || undefined;
-    this.filter.pageNumber = 1;
-    this.loadData();
-  }
-
-  clearSearch(): void {
-    this.searchText = '';
-    this.filter.searchText = undefined;
-    this.filter.pageNumber = 1;
-    this.loadData();
-  }
-
-  handleKeyDown(event: KeyboardEvent): void {
-    if (event.key === 'Enter') {
-      this.applySearch();
-    }
-  }
-
-  // --- Dropdowns ---
-  toggleCountryDropdown(event: Event): void {
-    event.stopPropagation();
-    this.isCountryDropdownOpen = !this.isCountryDropdownOpen;
-    this.isUniversityDropdownOpen = false;
-    this.isStatusDropdownOpen = false;
-  }
-
-  selectCountryOption(id: number): void {
-    this.selectedCountry = id;
-    this.selectedUniversity = 0;
-    this.filter.pageNumber = 1;
-    this.getUniversities();
-    this.loadData();
-  }
-
-  clearCountrySelection(event: Event): void {
-    event.stopPropagation();
-    this.selectedCountry = 0;
-    this.selectedUniversity = 0;
-    this.isCountryDropdownOpen = false;
-    this.filter.pageNumber = 1;
-    this.getUniversities();
-    this.loadData();
-  }
-
-  getSelectedCountryName(): string {
-    const c = this.countries.find(x => x.countryId === this.selectedCountry);
-    return c ? c.countryName : '';
-  }
-
-  toggleUniversityDropdown(event: Event): void {
-    event.stopPropagation();
-    this.isUniversityDropdownOpen = !this.isUniversityDropdownOpen;
-    this.isCountryDropdownOpen = false;
-    this.isStatusDropdownOpen = false;
-  }
-
-  selectUniversityOption(id: number): void {
-    this.selectedUniversity = id;
-    this.isUniversityDropdownOpen = false;
-    this.filter.pageNumber = 1;
-    this.loadData();
-  }
-
-  clearUniversitySelection(event: Event): void {
-    event.stopPropagation();
-    this.selectedUniversity = 0;
-    this.isUniversityDropdownOpen = false;
-    this.filter.pageNumber = 1;
-    this.loadData();
-  }
-
-  getSelectedUniversityName(): string {
-    const u = this.universities.find(x => x.universityId === this.selectedUniversity);
-    return u ? u.universityName : '';
-  }
-
-  toggleStatusDropdown(event: Event): void {
-    event.stopPropagation();
-    this.isStatusDropdownOpen = !this.isStatusDropdownOpen;
-    this.isCountryDropdownOpen = false;
-    this.isUniversityDropdownOpen = false;
-  }
-
-  selectStatusOption(id: number | null): void {
-    this.selectedStatus = id;
-    this.activeTab = id === null ? 'all' : id;
-    this.isStatusDropdownOpen = false;
-    this.filter.pageNumber = 1;
-    this.loadData();
-  }
-
-  clearStatusSelection(event: Event): void {
-    event.stopPropagation();
-    this.selectedStatus = StudentStatusEnum.Failed;
-    this.isStatusDropdownOpen = false;
-    this.filter.pageNumber = 1;
-    this.loadData();
-  }
-
-  getSelectedStatusName(): string {
-    if (this.selectedStatus === null) return 'All Statuses';
-    const s = this.statusOptions.find(x => x.id === this.selectedStatus);
-    return s ? s.name : '';
-  }
-
-  setTab(tab: string | number): void {
+  setTab(tab: CaseTab): void {
     this.activeTab = tab;
-    this.selectedStatus = tab === 'all' ? null : (tab as number);
-    this.filter.pageNumber = 1;
-    this.loadData();
+    this.dataState = this.filteredCases.length ? 'ready' : 'empty';
   }
 
-  // --- Status Badge Helper ---
-  getStatusBadgeClass(student: StudentProgramApplication): string {
-    return this.studentStatusService.getBadgeClass(
-      student.applicationStatusId ?? StudentStatusEnum.Draft
-    );
+  loadCases(): void {
+    this.dataState = 'loading';
+    this.listError = '';
+    this.casesApi.getAll().subscribe({
+      next: response => {
+        if (!response.success || !Array.isArray(response.result)) {
+          this.dataState = 'error';
+          this.listError = response.message || 'Failing-core cases could not be loaded.';
+          return;
+        }
+        this.cases = response.result;
+        this.dataState = this.filteredCases.length ? 'ready' : 'empty';
+        if (this.selectedCase) {
+          const updatedCase = this.cases.find(item => item.id === this.selectedCase?.id);
+          if (updatedCase) this.selectedCase = updatedCase;
+        }
+      },
+      error: error => {
+        this.dataState = 'error';
+        this.listError = this.errorMessage(error, 'Failing-core cases could not be loaded.');
+      }
+    });
   }
 
-  getStatusName(student: StudentProgramApplication): string {
-    return this.studentStatusService.getName(
-      student.applicationStatusId ?? StudentStatusEnum.Draft
-    );
+  openCase(item: FailingCoreCaseModel): void {
+    this.selectedCase = item;
+    this.detailLoading = true;
+    this.detailError = '';
+    this.successMessage = '';
+    this.decisionComment = '';
+    this.casesApi.getById(item.id).subscribe({
+      next: response => {
+        if (this.selectedCase?.id !== item.id) return;
+        this.detailLoading = false;
+        if (!response.success || !response.result) {
+          this.detailError = response.message || 'Case details could not be loaded.';
+          return;
+        }
+        this.selectedCase = response.result;
+      },
+      error: error => {
+        if (this.selectedCase?.id !== item.id) return;
+        this.detailLoading = false;
+        this.detailError = this.errorMessage(error, 'Case details could not be loaded.');
+      }
+    });
   }
 
-  // --- Pagination ---
-  get totalPages(): number {
-    return Math.ceil(this.totalRecords / (this.filter.pageSize || 25));
+  closeCase(): void {
+    this.selectedCase = null;
+    this.decisionComment = '';
+    this.detailError = '';
+    this.successMessage = '';
   }
 
-  get isPreviousDisabled(): boolean {
-    return this.filter.pageNumber === 1;
-  }
-
-  get isNextDisabled(): boolean {
-    return this.filter.pageNumber >= this.totalPages;
-  }
-
-  previousPage(): void {
-    if (!this.isPreviousDisabled) {
-      if(this.filter.pageNumber) this.filter.pageNumber--;
-      this.loadData();
+  recordDecision(status: Extract<FailingCoreCaseStatus, 'Approved' | 'Denied'>): void {
+    const current = this.selectedCase;
+    const comment = this.decisionComment.trim();
+    if (!current || current.status !== 'Pending' || this.isSavingDecision) return;
+    if (!comment) {
+      this.detailError = 'A committee comment is required before saving the decision.';
+      return;
     }
-  }
-
-  nextPage(): void {
-    if (!this.isNextDisabled) {
-      if(this.filter.pageNumber) this.filter.pageNumber++;
-      this.loadData();
+    if (comment.length > 2000) {
+      this.detailError = 'The committee comment cannot exceed 2,000 characters.';
+      return;
     }
+
+    this.isSavingDecision = true;
+    this.detailError = '';
+    this.successMessage = '';
+    this.casesApi.recordDecision(current.id, {
+      status,
+      comment,
+      expectedRowVersion: current.rowVersion
+    }).subscribe({
+      next: response => {
+        this.isSavingDecision = false;
+        if (!response.success || !response.result) {
+          this.detailError = response.message || 'The decision could not be saved.';
+          return;
+        }
+        this.selectedCase = response.result;
+        this.cases = this.cases.map(item => item.id === response.result!.id ? response.result! : item);
+        this.dataState = this.filteredCases.length ? 'ready' : 'empty';
+        this.successMessage = 'Committee decision recorded successfully.';
+      },
+      error: error => {
+        this.isSavingDecision = false;
+        this.detailError = this.errorMessage(error, 'The decision could not be saved. Reload the case before retrying.');
+      }
+    });
   }
 
-  togglePageSizeDropdown(event: Event): void {
-    event.stopPropagation();
-    this.isPageSizeDropdownOpen = !this.isPageSizeDropdownOpen;
+  statusLabel(status: FailingCoreCaseStatus): string {
+    if (status === 'Approved') return 'Continuation approved';
+    if (status === 'Denied') return 'Continuation denied';
+    return 'Pending';
   }
 
-  selectPageSize(size: number): void {
-    this.filter.pageSize = size;
-    this.filter.pageNumber = 1;
-    this.isPageSizeDropdownOpen = false;
-    this.loadData();
+  private errorMessage(error: unknown, fallback: string): string {
+    const apiMessage = (error as HttpErrorResponse)?.error?.message;
+    return typeof apiMessage === 'string' && apiMessage.trim() ? apiMessage : fallback;
   }
-
-  exportList(): void {
-    this.notification.info('Export functionality coming soon.');
-  }
-
-  viewStudent(studentId: number): void {
-    const student = this.students.find(x => x.studentId === studentId);
-    if (student) {
-      this.router.navigate(['/ngo-student-details', student.applicationId]);
-    }
-  }
-
-  photoErrors = new Set<number>();
-
-  getPhotoUrl(path?: string): string {
-    return HelperMethods.getFileUrl(path);
-  }
-
-  handlePhotoError(studentId: number): void {
-    if (studentId) {
-      this.photoErrors.add(studentId);
-    }
-  }
-
-  hasPhotoError(studentId: number): boolean {
-    return this.photoErrors.has(studentId);
-  }
-
 }

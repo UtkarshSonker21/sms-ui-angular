@@ -202,6 +202,10 @@
   background: var(--da-green-50);
   color: var(--da-green-800);
 }
+.tab.active .tab-count-all {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--da-muted);
+}
 
 /* Numeric tables cells styled exactly like Blazor */
 .table .num {

@@ -43,7 +43,7 @@
     </div>
 </div>
 
-<div class="tabs" style="margin: 20px 0 18px 0;">
+<!-- <div class="tabs" style="margin: 20px 0 18px 0;">
   <div class="tab" [class.active]="activeTab === 'all'" (click)="setTab('all')">
     All <span class="tab-count" style="background: rgba(0,0,0,0.05); color: var(--da-muted);">{{ tabAll }}</span>
   </div>
@@ -77,7 +77,7 @@
   <div class="tab" [class.active]="activeTab === studentStatus.Graduated" (click)="setTab(studentStatus.Graduated)">
     Graduated <span class="tab-count {{ getBadgeClassForStatus(studentStatus.Graduated) }}">{{ tabGraduated }}</span>
   </div>
-</div>
+</div> -->
 
 <div class="filters">
     <div class="search-container">
@@ -183,7 +183,7 @@
     </div> -->
     
     <div class="filter-count">
-        {{ totalRecords }} nominations
+        {{ students.length }} nominations · Acceptance in process
     </div>
 </div>
 
@@ -205,7 +205,7 @@
                 <td>
                     <div style="display: flex; align-items: center; gap: 12px;">
                         <img *ngIf="student.photoPath && !hasPhotoError(student.studentId!)" [src]="getPhotoUrl(student.photoPath)" (error)="handlePhotoError(student.studentId!)" class="profile-photo" alt="Photo" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
-                        <div *ngIf="!student.photoPath || hasPhotoError(student.studentId!)" style="width: 36px; height: 36px; border-radius: 50%; background: var(--da-green); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 13px; font-weight: 600;">
+                        <div *ngIf="!student.photoPath || hasPhotoError(student.studentId!)" class="student-profile-placeholder" style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600;">
                             {{ student.firstName ? student.firstName.charAt(0).toUpperCase() : '?' }}
                         </div>
                         <div>
@@ -215,6 +215,20 @@
                             <div style="font-size: 12.5px; color: var(--da-green); margin-top: 1.5px;">
                                 Std Code: {{ student.studentCode || '-' }}
                             </div>
+                            <span *ngIf="student.requiredDocumentCount === 0" class="doc-flag ok">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                No Documents Required
+                            </span>
+                            <ng-container *ngIf="student.requiredDocumentCount != null && student.requiredDocumentCount > 0">
+                                <span *ngIf="student.missingDocumentCount === 0 || (student.missingDocumentCount == null && student.allDocumentsSubmitted)" class="doc-flag ok">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                    All documents submitted
+                                </span>
+                                <span *ngIf="student.missingDocumentCount != null && student.missingDocumentCount > 0" class="doc-flag missing">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                    Missing {{ student.missingDocumentCount }} document{{ student.missingDocumentCount === 1 ? '' : 's' }}
+                                </span>
+                            </ng-container>
                         </div>
                     </div>
                 </td>

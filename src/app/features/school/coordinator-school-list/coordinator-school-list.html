@@ -3,24 +3,24 @@
         <div class="crumb">
             <a href="#">Dashboard</a>
             <span class="sep">/</span>
-            <span class="text-muted">Schools</span>
+            <span class="text-muted">My Schools</span>
         </div>
-        <h2 class="page-title">Schools</h2>
+        <h2 class="page-title">My Schools</h2>
         <p class="page-sub">
-            Manage your schools and registrations.
+            Schools you coordinate, with their Direct Aid Committee approval status. You can update each school's profile.
         </p>
     </div>
     <div class="page-actions">
-        <button type="button" class="btn btn-g" (click)="exportList()">
+        <!-- <button type="button" class="btn btn-g" (click)="exportList()">
             Export List
-        </button>
+        </button> -->
         <button type="button" class="btn btn-p" [routerLink]="['/coordinator-school-registration']">
             <i class="fas fa-plus btn-icon"></i> Register New School
         </button>
     </div>
 </div>
 
-<div class="kpi-grid">
+<!-- <div class="kpi-grid">
     <div class="kpi">
         <div class="kpi-l">Total Schools</div>
         <div class="kpi-v">{{ kpiTotal }}</div>
@@ -41,7 +41,7 @@
         <div class="kpi-v">{{ kpiRejected }}</div>
         <div class="kpi-d muted">Action Required</div>
     </div>
-</div>
+</div> -->
 
 <!-- Tabs commented out as per standard matching (if standard uses dropdown, but wait, Students has tabs commented out!) -->
 <!--
@@ -60,6 +60,21 @@
   </div>
 </div>
 -->
+
+<div class="tabs" style="margin: 20px 0 18px 0;">
+    <div class="tab" [class.active]="activeTab === 'all'" (click)="setTab('all')">
+        All <span class="tab-count tab-count-all">{{ kpiTotal }}</span>
+    </div>
+    <div class="tab tab-status-pending" [class.active]="activeTab === 'pending'" (click)="setTab('pending')">
+        Pending <span class="tab-count">{{ kpiPending }}</span>
+    </div>
+    <div class="tab tab-status-accredited" [class.active]="activeTab === 'accepted'" (click)="setTab('accepted')">
+        Accredited <span class="tab-count">{{ kpiAccepted }}</span>
+    </div>
+    <div class="tab tab-status-rejected" [class.active]="activeTab === 'rejected'" (click)="setTab('rejected')">
+        Rejected <span class="tab-count">{{ kpiRejected }}</span>
+    </div>
+</div>
 
 <div class="filters">
     <div class="search-container">

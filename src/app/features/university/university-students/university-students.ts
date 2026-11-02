@@ -152,6 +152,7 @@ export class UniversityStudents implements OnInit {
   isDataLoaded = false;
   allStudents: StudentProgramApplication[] = [];
   filteredStudents: StudentProgramApplication[] = [];
+  selectedStudentIds = new Set<number>();
 
   loadData(): void {
     if (!this.isDataLoaded) {
@@ -170,11 +171,13 @@ export class UniversityStudents implements OnInit {
           } else {
             this.allStudents = [];
             this.filteredStudents = [];
+          this.selectedStudentIds.clear();
           }
         },
         error: (error) => {
           this.allStudents = [];
           this.filteredStudents = [];
+          this.selectedStudentIds.clear();
           this.notification.handleBusinessError(error, 'Failed to load students.');
         }
       });
@@ -209,8 +212,49 @@ export class UniversityStudents implements OnInit {
 
     const start = (this.filter.pageNumber - 1) * this.filter.pageSize;
     const end = start + this.filter.pageSize;
-    this.filteredStudents = result.slice(start, end);
+    const nextPage = result.slice(start, end);
+    if (!this.haveSameStudentIds(this.filteredStudents, nextPage)) this.selectedStudentIds.clear();
+    this.filteredStudents = nextPage;
     this.students = this.filteredStudents; // Keep this in sync just in case
+  }
+
+  get areAllVisibleStudentsSelected(): boolean {
+    return this.filteredStudents.length > 0 && this.filteredStudents.every(student => this.selectedStudentIds.has(student.studentId));
+  }
+
+  get isVisibleStudentSelectionIndeterminate(): boolean {
+    const selectedCount = this.filteredStudents.reduce((count, student) => count + Number(this.selectedStudentIds.has(student.studentId)), 0);
+    return selectedCount > 0 && selectedCount < this.filteredStudents.length;
+  }
+
+  isStudentSelected(studentId: number): boolean {
+    return this.selectedStudentIds.has(studentId);
+  }
+
+  toggleStudentSelection(studentId: number, event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    const updated = new Set(this.selectedStudentIds);
+    if (checked) updated.add(studentId);
+    else updated.delete(studentId);
+    this.selectedStudentIds = updated;
+  }
+
+  setVisibleStudentsSelected(event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    const updated = new Set(this.selectedStudentIds);
+    for (const student of this.filteredStudents) {
+      if (checked) updated.add(student.studentId);
+      else updated.delete(student.studentId);
+    }
+    this.selectedStudentIds = updated;
+  }
+
+  private haveSameStudentIds(previous: StudentProgramApplication[], next: StudentProgramApplication[]): boolean {
+    return previous.length === next.length && previous.every((student, index) => student.studentId === next[index].studentId);
+  }
+
+  onBulkAction(): void {
+    // TODO: Implement bulk actions when their behavior is defined.
   }
 
   calculateKPIs(items: StudentProgramApplication[]): void {
@@ -232,12 +276,14 @@ export class UniversityStudents implements OnInit {
 
   // --- Search & Filters ---
   applySearch(): void {
+    this.selectedStudentIds.clear();
     this.filter.searchText = this.searchText.trim() || undefined;
     this.filter.pageNumber = 1;
     this.loadData();
   }
 
   clearSearch(): void {
+    this.selectedStudentIds.clear();
     this.searchText = '';
     this.filter.searchText = undefined;
     this.filter.pageNumber = 1;
@@ -259,6 +305,7 @@ export class UniversityStudents implements OnInit {
   }
 
   selectFacultyOption(id: number): void {
+    this.selectedStudentIds.clear();
     this.selectedFaculty = id;
     this.selectedProgram = 0;
     this.filter.pageNumber = 1;
@@ -268,6 +315,7 @@ export class UniversityStudents implements OnInit {
 
   clearFacultySelection(event: Event): void {
     event.stopPropagation();
+    this.selectedStudentIds.clear();
     this.selectedFaculty = 0;
     this.selectedProgram = 0;
     this.isFacultyDropdownOpen = false;
@@ -289,6 +337,7 @@ export class UniversityStudents implements OnInit {
   }
 
   selectProgramOption(id: number): void {
+    this.selectedStudentIds.clear();
     this.selectedProgram = id;
     this.isProgramDropdownOpen = false;
     this.filter.pageNumber = 1;
@@ -297,6 +346,7 @@ export class UniversityStudents implements OnInit {
 
   clearProgramSelection(event: Event): void {
     event.stopPropagation();
+    this.selectedStudentIds.clear();
     this.selectedProgram = 0;
     this.isProgramDropdownOpen = false;
     this.filter.pageNumber = 1;
@@ -316,6 +366,7 @@ export class UniversityStudents implements OnInit {
   }
 
   selectStatusOption(id: number | null): void {
+    this.selectedStudentIds.clear();
     this.selectedStatus = id;
     this.activeTab = id === null ? 'all' : id;
     this.isStatusDropdownOpen = false;
@@ -325,6 +376,7 @@ export class UniversityStudents implements OnInit {
 
   clearStatusSelection(event: Event): void {
     event.stopPropagation();
+    this.selectedStudentIds.clear();
     this.selectedStatus = null;
     this.isStatusDropdownOpen = false;
     this.filter.pageNumber = 1;
@@ -338,6 +390,7 @@ export class UniversityStudents implements OnInit {
   }
 
   setTab(tab: string | number): void {
+    this.selectedStudentIds.clear();
     this.activeTab = tab;
     this.selectedStatus = tab === 'all' ? null : (tab as number);
     this.filter.pageNumber = 1;
@@ -428,6 +481,7 @@ export class UniversityStudents implements OnInit {
 
   previousPage(): void {
     if (!this.isPreviousDisabled) {
+      this.selectedStudentIds.clear();
       this.filter.pageNumber--;
       this.loadData();
     }
@@ -435,6 +489,7 @@ export class UniversityStudents implements OnInit {
 
   nextPage(): void {
     if (!this.isNextDisabled) {
+      this.selectedStudentIds.clear();
       this.filter.pageNumber++;
       this.loadData();
     }
@@ -446,6 +501,7 @@ export class UniversityStudents implements OnInit {
   }
 
   selectPageSize(size: number): void {
+    this.selectedStudentIds.clear();
     this.filter.pageSize = size;
     this.filter.pageNumber = 1;
     this.isPageSizeDropdownOpen = false;

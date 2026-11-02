@@ -6,6 +6,11 @@
   box-sizing: border-box;
 }
 
+.dashboard-page > .page-head,
+.dashboard-page > .kpi-grid {
+  margin-bottom: 0;
+}
+
 /* Page Header positioning */
 .page-head {
   display: flex;
@@ -251,13 +256,14 @@
 }
 
 .view-all-link {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  color: var(--da-primary);
+  color: var(--da-green, #2c9942);
   text-decoration: none;
   cursor: pointer;
-  
+
   &:hover {
+    color: var(--da-green-800, #1e6d2e);
     text-decoration: underline;
   }
 }

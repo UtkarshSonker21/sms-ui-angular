@@ -302,7 +302,7 @@
               </div>
               <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--da-text-2);">
                 <span>Cost per credit:</span>
-                <span style="font-weight: 600; font-family: 'Courier New', monospace;">{{ getCostPerCredit() | number:'1.2-2' }} SOS</span>
+                <span style="font-weight: 600; font-family: 'Courier New', monospace;">{{ getTotalCredits() > 0 ? (getCostPerCredit() | number:'1.2-2') : '—' }} SOS</span>
               </div>
               <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--da-text-2); grid-column: 1 / -1; border-top: 1px solid rgba(44, 153, 66, 0.1); padding-top: 8px; margin-top: 2px;">
                 <span style="font-weight: 700; color: var(--da-green);">Grand total program cost:</span>
@@ -310,7 +310,7 @@
               </div>
               <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--da-text-2); grid-column: 1 / -1; border-top: 1px dashed rgba(44, 153, 66, 0.1); padding-top: 6px;">
                 <span>Cost per semester (average):</span>
-                <span style="font-weight: 600; font-family: 'Courier New', monospace;">{{ getAveragePerSemester() | number:'1.2-2' }} SOS</span>
+                <span style="font-weight: 600; font-family: 'Courier New', monospace;">{{ getConfiguredSemesterCount() > 0 ? (getAveragePerSemester() | number:'1.2-2') : '—' }} SOS</span>
               </div>
             </div>
           </ng-container>
@@ -355,7 +355,7 @@
                   </div>
                   <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                   <div class="ms-panel" *ngIf="openSemesterDropdownCourseId === c.courseId" style="display: block; max-height: 150px; overflow-y: auto; text-align: start; bottom: calc(100% + 4px) !important; top: auto !important; box-shadow: 0 -4px 12px rgba(0,0,0,0.1);">
-                    <div class="ms-option" *ngFor="let semIndex of getSemestersArray()" [class.checked]="c.semesterNo === semIndex" (click)="selectSemesterForCourse(c, semIndex)" (click)="$event.stopPropagation()" style="padding: 6px 10px; font-size: 12px;">
+                    <div class="ms-option" *ngFor="let semIndex of getSemestersArray()" [class.checked]="c.semesterNo === semIndex" (click)="selectSemesterForCourse(c, semIndex, $event)" style="padding: 6px 10px; font-size: 12px;">
                       <span>Semester {{ semIndex }}</span>
                     </div>
                   </div>
@@ -393,15 +393,27 @@
                   {{ getSelectedCourseToAddName() }}
                 </div>
                 <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-                <div class="ms-panel" *ngIf="isAddCourseDropdownOpen" style="display: block; max-height: 200px; overflow-y: auto; text-align: start; bottom: calc(100% + 4px) !important; top: auto !important; box-shadow: 0 -4px 12px rgba(0,0,0,0.1);">
+                <div class="ms-panel" *ngIf="isAddCourseDropdownOpen" style="display: flex; flex-direction: column; max-height: 240px; overflow: hidden; text-align: start; bottom: calc(100% + 4px) !important; top: auto !important; box-shadow: 0 -4px 12px rgba(0,0,0,0.1);">
+                  <div (click)="$event.stopPropagation()" style="flex: none; padding: 2px 2px 8px;">
+                    <input type="search" class="field-input" [(ngModel)]="courseSearchTerm" aria-label="Search courses by name or code" placeholder="Search by course name or code" style="width: 100%; height: 34px !important;" />
+                  </div>
+                  <div style="max-height: 180px; overflow-y: auto; overflow-x: hidden;">
                   <ng-container *ngIf="courses.length > 0; else noCoursesAvailable">
-                    <div class="ms-option" *ngFor="let c of courses" (click)="selectCourseToAdd(c.courseId || 0, $event)">
-                      <span>{{ c.courseNameEn }} ({{ c.courseCode }})</span>
-                    </div>
+                    <ng-container *ngIf="getFilteredCourses() as filteredCourses">
+                      <ng-container *ngIf="filteredCourses.length > 0; else noCoursesFound">
+                        <div class="ms-option" *ngFor="let c of filteredCourses" (click)="selectCourseToAdd(c.courseId || 0, $event)">
+                          <span>{{ c.courseNameEn }} ({{ c.courseCode }})</span>
+                        </div>
+                      </ng-container>
+                    </ng-container>
                   </ng-container>
                   <ng-template #noCoursesAvailable>
                     <div style="padding: 8px 10px; font-size: 12px; color: var(--da-muted); text-align: center;">No courses available</div>
                   </ng-template>
+                  <ng-template #noCoursesFound>
+                    <div style="padding: 8px 10px; font-size: 12px; color: var(--da-muted); text-align: center;">No courses found</div>
+                  </ng-template>
+                  </div>
                 </div>
               </div>
             </div>

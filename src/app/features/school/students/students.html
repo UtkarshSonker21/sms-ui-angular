@@ -883,12 +883,18 @@
               <h5 style="margin: 0; font-size: 14px;">Required Documents</h5>
             </div>
 
-            <div *ngIf="isDocumentsLoading" style="padding: 24px; text-align: center; color: var(--da-muted);">
+            <div *ngIf="candidateProgramsLoadState === 'loading' || isDocumentsLoading"
+              style="padding: 24px; text-align: center; color: var(--da-muted);">
               <div style="font-size: 13px;">Loading documents...</div>
             </div>
 
-            <div *ngIf="!isDocumentsLoading">
-              <div *ngIf="!prog.requiredDocuments || prog.requiredDocuments.length === 0"
+            <div *ngIf="candidateProgramsLoadState === 'error' || (candidateProgramsLoadState === 'loaded' && applicationDocumentsLoadFailed && (!prog.requiredDocuments || prog.requiredDocuments.length === 0))"
+              style="padding: 24px; text-align: center; color: var(--da-danger); font-size: 13px;">
+              Required documents could not be loaded.
+            </div>
+
+            <div *ngIf="candidateProgramsLoadState === 'loaded' && !isDocumentsLoading && (!applicationDocumentsLoadFailed || (prog.requiredDocuments && prog.requiredDocuments.length > 0))">
+              <div *ngIf="(!prog.requiredDocuments || prog.requiredDocuments.length === 0) && !applicationDocumentsLoadFailed"
                 style="padding: 16px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
                 <div
                   style="width: 48px; height: 48px; border-radius: 50%; background: #dcfce7; display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">

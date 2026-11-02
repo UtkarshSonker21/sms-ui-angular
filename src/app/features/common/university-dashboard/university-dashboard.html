@@ -109,13 +109,13 @@
       <div class="card-body">
         <div class="deadline-list" *ngIf="upcomingDeadlines.length > 0; else noDeadlines">
           <div class="deadline-item" *ngFor="let item of upcomingDeadlines">
-            <div class="deadline-calendar" [ngClass]="item.type">
-              <span class="cal-month">{{ item.month }}</span>
-              <span class="cal-date">{{ item.date }}</span>
+            <div class="deadline-calendar" [ngClass]="item.badgeStyle">
+              <span class="cal-month">{{ getDeadlineMonth(item.date) }}</span>
+              <span class="cal-date">{{ getDeadlineDay(item.date) }}</span>
             </div>
             <div class="deadline-details">
               <div class="deadline-title">{{ item.title }}</div>
-              <div class="deadline-subtitle">{{ item.subtitle }}</div>
+              <div class="deadline-subtitle">{{ item.description }}</div>
             </div>
           </div>
         </div>

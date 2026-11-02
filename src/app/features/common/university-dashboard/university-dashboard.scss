@@ -198,6 +198,18 @@
     border: 1px solid var(--da-border);
     box-sizing: border-box;
 
+    &.success {
+      background: var(--da-green-50, #edf7ef);
+      border-color: var(--da-green-200, #a7d9af);
+      .cal-month {
+        background: var(--da-green, #2c9942);
+        color: #ffffff;
+      }
+      .cal-date {
+        color: var(--da-green-800, #1e6d2e);
+      }
+    }
+
     &.danger {
       background: #fef2f2;
       border-color: #fca5a5;
@@ -231,6 +243,18 @@
       }
       .cal-date {
         color: #075985;
+      }
+    }
+
+    &.neutral {
+      background: var(--da-surface-2, #f1f5f9);
+      border-color: var(--da-border, #e2e8f0);
+      .cal-month {
+        background: var(--da-muted, #64748b);
+        color: #ffffff;
+      }
+      .cal-date {
+        color: var(--da-text-2, #475569);
       }
     }
 
