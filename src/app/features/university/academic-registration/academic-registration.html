@@ -317,7 +317,7 @@
                       </span>
                   </td>
                 <td style="text-align: center;" *ngIf="hasVisibleRegisterableStudents">
-                    <button type="button" class="btn btn-g" style="padding: 4px 10px; font-size: 12px; height: 28px;" *ngIf="canRegisterStudent(student)" (click)="openRegisterDialog(student)">
+                    <button type="button" class="btn btn-g" style="padding: 4px 10px; font-size: 12px; height: 28px;" *ngIf="canRegisterStudent(student)" (click)="navigateToRegister(student)">
                         Register
                     </button>
                 </td>
@@ -367,128 +367,6 @@
             </div>
         </div>
     </div>
-</div>
-
-<!-- Register Dialog -->
-<div class="modal-backdrop" *ngIf="showRegisterDialog">
-  <div class="modal-card register-student-modal" role="dialog" aria-modal="true" aria-labelledby="register-student-title">
-    <div class="modal-head">
-      <div>
-        <div class="modal-title" id="register-student-title">Register Student for Semester</div>
-        <div class="modal-sub">Review {{ selectedStudent?.studentName }}'s program semester and confirm registration.</div>
-      </div>
-      <button type="button" class="modal-close" aria-label="Close" [disabled]="isSaving || isConfirmingRegistration" (click)="closeRegisterDialog()">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-
-    <div class="modal-body register-student-body">
-      <div class="register-info-notice" role="note">
-        Registration is available for sponsored students while the university registration window is open. The selected semester must be configured, and an existing initial registration prevents duplicate registration.
-      </div>
-
-      <div class="register-summary-grid">
-        <section class="register-summary-card">
-          <div class="register-summary-label">STUDENT</div>
-          <strong>{{ selectedStudent?.studentName || '—' }}</strong>
-          <span>ID: {{ selectedStudent?.studentCode || selectedStudent?.studentId || '—' }}</span>
-        </section>
-        <section class="register-summary-card">
-          <div class="register-summary-label">PROGRAM</div>
-          <strong>{{ selectedStudent?.programName || '—' }}</strong>
-          <span>{{ selectedStudent?.facultyName || '—' }}</span>
-        </section>
-        <section class="register-summary-card register-summary-semester">
-          <div class="register-summary-label">SELECTED SEMESTER</div>
-          <strong>{{ selectedRegisterSemester?.semesterName || 'Choose a configured semester' }}</strong>
-          <span *ngIf="selectedRegisterSemester">Semester {{ selectedRegisterSemester.semesterNo }}</span>
-          <span *ngIf="selectedRegisterSemester?.academicYearName || selectedRegisterSemester?.termName">
-            {{ selectedRegisterSemester?.termName }} {{ selectedRegisterSemester?.academicYearName }}
-          </span>
-          <span *ngIf="selectedRegisterSemester?.startDate || selectedRegisterSemester?.endDate">
-            Study period: {{ selectedRegisterSemester?.startDate | date:'dd MMM yyyy' }} – {{ selectedRegisterSemester?.endDate | date:'dd MMM yyyy' }}
-          </span>
-          <span *ngIf="selectedRegisterSemester?.registrationStartDate || selectedRegisterSemester?.registrationEndDate">
-            Semester registration dates: {{ selectedRegisterSemester?.registrationStartDate | date:'dd MMM yyyy' }} – {{ selectedRegisterSemester?.registrationEndDate | date:'dd MMM yyyy' }}
-          </span>
-        </section>
-      </div>
-
-      <div class="register-form-grid">
-        <div class="field-wrapper">
-          <label class="field-label" for="register-semester">Semester <span class="required-mark">*</span></label>
-          <select id="register-semester" class="field-input" [ngModel]="registerRequest.semesterNo" (ngModelChange)="onRegisterSemesterChanged($event)" [disabled]="isLoadingRegisterDetails || !registerSemesters.length" required>
-            <option [ngValue]="0" disabled>Select a configured semester</option>
-            <option *ngFor="let semester of registerSemesters" [ngValue]="semester.semesterNo">
-              {{ semester.semesterName }} (Semester {{ semester.semesterNo }})
-            </option>
-          </select>
-        </div>
-        <div class="field-wrapper">
-          <label class="field-label" for="register-date">Registration Date <span class="required-mark">*</span></label>
-          <input id="register-date" type="date" class="field-input" [ngModel]="registerRequest.registrationDate | date:'yyyy-MM-dd'" (ngModelChange)="registerRequest.registrationDate = $event" required>
-        </div>
-      </div>
-
-      <div class="register-load-state" *ngIf="isLoadingRegisterDetails" role="status">Loading configured semesters and courses…</div>
-      <div class="register-load-state register-load-error" *ngIf="registerDetailsError" role="alert">{{ registerDetailsError }}</div>
-      <div class="register-load-state" *ngIf="!isLoadingRegisterDetails && !registerDetailsError && registerProgram && !registerSemesters.length" role="status">
-        No persisted program semesters are available. Registration cannot continue until a semester is configured.
-      </div>
-
-      <section class="register-course-section" *ngIf="selectedRegisterSemester && !isLoadingRegisterDetails && !registerDetailsError">
-        <div class="register-course-head">
-          <div>
-            <h3>{{ selectedRegisterSemester.semesterName }} Courses</h3>
-            <p>Configured course mappings for Semester {{ selectedRegisterSemester.semesterNo }}</p>
-          </div>
-          <span class="register-preview-badge">Preview only</span>
-        </div>
-        <div class="register-course-notice">
-          These checkboxes are for review only. Confirm Registration automatically enrolls all active courses configured for this semester; changing this selection does not change enrollment.
-        </div>
-        <div class="register-course-toolbar" *ngIf="registerCourses.length">
-          <label class="register-select-all">
-            <input type="checkbox" [checked]="allPreviewCoursesSelected" (change)="toggleAllPreviewCourses($any($event.target).checked)">
-            <span>Select all for preview</span>
-          </label>
-          <span>{{ previewSelectedCourseIds.size }} selected for preview · {{ registerCourses.length }} configured</span>
-        </div>
-        <div class="register-course-list" *ngIf="registerCourses.length; else noConfiguredCourses">
-          <div class="register-course-row" *ngFor="let course of registerCourses">
-            <input type="checkbox" [attr.aria-label]="'Preview ' + (course.courseNameEn || course.courseCode || 'course')" [checked]="previewSelectedCourseIds.has(course.programCourseId ?? course.courseId)" (change)="togglePreviewCourse(course, $any($event.target).checked)">
-            <div class="register-course-details">
-              <strong>{{ course.courseNameEn || course.courseNameAr || 'Course' }}</strong>
-              <span>{{ course.courseCode || 'Code unavailable' }}</span>
-            </div>
-            <span class="register-course-type" [class.core]="course.courseType === 1" [class.elective]="course.courseType === 2">{{ courseTypeLabel(course.courseType) }}</span>
-            <span class="register-course-credits">{{ course.credits }} credits</span>
-          </div>
-        </div>
-        <ng-template #noConfiguredCourses>
-          <div class="register-load-state">No course mappings are returned for this semester. The API will validate active course configuration when registration is submitted.</div>
-        </ng-template>
-      </section>
-
-      <div class="register-results-note">
-        Course Pass/Fail results and semester GPA are recorded separately in Academic Record after registration. They are not saved by this action.
-      </div>
-
-      <div class="field-wrapper register-remarks-field">
-        <label class="field-label" for="register-remarks">Remarks</label>
-        <textarea id="register-remarks" class="field-input" [(ngModel)]="registerRequest.remarks" rows="2" placeholder="Optional remarks..."></textarea>
-      </div>
-    </div>
-
-    <div class="modal-foot">
-      <button type="button" class="btn btn-g" (click)="closeRegisterDialog()" [disabled]="isSaving || isConfirmingRegistration">Cancel</button>
-      <button type="button" class="btn btn-p" (click)="registerStudent()" [disabled]="isSaving || isConfirmingRegistration || isLoadingRegisterDetails || !selectedRegisterSemester">
-        <span *ngIf="isSaving"><i class="fas fa-spinner fa-spin"></i> Saving...</span>
-        <span *ngIf="isConfirmingRegistration"><i class="fas fa-spinner fa-spin"></i> Confirming...</span>
-        <span *ngIf="!isSaving && !isConfirmingRegistration">Confirm Registration</span>
-      </button>
-    </div>
-  </div>
 </div>
 
 <!-- Bulk registration semester selection and results -->

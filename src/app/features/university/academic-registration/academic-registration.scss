@@ -401,123 +401,6 @@
 .student-table-head > div:first-child { min-width: 0; }
 .student-selection-actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 10px; color: var(--da-muted); font-size: 11.5px; }
 
-.register-student-modal {
-  width: min(980px, calc(100vw - 32px));
-  max-height: min(90vh, 900px);
-  display: flex;
-  flex-direction: column;
-}
-
-.register-student-body {
-  min-height: 0;
-  overflow-y: auto;
-}
-
-.register-info-notice,
-.register-course-notice,
-.register-results-note {
-  border: 1px solid var(--da-border);
-  border-radius: var(--da-radius-sm);
-  background: var(--da-info-50);
-  color: var(--da-text-2);
-  font-size: 12px;
-  line-height: 1.55;
-}
-
-.register-info-notice { margin-bottom: 14px; padding: 10px 12px; }
-
-.register-summary-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin-bottom: 16px;
-}
-
-.register-summary-card {
-  min-width: 0;
-  display: grid;
-  align-content: start;
-  gap: 4px;
-  padding: 12px;
-  border: 1px solid var(--da-border);
-  border-radius: var(--da-radius-sm);
-  background: var(--da-surface);
-  color: var(--da-text-2);
-  font-size: 12px;
-}
-
-.register-summary-card strong { color: var(--da-black); font-size: 13px; overflow-wrap: anywhere; }
-.register-summary-card > span { color: var(--da-muted); }
-.register-summary-label { color: var(--da-muted); font-size: 10px; font-weight: 700; letter-spacing: .04em; }
-.register-summary-semester { grid-column: span 1; }
-
-.register-form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-  margin-bottom: 14px;
-}
-
-.register-form-grid .field-wrapper { min-width: 0; }
-.required-mark { color: var(--da-danger); }
-
-.register-load-state {
-  padding: 12px;
-  border: 1px solid var(--da-border);
-  border-radius: var(--da-radius-sm);
-  color: var(--da-text-2);
-  font-size: 12px;
-  text-align: center;
-}
-
-.register-load-error { border-color: color-mix(in srgb, var(--da-danger) 35%, transparent); color: var(--da-danger); }
-
-.register-course-section {
-  margin-top: 14px;
-  border: 1px solid var(--da-border);
-  border-radius: var(--da-radius-sm);
-  overflow: hidden;
-}
-
-.register-course-head,
-.register-course-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 11px 13px;
-}
-
-.register-course-head { border-bottom: 1px solid var(--da-border); }
-.register-course-head h3 { margin: 0; color: var(--da-black); font-size: 14px; }
-.register-course-head p { margin: 3px 0 0; color: var(--da-muted); font-size: 11.5px; }
-.register-preview-badge { flex: 0 0 auto; padding: 4px 8px; border-radius: 999px; background: var(--da-green-50); color: var(--da-green-800); font-size: 10px; font-weight: 700; }
-.register-course-notice { margin: 10px 12px; padding: 8px 10px; }
-.register-course-toolbar { color: var(--da-muted); font-size: 11px; }
-.register-select-all { display: inline-flex; align-items: center; gap: 7px; color: var(--da-text-2); cursor: pointer; }
-.register-select-all input,
-.register-course-row > input { accent-color: var(--da-green); }
-.register-course-list { padding: 0 12px 10px; }
-
-.register-course-row {
-  display: grid;
-  grid-template-columns: 20px minmax(0, 1fr) auto auto;
-  align-items: center;
-  gap: 12px;
-  min-height: 52px;
-  border-top: 1px solid var(--da-border);
-}
-
-.register-course-details { min-width: 0; display: grid; gap: 3px; }
-.register-course-details strong { overflow: hidden; color: var(--da-black); font-size: 12.5px; text-overflow: ellipsis; white-space: nowrap; }
-.register-course-details span { color: var(--da-muted); font-family: var(--da-font-mono, monospace); font-size: 10.5px; }
-.register-course-type { padding: 4px 7px; border-radius: 999px; background: var(--da-surface-2); color: var(--da-text-2); font-size: 10px; white-space: nowrap; }
-.register-course-type.core { background: var(--da-green-50); color: var(--da-green-800); }
-.register-course-type.elective { background: var(--da-info-50); color: var(--da-info); }
-.register-course-credits { color: var(--da-muted); font-size: 11px; white-space: nowrap; }
-.register-results-note { margin-top: 14px; padding: 9px 11px; }
-.register-remarks-field { margin-top: 14px; }
-.register-student-modal .modal-foot { flex: 0 0 auto; }
 
 .bulk-registration-backdrop { z-index: 1200; }
 .bulk-registration-modal { width: min(620px, calc(100vw - 32px)); max-height: min(86vh, 760px); display: flex; flex-direction: column; }
@@ -558,17 +441,10 @@
   .central-window-wide,
   .central-window-notes { grid-column: auto; }
   .upload-results-body { padding: 16px 18px 8px; }
-  .register-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .register-summary-semester { grid-column: 1 / -1; }
-  .register-course-toolbar { align-items: flex-start; flex-direction: column; }
+
 }
 
 @media (max-width: 560px) {
-  .register-student-modal { width: calc(100vw - 20px); max-height: 94vh; }
-  .register-summary-grid,
-  .register-form-grid { grid-template-columns: minmax(0, 1fr); }
-  .register-summary-semester { grid-column: auto; }
-  .register-course-row { grid-template-columns: 18px minmax(0, 1fr) auto; gap: 8px; }
-  .register-course-credits { grid-column: 2 / -1; padding-bottom: 8px; }
+
   .bulk-registration-modal { width: calc(100vw - 20px); max-height: 94vh; }
 }

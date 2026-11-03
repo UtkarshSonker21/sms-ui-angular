@@ -13,6 +13,12 @@ import { ProgramRegistrationWindowModel } from '../../../core/models/university/
 import { StaffType } from '../../../core/enums/staff-type.enum';
 import { AppRoutes } from '../../../core/constants/app-routes';
 
+export class ProgramEditWindowRequestModel {
+  editFrom: string | null = null;
+  editTo: string | null = null;
+  comments: string = '';
+}
+
 @Component({
   selector: 'app-program-detail',
   standalone: true,
@@ -112,7 +118,7 @@ export class ProgramDetail implements OnInit {
     return [...this.program.documents].sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
   }
 
-  // Cost items calculations matching Blazor logic
+    // Cost items calculations matching client prototype logic
   get semCosts(): number {
     if (!this.program.costs) return 0;
     return this.program.costs
@@ -127,16 +133,21 @@ export class ProgramDetail implements OnInit {
       .reduce((sum, c) => sum + (c.amount || 0), 0);
   }
 
+  get grandProgramCost(): number {
+    return this.semCosts * (this.program.numberOfSemesters || 0);
+  }
+
   get grandTotal(): number {
-    const sem = this.semCosts;
-    const numSem = this.program.numberOfSemesters || 0;
-    const oneTime = this.oneTimeCosts;
-    return (sem * numSem) + oneTime;
+    return this.grandProgramCost + this.oneTimeCosts;
+  }
+
+  get totalCredits(): number {
+    return this.totalCoursesCredits > 0 ? this.totalCoursesCredits : (this.program.creditsRequired || 0);
   }
 
   get costPerCredit(): number {
     const total = this.grandTotal;
-    const credits = this.program.creditsRequired || 0;
+    const credits = this.totalCredits;
     return credits > 0 ? total / credits : 0;
   }
 
@@ -150,6 +161,11 @@ export class ProgramDetail implements OnInit {
     if (!this.program.courses) return 0;
     return this.program.courses.reduce((sum, c) => sum + (c.credits || 0), 0);
   }
+
+  // Edit Window Modal State
+  showEditWindowModal = false;
+  editWindowData: ProgramEditWindowRequestModel = new ProgramEditWindowRequestModel();
+  isSubmittingEditWindow = false;
 
   // Registration Modal State
   showRegistrationModal = false;
@@ -169,53 +185,128 @@ export class ProgramDetail implements OnInit {
     return `${year}-${month}-${day}`;
   }
 
+  getDefaultRegistrationDates(): { from: string; to: string } {
+    const now = new Date();
+    const fromStr = this.formatDateForInput(now);
+
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const day = now.getDate();
+
+    let targetYear = year;
+    let targetMonth = month + 1;
+    if (targetMonth > 11) {
+      targetMonth = 0;
+      targetYear++;
+    }
+
+    // Safely clamp day to target month's maximum days (handles leap years and month lengths)
+    const maxDaysInTargetMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
+    const targetDay = Math.min(day, maxDaysInTargetMonth);
+
+    const toDate = new Date(targetYear, targetMonth, targetDay);
+    const toStr = this.formatDateForInput(toDate);
+
+    return { from: fromStr, to: toStr };
+  }
+
+  loadRegistrationWindowAndOpenModal(): void {
+    this.programService.getProgramRegistrationWindowByProgramId(this.programId).subscribe({
+      next: (regRes: any) => {
+        const isSuccess = regRes?.success ?? regRes?.isSuccess;
+        const existing = regRes?.result ?? regRes?.data;
+
+        if (isSuccess && existing && (existing.id || existing.registrationFrom)) {
+          this.registrationData = existing;
+          this.registrationData.programId = this.programId;
+          this.registrationDateFrom = this.formatDateForInput(existing.registrationFrom);
+          this.registrationDateTo = this.formatDateForInput(existing.registrationTo);
+        } else {
+          this.registrationData = new ProgramRegistrationWindowModel();
+          this.registrationData.programId = this.programId;
+          this.registrationData.semesterNo = 0;
+          const defaults = this.getDefaultRegistrationDates();
+          this.registrationDateFrom = defaults.from;
+          this.registrationDateTo = defaults.to;
+        }
+
+        this.isSemesterDropdownOpen = false;
+        this.showRegistrationModal = true;
+      },
+      error: (error) => {
+        this.registrationData = new ProgramRegistrationWindowModel();
+        this.registrationData.programId = this.programId;
+        this.registrationData.semesterNo = 0;
+        const defaults = this.getDefaultRegistrationDates();
+        this.registrationDateFrom = defaults.from;
+        this.registrationDateTo = defaults.to;
+        this.isSemesterDropdownOpen = false;
+        this.showRegistrationModal = true;
+
+        this.notification.handleBusinessError(
+          error,
+          'Failed to load registration window.'
+        );
+      }
+    });
+  }
+
   openRegistration(): void {
     if (this.programId <= 0) return;
 
     this.programService.getSemesterByProgramId(this.programId).subscribe({
       next: (res: any) => {
-        this.registrationSemesters = Array.isArray(res.result) ? res.result : (Array.isArray(res.data) ? res.data : []);
+        let semesters: any[] = Array.isArray(res?.result) ? res.result : (Array.isArray(res?.data) ? res.data : []);
 
-        this.programService.getProgramRegistrationWindowByProgramId(this.programId).subscribe({
-          next: (regRes: any) => {
+        const numSemesters = this.program.numberOfSemesters || 0;
+        if (numSemesters > 0) {
+          const semMap = new Map<number, any>();
+          for (const s of semesters) {
+            const num = s.semesterNo ?? s.SemesterNo;
+            if (num) semMap.set(num, s);
+          }
 
-            const isSuccess = regRes.success ?? regRes.isSuccess;
-
-            if (isSuccess) {
-              this.registrationData =
-                regRes.result ?? regRes.data ?? new ProgramRegistrationWindowModel();
-
-              this.registrationData.programId = this.programId;
-
-            } else {
-              this.registrationData = new ProgramRegistrationWindowModel();
-              this.registrationData.programId = this.programId;
-
-              if (regRes.message) {
-                this.notification.warning(regRes.message);
+          const courseSemNames = new Map<number, string>();
+          if (this.program.courses) {
+            for (const c of this.program.courses) {
+              if (c.semesterNo && c.semesterName) {
+                courseSemNames.set(c.semesterNo, c.semesterName);
               }
             }
-
-            this.registrationDateFrom = this.formatDateForInput(this.registrationData?.registrationFrom);
-            this.registrationDateTo = this.formatDateForInput(this.registrationData?.registrationTo);
-            this.showRegistrationModal = true;
-          },
-          error: (error) => {
-            this.registrationData = new ProgramRegistrationWindowModel();
-            this.registrationData.programId = this.programId;
-            this.registrationDateFrom = '';
-            this.registrationDateTo = '';
-            this.showRegistrationModal = true;
-
-            this.notification.handleBusinessError(
-              error,
-              'Failed to load registration window.'
-            );
           }
-        });
 
+          const fullList: any[] = [];
+          for (let i = 1; i <= numSemesters; i++) {
+            if (semMap.has(i)) {
+              fullList.push(semMap.get(i));
+            } else {
+              fullList.push({
+                programSemesterId: 0,
+                semesterNo: i,
+                semesterName: courseSemNames.get(i) || `Semester ${i}`
+              });
+            }
+          }
+          semesters = fullList;
+        }
+
+        this.registrationSemesters = semesters;
+        this.loadRegistrationWindowAndOpenModal();
       },
       error: (error) => {
+        const numSemesters = this.program.numberOfSemesters || 0;
+        if (numSemesters > 0) {
+          this.registrationSemesters = Array.from({ length: numSemesters }, (_, i) => ({
+            programSemesterId: 0,
+            semesterNo: i + 1,
+            semesterName: `Semester ${i + 1}`
+          }));
+        } else {
+          this.registrationSemesters = [];
+        }
+
+        this.loadRegistrationWindowAndOpenModal();
+
         this.notification.handleBusinessError(
           error,
           'Failed to load semesters.'
@@ -233,7 +324,10 @@ export class ProgramDetail implements OnInit {
     this.isSemesterDropdownOpen = !this.isSemesterDropdownOpen;
   }
 
-  selectSemesterOption(semesterNo: number): void {
+  selectSemesterOption(semesterNo: number, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
     if (this.registrationData) {
       this.registrationData.semesterNo = semesterNo;
     }
@@ -249,8 +343,13 @@ export class ProgramDetail implements OnInit {
 
   getSelectedSemesterName(): string {
     if (!this.registrationData || !this.registrationData.semesterNo) return '';
-    const sem = this.registrationSemesters.find(s => (s.semesterNo || s.SemesterNo) === this.registrationData!.semesterNo);
-    return sem ? (sem.semesterName || sem.SemesterName || ('Semester ' + (sem.semesterNo || sem.SemesterNo))) : '';
+    const sem = this.registrationSemesters.find(
+      s => (s.semesterNo ?? s.SemesterNo) === this.registrationData!.semesterNo
+    );
+    if (sem) {
+      return sem.semesterName || sem.SemesterName || (`Semester ${sem.semesterNo ?? sem.SemesterNo}`);
+    }
+    return `Semester ${this.registrationData.semesterNo}`;
   }
 
   @HostListener('document:click', ['$event'])
@@ -309,8 +408,44 @@ export class ProgramDetail implements OnInit {
     });
   }
 
-  // Placeholder actions
-  requestEditWindow(): void { }
+  // Edit Window Actions
+  requestEditWindow(): void {
+    this.editWindowData = new ProgramEditWindowRequestModel();
+    this.showEditWindowModal = true;
+  }
+
+  closeEditWindowModal(): void {
+    this.showEditWindowModal = false;
+    this.editWindowData = new ProgramEditWindowRequestModel();
+    this.isSubmittingEditWindow = false;
+  }
+
+  submitEditWindowRequest(form: any): void {
+    if (form && form.invalid) {
+      this.notification.warning('Please fill out all required fields.');
+      return;
+    }
+
+    if (!this.editWindowData.editFrom || !this.editWindowData.editTo) {
+      this.notification.warning('Please provide both edit window dates.');
+      return;
+    }
+
+    const from = new Date(this.editWindowData.editFrom);
+    const to = new Date(this.editWindowData.editTo);
+
+    if (from >= to) {
+      this.notification.warning('Edit To must be later than Edit From.');
+      return;
+    }
+
+    this.isSubmittingEditWindow = true;
+
+    // Simulated submission (ready for future API integration)
+    this.notification.success('Edit window request submitted successfully.');
+    this.closeEditWindowModal();
+    this.isSubmittingEditWindow = false;
+  }
 
   goBack(): void {
     this.router.navigate([AppRoutes.University.Faculties]);

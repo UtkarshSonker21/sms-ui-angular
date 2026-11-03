@@ -45,6 +45,7 @@ import { HighSchoolSpecializations } from './features/ngo/high-school-specializa
 import { PreferencesSponsorshipMatrix } from './features/ngo/preferences-sponsorship-matrix/preferences-sponsorship-matrix';
 import { MarketingAdministrativeFee } from './features/ngo/marketing-administrative-fee/marketing-administrative-fee';
 import { AcademicRegistration } from './features/university/academic-registration/academic-registration';
+import { RegisterStudent } from './features/university/academic-registration/register-student/register-student';
 import { FailingCoreCases } from './features/ngo/failing-core-cases/failing-core-cases';
 import { PanelUsers } from './features/ngo/panel-users/panel-users';
 import { UniversityCoordinators } from './features/ngo/university-coordinators/university-coordinators';
@@ -326,6 +327,18 @@ export const routes: Routes = [
             {
                 path: 'academic-registration',
                 component: AcademicRegistration
+            },
+            {
+                path: 'academic-registration/register/:id',
+                component: RegisterStudent
+            },
+            {
+                path: 'academic-registration/:id',
+                component: RegisterStudent
+            },
+            {
+                path: 'register-student/:id',
+                component: RegisterStudent
             },
 
 

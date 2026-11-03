@@ -3,7 +3,7 @@ export class ProgramRegistrationWindowModel {
 
     programId: number = 0;
 
-    semesterNo: number = 1;
+    semesterNo: number = 0;
 
     registrationFrom: Date = new Date();
 

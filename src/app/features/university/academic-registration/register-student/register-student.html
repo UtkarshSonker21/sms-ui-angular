@@ -1,0 +1,164 @@
+<div class="register-student-page">
+
+  <!-- 1. Page Header -->
+  <div class="page-head">
+    <div>
+      <div class="crumb">
+        <a [routerLink]="['/dashboard']">Dashboard</a>
+        <span class="sep">/</span>
+        <a [routerLink]="['/academic-registration']">Academic Registration</a>
+        <span class="sep">/</span>
+        <span class="text-muted">Register</span>
+      </div>
+      <h1 class="page-title">Register Student for Semester</h1>
+      <div class="page-sub">{{ pageSubtitle }}</div>
+    </div>
+    <div class="page-actions">
+      <button type="button" class="btn btn-g" (click)="cancel()" [disabled]="isSubmitting">Cancel</button>
+      <button type="button" class="btn btn-p" (click)="confirmRegistration()" [disabled]="isSubmitting || isLoading || !!loadError">
+        <span *ngIf="isSubmitting"><i class="fas fa-spinner fa-spin"></i> Registering...</span>
+        <span *ngIf="!isSubmitting">Confirm Registration</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading & Error States -->
+  <div *ngIf="isLoading" class="state-card loading-state">
+    <i class="fas fa-spinner fa-spin"></i>
+    <span>Loading student and semester details...</span>
+  </div>
+
+  <div *ngIf="loadError && !isLoading" class="alert sem-alert-error">
+    <i class="fas fa-exclamation-circle"></i>
+    <div>{{ loadError }}</div>
+  </div>
+
+  <ng-container *ngIf="!isLoading && !loadError">
+
+    <!-- 2. Info Alert -->
+    <div class="alert info">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="alert-icon">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M12 16v-4M12 8h.01"/>
+      </svg>
+      <div>
+        <b>Note:</b>
+        A student cannot be registered twice in the same semester. If the student failed a core course in the prior semester, prior Direct Aid approval is required along with the official grade report.
+      </div>
+    </div>
+
+    <!-- 3. Summary Boxes (4 cards) -->
+    <div class="summary-row">
+      <div class="sum-box">
+        <div class="sum-l">STUDENT</div>
+        <div class="sum-v">{{ student?.fullName || '–' }}</div>
+        <div class="text-muted" style="font-size: 11px; margin-top: 3px;">
+          ID: {{ student?.studentCode || student?.studentId || '–' }}
+        </div>
+      </div>
+      <div class="sum-box">
+        <div class="sum-l">SEMESTER</div>
+        <div class="sum-v">{{ selectedSemester?.semesterName || ('Semester ' + selectedSemesterNo) }}</div>
+        <div class="text-muted" style="font-size: 11px; margin-top: 3px;">
+          {{ student?.programName || program?.programName || '–' }}
+        </div>
+      </div>
+      <div class="sum-box">
+        <div class="sum-l">STUDY PERIOD</div>
+        <div class="sum-v">{{ studyPeriodRange }}</div>
+        <div class="text-muted" style="font-size: 11px; margin-top: 3px;">
+          {{ studyPeriodWeeksText }}
+        </div>
+      </div>
+      <div class="sum-box">
+        <div class="sum-l">SEMESTER COST</div>
+        <div class="sum-v green">{{ semesterCostText }}</div>
+        <div class="text-muted" style="font-size: 11px; margin-top: 3px;">
+          Carried to payments
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Semester Courses Card -->
+    <div class="card" style="margin-bottom: 20px;">
+      <div class="card-head">
+        <div>
+          <div class="card-title">{{ selectedSemester?.semesterName || ('Semester ' + selectedSemesterNo) }} Courses</div>
+          <div class="card-sub">
+            {{ previewCheckedCount }} selected out of {{ courses.length }} available • {{ coreCoursesCount }} core course{{ coreCoursesCount === 1 ? '' : 's' }} required
+          </div>
+        </div>
+        <div class="row" style="gap: 14px; align-items: center;">
+          <div class="row" style="gap: 6px; font-size: 11px; color: var(--da-muted);">
+            <span>Credit hours:</span>
+            <span class="fw-700 text-green" style="font-size: 14px;">{{ totalCredits }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bulk-bar" *ngIf="courses.length > 0">
+        <label style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer;">
+          <input type="checkbox" class="crs-pick" [checked]="allCoursesChecked" (change)="toggleAllCourses($event)">
+          <span>Select all</span>
+        </label>
+        <span class="bb-count">{{ previewCheckedCount }} selected</span>
+        <span class="bb-spacer"></span>
+        <span class="text-muted" style="font-size: 11px;">Preview for review only</span>
+      </div>
+
+      <div class="course-list-wrap" *ngIf="courses.length > 0; else noCoursesTpl">
+        <div class="course-row" *ngFor="let course of courses">
+          <input type="checkbox" class="crs-pick"
+            [checked]="previewCheckedIds.has(getCourseKey(course))"
+            (change)="toggleCourse(course, $event)"
+            [attr.aria-label]="'Select ' + (course.courseNameEn || course.courseNameAr || 'course')">
+          <div>
+            <div class="course-name">{{ course.courseNameEn || course.courseNameAr || 'Course' }}</div>
+            <div class="course-meta">
+              {{ course.courseCode || 'Code unavailable' }} • {{ course.credits }} credit{{ course.credits === 1 ? '' : 's' }}
+            </div>
+          </div>
+          <span class="course-type" [class.core]="course.courseType === 1" [class.elective]="course.courseType !== 1">
+            {{ course.courseType === 1 ? 'Core' : 'Elective' }}
+          </span>
+          <span class="text-muted" style="font-size: 11px;">{{ course.credits }} cr</span>
+        </div>
+      </div>
+
+      <ng-template #noCoursesTpl>
+        <div style="padding: 36px 20px; text-align: center; color: var(--da-muted);">
+          <div style="font-size: 14px; font-weight: 600; color: var(--da-black);">No courses configured</div>
+          <div style="font-size: 12px; margin-top: 4px;">No active courses are configured for this semester.</div>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- 5. Registration Details / Remarks Section -->
+    <div class="card registration-card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Registration Confirmation Details</div>
+          <div class="card-sub">Specify the official registration date and any optional notes for this semester registration.</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="register-form-grid">
+          <div class="field">
+            <label class="field-label" for="reg-date">Registration Date <span class="required">*</span></label>
+            <input id="reg-date" type="date" class="field-input" [(ngModel)]="registrationDate" required>
+          </div>
+          <div class="field">
+            <label class="field-label" for="reg-remarks">Remarks</label>
+            <input id="reg-remarks" type="text" class="field-input" [(ngModel)]="remarks" placeholder="Optional registration remarks...">
+          </div>
+        </div>
+        <!-- <div class="registration-note">
+          <i class="fas fa-info-circle"></i>
+          <span>Confirming registration enrolls the student into all active courses for {{ selectedSemester?.semesterName || ('Semester ' + selectedSemesterNo) }}. Course selection checkboxes above are for preview only.</span>
+        </div> -->
+      </div>
+    </div>
+
+  </ng-container>
+
+</div>

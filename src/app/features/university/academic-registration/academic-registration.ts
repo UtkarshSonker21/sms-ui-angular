@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { HelperMethods } from '../../../core/helpers/helper-methods';
 
 import { AcademicRegistrationFilterModel } from '../../../core/models/university/academic-registration/academic-registration-filter.model';
@@ -46,6 +47,7 @@ export class AcademicRegistration implements OnInit, OnDestroy {
     if (this.showUploadResultsDialog) this.closeUploadResultsDialog();
   }
 
+  private router = inject(Router);
   private registrationService = inject(AcademicRegistrationService);
   private centralWindowService = inject(UniversityRegistrationWindowService);
   private notification = inject(NotificationService);
@@ -80,19 +82,6 @@ export class AcademicRegistration implements OnInit, OnDestroy {
   activePeriodOption = 0;
   activeAcademicYearOption = 0;
 
-  // Registration Dialog State
-  showRegisterDialog = false;
-  isSaving = false;
-  isConfirmingRegistration = false;
-  selectedStudent: AcademicRegistrationModel | null = null;
-  registerRequest: RegisterStudentRequestModel = new RegisterStudentRequestModel();
-  registerProgram: ProgramRequest | null = null;
-  registerSemesters: ProgramSemester[] = [];
-  registerCourses: ProgramCourse[] = [];
-  readonly previewSelectedCourseIds = new Set<number>();
-  isLoadingRegisterDetails = false;
-  registerDetailsError = '';
-  private registerDetailsRequestId = 0;
   showBulkRegistrationDialog = false;
   isPreparingBulkRegistration = false;
   isConfirmingBulkRegistration = false;
@@ -428,6 +417,10 @@ export class AcademicRegistration implements OnInit, OnDestroy {
   }
 
   async registerSelectedStudents(): Promise<void> {
+    // temporaraily commnted    
+  }
+
+  async registerSelectedStudent(): Promise<void> {
     if (this.isPreparingBulkRegistration || this.isConfirmingBulkRegistration || this.isBulkRegistering) return;
 
     this.currentTime = Date.now();
@@ -861,187 +854,11 @@ export class AcademicRegistration implements OnInit, OnDestroy {
     this.loadData();
   }
 
-  // --- Registration Logic ---
-  openRegisterDialog(student: AcademicRegistrationModel): void {
-    this.selectedStudent = student;
-    this.registerRequest = new RegisterStudentRequestModel();
-    this.registerRequest.applicationId = student.applicationId;
-    this.registerRequest.registrationDate = student.registrationDate ? new Date(student.registrationDate) : new Date();
-    this.registerRequest.semesterNo = student.semesterNo || 1;
-    this.registerProgram = null;
-    this.registerSemesters = [];
-    this.registerCourses = [];
-    this.previewSelectedCourseIds.clear();
-    this.registerDetailsError = '';
-    this.showRegisterDialog = true;
-    this.loadRegisterDetails(student.programId);
-  }
-
-  closeRegisterDialog(): void {
-    if (this.isSaving || this.isConfirmingRegistration) return;
-    this.registerDetailsRequestId++;
-    this.showRegisterDialog = false;
-    this.selectedStudent = null;
-  }
-
-  private loadRegisterDetails(programId: number): void {
-    const requestId = ++this.registerDetailsRequestId;
-    this.isLoadingRegisterDetails = true;
-
-    forkJoin({
-      program: this.programService.getProgramById(programId),
-      semesters: this.programService.getSemesterByProgramId(programId)
-    }).subscribe({
-      next: ({ program, semesters }) => {
-        if (requestId !== this.registerDetailsRequestId) return;
-        this.isLoadingRegisterDetails = false;
-        if (!program.success || !program.result) {
-          this.registerDetailsError = program.message || 'Program details are unavailable.';
-          return;
-        }
-        if (!Array.isArray(semesters.result)) {
-          this.registerDetailsError = semesters.message || 'Configured semesters could not be loaded for this program.';
-          return;
-        }
-        if (!semesters.success && semesters.result.length > 0) {
-          this.registerDetailsError = semesters.message || 'Configured semesters could not be loaded for this program.';
-          return;
-        }
-
-        this.registerProgram = program.result;
-        const configuredCount = program.result.numberOfSemesters;
-        this.registerSemesters = semesters.result
-          .filter(semester => Number.isInteger(semester.semesterNo) &&
-            semester.semesterNo >= 1 &&
-            semester.semesterNo <= configuredCount &&
-            semesters.result.filter(item => item.semesterNo === semester.semesterNo).length === 1)
-          .slice()
-          .sort((a, b) => a.semesterNo - b.semesterNo);
-        if (semesters.result.length > 0 && this.registerSemesters.length === 0) {
-          this.registerDetailsError = 'No valid, unambiguous persisted semesters are available within this program’s configured semester range.';
-          return;
-        }
-        const requestedSemester = this.registerSemesters.find(
-          semester => semester.semesterNo === this.registerRequest.semesterNo
-        );
-        if (!requestedSemester) {
-          this.registerRequest.semesterNo = 0;
-        }
-        this.refreshRegisterCourses();
-      },
-      error: (error) => {
-        if (requestId !== this.registerDetailsRequestId) return;
-        this.isLoadingRegisterDetails = false;
-        this.registerDetailsError = HelperMethods.getApiErrorMessage(error) || 'Program semester and course details could not be loaded.';
-        this.notification.handleBusinessError(error, this.registerDetailsError);
-      }
-    });
-  }
-
-  onRegisterSemesterChanged(value: number | string): void {
-    this.registerRequest.semesterNo = Number(value) || 0;
-    this.refreshRegisterCourses();
-  }
-
-  private refreshRegisterCourses(): void {
-    this.registerCourses = (this.registerProgram?.courses || [])
-      .filter(course => course.semesterNo === Number(this.registerRequest.semesterNo))
-      .slice()
-      .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
-    this.previewSelectedCourseIds.clear();
-  }
-
-  get selectedRegisterSemester(): ProgramSemester | undefined {
-    return this.registerSemesters.find(
-      semester => semester.semesterNo === Number(this.registerRequest.semesterNo)
-    );
-  }
-
-  get allPreviewCoursesSelected(): boolean {
-    return this.registerCourses.length > 0 && this.registerCourses.every(course =>
-      this.previewSelectedCourseIds.has(this.previewCourseKey(course))
-    );
-  }
-
-  togglePreviewCourse(course: ProgramCourse, selected: boolean): void {
-    const key = this.previewCourseKey(course);
-    if (selected) this.previewSelectedCourseIds.add(key);
-    else this.previewSelectedCourseIds.delete(key);
-  }
-
-  toggleAllPreviewCourses(selected: boolean): void {
-    this.previewSelectedCourseIds.clear();
-    if (selected) {
-      this.registerCourses.forEach(course => this.previewSelectedCourseIds.add(this.previewCourseKey(course)));
-    }
-  }
-
-  private previewCourseKey(course: ProgramCourse): number {
-    return course.programCourseId ?? course.courseId;
-  }
-
-  courseTypeLabel(courseType: number): string {
-    if (courseType === 1) return 'Core';
-    if (courseType === 2) return 'Elective';
-    return 'Optional';
-  }
-
-  async registerStudent(): Promise<void> {
-    if (this.isSaving || this.isConfirmingRegistration) return;
-    if (!this.registerRequest.semesterNo || !this.registerRequest.registrationDate) {
-      this.notification.warning('Semester and Registration Date are required.');
-      return;
-    }
-
-    if (!this.selectedRegisterSemester) {
-      this.notification.warning('Select a configured program semester before registering the student.');
-      return;
-    }
-
-    const student = this.selectedStudent;
-    const semester = this.selectedRegisterSemester;
-    if (!student || !semester) return;
-
-    const termLabel = [semester.termName, semester.academicYearName].filter(Boolean).join(' ');
-    const semesterLabel = `${semester.semesterName} (Semester ${semester.semesterNo})${termLabel ? ` — ${termLabel}` : ''}`;
-    this.isConfirmingRegistration = true;
-    let confirmed = false;
-    try {
-      confirmed = await this.confirmDialog.confirm({
-        title: 'Confirm Student Registration',
-        message: `Register ${student.studentName} for ${semesterLabel}? Registration period(s): ${this.getBulkPeriodSummary([student])}. The API will validate eligibility and enroll all active courses configured for the selected semester.`,
-        confirmText: 'Confirm Registration',
-        cancelText: 'Cancel',
-        variant: 'info'
-      });
-    } catch {
-      this.notification.error('Could not open the registration confirmation.');
-      this.isConfirmingRegistration = false;
-      return;
-    }
-    this.isConfirmingRegistration = false;
-    if (!confirmed) return;
-
-    this.isSaving = true;
-    this.registrationService.registerStudent(this.registerRequest).subscribe({
-      next: (response) => {
-        this.isSaving = false;
-        if (response.success) {
-          this.notification.success('Student registered successfully.');
-          this.closeRegisterDialog();
-          this.loadData();
-
-          return;
-        }
-        this.notification.warning(response.message || 'The registration request was not accepted.');
-      },
-      error: (error) => {
-        this.isSaving = false;
-        this.notification.handleBusinessError(
-          error,
-          'Failed to register student.'
-        );
-      }
+  // --- Navigation to Dedicated Register Page ---
+  navigateToRegister(student: AcademicRegistrationModel): void {
+    const semesterNo = student.semesterNo || (this.filter.semesterNo > 0 ? this.filter.semesterNo : 1);
+    this.router.navigate(['/academic-registration/register', student.applicationId], {
+      queryParams: { semester: semesterNo }
     });
   }
 

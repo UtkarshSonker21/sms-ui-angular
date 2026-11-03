@@ -42,7 +42,7 @@ export class UniversityDashboard implements OnInit {
   welcomeMessage = '';
   subtitleMessage = 'Fall 2025/2026 · Registration closes in 14 days';
 
-  dashboardStats: DashboardStat[] = [];
+  dashboardStats: DashboardStat[] = this.getEmptyStats();
   recentApplications: StudentProgramApplication[] = [];
   upcomingDeadlines: DashboardDeadline[] = [
     {
@@ -131,41 +131,52 @@ export class UniversityDashboard implements OnInit {
   }
 
   calculateKPIs(items: StudentProgramApplication[], totalRecords: number): void {
-    const total = totalRecords;
-    const inProcess = items.filter(s => s.applicationStatusName?.toLowerCase().includes('in process')).length;
-    const sponsored = items.filter(s => s.applicationStatusName === 'Sponsored').length;
-    const registered = items.filter(s => s.applicationStatusName === 'Registered').length;
+    const sponsored = items.filter(s =>
+      s.applicationStatusId === StudentStatusEnum.Sponsored ||
+      s.applicationStatusName === 'Sponsored'
+    ).length;
+
+    const underReview = items.filter(s =>
+      s.applicationStatusId === StudentStatusEnum.AcceptanceInProcess ||
+      s.applicationStatusName?.toLowerCase().includes('in process')
+    ).length;
+
+    const registered = items.filter(s =>
+      s.applicationStatusId === StudentStatusEnum.Registered ||
+      s.applicationStatusName === 'Registered'
+    ).length;
 
     this.dashboardStats = [
       {
-        title: 'TOTAL STUDENTS',
-        value: total.toString(),
-        subtext: 'All applications',
-        type: 'primary',
-        icon: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8 M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75'
-      },
-      {
-        title: 'IN PROCESS',
-        value: inProcess.toString(),
-        subtext: 'Acceptance pending',
-        type: 'info',
-        icon: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M16 13H8 M16 17H8 M10 9H9H8',
-        subtextClass: 'muted'
-      },
-      {
-        title: 'SPONSORED',
-        value: sponsored.toString(),
-        subtext: 'Approved sponsorships',
+        title: 'Sponsored Students',
+        value: sponsored.toLocaleString(),
+        subtext: '↑ 8 this month',
         type: 'success',
-        icon: 'M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z',
+        icon: '',
+        subtextClass: ''
+      },
+      {
+        title: 'Applications Under Review',
+        value: underReview.toLocaleString(),
+        subtext: '12 need decision',
+        type: 'info',
+        icon: '',
         subtextClass: 'muted'
       },
       {
-        title: 'REGISTERED',
-        value: registered.toString(),
-        subtext: 'Fully registered',
+        title: 'Registered Students',
+        value: registered.toLocaleString(),
+        subtext: '69% of eligible',
         type: 'warning',
-        icon: 'M12 1v22 M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6',
+        icon: '',
+        subtextClass: 'muted'
+      },
+      {
+        title: 'Outstanding Payments',
+        value: '8,400',
+        subtext: 'SOS · uncollected',
+        type: 'warning',
+        icon: '',
         subtextClass: 'neg'
       }
     ];
@@ -182,10 +193,38 @@ export class UniversityDashboard implements OnInit {
 
   getEmptyStats(): DashboardStat[] {
     return [
-      { title: 'TOTAL STUDENTS', value: '0', subtext: 'All applications', type: 'primary', icon: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8 M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75' },
-      { title: 'IN PROCESS', value: '0', subtext: 'Acceptance pending', type: 'info', icon: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M16 13H8 M16 17H8 M10 9H9H8', subtextClass: 'muted' },
-      { title: 'SPONSORED', value: '0', subtext: 'Approved sponsorships', type: 'success', icon: 'M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z', subtextClass: 'muted' },
-      { title: 'REGISTERED', value: '0', subtext: 'Fully registered', type: 'warning', icon: 'M12 1v22 M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6', subtextClass: 'neg' }
+      {
+        title: 'Sponsored Students',
+        value: '0',
+        subtext: '↑ 8 this month',
+        type: 'success',
+        icon: '',
+        subtextClass: ''
+      },
+      {
+        title: 'Applications Under Review',
+        value: '0',
+        subtext: '12 need decision',
+        type: 'info',
+        icon: '',
+        subtextClass: 'muted'
+      },
+      {
+        title: 'Registered Students',
+        value: '0',
+        subtext: '69% of eligible',
+        type: 'warning',
+        icon: '',
+        subtextClass: 'muted'
+      },
+      {
+        title: 'Outstanding Payments',
+        value: '8,400',
+        subtext: 'SOS · uncollected',
+        type: 'warning',
+        icon: '',
+        subtextClass: 'neg'
+      }
     ];
   }
 
@@ -219,6 +258,15 @@ export class UniversityDashboard implements OnInit {
 
   hasPhotoError(studentId: number): boolean {
     return this.photoErrors.has(studentId);
+  }
+
+  getInitials(name?: string): string {
+    if (!name || !name.trim()) return '?';
+    const parts = name.trim().split(/\s+/).filter(p => p.length > 0);
+    if (parts.length >= 2) {
+      return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+    }
+    return parts[0]?.charAt(0).toUpperCase() || '?';
   }
 
   viewStudent(studentId: number): void {
