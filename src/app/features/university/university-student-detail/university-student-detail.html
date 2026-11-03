@@ -795,7 +795,7 @@ DO NOT DELETE.
                                      (click)="selectNewStatusOption(null, $event)">
                                     Choose a status…
                                 </div>
-                                <div *ngFor="let opt of availableStatusOptions; let i = index"
+                                <div *ngFor="let opt of availableStatusOptions; let i = index; trackBy: trackByStatusOption"
                                      class="da-select-option" role="option"
                                      [class.selected]="selectedNewStatusId === opt.id"
                                      [class.keyboard-active]="isStatusDropdownOpen && activeOptionIndex === i"

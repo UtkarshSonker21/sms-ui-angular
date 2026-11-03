@@ -42,8 +42,14 @@ export class UniversityStudentDetail implements OnInit {
   isUpdatingStatus = false;
   activeOptionIndex = -1;
 
-  @HostListener('document:click')
-  onDocumentClick(): void {
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event?: MouseEvent): void {
+    if (event) {
+      const target = event.target as HTMLElement;
+      if (target && target.closest('.da-select')) {
+        return;
+      }
+    }
     this.isStatusDropdownOpen = false;
   }
 
@@ -101,38 +107,49 @@ export class UniversityStudentDetail implements OnInit {
     return null;
   }
 
-  // Allowed transitions per status
+  // Allowed transitions per status for University role (aligned with backend CanChangeStatus)
   readonly statusTransitions: { [key: number]: number[] } = {
-    [StudentStatusEnum.Draft]: [StudentStatusEnum.AcceptanceInProcess],
-    [StudentStatusEnum.AcceptanceInProcess]: [StudentStatusEnum.Accepted, StudentStatusEnum.AcceptanceRejected],
-    [StudentStatusEnum.Accepted]: [StudentStatusEnum.AwardingInProcess, StudentStatusEnum.Awarded, StudentStatusEnum.AwardingRejected],
-    [StudentStatusEnum.AcceptanceRejected]: [StudentStatusEnum.AcceptanceInProcess, StudentStatusEnum.Accepted],
-    [StudentStatusEnum.AwardingInProcess]: [StudentStatusEnum.Awarded, StudentStatusEnum.AwardingRejected],
-    [StudentStatusEnum.Awarded]: [],
-    [StudentStatusEnum.AwardingRejected]: [StudentStatusEnum.AwardingInProcess, StudentStatusEnum.Awarded],
-    [StudentStatusEnum.SponsoringInProcess]: [StudentStatusEnum.Sponsored, StudentStatusEnum.SponsoringRejected],
-    [StudentStatusEnum.Sponsored]: [StudentStatusEnum.Registered],
-    [StudentStatusEnum.SponsoringRejected]: [StudentStatusEnum.Awarded],
-    [StudentStatusEnum.Registered]: [StudentStatusEnum.Graduated],
+    [StudentStatusEnum.AcceptanceInProcess]: [
+      StudentStatusEnum.Accepted,
+      StudentStatusEnum.AcceptanceRejected
+    ],
+    [StudentStatusEnum.Accepted]: [
+      StudentStatusEnum.AwardingInProcess,
+      StudentStatusEnum.Awarded,
+      StudentStatusEnum.AwardingRejected
+    ],
+    [StudentStatusEnum.AwardingInProcess]: [
+      StudentStatusEnum.Awarded,
+      StudentStatusEnum.AwardingRejected
+    ],
   };
+
+  private cachedStatusOptions: { id: number; name: string }[] = [];
+  private lastStatusForOptions: number | null | undefined = undefined;
 
   get availableStatusOptions(): { id: number; name: string }[] {
     if (this.isAwarded) {
       return [];
     }
     const currentId = this.student?.applicationStatusId;
+    if (currentId === this.lastStatusForOptions && this.cachedStatusOptions.length > 0) {
+      return this.cachedStatusOptions;
+    }
+    this.lastStatusForOptions = currentId;
+
     if (currentId !== undefined && currentId !== null && this.statusTransitions[currentId]?.length) {
-      return this.statusTransitions[currentId].map(id => ({
+      this.cachedStatusOptions = this.statusTransitions[currentId].map(id => ({
         id,
         name: this.studentStatusService.getName(id)
       }));
+      return this.cachedStatusOptions;
     }
-    if (currentId !== undefined && currentId !== null) {
-      return this.studentStatusService.getUniversityStatuses()
-        .filter(s => s.id !== currentId)
-        .map(s => ({ id: s.id, name: s.name }));
-    }
-    return [];
+    this.cachedStatusOptions = [];
+    return this.cachedStatusOptions;
+  }
+
+  trackByStatusOption(index: number, option: { id: number; name: string }): number {
+    return option.id;
   }
 
   toggleStatusDropdown(event?: Event): void {
@@ -156,6 +173,7 @@ export class UniversityStudentDetail implements OnInit {
     if (this.isAwarded) return;
     if (event) {
       event.stopPropagation();
+      event.preventDefault();
     }
     this.selectedNewStatusId = id;
     this.isStatusDropdownOpen = false;
@@ -231,8 +249,9 @@ export class UniversityStudentDetail implements OnInit {
 
     this.isUpdatingStatus = true;
     const newStatusName = this.getSelectedNewStatusName();
+    const targetApplicationId = this.student?.applicationId || this.studentId;
 
-    this.studentProgramService.changeStatus(this.studentId, {
+    this.studentProgramService.changeStatus(targetApplicationId, {
       applicationStatusId: this.selectedNewStatusId,
       remarks: this.statusNotes ? this.statusNotes.trim() : (null as any)
     }).subscribe({
@@ -278,6 +297,8 @@ export class UniversityStudentDetail implements OnInit {
           this.photoError = false;
           this.selectedNewStatusId = null;
           this.statusNotes = '';
+          this.lastStatusForOptions = undefined;
+          this.cachedStatusOptions = [];
 
           // Fallback simple timeline for now using actionDate
           if (this.student.actionDate) {
@@ -468,7 +489,7 @@ export class UniversityStudentDetail implements OnInit {
 
       if (confirmed) {
 
-        this.studentProgramService.changeStatus(this.studentId, {
+        this.studentProgramService.changeStatus(this.student?.applicationId || this.studentId, {
           applicationStatusId: StudentStatusEnum.AcceptanceRejected,
           remarks: null as any
         }).subscribe({
@@ -505,7 +526,7 @@ export class UniversityStudentDetail implements OnInit {
       variant: 'info'
     }).then(confirmed => {
       if (confirmed) {
-        this.studentProgramService.changeStatus(this.studentId, {
+        this.studentProgramService.changeStatus(this.student?.applicationId || this.studentId, {
           applicationStatusId: StudentStatusEnum.Accepted,
           remarks: null as any
         }).subscribe({
@@ -541,7 +562,7 @@ export class UniversityStudentDetail implements OnInit {
       variant: 'info'
     }).then(confirmed => {
       if (confirmed) {
-        this.studentProgramService.changeStatus(this.studentId, {
+        this.studentProgramService.changeStatus(this.student?.applicationId || this.studentId, {
           applicationStatusId: StudentStatusEnum.AwardingInProcess,
           remarks: null as any
         }).subscribe({
@@ -575,7 +596,7 @@ export class UniversityStudentDetail implements OnInit {
       variant: 'info'
     }).then(confirmed => {
       if (confirmed) {
-        this.studentProgramService.changeStatus(this.studentId, {
+        this.studentProgramService.changeStatus(this.student?.applicationId || this.studentId, {
           applicationStatusId: StudentStatusEnum.Awarded,
           remarks: null as any
         }).subscribe({
@@ -609,7 +630,7 @@ export class UniversityStudentDetail implements OnInit {
       variant: 'danger'
     }).then(confirmed => {
       if (confirmed) {
-        this.studentProgramService.changeStatus(this.studentId, {
+        this.studentProgramService.changeStatus(this.student?.applicationId || this.studentId, {
           applicationStatusId: StudentStatusEnum.AwardingRejected,
           remarks: null as any
         }).subscribe({
