@@ -9,5 +9,7 @@ export class StudentProgramApplicationFilter extends BaseFilter {
   universityId?: number;
 
   applicationStatusId?: number;
+  studentCategoryId?: number;
+  isDonorSponsored?: boolean;
 
 }

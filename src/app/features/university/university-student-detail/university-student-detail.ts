@@ -11,6 +11,13 @@ import { StudentStatusService } from '../../../core/services/common/student-stat
 import { StudentProgramDocument } from '../../../core/models/school/student-program-application/student-program-document.model';
 import { StudentProgramApplication } from '../../../core/models/school/student-program-application/student-program-application.model';
 import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
+import { ProgramService } from '../../../core/services/university/programs.service';
+import { MasterCurrencyService } from '../../../core/services/superadmin/master-currency.service';
+import { ProgramRequest } from '../../../core/models/university/programs/program-request.model';
+import { ProgramCost } from '../../../core/models/university/programs/program-cost.model';
+import { ProgramCourse } from '../../../core/models/university/programs/program-course.model';
+import { MasterCurrencyFilter } from '../../../core/models/super-admin/master-currency/master-currency-filter.model';
+import { MasterCurrencyRequest } from '../../../core/models/super-admin/master-currency/master-currency-request.model';
 
 
 @Component({
@@ -27,6 +34,15 @@ export class UniversityStudentDetail implements OnInit {
   private studentProgramService = inject(StudentProgramService);
   private studentStatusService = inject(StudentStatusService);
   private confirmDialog = inject(ConfirmDialogService);
+  private programService = inject(ProgramService);
+  private masterCurrencyService = inject(MasterCurrencyService);
+
+  // Program Load & Cost state
+  program: ProgramRequest | null = null;
+  isProgramLoading = false;
+  programCurrency: string = 'SOS';
+  currencies: MasterCurrencyRequest[] = [];
+  isFullCostModalOpen = false;
 
   studentStatus = StudentStatusEnum;
 
@@ -313,6 +329,10 @@ export class UniversityStudentDetail implements OnInit {
             this.loadDocuments(this.student.applicationId);
           }
 
+          if (this.student.programId) {
+            this.loadProgramLoadAndCost(this.student.programId);
+          }
+
           this.loadHistory();
 
           return;
@@ -407,6 +427,54 @@ export class UniversityStudentDetail implements OnInit {
       window.open(previewUrl, '_blank');
     } else {
       this.notification.info('Document preview is not available.');
+    }
+  }
+
+  getRecommendationDocumentUrl(): string {
+    const path = this.student?.recommendationLetterPath?.trim();
+    return HelperMethods.getFileUrl(path);
+  }
+
+  getRecommendationFileName(): string {
+    const path = this.student?.recommendationLetterPath?.trim();
+    if (!path) return '';
+    const parts = path.split(/[\/\\]/);
+    const fileName = parts[parts.length - 1];
+    return fileName || 'Recommendation Letter';
+  }
+
+  getDocumentIconClass(path?: string | null): string {
+    if (!path) return 'fas fa-file-alt text-muted';
+    const lower = path.toLowerCase();
+    if (lower.endsWith('.pdf')) return 'fas fa-file-pdf text-danger';
+    if (lower.endsWith('.png') || lower.endsWith('.jpg') || lower.endsWith('.jpeg') || lower.endsWith('.webp')) {
+      return 'fas fa-file-image text-green';
+    }
+    return 'fas fa-file-alt text-muted';
+  }
+
+  previewRecommendation(event?: Event): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    const rawPath = this.student?.recommendationLetterPath?.trim();
+    if (!rawPath) {
+      this.notification.info('Recommendation document is not available.');
+      return;
+    }
+
+    const previewUrl = this.getRecommendationDocumentUrl();
+    if (!previewUrl) {
+      this.notification.error('Invalid recommendation document path.');
+      return;
+    }
+
+    try {
+      window.open(previewUrl, '_blank');
+    } catch {
+      this.notification.error('Failed to open the recommendation document.');
     }
   }
 
@@ -653,5 +721,157 @@ export class UniversityStudentDetail implements OnInit {
     });
   }
 
+
+
+  // --- Program Load & Cost Calculations & Handlers ---
+  get programCosts(): ProgramCost[] {
+    return this.program?.costs || [];
+  }
+
+  get programCourses(): ProgramCourse[] {
+    return this.program?.courses || [];
+  }
+
+  get programSemestersCount(): number {
+    return this.program?.numberOfSemesters || 0;
+  }
+
+  get hasCostConfiguration(): boolean {
+    return this.programCosts.length > 0;
+  }
+
+  get recurringCostsList(): ProgramCost[] {
+    return this.programCosts.filter(c => c.frequencyTypeId !== 1);
+  }
+
+  get oneTimeCostsList(): ProgramCost[] {
+    return this.programCosts.filter(c => c.frequencyTypeId === 1);
+  }
+
+  get oneTimeItemsCount(): number {
+    return this.oneTimeCostsList.length;
+  }
+
+  get recurringPerSemester(): number {
+    return this.recurringCostsList.reduce((sum, c) => sum + (Number(c.amount) || 0), 0);
+  }
+
+  // 1. Grand Program Cost (recurring cost items x configured number of semesters)
+  get grandRecurringCost(): number {
+    return this.recurringPerSemester * this.programSemestersCount;
+  }
+
+  // 2. One-Time Items (sum of all one-time cost items)
+  get oneTimeTotal(): number {
+    return this.oneTimeCostsList.reduce((sum, c) => sum + (Number(c.amount) || 0), 0);
+  }
+
+  // 3. Grand Total Program Cost (recurring program cost + one-time items)
+  get grandTotalProgramCost(): number {
+    return this.grandRecurringCost + this.oneTimeTotal;
+  }
+
+  // 4. Cost per Semester (grand total program cost / configured number of semesters)
+  get costPerSemester(): number {
+    if (this.programSemestersCount <= 0) return 0;
+    return this.grandTotalProgramCost / this.programSemestersCount;
+  }
+
+  // 5. Total Course Credits (sum of credits of all configured courses across the program)
+  get totalCourseCredits(): number {
+    if (this.programCourses.length > 0) {
+      return this.programCourses.reduce((sum, c) => sum + (Number(c.credits) || 0), 0);
+    }
+    return this.program?.creditsRequired || 0;
+  }
+
+  get totalCoursesCount(): number {
+    return this.programCourses.length;
+  }
+
+  // 6. Cost per Credit (grand total program cost / total course credits)
+  get costPerCredit(): number {
+    if (this.totalCourseCredits <= 0) return 0;
+    return this.grandTotalProgramCost / this.totalCourseCredits;
+  }
+
+  formatAmount(val: number): string {
+    if (val == null || isNaN(val)) return '0.00';
+    return val.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
+  get grandRecurringCostFormatted(): string {
+    return this.formatAmount(this.grandRecurringCost);
+  }
+
+  get oneTimeCostFormatted(): string {
+    return this.formatAmount(this.oneTimeTotal);
+  }
+
+  get grandTotalCostFormatted(): string {
+    return this.formatAmount(this.grandTotalProgramCost);
+  }
+
+  get costPerSemesterFormatted(): string {
+    return this.formatAmount(this.costPerSemester);
+  }
+
+  get costPerCreditFormatted(): string {
+    return this.formatAmount(this.costPerCredit);
+  }
+
+  get recurringPerSemesterFormatted(): string {
+    return this.formatAmount(this.recurringPerSemester);
+  }
+
+  openFullCostModal(): void {
+    this.isFullCostModalOpen = true;
+  }
+
+  closeFullCostModal(): void {
+    this.isFullCostModalOpen = false;
+  }
+
+  loadProgramLoadAndCost(programId?: number): void {
+    if (!programId) {
+      this.program = null;
+      return;
+    }
+
+    this.isProgramLoading = true;
+
+    const curFilter = new MasterCurrencyFilter();
+    curFilter.pageNumber = 1;
+    curFilter.pageSize = 1000;
+    this.masterCurrencyService.getMasterCurrencies(curFilter).subscribe({
+      next: (cRes) => {
+        if (cRes.success && cRes.result?.items) {
+          this.currencies = cRes.result.items;
+          this.resolveProgramCurrency();
+        }
+      }
+    });
+
+    this.programService.getProgramById(programId).subscribe({
+      next: (res) => {
+        this.isProgramLoading = false;
+        if (res.success && res.result) {
+          this.program = res.result;
+          this.resolveProgramCurrency();
+        }
+      },
+      error: () => {
+        this.isProgramLoading = false;
+      }
+    });
+  }
+
+  resolveProgramCurrency(): void {
+    // University program cost currency is SOS, matching programs-detail/:id
+    this.programCurrency = 'SOS';
+  }
 
 }

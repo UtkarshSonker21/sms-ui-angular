@@ -188,6 +188,7 @@ export const ApiEndpoints = {
       GetOptionsByCategory: (studentCategoryId: number) => `ngo/student-sponsorship-assignments/options/by-category/${studentCategoryId}`,
       GetByApplication: (applicationId: number) => `ngo/student-sponsorship-assignments/applications/${applicationId}`,
       Create: (applicationId: number) => `ngo/student-sponsorship-assignments/applications/${applicationId}`,
+      AssignDonor: (applicationId: number) => `ngo/student-sponsorship-assignments/applications/${applicationId}/donor`,
       Update: (assignmentId: number) => `ngo/student-sponsorship-assignments/${assignmentId}`,
       Deactivate: (assignmentId: number) => `ngo/student-sponsorship-assignments/${assignmentId}/deactivate`
     },

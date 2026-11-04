@@ -1,3 +1,5 @@
+import { ApiService } from '../../../core/services/common/api.service';
+import { ApiResponse } from '../../../core/models/common/response/api-response.model';
 import { Component, inject, OnInit, HostListener } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -8,12 +10,15 @@ import { HelperMethods } from '../../../core/helpers/helper-methods';
 import { StudentProgramService } from '../../../core/services/school/student-program.service';
 import { MasterCountryService } from '../../../core/services/superadmin/master-country.service';
 import { MasterUniversityService } from '../../../core/services/university/master-university.service';
+import { StudentCategoryService } from '../../../core/services/ngo/student-category.service';
 import { CurrentUserProfileService } from '../../../core/services/common/current-user-profile.service';
 
 import { MasterCountryFilter } from '../../../core/models/super-admin/master-country/master-country-filter.model';
 import { MasterUniversityFilter } from '../../../core/models/university/master-university/university-registration-filter.model';
+import { StudentCategoryFilter } from '../../../core/models/ngo/student-category/student-category-filter.model';
 import { MasterCountryRequest } from '../../../core/models/super-admin/master-country/master-country-request.model';
 import { MasterUniversityRequest } from '../../../core/models/university/master-university/university-registration.model';
+import { StudentCategoryRequest } from '../../../core/models/ngo/student-category/student-category.request.model';
 import { AccreditationStatus } from '../../../core/enums/accreditation-status.enum';
 import { StudentStatusEnum } from '../../../core/enums/student-application-status.enum';
 import { StudentStatusService } from '../../../core/services/common/student-status.service';
@@ -34,19 +39,32 @@ export class NgoStudents implements OnInit {
   onDocumentClick(event: MouseEvent): void {
     this.isCountryDropdownOpen = false;
     this.isUniversityDropdownOpen = false;
-    this.isStatusDropdownOpen = false;
+    this.isCategoryDropdownOpen = false;
     this.isPageSizeDropdownOpen = false;
   }
 
+  private api = inject(ApiService);
   private studentService = inject(StudentProgramService);
   private countryService = inject(MasterCountryService);
   private universityService = inject(MasterUniversityService);
+  private studentCategoryService = inject(StudentCategoryService);
   private currentUserProfileService = inject(CurrentUserProfileService);
   private notification = inject(NotificationService);
   private studentStatusService = inject(StudentStatusService);
   private router = inject(Router);
 
   universityId: number = 0;
+
+  // Currency
+  selectedCurrency: 'KWD' | 'USD' | 'EUR' = 'KWD';
+  ratesMap: Record<string, number> = {
+    'USD': 1.0,
+    'EUR': 0.8562,
+    'GBP': 0.7459,
+    'KWD': 0.3075,
+    'INR': 93.191,
+    'SOS': 570.0
+  };
 
   // Table Data
   allStudents: StudentProgramApplication[] = [];
@@ -55,20 +73,22 @@ export class NgoStudents implements OnInit {
   searchText = '';
 
   // KPI Summary
-  kpiTotal = 0;
-  kpiInProcess = 0;
+  kpiAwarded = 0;
   kpiSponsored = 0;
+  kpiDonor = 0;
   kpiRegistered = 0;
+  kpiGraduated = 0;
 
   // Tab Counts
-  tabAll = 0;
-  tabAwarded = 0;
-  tabSponsored = 0;
-  tabSponRejected = 0;
-  tabRegistered = 0;
-  tabGraduated = 0;
+  tabRequestsCount = 0;
+  tabAwardedCount = 0;
+  tabSponsoredCount = 0;
+  tabDonorCount = 0;
+  tabRegisteredCount = 0;
+  tabGraduatedCount = 0;
+  tabRejectedCount = 0;
 
-  activeTab: number | string = 'all';
+  activeTab: string = 'all';
   studentStatus = StudentStatusEnum;
 
   // Filter
@@ -77,25 +97,33 @@ export class NgoStudents implements OnInit {
   // Dropdown States & Data
   countries: MasterCountryRequest[] = [];
   universities: MasterUniversityRequest[] = [];
+  categories: StudentCategoryRequest[] = [];
 
   statusOptions = this.studentStatusService.getStatusOptions(COMMITTEE_STATUS_IDS);
 
   selectedCountry: number = 0;
   selectedUniversity: number = 0;
-  selectedStatus: number | null = null;
+  selectedCategory: number = 0;
+  selectedStatus: number | null = StudentStatusEnum.Awarded;
 
   isCountryDropdownOpen = false;
   isUniversityDropdownOpen = false;
-  isStatusDropdownOpen = false;
+  isCategoryDropdownOpen = false;
   isPageSizeDropdownOpen = false;
 
   ngOnInit(): void {
-    // this.universityId = this.currentUserProfileService.getCurrentUserProfile().universityId || 0;
     this.filter.pageNumber = 1;
     this.filter.pageSize = 25;
     this.getCountries();
     this.getUniversities();
+    this.getCategories();
+    this.loadRates();
+    this.loadSummaryCounts();
     this.loadData();
+  }
+
+  selectCurrency(currency: 'KWD' | 'USD' | 'EUR'): void {
+    this.selectedCurrency = currency;
   }
 
   getCountries(): void {
@@ -109,10 +137,7 @@ export class NgoStudents implements OnInit {
         }
       },
       error: (error) => {
-        this.notification.handleBusinessError(
-          error,
-          'Failed to load countries.'
-        );
+        this.notification.handleBusinessError(error, 'Failed to load countries.');
       }
     });
   }
@@ -130,10 +155,38 @@ export class NgoStudents implements OnInit {
         }
       },
       error: (error) => {
-        this.notification.handleBusinessError(
-          error,
-          'Failed to load universities.'
-        );
+        this.notification.handleBusinessError(error, 'Failed to load universities.');
+      }
+    });
+  }
+
+  getCategories(): void {
+    const catFilter = new StudentCategoryFilter();
+    catFilter.pageNumber = 1;
+    catFilter.pageSize = 1000;
+    catFilter.isActive = true;
+    this.studentCategoryService.getStudentCategories(catFilter).subscribe({
+      next: (res) => {
+        if (res.success && res.result) {
+          this.categories = res.result.items || [];
+        }
+      },
+      error: (error) => {
+        // Non-blocking
+      }
+    });
+  }
+
+  loadSummaryCounts(): void {
+    const summaryFilter = new StudentProgramApplicationFilter();
+    summaryFilter.pageNumber = 1;
+    summaryFilter.pageSize = 1000;
+    this.studentService.search(summaryFilter).subscribe({
+      next: (res) => {
+        if (res.success && res.result) {
+          this.allStudents = res.result.items || [];
+          this.calculateKPIs(this.allStudents);
+        }
       }
     });
   }
@@ -141,6 +194,14 @@ export class NgoStudents implements OnInit {
   loadData(): void {
     this.filter.countryId = this.selectedCountry || undefined;
     this.filter.universityId = this.selectedUniversity || undefined;
+    this.filter.studentCategoryId = this.selectedCategory || undefined;
+
+    if (this.activeTab === 'donor') {
+      this.filter.isDonorSponsored = true;
+    } else {
+      this.filter.isDonorSponsored = undefined;
+    }
+
     this.filter.applicationStatusId = this.selectedStatus !== null ? this.selectedStatus : undefined;
 
     this.studentService.search(this.filter).subscribe({
@@ -149,7 +210,7 @@ export class NgoStudents implements OnInit {
           this.students = response.result.items;
           this.totalRecords = response.result.totalCount;
 
-          if (this.selectedStatus === null) {
+          if (this.allStudents.length === 0) {
             this.allStudents = [...this.students];
             this.calculateKPIs(this.allStudents);
           }
@@ -160,37 +221,61 @@ export class NgoStudents implements OnInit {
       },
       error: (error) => {
         this.students = [];
-        this.notification.handleBusinessError(
-          error,
-          'Failed to load NGO students.'
-        );
+        this.notification.handleBusinessError(error, 'Failed to load NGO students.');
       }
     });
   }
 
   calculateKPIs(items: StudentProgramApplication[]): void {
-    this.kpiTotal = this.totalRecords;
-    this.kpiInProcess = this.studentStatusService.counts(items as any, StudentStatusEnum.AcceptanceInProcess);
-    this.kpiSponsored = this.studentStatusService.counts(items as any, StudentStatusEnum.Sponsored);
-    this.kpiRegistered = this.studentStatusService.counts(items as any, StudentStatusEnum.Registered);
+    this.tabAwardedCount = this.studentStatusService.counts(items as any, StudentStatusEnum.Awarded);
+    this.tabSponsoredCount = this.studentStatusService.counts(items as any, StudentStatusEnum.Sponsored);
+    this.tabRegisteredCount = this.studentStatusService.counts(items as any, StudentStatusEnum.Registered);
+    this.tabGraduatedCount = this.studentStatusService.counts(items as any, StudentStatusEnum.Graduated);
+    this.tabRejectedCount =
+      this.studentStatusService.counts(items as any, StudentStatusEnum.SponsoringRejected) +
+      this.studentStatusService.counts(items as any, StudentStatusEnum.AcceptanceRejected);
+    this.tabRequestsCount =
+      this.tabAwardedCount +
+      this.studentStatusService.counts(items as any, StudentStatusEnum.SponsoringInProcess);
+    this.tabDonorCount = items.filter(x => !!x.donorName || !!x.donorCode || x.sponsorshipSource === 'Donor').length;
 
-    this.tabAll = items.length;
-    this.tabAwarded = this.studentStatusService.counts(items as any, StudentStatusEnum.Awarded);
-    this.tabSponsored = this.kpiSponsored;
-    this.tabSponRejected = this.studentStatusService.counts(items as any, StudentStatusEnum.SponsoringRejected);
-    this.tabRegistered = this.kpiRegistered;
-    this.tabGraduated = this.studentStatusService.counts(items as any, StudentStatusEnum.Graduated);
+    this.kpiAwarded = this.tabAwardedCount;
+    this.kpiSponsored = this.tabSponsoredCount;
+    this.kpiDonor = this.tabDonorCount;
+    this.kpiRegistered = this.tabRegisteredCount;
+    this.kpiGraduated = this.tabGraduatedCount;
   }
 
-  getTabCount(statusId: number): number {
-    switch (statusId) {
-      case StudentStatusEnum.Awarded: return this.tabAwarded;
-      case StudentStatusEnum.Sponsored: return this.tabSponsored;
-      case StudentStatusEnum.SponsoringRejected: return this.tabSponRejected;
-      case StudentStatusEnum.Registered: return this.tabRegistered;
-      case StudentStatusEnum.Graduated: return this.tabGraduated;
-      default: return 0;
+  setCategoryTab(tab: string): void {
+    this.activeTab = tab;
+    this.filter.pageNumber = 1;
+    switch (tab) {
+      case 'requests':
+        this.selectedStatus = StudentStatusEnum.Awarded;
+        break;
+      case 'all':
+        this.selectedStatus = StudentStatusEnum.Awarded;
+        break;
+      case 'sponsored':
+        this.selectedStatus = StudentStatusEnum.Sponsored;
+        break;
+      case 'donor':
+        this.selectedStatus = null;
+        break;
+      case 'enrolled':
+        this.selectedStatus = StudentStatusEnum.Registered;
+        break;
+      case 'graduated':
+        this.selectedStatus = StudentStatusEnum.Graduated;
+        break;
+      case 'rejected':
+        this.selectedStatus = StudentStatusEnum.SponsoringRejected;
+        break;
+      default:
+        this.selectedStatus = null;
+        break;
     }
+    this.loadData();
   }
 
   // --- Search & Filters ---
@@ -218,7 +303,7 @@ export class NgoStudents implements OnInit {
     event.stopPropagation();
     this.isCountryDropdownOpen = !this.isCountryDropdownOpen;
     this.isUniversityDropdownOpen = false;
-    this.isStatusDropdownOpen = false;
+    this.isCategoryDropdownOpen = false;
   }
 
   selectCountryOption(id: number): void {
@@ -248,7 +333,7 @@ export class NgoStudents implements OnInit {
     event.stopPropagation();
     this.isUniversityDropdownOpen = !this.isUniversityDropdownOpen;
     this.isCountryDropdownOpen = false;
-    this.isStatusDropdownOpen = false;
+    this.isCategoryDropdownOpen = false;
   }
 
   selectUniversityOption(id: number): void {
@@ -271,57 +356,78 @@ export class NgoStudents implements OnInit {
     return u ? u.universityName : '';
   }
 
-  toggleStatusDropdown(event: Event): void {
+  toggleCategoryDropdown(event: Event): void {
     event.stopPropagation();
-    this.isStatusDropdownOpen = !this.isStatusDropdownOpen;
+    this.isCategoryDropdownOpen = !this.isCategoryDropdownOpen;
     this.isCountryDropdownOpen = false;
     this.isUniversityDropdownOpen = false;
   }
 
-  selectStatusOption(id: number | null): void {
-    this.selectedStatus = id;
-    this.activeTab = id === null ? 'all' : id;
-    this.isStatusDropdownOpen = false;
+  selectCategoryOption(id: number): void {
+    this.selectedCategory = id;
+    this.isCategoryDropdownOpen = false;
     this.filter.pageNumber = 1;
     this.loadData();
   }
 
-  clearStatusSelection(event: Event): void {
+  clearCategorySelection(event: Event): void {
     event.stopPropagation();
-    this.selectedStatus = null;
-    this.isStatusDropdownOpen = false;
+    this.selectedCategory = 0;
+    this.isCategoryDropdownOpen = false;
     this.filter.pageNumber = 1;
     this.loadData();
   }
 
-  getSelectedStatusName(): string {
-    if (this.selectedStatus === null) return 'All Statuses';
-    const s = this.statusOptions.find(x => x.id === this.selectedStatus);
-    return s ? s.name : '';
+  getSelectedCategoryName(): string {
+    const cat = this.categories.find(x => x.studentCategoryId === this.selectedCategory);
+    return cat ? cat.categoryName : '';
   }
 
-  setTab(tab: string | number): void {
-    this.activeTab = tab;
-    this.selectedStatus = tab === 'all' ? null : (tab as number);
-    this.filter.pageNumber = 1;
-    this.loadData();
-  }
-
-  // --- Status Badge Helper ---
-  getBadgeClassForStatus(statusId: number): string {
-    return this.studentStatusService.getBadgeClass(statusId);
-  }
-
+  // --- Status & Journey Helpers ---
   getStatusBadgeClass(student: StudentProgramApplication): string {
-    return this.studentStatusService.getBadgeClass(
-      student.applicationStatusId ?? StudentStatusEnum.Draft
-    );
+    const st = student.applicationStatusId;
+    switch (st) {
+      case StudentStatusEnum.Awarded: return 'st-awarded';
+      case StudentStatusEnum.Sponsored: return 'st-sponsored';
+      case StudentStatusEnum.Registered: return 'st-registered';
+      case StudentStatusEnum.Graduated: return 'st-graduated';
+      case StudentStatusEnum.SponsoringRejected:
+      case StudentStatusEnum.AcceptanceRejected:
+        return 'st-rejected';
+      case StudentStatusEnum.AcceptanceInProcess:
+      case StudentStatusEnum.SponsoringInProcess:
+      case StudentStatusEnum.AwardingInProcess:
+        return 'st-process';
+      case StudentStatusEnum.Accepted:
+        return 'st-accepted';
+      default:
+        return 'st-process';
+    }
   }
 
-  getStatusName(student: StudentProgramApplication): string {
-    return this.studentStatusService.getName(
-      student.applicationStatusId ?? StudentStatusEnum.Draft
-    );
+  getJourneyDots(statusId?: number): { cls: string; title: string }[] {
+    if (statusId === StudentStatusEnum.AcceptanceRejected || statusId === StudentStatusEnum.SponsoringRejected) {
+      return [{ cls: 'rej', title: 'Rejected' }];
+    }
+    const stages = [
+      { id: StudentStatusEnum.AcceptanceInProcess, title: 'In Process' },
+      { id: StudentStatusEnum.Accepted, title: 'Accepted' },
+      { id: StudentStatusEnum.Awarded, title: 'Awarded' },
+      { id: StudentStatusEnum.Sponsored, title: 'Sponsored' },
+      { id: StudentStatusEnum.Registered, title: 'Registered' },
+      { id: StudentStatusEnum.Graduated, title: 'Graduated' },
+    ];
+
+    let currentIdx = stages.findIndex(s => s.id === statusId);
+    if (statusId === StudentStatusEnum.SponsoringInProcess) {
+      currentIdx = 2; // In awarding/sponsorship transition
+    }
+    if (currentIdx === -1) currentIdx = 0;
+
+    return stages.map((s, idx) => ({
+      title: s.title,
+      cls: idx < currentIdx ? 'done' : (idx === currentIdx ? 'cur' : '')
+    }));
   }
 
   // --- Pagination ---
@@ -363,21 +469,101 @@ export class NgoStudents implements OnInit {
     this.loadData();
   }
 
-  exportList(): void {
-    this.notification.info('Export functionality coming soon.');
+  loadRates(): void {
+    this.api.get<ApiResponse<any[]>>('superadmin/currency-conversion/latest-rates').subscribe({
+      next: (res) => {
+        if (res.success && res.result && Array.isArray(res.result)) {
+          res.result.forEach((item: any) => {
+            if (item.currencyCode && item.rates) {
+              this.ratesMap[item.currencyCode.toUpperCase()] = Number(item.rates);
+            }
+          });
+        }
+      },
+      error: () => {
+        // Fallback default conversion rates active
+      }
+    });
   }
 
-  viewStudent(studentId: number): void {
-    const student = this.students.find(x => x.studentId === studentId);
-    if (student) {
-      if (student.applicationStatusId === StudentStatusEnum.Registered) {
-        this.router.navigate(['/registered-student', student.applicationId]);
-      } else {
-        this.router.navigate(['/ngo-student-details', student.applicationId]);
-      }
+  convertAmount(amount: number, fromCurrency: string, toCurrency: string): number {
+    if (!amount || isNaN(amount) || fromCurrency === toCurrency) return amount;
+    const fromRate = this.ratesMap[fromCurrency.toUpperCase()] || 1.0;
+    const toRate = this.ratesMap[toCurrency.toUpperCase()] || 1.0;
+    const inBaseUsd = amount / fromRate;
+    return inBaseUsd * toRate;
+  }
+
+  formatTotalCost(student: StudentProgramApplication): string {
+    if (student.totalProgramCost == null || isNaN(student.totalProgramCost) || student.totalProgramCost <= 0) {
+      return '-';
+    }
+    const fromCur = student.programCurrency || 'USD';
+    const converted = this.convertAmount(student.totalProgramCost, fromCur, this.selectedCurrency);
+    const formatted = converted.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+    return `${formatted} ${this.selectedCurrency}`;
+  }
+
+  exportCsv(): void {
+    const rows = this.students;
+    if (!rows || rows.length === 0) {
+      this.notification.warning('No student records to export.');
+      return;
+    }
+    const head = [
+      'Student ID',
+      'Country',
+      'University',
+      'College',
+      'Program',
+      'Student Name',
+      'Category',
+      'Sponsorship Source',
+      'Donor Name',
+      'Donor Reference',
+      'Total Program Cost',
+      'Status',
+      'Action Date'
+    ];
+    const lines = [head.join(',')];
+    rows.forEach(s => {
+      lines.push([
+        s.studentCode || ('#' + s.studentId),
+        s.universityCountryName || '',
+        s.universityName || '',
+        s.facultyName || '',
+        s.programName || '',
+        s.fullName || '',
+        s.sponsorshipCategoryName || s.categoryName || '',
+        s.sponsorshipSource || '',
+        s.donorName || '',
+        s.donorCode || '',
+        this.formatTotalCost(s),
+        s.applicationStatusName || '',
+        s.actionDate ? new Date(s.actionDate).toISOString().split('T')[0] : ''
+      ].map(v => '"' + String(v).replace(/"/g, '""') + '"').join(','));
+    });
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'kafaat-students.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    this.notification.success('Student roster exported to CSV successfully.');
+  }
+
+  viewStudent(student: StudentProgramApplication): void {
+    const targetId = student.applicationId || student.studentId;
+    if (student.applicationStatusId === StudentStatusEnum.Registered) {
+      this.router.navigate(['/registered-student', targetId]);
+    } else {
+      this.router.navigate(['/ngo-student-details', targetId]);
     }
   }
-
 
   photoErrors = new Set<number>();
 
@@ -394,8 +580,4 @@ export class NgoStudents implements OnInit {
   hasPhotoError(studentId: number): boolean {
     return this.photoErrors.has(studentId);
   }
-
 }
-
-
-

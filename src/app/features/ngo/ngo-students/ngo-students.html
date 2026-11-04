@@ -3,81 +3,125 @@
         <div class="crumb">
             <a href="#">Dashboard</a>
             <span class="sep">/</span>
-            <span class="text-muted">Student Management</span>
+            <span>Oversight</span>
+            <span class="sep">/</span>
+            <span class="text-muted">Students</span>
         </div>
-        <h2 class="page-title">Student Management</h2>
-        <p class="page-sub">
-            Manage university student applications, admissions, and status updates.
-        </p>
+        <h1 class="page-title">Students</h1>
+        <div class="page-sub">
+            Cross-university roster of awarded students.
+        </div>
     </div>
     <div class="page-actions">
-        <button type="button" class="btn btn-g" (click)="exportList()">
-            Export List
+        <div class="cur-pills" role="tablist" aria-label="Currency">
+            <button type="button" [class.active]="selectedCurrency === 'KWD'" (click)="selectCurrency('KWD')">KWD</button>
+            <button type="button" [class.active]="selectedCurrency === 'USD'" (click)="selectCurrency('USD')">USD</button>
+            <button type="button" [class.active]="selectedCurrency === 'EUR'" (click)="selectCurrency('EUR')">EUR</button>
+        </div>
+        <button type="button" class="btn btn-g" (click)="exportCsv()">
+            Export CSV
         </button>
     </div>
 </div>
 
-<div class="kpi-grid">
-    <div class="kpi">
-        <div class="kpi-l">Total students</div>
-        <div class="kpi-v">{{ kpiTotal }}</div>
-        <div class="kpi-d muted">Total applicants</div>
+<!-- Pending sponsorship requests alert -->
+<div class="alert" id="ss-banner" role="status" *ngIf="tabRequestsCount > 0" style="margin-bottom: 14px; display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px; color: #92400E; font-size: 13px;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; flex-shrink: 0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <div style="flex: 1; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+        <div>
+            <strong>{{ tabRequestsCount }} pending sponsorship request{{ tabRequestsCount > 1 ? 's' : '' }} from universities awaiting committee decision</strong>
+        </div>
+        <button type="button" class="btn btn-t" style="font-weight: 700; color: #92400E; padding: 2px 8px;" (click)="setCategoryTab('all')">
+            Review requests →
+        </button>
     </div>
+</div>
+
+<!-- 6 Summary KPI Cards -->
+<div class="kpi-grid kpi-6">
     <div class="kpi">
-        <div class="kpi-l">In Process</div>
-        <div class="kpi-v">{{ kpiInProcess }}</div>
-        <div class="kpi-d muted">Acceptance in progress</div>
+        <div class="kpi-l">Total awarded</div>
+        <div class="kpi-v" id="kpi-total">{{ kpiAwarded }}</div>
+        <div class="kpi-d muted">All non-rejected</div>
     </div>
     <div class="kpi">
         <div class="kpi-l">Sponsored</div>
-        <div class="kpi-v">{{ kpiSponsored }}</div>
-        <div class="kpi-d muted">Active sponsorships</div>
+        <div class="kpi-v" id="kpi-sponsored">{{ kpiSponsored }}</div>
+        <div class="kpi-d muted">DA pool</div>
+    </div>
+    <div class="kpi">
+        <div class="kpi-l">Donor-sponsored</div>
+        <div class="kpi-v" id="kpi-donor">{{ kpiDonor }}</div>
+        <div class="kpi-d muted">Donor assigned</div>
     </div>
     <div class="kpi">
         <div class="kpi-l">Registered</div>
-        <div class="kpi-v">{{ kpiRegistered }}</div>
-        <div class="kpi-d muted">Enrolled students</div>
+        <div class="kpi-v" id="kpi-enrolled">{{ kpiRegistered }}</div>
+        <div class="kpi-d muted">Currently registered</div>
+    </div>
+    <div class="kpi">
+        <div class="kpi-l">Graduated</div>
+        <div class="kpi-v" id="kpi-graduated">{{ kpiGraduated }}</div>
+        <div class="kpi-d muted">Program complete</div>
+    </div>
+    <div class="kpi">
+        <div class="kpi-l">Total disbursed</div>
+        <div class="kpi-v num-ltr" id="kpi-paid">-</div>
+        <div class="kpi-d muted">{{ selectedCurrency }} · to date</div>
     </div>
 </div>
 
-
-<div class="tabs" style="margin: 20px 0 18px 0;">
-  <div class="tab" [class.active]="activeTab === 'all'" (click)="setTab('all')">
-    All <span class="tab-count" style="background: rgba(0,0,0,0.05); color: var(--da-muted);">{{ tabAll }}</span>
-  </div>
-  <div class="tab" *ngFor="let s of statusOptions" [class.active]="activeTab === s.id" (click)="setTab(s.id)">
-    {{ s.name }} <span class="tab-count {{ s.badgeClass }}">{{ getTabCount(s.id) }}</span>
-  </div>
+<!-- Status Category Tabs -->
+<div class="stat-tabs" id="stat-tabs">
+    <button type="button" class="stat-tab" [class.active]="activeTab === 'all'" (click)="setCategoryTab('all')">
+        Awarded <span class="count">{{ tabAwardedCount }}</span>
+    </button>
+    <button type="button" class="stat-tab" [class.active]="activeTab === 'sponsored'" (click)="setCategoryTab('sponsored')">
+        Sponsored <span class="count">{{ tabSponsoredCount }}</span>
+    </button>
+    <button type="button" class="stat-tab" [class.active]="activeTab === 'donor'" (click)="setCategoryTab('donor')">
+        Donor-sponsored <span class="count">{{ tabDonorCount }}</span>
+    </button>
+    <button type="button" class="stat-tab" [class.active]="activeTab === 'enrolled'" (click)="setCategoryTab('enrolled')">
+        Registered <span class="count">{{ tabRegisteredCount }}</span>
+    </button>
+    <button type="button" class="stat-tab" [class.active]="activeTab === 'graduated'" (click)="setCategoryTab('graduated')">
+        Graduated <span class="count">{{ tabGraduatedCount }}</span>
+    </button>
+    <button type="button" class="stat-tab" [class.active]="activeTab === 'rejected'" (click)="setCategoryTab('rejected')">
+        Rejected <span class="count">{{ tabRejectedCount }}</span>
+    </button>
 </div>
 
-
-<div class="filters">
-    <div class="search-container">
+<!-- Filters Row (matching Panel Users & School Accreditation card design) -->
+<div class="filters" style="display: flex; gap: 10px; align-items: center; padding: 12px 14px; background: var(--da-surface, #ffffff); border: 1px solid var(--da-border, #e0e0e0); border-radius: var(--da-radius, 8px); margin-bottom: 16px; flex-wrap: wrap; overflow: visible; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+    <div class="search-container" style="flex: 1; max-width: 320px;">
         <i class="fas fa-search search-icon"></i>
-        <input type="text" class="search-input" placeholder="Search by Name or Student Code..." [(ngModel)]="searchText"
+        <input type="text" class="search-input" placeholder="Search name, ID, university…" [(ngModel)]="searchText"
             (keydown)="handleKeyDown($event)">
         <i class="fas fa-times clear-icon" *ngIf="searchText" (click)="clearSearch()"></i>
     </div>
 
-    <div class="da-select" [class.da-select-open]="isCountryDropdownOpen" tabindex="0">
-        <div class="da-select-control" (click)="toggleCountryDropdown($event)" style="padding: 0 12px 0 6px;">
+    <!-- Country Dropdown -->
+    <div class="da-select" [class.da-select-open]="isCountryDropdownOpen" tabindex="0" (click)="$event.stopPropagation()">
+        <div class="da-select-control" (click)="toggleCountryDropdown($event)">
             <div class="ms-display" [class.has-selection]="selectedCountry !== 0"
                 style="display: flex; align-items: center; flex: 1;">
                 <ng-container *ngIf="selectedCountry !== 0; else noCountrySelected">
                     <span class="ms-chip" style="margin: 0;">
                         {{ getSelectedCountryName() }}
-                        <span class="ms-chip-x" (click)="clearCountrySelection($event)">&times;</span>
+                        <span class="ms-chip-x" (click)="clearCountrySelection($event); $event.stopPropagation()">&times;</span>
                     </span>
                 </ng-container>
                 <ng-template #noCountrySelected>
-                    <span class="da-select-value" style="font-size: 13px; margin-left: 6px;">All Countries</span>
+                    <span class="da-select-value" style="font-size: 13px;">All countries</span>
                 </ng-template>
             </div>
             <i class="fas da-select-arrow" [ngClass]="isCountryDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
         </div>
         <div class="da-select-menu" *ngIf="isCountryDropdownOpen">
             <div class="da-select-option" [class.selected]="selectedCountry === 0" (click)="selectCountryOption(0)">
-                All Countries
+                All countries
             </div>
             <div class="da-select-option" *ngFor="let country of countries"
                 [class.selected]="selectedCountry === country.countryId"
@@ -87,18 +131,19 @@
         </div>
     </div>
 
-    <div class="da-select" [class.da-select-open]="isUniversityDropdownOpen" tabindex="0">
-        <div class="da-select-control" (click)="toggleUniversityDropdown($event)" style="padding: 0 12px 0 6px;">
+    <!-- University Dropdown -->
+    <div class="da-select" [class.da-select-open]="isUniversityDropdownOpen" tabindex="0" (click)="$event.stopPropagation()">
+        <div class="da-select-control" (click)="toggleUniversityDropdown($event)">
             <div class="ms-display" [class.has-selection]="selectedUniversity !== 0"
                 style="display: flex; align-items: center; flex: 1;">
                 <ng-container *ngIf="selectedUniversity !== 0; else noUniversitySelected">
                     <span class="ms-chip" style="margin: 0;">
                         {{ getSelectedUniversityName() }}
-                        <span class="ms-chip-x" (click)="clearUniversitySelection($event)">&times;</span>
+                        <span class="ms-chip-x" (click)="clearUniversitySelection($event); $event.stopPropagation()">&times;</span>
                     </span>
                 </ng-container>
                 <ng-template #noUniversitySelected>
-                    <span class="da-select-value" style="font-size: 13px; margin-left: 6px;">All Universities</span>
+                    <span class="da-select-value" style="font-size: 13px;">All universities</span>
                 </ng-template>
             </div>
             <i class="fas da-select-arrow"
@@ -107,7 +152,7 @@
         <div class="da-select-menu" *ngIf="isUniversityDropdownOpen">
             <div class="da-select-option" [class.selected]="selectedUniversity === 0"
                 (click)="selectUniversityOption(0)">
-                All Universities
+                All universities
             </div>
             <div class="da-select-option" *ngFor="let university of universities"
                 [class.selected]="selectedUniversity === university.universityId"
@@ -117,124 +162,115 @@
         </div>
     </div>
 
-    <!-- <div class="da-select" [class.da-select-open]="isStatusDropdownOpen" tabindex="0">
-        <div class="da-select-control" (click)="toggleStatusDropdown($event)" style="padding: 0 12px 0 6px;">
-            <div class="ms-display" [class.has-selection]="selectedStatus !== null"
+    <!-- Category Dropdown -->
+    <div class="da-select" [class.da-select-open]="isCategoryDropdownOpen" tabindex="0" (click)="$event.stopPropagation()">
+        <div class="da-select-control" (click)="toggleCategoryDropdown($event)">
+            <div class="ms-display" [class.has-selection]="selectedCategory !== 0"
                 style="display: flex; align-items: center; flex: 1;">
-                <ng-container *ngIf="selectedStatus !== null; else noStatusSelected">
+                <ng-container *ngIf="selectedCategory !== 0; else noCategorySelected">
                     <span class="ms-chip" style="margin: 0;">
-                        {{ getSelectedStatusName() }}
-                        <span class="ms-chip-x" (click)="clearStatusSelection($event)">&times;</span>
+                        {{ getSelectedCategoryName() }}
+                        <span class="ms-chip-x" (click)="clearCategorySelection($event); $event.stopPropagation()">&times;</span>
                     </span>
                 </ng-container>
-                <ng-template #noStatusSelected>
-                    <span class="da-select-value" style="font-size: 13px; margin-left: 6px;">All Statuses</span>
+                <ng-template #noCategorySelected>
+                    <span class="da-select-value" style="font-size: 13px;">All categories</span>
                 </ng-template>
             </div>
-            <i class="fas da-select-arrow" [ngClass]="isStatusDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+            <i class="fas da-select-arrow"
+                [ngClass]="isCategoryDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
         </div>
-        <div class="da-select-menu" *ngIf="isStatusDropdownOpen">
-            <div class="da-select-option" [class.selected]="selectedStatus === null" (click)="selectStatusOption(null)">
-                All Statuses
+        <div class="da-select-menu" *ngIf="isCategoryDropdownOpen">
+            <div class="da-select-option" [class.selected]="selectedCategory === 0"
+                (click)="selectCategoryOption(0)">
+                All categories
             </div>
-            <div class="da-select-option" *ngFor="let status of statusOptions"
-                [class.selected]="selectedStatus === status.id" (click)="selectStatusOption(status.id)">
-                {{ status.name }}
+            <div class="da-select-option" *ngFor="let cat of categories"
+                [class.selected]="selectedCategory === cat.studentCategoryId"
+                (click)="selectCategoryOption(cat.studentCategoryId!)">
+                {{ cat.categoryName }}
             </div>
         </div>
-    </div> -->
+    </div>
 
-    <div class="filter-count">
-        {{ totalRecords }} students
+    <div class="filter-count" style="margin-inline-start: auto; font-size: 12.5px; color: var(--da-muted); font-weight: 500;">
+        {{ totalRecords }} shown
     </div>
 </div>
 
-<div class="card"
-    style="border-radius: var(--da-radius); overflow: visible; margin-bottom: 20px; border: 1px solid var(--da-border, #e0e0e0); background: var(--da-surface, #ffffff); box-shadow: 0 10px 40px rgba(5,5,5,0.04);">
-    <table class="table">
-        <thead>
-            <tr>
-                <th style="width: 25%;">Student</th>
-                <th style="width: 15%;">Country</th>
-                <th style="width: 25%;">Program</th>
-                <th style="width: 15%;">Status</th>
-                <th style="width: 10%;">Action Date</th>
-                <th style="width: 10%; text-align: center !important;">Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr *ngFor="let student of students">
-                <td>
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <img *ngIf="student.photoPath && !hasPhotoError(student.studentId!)"
-                            [src]="getPhotoUrl(student.photoPath)" (error)="handlePhotoError(student.studentId!)"
-                            class="profile-photo" alt="Photo"
-                            style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
-                        <div *ngIf="!student.photoPath || hasPhotoError(student.studentId!)"
-                            class="student-profile-placeholder"
-                            style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600;">
-                            {{ student.fullName ? student.fullName.charAt(0).toUpperCase() : '?' }}
+<!-- Roster Table matching Prototype Layout -->
+<div class="roster-wrap">
+    <div class="roster-scroll">
+        <table class="roster" id="roster-table">
+            <thead>
+                <tr>
+                    <th>Country</th>
+                    <th>University</th>
+                    <th>Faculty</th>
+                    <th>Program</th>
+                    <th>Student</th>
+                    <th>Category</th>
+                    <th style="text-align: end;">Total cost</th>
+                    <th>Status</th>
+                    <th>Journey</th>
+                    <th style="width: 80px; text-align: center;"></th>
+                </tr>
+            </thead>
+            <tbody id="roster-body">
+                <tr *ngFor="let student of students" class="summary" [attr.data-id]="student.studentId">
+                    <td>{{ student.universityCountryName || '-' }}</td>
+                    <td>{{ student.universityName || '-' }}</td>
+                    <td>{{ student.facultyName || '-' }}</td>
+                    <td>{{ student.programName || '-' }}</td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            <span class="student-name-cell">{{ student.fullName }}</span>
+                            <span class="student-id-pill num-ltr">{{ student.studentCode || ('#' + student.studentId) }}</span>
+                            <span *ngIf="student.donorName" class="donor-pill" [title]="'Donor: ' + student.donorName + (student.donorCode ? ' (' + student.donorCode + ')' : '')">
+                                ★ {{ student.donorName }}
+                            </span>
                         </div>
-                        <div>
-                            <div style="font-size: 13.5px; font-weight: 600; color: var(--da-black);">
-                                {{ student.fullName }}
-                            </div>
-                            <div style="font-size: 12.5px; color: var(--da-green); margin-top: 1.5px;">
-                                Std Code: {{ student.studentCode || '-' }}
-                            </div>
+                    </td>
+                    <td>
+                        <div style="display: flex; flex-direction: column; gap: 2px;">
+                            <span class="cat-pill" [class.has-cat]="!!(student.sponsorshipCategoryName || student.categoryName)">
+                                {{ student.sponsorshipCategoryName || student.categoryName || '-' }}
+                            </span>
+                            <span *ngIf="student.sponsorshipSource" class="src-pill" [class.is-donor]="student.sponsorshipSource === 'Donor'">
+                                {{ student.sponsorshipSource }}
+                            </span>
                         </div>
-                    </div>
-                </td>
-                <td>
-                    <div style="font-size: 12.5px; color: var(--da-text);">
-                        {{ student.universityCountryName || '-' }}
-                    </div>
-                </td>
-                <td>
-                    <ng-container *ngIf="student.programName; else noProgram">
-                        <div style="font-size: 13.5px; font-weight: 600; color: var(--da-black);">
-                            {{ student.programName }}
-                        </div>
-                        <div style="font-size: 11.5px; color: var(--da-muted); margin-top: 2px;">
-                            {{ student.universityName }}
-                        </div>
-                    </ng-container>
-                    <ng-template #noProgram>
-                        <div style="font-size: 12.5px; color: var(--da-text);">
-                            -
-                        </div>
-                    </ng-template>
-                </td>
-                <td>
-                    <span class="chip {{ getStatusBadgeClass(student) }}" style="font-size: 11px;">
-                        {{ student.applicationStatusName }}
-                    </span>
-                </td>
-                <td>
-                    <div style="font-size: 12.5px; color: var(--da-text);">
-                        {{ student.actionDate | date: 'dd MMM yyyy' }}
-                    </div>
-                </td>
-                <td style="text-align: center;">
-                    <button type="button" class="btn btn-g" style="padding: 4px 10px; font-size: 12px; height: 28px; display: inline-flex; align-items: center; justify-content: center;" 
-                        (click)="viewStudent(student.studentId!)">
-                        View <i class="fas fa-arrow-right" style="margin-left: 4px; font-size: 10px;"></i>
-                    </button>
-                </td>
-            </tr>
+                    </td>
+                    <td style="text-align: end;" class="num-ltr">{{ formatTotalCost(student) }}</td>
+                    <td>
+                        <span class="st-badge {{ getStatusBadgeClass(student) }}">
+                            {{ student.applicationStatusName || 'Draft' }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="journey-mini">
+                            <span *ngFor="let dot of getJourneyDots(student.applicationStatusId)"
+                                  class="dot {{ dot.cls }}" [title]="dot.title"></span>
+                        </span>
+                    </td>
+                    <td style="text-align: center;">
+                        <button type="button" class="btn btn-t" (click)="viewStudent(student)">
+                            View
+                        </button>
+                    </td>
+                </tr>
 
+                <tr *ngIf="students.length === 0">
+                    <td colspan="10" style="text-align: center; padding: 40px 16px; color: var(--da-muted); font-size: 13px;">
+                        No students match the current filters.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 
-            <tr *ngIf="students.length === 0">
-                <td colspan="5" style="text-align: center; padding: 42px 20px;">
-                    <div style="font-size: 15px; font-weight: 600; color: var(--da-black);">No students found</div>
-                    <div style="font-size: 13px; color: var(--da-text-2); margin-top: 4px;">Adjust your search or filter
-                        to find what you're looking for.</div>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-
-    <div class="pagination-footer">
+    <!-- Pagination Footer -->
+    <div class="pagination-footer" style="padding: 12px 16px; border-top: 1px solid var(--da-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; background: #fff;">
         <div style="display: flex; align-items: center; gap: 8px;">
             <span class="text-muted" style="font-size: 13px; font-weight: 500;">Show</span>
             <div class="custom-dropdown" [class.open]="isPageSizeDropdownOpen" [class.open-up]="true" tabindex="0">

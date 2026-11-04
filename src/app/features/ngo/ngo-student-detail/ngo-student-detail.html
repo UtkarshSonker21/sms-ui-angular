@@ -1,1400 +1,771 @@
-<!--
-============================================================
-OLD NGO STUDENT DETAILS UI
-Kept for reference / rollback.
-DO NOT DELETE.
-============================================================
 <div class="courses-page" data-lang="en">
-
-    <div class="page-head">
-        <div>
-            <div class="crumb">
-                <a href="#">Dashboard</a> <span class="sep">/</span>
-                <a href="javascript:void(0)" (click)="goBack()">University Students</a> <span class="sep">/</span>
-                <span *ngIf="student">{{ student.firstName }} {{ student.lastName }}</span>
-            </div>
-            <h1 class="page-title">Student Details</h1>
-            <div class="page-sub">
-                View the complete details for the student's university application.
-            </div>
-        </div>
-        <div class="page-actions">
-            <button class="btn btn-faculties-outline" type="button" (click)="goBack()"
-                style="display: flex; align-items: center; gap: 8px;">
-                <i class="fas fa-arrow-left"></i> Back to List
-            </button>
-        </div>
-    </div>
-
-
-
-    <div *ngIf="student" style="display: flex; flex-direction: column; flex: 1;">
-
-        < !-- â•â•â•â•â• Section 1 â€” Student Summary â•â•â•â•â• -- >
-        <section class="form-section collapsible" [class.open]="activeSection === 1">
-            <div class="form-section-head" (click)="toggleSection(1)" style="cursor: pointer;">
-                <div class="form-section-num">1</div>
-                <div>
-                    <div class="form-section-title">Student Summary</div>
-                    <div class="form-section-sub">Overview of the student's identity and status.</div>
-                </div>
-                <div class="form-section-spacer"></div>
-                <div class="chev">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="6 9 12 15 18 9" />
-                    </svg>
-                </div>
-            </div>
-            <div class="form-section-body">
-
-                <div
-                    style="display: flex; gap: 24px; align-items: flex-start; padding: 16px; background: white; border: 1px solid var(--da-border); border-radius: 8px;">
-                    < !-- Photo -- >
-                    <div
-                        style="flex: 0 0 100px; height: 100px; border-radius: 8px; overflow: hidden; border: 1px solid var(--da-border); background: var(--da-surface-2); display: flex; align-items: center; justify-content: center;">
-                        <img *ngIf="student.photoPath && !photoError" [src]="getPhotoUrl(student.photoPath)"
-                            (error)="handlePhotoError()" style="width: 100%; height: 100%; object-fit: cover;">
-                        <div *ngIf="!student.photoPath || photoError"
-                            style="font-size: 32px; font-weight: 600; color: var(--da-muted);">
-                            {{ student.firstName ? student.firstName.charAt(0).toUpperCase() : 'S' }}{{ student.lastName
-                            ? student.lastName.charAt(0).toUpperCase() : 'T' }}
-                        </div>
-                    </div>
-
-                    <div style="flex: 1;">
-                        <div
-                            style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-                            <h3 style="margin: 0; font-size: 20px; font-weight: 600;">
-                                {{ student.fullName }}
-                            </h3>
-                            <span class="chip {{ getStatusBadgeClass(student) }}" style="font-size: 11px;">
-                                {{ student.applicationStatusName || 'Draft' }}
-                            </span>
-                        </div>
-
-                        <div
-                            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; color: var(--da-muted); font-size: 13px;">
-                            <div><strong>Student Code:</strong> <br><span style="color: var(--da-text);">{{
-                                    student.studentCode ? student.studentCode : '-' }}</span></div>
-                            <div><strong>Submitted Date:</strong> <br><span style="color: var(--da-text);">{{
-                                    student.actionDate ? (student.actionDate | date:'yyyy/MM/dd') : '-' }}</span></div>
-                            <div><strong>University:</strong> <br><span style="color: var(--da-text);">{{
-                                    student.universityName || '-' }}</span></div>
-                            <div><strong>Faculty:</strong> <br><span style="color: var(--da-text);">{{
-                                    student.facultyName || '-' }}</span></div>
-                            <div><strong>Program:</strong> <br><span style="color: var(--da-text);">{{
-                                    student.programName || '-' }}</span></div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </section>
-
-        < !-- â•â•â•â•â• Section 2 â€” Applied Program â•â•â•â•â• -- >
-        <section class="form-section collapsible" [class.open]="activeSection === 2">
-            <div class="form-section-head" (click)="toggleSection(2)" style="cursor: pointer;">
-                <div class="form-section-num">2</div>
-                <div>
-                    <div class="form-section-title">Applied Program</div>
-                    <div class="form-section-sub">Details of the program the student applied to.</div>
-                </div>
-                <div class="form-section-spacer"></div>
-                <div class="chev">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="6 9 12 15 18 9" />
-                    </svg>
-                </div>
-            </div>
-            <div class="form-section-body">
-
-                < !-- Reusing Coordinator Program Card Layout -- >
-                <div class="card"
-                    style="border: 2px solid var(--da-primary); border-radius: 6px; background: white; overflow: hidden; padding: 16px; display: flex; align-items: center; gap: 16px;">
-                    <div
-                        style="flex: 0 0 48px; height: 48px; border-radius: 8px; background: #dcfce7; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2">
-                            <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-                            <path d="M6 12v5c3 3 9 3 12 0v-5" />
-                        </svg>
-                    </div>
-                    <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
-                        <h4
-                            style="margin: 0 0 4px 0; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-                            {{ student.programName || '-' }}
-                            <span class="badge" *ngIf="student.applicationStatusName"
-                                style="background: var(--da-primary); color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px;">Status:
-                                {{ student.applicationStatusName }}</span>
-                        </h4>
-                        <div style="color: var(--da-muted); font-size: 13px; margin-bottom: 4px;">{{ student.programCode
-                            || '-' }}</div>
-                        <div style="display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px;">
-                            <div><strong>Faculty:</strong> {{ student.facultyName || '-' }}</div>
-                            <div><strong>University:</strong> {{ student.universityName || '-' }}</div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </section>
-
-        < !-- â•â•â•â•â• Section 3 â€” Submitted Documents â•â•â•â•â• -- >
-        <section class="form-section collapsible" [class.open]="activeSection === 3">
-            <div class="form-section-head" (click)="toggleSection(3)" style="cursor: pointer;">
-                <div class="form-section-num">3</div>
-                <div>
-                    <div class="form-section-title">Submitted Documents - {{ getUploadedDocumentsCount() }} / {{
-                        documents.length }} submitted</div>
-                    <div class="form-section-sub">Documents provided by the student for this application.</div>
-                </div>
-                <div class="form-section-spacer"></div>
-                <div class="chev">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="6 9 12 15 18 9" />
-                    </svg>
-                </div>
-            </div>
-            <div class="form-section-body">
-
-                <div *ngIf="documents.length === 0"
-                    style="padding: 32px; text-align: center; border: 1px dashed var(--da-border); border-radius: 6px;">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--da-muted)"
-                        stroke-width="2" style="margin-bottom: 12px;">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                        <polyline points="14 2 14 8 20 8" />
-                        <line x1="16" y1="13" x2="8" y2="13" />
-                        <line x1="16" y1="17" x2="8" y2="17" />
-                        <polyline points="10 9 9 9 8 9" />
-                    </svg>
-                    <div style="font-weight: 500; font-size: 14px; margin-bottom: 4px;">No documents available</div>
-                    <div style="color: var(--da-muted); font-size: 13px;">There are currently no documents fetched from
-                        the API for this application.</div>
-                </div>
-
-                <div *ngFor="let doc of documents"
-                    style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: white; border: 1px solid var(--da-border); border-radius: 6px; margin-bottom: 8px;">
-                    <div>
-                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                            <strong style="font-size: 13px;">{{ doc.documentTypeName }}</strong>
-                            <span *ngIf="doc.isRequired" class="badge"
-                                style="background: var(--da-danger-bg, #fef2f2); color: var(--da-danger, #dc2626); border: 1px solid var(--da-danger-border, #fecaca); padding: 2px 8px; border-radius: 12px; font-size: 11px;">Required</span>
-                            <span *ngIf="!doc.isRequired" class="badge"
-                                style="background: var(--da-info-bg, #eff6ff); color: var(--da-info, #2563eb); border: 1px solid var(--da-info-border, #bfdbfe); padding: 2px 8px; border-radius: 12px; font-size: 11px;">Optional</span>
-
-                            <span class="badge" [ngStyle]="{
-                      'background': getUploadedDocStatus(doc.documentTypeId) === 'Uploaded' ? '#dcfce7' : '#f1f5f9',
-                      'color': getUploadedDocStatus(doc.documentTypeId) === 'Uploaded' ? '#166534' : '#475569',
-                      'padding': '2px 8px', 'border-radius': '12px', 'font-size': '11px', 'margin-left': '8px'
-                    }">
-                                {{ getUploadedDocStatus(doc.documentTypeId) }}
-                            </span>
-                        </div>
-                        <div style="color: var(--da-muted); font-size: 12px;">
-                            <span *ngIf="doc.originalFileName || doc.storedFileName">{{ doc.originalFileName ||
-                                doc.storedFileName }} - </span>
-                            <span *ngIf="doc.uploadedDate">uploaded {{ doc.uploadedDate | date:'yyyy-MM-dd' }}</span>
-                            <span *ngIf="!doc.originalFileName && !doc.storedFileName && !doc.uploadedDate">{{
-                                doc.description || 'Student provided document.' }}</span>
-                        </div>
-                    </div>
-                    <div style="display: flex; gap: 12px; align-items: center;">
-                        <div (click)="openDiscussionModal(doc.documentTypeId)"
-                            style="cursor: pointer; display: flex; align-items: center; gap: 4px; color: var(--da-muted); font-size: 12px;">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                            </svg>
-                            {{ getDiscussionCount(doc.documentTypeId) }}
-                        </div>
-
-                        < !-- Preview Action -- >
-                        <ng-container *ngIf="getUploadedDocStatus(doc.documentTypeId) === 'Uploaded'">
-                            <button type="button" class="btn btn-sm btn-faculties-outline btn-info-outline"
-                                (click)="previewDocument(doc.documentTypeId); $event.stopPropagation()">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2" style="margin-right: 4px;">
-                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                                    <circle cx="12" cy="12" r="3" />
-                                </svg>
-                                Preview
-                            </button>
-                        </ng-container>
-                    </div>
-                </div>
-
-                < !-- Discussion Modal -- >
-                <div *ngIf="isDiscussionModalOpen"
-                    style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
-                    <div class="card"
-                        style="width: 800px; max-width: 90%; background: white; padding: 24px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
-                        <h3 style="margin: 0 0 16px 0; font-size: 18px;">Document Discussion</h3>
-
-                        <label
-                            style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px; color: var(--da-text);">Coordinator
-                            Remark</label>
-                        <textarea class="field-input" rows="4"
-                            style="min-height: 80px; resize: vertical; background: var(--da-surface-2); cursor: not-allowed; margin-bottom: 16px;"
-                            placeholder="No remarks entered." [ngModel]="currentDiscussionRemark" name="docRemark"
-                            readonly disabled></textarea>
-
-                        <label
-                            style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px; color: var(--da-text);">University
-                            Remark</label>
-                        <textarea class="field-input" rows="4" style="min-height: 80px; resize: vertical;"
-                            placeholder="Enter remarks for this document..." [(ngModel)]="universityDiscussionRemark"
-                            name="universityRemark"></textarea>
-
-                        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px;">
-                            <button type="button" class="btn btn-faculties-outline"
-                                (click)="closeDiscussionModal()">Cancel</button>
-                            <button type="button" class="btn btn-p" (click)="saveUniversityRemark()">Save</button>
-                        </div>
-                    </div>
-                </div>
-
-                < !-- Workflow Action Bar (Sponsorship transition) -- >
-                <div *ngIf="student.applicationStatusId === studentStatus.Awarded || student.applicationStatusId === studentStatus.SponsoringInProcess || student.applicationStatusId === studentStatus.Sponsored || student.applicationStatusId === studentStatus.SponsoringRejected"
-                    style="display: flex; justify-content: space-between; align-items: flex-start; padding: 20px 24px; background: var(--da-success-bg, #f0fdf4); border: 1px solid var(--da-success-border, #bbf7d0); border-left: 5px solid var(--da-success, #16a34a); border-radius: 6px; margin-top: 20px;">
-
-                    < !-- Content for Awarded -- >
-                    <ng-container *ngIf="student.applicationStatusId === studentStatus.Awarded">
-                        <div style="display: flex; flex-direction: column; gap: 12px;">
-                            <div>
-                                <div
-                                    style="font-weight: 700; font-size: 15px; color: var(--da-text, #1e293b); margin-bottom: 4px;">
-                                    Application Review
-                                </div>
-                                <div
-                                    style="display: flex; align-items: center; gap: 6px; color: var(--da-success, #16a34a); font-weight: 600; font-size: 13.5px; margin-bottom: 8px;">
-                                    <span>âœ“ Awarding Completed</span>
-                                </div>
-                                <div style="color: var(--da-muted, #64748b); font-size: 12.5px;">
-                                    The application has been awarded successfully by the University.
-                                </div>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-                                <span style="font-weight: 600; font-size: 13px; color: var(--da-text, #1e293b);">
-                                    Next Step:
-                                </span>
-                                <span style="color: var(--da-text, #1e293b); font-size: 13px;">
-                                    Submit this application for Sponsorship Review.
-                                </span>
-                            </div>
-                        </div>
-                        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px; align-self: center;">
-                            <button type="button" class="btn btn-p" (click)="submitForSponsorshipReview()">
-                                Submit for Sponsorship Review
-                            </button>
-                        </div>
-                    </ng-container>
-
-                    < !-- Content for SponsoringInProcess -- >
-                    <ng-container *ngIf="student.applicationStatusId === studentStatus.SponsoringInProcess">
-                        <div style="display: flex; flex-direction: column; gap: 12px;">
-                            <div>
-                                <div
-                                    style="font-weight: 700; font-size: 15px; color: var(--da-text, #1e293b); margin-bottom: 4px;">
-                                    Application Review</div>
-                                <div style="color: var(--da-muted, #64748b); font-size: 12.5px;">Review the awarded application and choose the appropriate sponsorship decision.</div>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-                                <span style="font-weight: 600; font-size: 13px; color: var(--da-text, #1e293b);">Current
-                                    Status:</span>
-                                <span class="chip {{ getStatusBadgeClass(student) }}" style="font-size: 11px;">
-                                    {{ student.applicationStatusName }}
-                                </span>
-                            </div>
-                        </div>
-                        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
-                            <span style="color: var(--da-muted, #64748b); font-size: 12px; font-weight: 500;">Available
-                                Actions</span>
-                            <div style="display: flex; gap: 12px;">
-                                <button type="button" class="btn btn-faculties-outline btn-danger-outline"
-                                    (click)="rejectSponsorship()">
-                                    Reject
-                                </button>
-                                <button type="button" class="btn btn-p" (click)="sponsor()">
-                                    Sponsor
-                                </button>
-                            </div>
-                        </div>
-                    </ng-container>
-
-                    < !-- Content for Sponsored -- >
-                    <ng-container *ngIf="student.applicationStatusId === studentStatus.Sponsored">
-                        <div style="display: flex; flex-direction: column; gap: 12px;">
-                            <div>
-                                <div style="font-weight: 700; font-size: 15px; color: var(--da-text, #1e293b); margin-bottom: 4px;">Application Review</div>
-                                <div style="display: flex; align-items: center; gap: 6px; color: var(--da-success, #16a34a); font-weight: 600; font-size: 13.5px; margin-bottom: 8px; margin-top: 4px;">
-                                    <span>âœ“ Sponsorship Completed</span>
-                                </div>
-                                <div style="color: var(--da-muted, #64748b); font-size: 12.5px;">This application has been successfully approved for sponsorship.<br>The student is now officially sponsored under the Direct Aid scholarship program.</div>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-                                <span style="font-weight: 600; font-size: 13px; color: var(--da-text, #1e293b);">Current Status:</span>
-                                <span class="chip {{ getStatusBadgeClass(student) }}" style="font-size: 11px;">
-                                    {{ student.applicationStatusName }}
-                                </span>
-                            </div>
-                        </div>
-                        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px; align-self: center;">
-                            <span style="color: var(--da-muted, #64748b); font-size: 12px; font-weight: 500; margin-bottom: 4px;">Workflow Complete</span>
-                            <div style="color: var(--da-text, #1e293b); font-size: 12.5px; font-weight: 500; padding: 6px 12px; background: var(--da-surface-2, #f8fafc); border-radius: 4px; border: 1px solid var(--da-border, #e2e8f0);">
-                                No further action required.
-                            </div>
-                        </div>
-                    </ng-container>
-
-                    < !-- Content for Sponsoring Rejected -- >
-                    <ng-container *ngIf="student.applicationStatusId === studentStatus.SponsoringRejected">
-                        <div style="display: flex; flex-direction: column; gap: 12px;">
-                            <div>
-                                <div style="font-weight: 700; font-size: 15px; color: var(--da-text, #1e293b); margin-bottom: 4px;">Application Review</div>
-                                <div style="display: flex; align-items: center; gap: 6px; color: var(--da-danger, #dc2626); font-weight: 600; font-size: 13.5px; margin-bottom: 8px; margin-top: 4px;">
-                                    <span>âœ• Sponsorship Rejected</span>
-                                </div>
-                                <div style="color: var(--da-muted, #64748b); font-size: 12.5px;">The sponsorship request has been rejected by the Direct Aid Committee.</div>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-                                <span style="font-weight: 600; font-size: 13px; color: var(--da-text, #1e293b);">Current Status:</span>
-                                <span class="chip {{ getStatusBadgeClass(student) }}" style="font-size: 11px;">
-                                    {{ student.applicationStatusName }}
-                                </span>
-                            </div>
-                        </div>
-                        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px; align-self: center;">
-                            <span style="color: var(--da-muted, #64748b); font-size: 12px; font-weight: 500; margin-bottom: 4px;">Workflow Complete</span>
-                            <div style="color: var(--da-text, #1e293b); font-size: 12.5px; font-weight: 500; padding: 6px 12px; background: var(--da-surface-2, #f8fafc); border-radius: 4px; border: 1px solid var(--da-border, #e2e8f0);">
-                                No further action available.
-                            </div>
-                        </div>
-                    </ng-container>
-
-                </div>
-
-            </div>
-        </section>
-
-        < !-- â•â•â•â•â• Section 4 â€” Personal Information â•â•â•â•â• -- >
-        <section class="form-section collapsible" [class.open]="activeSection === 4">
-            <div class="form-section-head" (click)="toggleSection(4)" style="cursor: pointer;">
-                <div class="form-section-num">4</div>
-                <div>
-                    <div class="form-section-title">Personal Information</div>
-                    <div class="form-section-sub">Student's personal profile and demographic information.</div>
-                </div>
-                <div class="form-section-spacer"></div>
-                <div class="chev">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="6 9 12 15 18 9" />
-                    </svg>
-                </div>
-            </div>
-            <div class="form-section-body">
-
-                <div class="form-grid form-grid-2">
-                    <div class="field">
-                        <label class="field-label">First Name</label>
-                        <input type="text" class="field-input" [value]="student.firstName || '-'" readonly disabled>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">Second Name</label>
-                        <input type="text" class="field-input" [value]="student.secondName || '-'" readonly disabled>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">Third Name</label>
-                        <input type="text" class="field-input" [value]="student.thirdName || '-'" readonly disabled>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">Last Name</label>
-                        <input type="text" class="field-input" [value]="student.lastName || '-'" readonly disabled>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">Mother's Name</label>
-                        <input type="text" class="field-input" [value]="student.motherName || '-'" readonly disabled>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">Date of Birth</label>
-                        <input type="text" class="field-input"
-                            [value]="student.dateOfBirth ? (student.dateOfBirth | date:'mediumDate') : '-'" readonly
-                            disabled>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">Nationality</label>
-                        <input type="text" class="field-input" [value]="student.nationality || '-'" readonly disabled>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">Country of Residence</label>
-                        <input type="text" class="field-input" [value]="student.countryOfResidence || '-'" readonly
-                            disabled>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">Gender</label>
-                        <input type="text" class="field-input" [value]="student.genderName || '-'" readonly disabled>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">Religion</label>
-                        <input type="text" class="field-input" [value]="student.religionName || '-'" readonly disabled>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">Direct Aid Orphan</label>
-                        <input type="text" class="field-input" [value]="student.isDirectAidOrphan ? 'Yes' : 'No'"
-                            readonly disabled>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">Orphan Number</label>
-                        <input type="text" class="field-input" [value]="student.orphanNumber || '-'" readonly disabled>
-                    </div>
-                </div>
-
-            </div>
-        </section>
-
-        < !-- â•â•â•â•â• Section 5 â€” Contact Information â•â•â•â•â• -- >
-        <section class="form-section collapsible" [class.open]="activeSection === 5">
-            <div class="form-section-head" (click)="toggleSection(5)" style="cursor: pointer;">
-                <div class="form-section-num">5</div>
-                <div>
-                    <div class="form-section-title">Contact Information</div>
-                    <div class="form-section-sub">Student's contact and residential information.</div>
-                </div>
-                <div class="form-section-spacer"></div>
-                <div class="chev">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="6 9 12 15 18 9" />
-                    </svg>
-                </div>
-            </div>
-            <div class="form-section-body">
-
-                <div class="form-grid form-grid-2">
-                    <div class="field">
-                        <label class="field-label">Phone Number</label>
-                        <input type="text" class="field-input num-ltr" [value]="student.phoneNumber || '-'" readonly
-                            disabled>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">Email Address</label>
-                        <input type="text" class="field-input" [value]="student.emailAddress || '-'" readonly disabled>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">City</label>
-                        <input type="text" class="field-input" [value]="student.city || '-'" readonly disabled>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">Village</label>
-                        <input type="text" class="field-input" [value]="student.village || '-'" readonly disabled>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">Block</label>
-                        <input type="text" class="field-input" [value]="student.block || '-'" readonly disabled>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">Street</label>
-                        <input type="text" class="field-input" [value]="student.street || '-'" readonly disabled>
-                    </div>
-                </div>
-
-            </div>
-        </section>
-
-        < !-- â•â•â•â•â• Section 6 â€” Academic Information â•â•â•â•â• -- >
-        <section class="form-section collapsible" [class.open]="activeSection === 6">
-            <div class="form-section-head" (click)="toggleSection(6)" style="cursor: pointer;">
-                <div class="form-section-num">6</div>
-                <div>
-                    <div class="form-section-title">Academic Information & Scores</div>
-                    <div class="form-section-sub">Student's high school performance.</div>
-                </div>
-                <div class="form-section-spacer"></div>
-                <div class="chev">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="6 9 12 15 18 9" />
-                    </svg>
-                </div>
-            </div>
-            <div class="form-section-body">
-
-                <div class="form-grid form-grid-2">
-                    <div class="field" style="grid-column: 1 / -1;">
-                        <label class="field-label">School Name</label>
-                        <input type="text" class="field-input" [value]="student.schoolName || '-'" readonly disabled>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">High School Specialization</label>
-                        <input type="text" class="field-input" [value]="student.hsSpecialization || '-'" readonly
-                            disabled>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">Tanzanian Student Combination</label>
-                        <input type="text" class="field-input" [value]="student.tanzanianStudentCombination || '-'"
-                            readonly disabled>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">Total Score</label>
-                        <input type="text" class="field-input"
-                            [value]="student.highSchoolTotalScore !== undefined && student.highSchoolTotalScore !== null ? student.highSchoolTotalScore : '-'"
-                            readonly disabled>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">Max Score</label>
-                        <input type="text" class="field-input"
-                            [value]="student.highSchoolMaxScore !== undefined && student.highSchoolMaxScore !== null ? student.highSchoolMaxScore : '-'"
-                            readonly disabled>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">Relative Grade / Percentage</label>
-                        <input type="text" class="field-input"
-                            [value]="student.highSchoolRelativeGradeOrPercentage !== undefined && student.highSchoolRelativeGradeOrPercentage !== null ? student.highSchoolRelativeGradeOrPercentage : '-'"
-                            readonly disabled>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">English Score</label>
-                        <input type="text" class="field-input"
-                            [value]="student.englishScore !== undefined && student.englishScore !== null ? student.englishScore : '-'"
-                            readonly disabled>
-                    </div>
-                </div>
-
-            </div>
-        </section>
-
-        < !-- â•â•â•â•â• Section 7 â€” Timeline / History â•â•â•â•â• -- >
-        <section class="form-section collapsible" [class.open]="activeSection === 7">
-            <div class="form-section-head" (click)="toggleSection(7)" style="cursor: pointer;">
-                <div class="form-section-num">7</div>
-                <div>
-                    <div class="form-section-title">Student History</div>
-                    <div class="form-section-sub">Complete activity timeline for this student.</div>
-                </div>
-                <div class="form-section-spacer"></div>
-                <div class="chev">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="6 9 12 15 18 9" />
-                    </svg>
-                </div>
-            </div>
-            <div class="form-section-body">
-
-                <div *ngIf="!studentHistory || studentHistory.length === 0" class="student-history-empty">
-                    No activity has been recorded for this student yet.
-                </div>
-
-                <div *ngIf="studentHistory && studentHistory.length > 0" class="student-history">
-
-                    <div class="student-history-line"></div>
-
-                    <div *ngFor="let item of studentHistory" class="student-history-item">
-
-                        <div class="student-history-left">
-                            <div class="student-history-icon" style="border-color: #6c757d; color: #6c757d;">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2.5">
-                                    <circle cx="12" cy="12" r="10" />
-                                    <polyline points="12 6 12 12 16 14" />
-                                </svg>
-                            </div>
-
-                            <div class="student-history-content">
-                                <strong class="student-history-title">{{ item.title }}</strong>
-                                <div *ngIf="item.description" class="student-history-description">{{ item.description }}
-                                </div>
-
-                            </div>
-                        </div>
-
-                        <div class="student-history-time">
-                            <strong class="student-history-date">{{ item.createdDate | date:'dd MMM yyyy' }}</strong>
-                            <span>{{ item.createdDate | date:'hh:mm a' }}</span>
-                        </div>
-
-                    </div>
-                </div>
-
-            </div>
-        </section>
-
-        <div class="spacer" style="flex: 1;"></div>
-
-        < !-- Form Actions (Sticky Footer) -- >
-        <div class="sticky-footer" style="display: flex; gap: 12px; align-items: center; justify-content: flex-end;">
-
-            < !-- Workflow Buttons (TODOs) -- >
-
-
-
-        </div>
-
-    </div>
-</div>
--->
-
-<div class="courses-page" data-lang="en">
-    <!-- Header -->
+    <!-- Header matching prototype -->
     <div class="page-head">
         <div>
             <div class="crumb">
                 <a href="#">Dashboard</a> <span class="sep">/</span>
                 <a href="javascript:void(0)" (click)="goBack()">Students</a> <span class="sep">/</span>
-                <span *ngIf="student">Student Details</span>
-                <!-- <span *ngIf="student">{{ student.firstName }} {{ student.lastName }}</span> -->
+                <span>Details</span>
             </div>
-            <h1 class="page-title">Student Details</h1>
-            <div class="page-sub">
-                View the complete details for the student's university application.
+            <h1 class="page-title" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <span id="sd-name">{{ student ? student.fullName : 'Student Details' }}</span>
+                <span *ngIf="student" class="num-ltr" id="sd-id" style="color: var(--da-muted); font-weight: 400; font-size: 14px;">
+                    {{ student.studentCode || ('#' + student.studentId) }}
+                </span>
+                <span *ngIf="student" class="st-badge sd-header-chip {{ getStatusBadgeClass(student) }}" id="sd-status-chip">
+                    {{ student.applicationStatusName || 'Draft' }}
+                </span>
+            </h1>
+            <div class="page-sub" id="sd-sub">
+                Academic and financial record for this student. The fields below are read-only.
             </div>
         </div>
         <div class="page-actions">
-            <button class="btn btn-faculties-outline" type="button" (click)="goBack()"
-                style="display: flex; align-items: center; gap: 8px;">
-                <i class="fas fa-arrow-left"></i> Back to List
-            </button>
+            <div class="cur-pills" role="tablist" aria-label="Currency">
+                <button type="button" [class.active]="selectedCurrency === 'KWD'" (click)="selectCurrency('KWD')">KWD</button>
+                <button type="button" [class.active]="selectedCurrency === 'USD'" (click)="selectCurrency('USD')">USD</button>
+                <button type="button" [class.active]="selectedCurrency === 'EUR'" (click)="selectCurrency('EUR')">EUR</button>
+            </div>
+            <button type="button" class="btn btn-basic-data" (click)="scrollToBasicData()">Basic data</button>
+            <button type="button" class="btn btn-g" (click)="goBack()">← Back to list</button>
         </div>
     </div>
 
     <!-- Main Content -->
     <div *ngIf="student" style="display: flex; flex-direction: column; flex: 1; padding-bottom: 32px;">
 
-        <!-- 1. Student Summary -->
-        <div class="card" style="margin-bottom: 14px; padding: 24px; border: 1px solid var(--da-border); border-radius: 8px; background: white;">
-            <div style="display: flex; gap: 24px; align-items: flex-start;">
-                <div style="flex: 0 0 64px; height: 64px; border-radius: 50%; overflow: hidden; border: 1px solid #bbf7d0; background: #dcfce7; display: flex; align-items: center; justify-content: center;">
-                    <img *ngIf="student.photoPath && !photoError" [src]="getPhotoUrl(student.photoPath)"
-                        (error)="handlePhotoError()" style="width: 100%; height: 100%; object-fit: cover;">
-                    <div *ngIf="!student.photoPath || photoError"
-                        style="font-size: 22px; font-weight: 500; color: #16a34a;">
-                        {{ student.firstName ? student.firstName.charAt(0).toUpperCase() : 'S' }}{{ student.lastName ? student.lastName.charAt(0).toUpperCase() : 'T' }}
+        <!-- Status journey strip matching prototype -->
+        <div class="journey-bar" id="sd-journey">
+            <ng-container *ngFor="let step of getJourneySteps(); let last = last">
+                <div class="journey-step {{ step.state }}">
+                    <span class="dot"></span>
+                    <span>{{ step.title }}</span>
+                </div>
+                <span class="journey-sep" *ngIf="!last">›</span>
+            </ng-container>
+        </div>
+
+        <!-- Ready for sponsorship assignment card matching prototype -->
+        <div class="card" *ngIf="student.applicationStatusId === studentStatus.Awarded || student.applicationStatusId === studentStatus.SponsoringInProcess"
+             style="padding: 16px 20px; margin-bottom: 14px; background: var(--da-green-50, #f0fdf4); border: 1px solid #bbf7d0; border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                <div style="flex: 1; min-width: 280px;">
+                    <div style="font-size: 14px; font-weight: 600; color: var(--da-green-800, #166534); line-height: 1.4;">
+                        Ready for sponsorship assignment
+                    </div>
+                    <div style="margin-top: 4px; color: var(--da-text-2, #475569); font-size: 13px; line-height: 1.5;">
+                        This student has been awarded a Kafaat scholarship. Choose the sponsorship channel to move them to the next stage of the journey.
                     </div>
                 </div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                    <button type="button" class="btn btn-g" (click)="openSponsorshipAssignmentModal('pool')">
+                        → Mark as Sponsored (DA pool)
+                    </button>
+                    <button type="button" class="btn btn-donor-outline" (click)="markDonorSponsored()">
+                        → Mark as Donor-Sponsored
+                    </button>
+                </div>
+            </div>
+        </div>
 
-                <div style="flex: 1;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                        <div>
-                            <h2 style="margin: 0; font-size: 24px; font-weight: 600; color: var(--da-text);">
-                                {{ student.fullName }}
-                            </h2>
-                            <div style="display: flex; flex-wrap: wrap; gap: 32px; font-size: 14px; margin-top: 6px;">
-                                <div style="color: var(--da-muted);">
-                                    Student Code: <span style="color: var(--da-text); font-weight: 500;">{{ student.studentCode ? student.studentCode : '-' }}</span>
+        <!-- Sponsorship Completed Banner when Sponsored -->
+        <div class="card" *ngIf="student.applicationStatusId === studentStatus.Sponsored"
+             style="padding: 16px 20px; margin-bottom: 14px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                <div>
+                    <div style="font-weight: 700; color: #1e40af; font-size: 14px;">Sponsorship Completed</div>
+                    <div style="color: #475569; font-size: 13px; margin-top: 4px;">
+                        This application has been successfully approved for sponsorship. The student is now officially sponsored under the Direct Aid scholarship program.
+                    </div>
+                </div>
+                <span class="st-badge st-sponsored">Sponsored</span>
+            </div>
+        </div>
+
+        <!-- Sponsorship Rejected Banner when Rejected -->
+        <div class="card" *ngIf="student.applicationStatusId === studentStatus.SponsoringRejected"
+             style="padding: 16px 20px; margin-bottom: 14px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                <div>
+                    <div style="font-weight: 700; color: #dc2626; font-size: 14px;">Sponsorship Rejected</div>
+                    <div style="color: #475569; font-size: 13px; margin-top: 4px;">
+                        The sponsorship request has been rejected by the Direct Aid Committee.
+                    </div>
+                </div>
+                <span class="st-badge st-rejected">Rejected</span>
+            </div>
+        </div>
+
+        <!-- 1. Basic information matching prototype .ro-grid -->
+        <div class="card" id="basic-info-section" style="padding: 18px 20px; margin-bottom: 14px; background: #fff; border: 1px solid var(--da-border, #e2e8f0); border-radius: 8px;">
+            <div class="sd-section-title">Basic information</div>
+            <div class="ro-grid">
+                <div class="ro-field">
+                    <label>First Name</label>
+                    <div class="ro-value">{{ student.firstName || '-' }}</div>
+                </div>
+                <div class="ro-field">
+                    <label>Second Name</label>
+                    <div class="ro-value">{{ student.secondName || '-' }}</div>
+                </div>
+                <div class="ro-field">
+                    <label>Third Name</label>
+                    <div class="ro-value">{{ student.thirdName || '-' }}</div>
+                </div>
+                <div class="ro-field">
+                    <label>Last Name (Family)</label>
+                    <div class="ro-value">{{ student.lastName || '-' }}</div>
+                </div>
+                <div class="ro-divider"></div>
+                <div class="ro-field">
+                    <label>Mother's Name</label>
+                    <div class="ro-value">{{ student.motherName || '-' }}</div>
+                </div>
+                <div class="ro-field">
+                    <label>Date of Birth</label>
+                    <div class="ro-value num-ltr">{{ student.dateOfBirth ? (student.dateOfBirth | date:'yyyy/MM/dd') : '-' }}</div>
+                </div>
+                <div class="ro-field">
+                    <label>Nationality</label>
+                    <div class="ro-value">{{ student.nationality || '-' }}</div>
+                </div>
+                <div class="ro-field">
+                    <label>Residence Country</label>
+                    <div class="ro-value">{{ student.countryOfResidence || '-' }}</div>
+                </div>
+                <div class="ro-divider"></div>
+                <div class="ro-field">
+                    <label>Tribe / Clan</label>
+                    <div class="ro-value">{{ student.tribeName || '-' }}</div>
+                </div>
+                <div class="ro-field">
+                    <label>Religion</label>
+                    <div class="ro-value">{{ student.religionName || '-' }}</div>
+                </div>
+                <div class="ro-field">
+                    <label>Gender</label>
+                    <div class="ro-value">{{ student.genderName || '-' }}</div>
+                </div>
+                <div class="ro-field">
+                    <label>Direct Aid Orphan?</label>
+                    <div class="ro-value">{{ student.isDirectAidOrphan ? ('Yes (' + (student.orphanNumber || '-') + ')') : 'No' }}</div>
+                </div>
+                <div class="ro-field" *ngIf="student.fromDaSchool">
+                    <label>From DA School?</label>
+                    <div class="ro-value">Yes (Code: {{ student.daStudentCode || '-' }})</div>
+                </div>
+            </div>
+            <div style="margin-top: 10px; font-size: 11px; color: var(--da-muted, #64748b);">
+                Sensitive fields are processed per DA student data-handling policy.
+            </div>
+        </div>
+
+        <!-- 2. Contact information -->
+        <div class="card" style="padding: 18px 20px; margin-bottom: 14px; background: #fff; border: 1px solid var(--da-border, #e2e8f0); border-radius: 8px;">
+            <div class="sd-section-title">Contact information</div>
+            <div class="ro-grid">
+                <div class="ro-field">
+                    <label>Phone Number</label>
+                    <div class="ro-value num-ltr">{{ student.phoneNumber || '-' }}</div>
+                </div>
+                <div class="ro-field">
+                    <label>Email Address</label>
+                    <div class="ro-value">{{ student.emailAddress || '-' }}</div>
+                </div>
+                <div class="ro-field">
+                    <label>City</label>
+                    <div class="ro-value">{{ student.city || '-' }}</div>
+                </div>
+                <div class="ro-field">
+                    <label>Village</label>
+                    <div class="ro-value">{{ student.village || '-' }}</div>
+                </div>
+                <div class="ro-field">
+                    <label>Block</label>
+                    <div class="ro-value">{{ student.block || '-' }}</div>
+                </div>
+                <div class="ro-field">
+                    <label>Street</label>
+                    <div class="ro-value">{{ student.street || '-' }}</div>
+                </div>
+                <div class="ro-field">
+                    <label>House</label>
+                    <div class="ro-value">{{ student.house || '-' }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Education background -->
+        <div class="card" style="padding: 18px 20px; margin-bottom: 14px; background: #fff; border: 1px solid var(--da-border, #e2e8f0); border-radius: 8px;">
+            <div class="sd-section-title">Education background &amp; scores</div>
+            <div class="ro-grid">
+                <div class="ro-field span-2">
+                    <label>School Name</label>
+                    <div class="ro-value">{{ student.schoolName || '-' }}</div>
+                </div>
+                <div class="ro-field">
+                    <label>High School Specialization</label>
+                    <div class="ro-value">{{ student.hsSpecialization || '-' }}</div>
+                </div>
+                <div class="ro-field">
+                    <label>Tanzanian Combination</label>
+                    <div class="ro-value">{{ student.tanzanianStudentCombination || '-' }}</div>
+                </div>
+                <div class="ro-divider"></div>
+                <div class="ro-field">
+                    <label>Total Score</label>
+                    <div class="ro-value num-ltr">{{ student.highSchoolTotalScore != null ? student.highSchoolTotalScore : '-' }}</div>
+                </div>
+                <div class="ro-field">
+                    <label>Max Score</label>
+                    <div class="ro-value num-ltr">{{ student.highSchoolMaxScore != null ? student.highSchoolMaxScore : '-' }}</div>
+                </div>
+                <div class="ro-field">
+                    <label>Relative Grade / Percentage</label>
+                    <div class="ro-value num-ltr">{{ student.highSchoolRelativeGradeOrPercentage != null ? student.highSchoolRelativeGradeOrPercentage + '%' : '-' }}</div>
+                </div>
+                <div class="ro-field">
+                    <label>English Score</label>
+                    <div class="ro-value num-ltr">{{ student.englishScore != null ? student.englishScore : '-' }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Sponsorship & program matching prototype -->
+        <div class="card" style="padding: 18px 20px; margin-bottom: 14px; background: #fff; border: 1px solid var(--da-border, #e2e8f0); border-radius: 8px;">
+            <div class="sd-section-title">Sponsorship &amp; program</div>
+            <div class="ro-grid">
+                <div class="ro-field"><label>Country</label><div class="ro-value">{{ student.universityCountryName || '-' }}</div></div>
+                <div class="ro-field"><label>University</label><div class="ro-value">{{ student.universityName || '-' }}</div></div>
+                <div class="ro-field"><label>College</label><div class="ro-value">{{ student.facultyName || '-' }}</div></div>
+                <div class="ro-field"><label>Program</label><div class="ro-value">{{ student.programName || '-' }}</div></div>
+                <div class="ro-divider"></div>
+                <div class="ro-field">
+                    <label>Assigned student category</label>
+                    <div class="ro-value">{{ getAssignedCategoryDisplay() }}</div>
+                </div>
+                <div class="ro-field">
+                    <label>Student status</label>
+                    <div class="ro-value">
+                        <span class="st-badge {{ getStatusBadgeClass(student) }}">{{ student.applicationStatusName || 'Draft' }}</span>
+                    </div>
+                </div>
+                <div class="ro-field">
+                    <label>Sponsorship source</label>
+                    <div class="ro-value">{{ getSponsorshipSourceDisplay() }}</div>
+                </div>
+                <div class="ro-field" *ngIf="getDonorNameDisplay()">
+                    <label>Donor name</label>
+                    <div class="ro-value">{{ getDonorNameDisplay() }}</div>
+                </div>
+                <div class="ro-field">
+                    <label>Donor reference</label>
+                    <div class="ro-value num-ltr">{{ getDonorCodeDisplay() }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Transfer Student Information (when available) -->
+        <div class="card" *ngIf="student.transferInstitution || student.transferProgram || student.transferCredits != null"
+             style="padding: 18px 20px; margin-bottom: 14px; background: #fff; border: 1px solid var(--da-border, #e2e8f0); border-radius: 8px;">
+            <div class="sd-section-title">Transfer Student Information</div>
+            <div class="ro-grid">
+                <div class="ro-field"><label>Transfer Institution</label><div class="ro-value">{{ student.transferInstitution || '-' }}</div></div>
+                <div class="ro-field"><label>Transfer Program</label><div class="ro-value">{{ student.transferProgram || '-' }}</div></div>
+                <div class="ro-field"><label>Institution Type</label><div class="ro-value">{{ student.transferInstitutionType || '-' }}</div></div>
+                <div class="ro-field"><label>Transfer Credits</label><div class="ro-value num-ltr">{{ student.transferCredits != null ? student.transferCredits : '-' }}</div></div>
+                <div class="ro-field"><label>Last Semester End</label><div class="ro-value num-ltr">{{ student.transferLastSemEnd ? (student.transferLastSemEnd | date:'yyyy/MM/dd') : '-' }}</div></div>
+                <div class="ro-field"><label>Transfer GPA</label><div class="ro-value num-ltr">{{ student.transferGpa != null ? student.transferGpa : '-' }}</div></div>
+            </div>
+        </div>
+
+        <!-- 6. Behavioral & Social Evaluation (when available) -->
+        <div class="card" *ngIf="student.financialNeedStatusName || student.selfRelianceLevelName || student.motivationLevelName || student.futureGoalsLevelName"
+             style="padding: 18px 20px; margin-bottom: 14px; background: #fff; border: 1px solid var(--da-border, #e2e8f0); border-radius: 8px;">
+            <div class="sd-section-title">Behavioral &amp; Social Evaluation</div>
+            <div class="ro-grid">
+                <div class="ro-field"><label>Financial Need</label><div class="ro-value">{{ student.financialNeedStatusName || '-' }}</div></div>
+                <div class="ro-field"><label>Self-Reliance Level</label><div class="ro-value">{{ student.selfRelianceLevelName || '-' }}</div></div>
+                <div class="ro-field"><label>Motivation Level</label><div class="ro-value">{{ student.motivationLevelName || '-' }}</div></div>
+                <div class="ro-field"><label>Future Goals Alignment</label><div class="ro-value">{{ student.futureGoalsLevelName || '-' }}</div></div>
+            </div>
+        </div>
+
+        <!-- 7. Recommendation Information (when available) -->
+        <div class="card" *ngIf="student.recommendationLetterNotes || student.recommendationLetterPath"
+             style="padding: 18px 20px; margin-bottom: 14px; background: #fff; border: 1px solid var(--da-border, #e2e8f0); border-radius: 8px;">
+            <div class="sd-section-title">Recommendation Information</div>
+            <div class="ro-grid">
+                <div class="ro-field span-2">
+                    <label>Recommendation Notes</label>
+                    <div class="ro-value">{{ student.recommendationLetterNotes || '-' }}</div>
+                </div>
+                <div class="ro-field span-2">
+                    <label>Recommendation Document</label>
+                    <div class="ro-value">
+                        <ng-container *ngIf="student.recommendationLetterPath && student.recommendationLetterPath.trim(); else noRecommendationDoc">
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: var(--da-surface-2, #f8fafc); border: 1px solid var(--da-border, #e2e8f0); border-radius: 6px; margin-top: 4px; flex-wrap: wrap; gap: 10px;">
+                                <div>
+                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                        <a [href]="getRecommendationDocumentUrl()" target="_blank" rel="noopener noreferrer"
+                                           style="color: var(--da-text, #1e293b); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13.5px;"
+                                           title="Open recommendation letter">
+                                            <span>Recommendation Letter</span>
+                                            <i class="fas fa-external-link-alt" style="font-size: 11px; color: var(--da-muted, #64748b);"></i>
+                                        </a>
+                                        <span class="badge" style="background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">
+                                            Uploaded
+                                        </span>
+                                    </div>
+                                    <div style="color: var(--da-muted, #64748b); font-size: 12.5px; display: flex; align-items: center; gap: 6px;">
+                                        <i [class]="getDocumentIconClass(student.recommendationLetterPath)"></i>
+                                        <a [href]="getRecommendationDocumentUrl()" target="_blank" rel="noopener noreferrer"
+                                           style="color: var(--da-green, #16a34a); text-decoration: underline; font-size: 12.5px; word-break: break-all;">
+                                            {{ getRecommendationFileName() }}
+                                        </a>
+                                    </div>
                                 </div>
-                                <div style="color: var(--da-muted);">
-                                    Application Date: <span style="color: var(--da-text); font-weight: 500;">{{ student.actionDate ? (student.actionDate | date:'yyyy/MM/dd') : '-' }}</span>
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <button type="button" class="btn btn-g" style="padding: 5px 12px; font-size: 12px;" (click)="previewRecommendation($event)">
+                                        Preview
+                                    </button>
                                 </div>
                             </div>
-                        </div>
-                        <span class="chip {{ getStatusBadgeClass(student) }}" style="font-size: 13px; padding: 4px 12px;">
-                            {{ student.applicationStatusName || 'Draft' }}
-                        </span>
+                        </ng-container>
+                        <ng-template #noRecommendationDoc>
+                            <span class="empty">-</span>
+                        </ng-template>
                     </div>
                 </div>
             </div>
         </div>
 
-                <!-- 2. Applied Program -->
-        <section class="form-section">
-            <div class="form-section-head" style="cursor: default;">
-                <div class="form-section-num">1</div>
+        <!-- 8. Submitted Documents matching prototype presentation -->
+        <div class="card" style="padding: 18px 20px; margin-bottom: 14px; background: #fff; border: 1px solid var(--da-border, #e2e8f0); border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <div class="sd-section-title" style="margin: 0;">
+                    Submitted Documents ({{ getUploadedDocumentsCount() }} / {{ documents.length }})
+                </div>
+            </div>
+
+            <div *ngIf="documents.length === 0" style="padding: 32px; text-align: center; border: 1px dashed var(--da-border, #e2e8f0); border-radius: 6px; color: var(--da-muted, #64748b); font-size: 13px;">
+                No documents are available for this application.
+            </div>
+
+            <div *ngFor="let doc of documents" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: var(--da-surface-2, #f8fafc); border: 1px solid var(--da-border, #e2e8f0); border-radius: 6px; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
                 <div>
-                    <div class="form-section-title">Applied Program</div>
-                    <div class="form-section-sub">Applied program information.</div>
-                </div>
-                <div class="form-section-spacer"></div>
-            </div>
-            <div class="form-section-body" style="display: block;">
-            
-            <div class="card"
-                style="border: 2px solid var(--da-primary); border-radius: 6px; background: white; overflow: hidden; padding: 16px; display: flex; align-items: center; gap: 16px;">
-                <div
-                    style="flex: 0 0 48px; height: 48px; border-radius: 8px; background: #dcfce7; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2">
-                        <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-                        <path d="M6 12v5c3 3 9 3 12 0v-5" />
-                    </svg>
-                </div>
-                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
-                    <h4
-                        style="margin: 0 0 4px 0; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-                        {{ student.programName || '-' }}
-                        <span class="badge" *ngIf="student.applicationStatusName"
-                            style="background: var(--da-primary); color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px;">Status:
-                            {{ student.applicationStatusName }}</span>
-                    </h4>
-                    <div style="color: var(--da-muted); font-size: 13px; margin-bottom: 4px;">{{ student.programCode
-                        || '-' }}</div>
-                    <div style="display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px;">
-                        <div><strong>Faculty:</strong> {{ student.facultyName || '-' }}</div>
-                        <div><strong>University:</strong> {{ student.universityName || '-' }}</div>
-                    </div>
-                </div>
-            </div>
-                    </div>
-        </section>
-
-                <!-- 3. Submitted Documents -->
-        <section class="form-section">
-            <div class="form-section-head" style="cursor: default;">
-                <div class="form-section-num">2</div>
-                <div>
-                    <div class="form-section-title">Submitted Documents</div>
-                    <div class="form-section-sub">Submitted documents and application files.</div>
-                </div>
-                <div class="form-section-spacer"></div>
-            </div>
-            <div class="form-section-body" style="display: block;">
-
-            <div *ngIf="documents.length === 0" style="padding: 32px; text-align: center; border: 1px dashed var(--da-border); border-radius: 6px;">
-                <div style="font-weight: 500; font-size: 14px; margin-bottom: 4px;">No documents available</div>
-                <div style="color: var(--da-muted); font-size: 13px;">There are currently no documents fetched from the API for this application.</div>
-            </div>
-
-            <div *ngFor="let doc of documents" style="display: flex; justify-content: space-between; align-items: center; padding: 16px; background: var(--da-surface-2); border: 1px solid var(--da-border); border-radius: 6px; margin-bottom: 12px;">
-                <div>
-                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-                        <div *ngIf="getUploadedDocStatus(doc.documentTypeId) === 'Uploaded'" style="width: 24px; height: 24px; border-radius: 50%; background: #dcfce7; display: flex; align-items: center; justify-content: center;">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="20 6 9 17 4 12"></polyline>
-                            </svg>
-                        </div>
-
-                        <strong style="font-size: 14px; color: var(--da-text);">{{ doc.documentTypeName }}</strong>
-
-                        <span *ngIf="doc.isRequired" class="badge" style="background: var(--da-danger-bg, #fef2f2); color: var(--da-danger, #dc2626); border: 1px solid var(--da-danger-border, #fecaca); padding: 2px 8px; border-radius: 12px; font-size: 11px;">Required</span>
-                        <span *ngIf="!doc.isRequired" class="badge" style="background: var(--da-info-bg, #eff6ff); color: var(--da-info, #2563eb); border: 1px solid var(--da-info-border, #bfdbfe); padding: 2px 8px; border-radius: 12px; font-size: 11px;">Optional</span>
-                        <span *ngIf="getUploadedDocStatus(doc.documentTypeId) !== 'Uploaded'" class="badge" style="background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 12px; font-size: 11px;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                        <strong style="font-size: 13.5px; color: var(--da-text, #1e293b);">{{ doc.documentTypeName }}</strong>
+                        <span *ngIf="doc.isRequired" class="badge" style="background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">Required</span>
+                        <span *ngIf="!doc.isRequired" class="badge" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">Optional</span>
+                        <span class="badge" [style.background]="getUploadedDocStatus(doc.documentTypeId) === 'Uploaded' ? '#dcfce7' : '#f1f5f9'"
+                              [style.color]="getUploadedDocStatus(doc.documentTypeId) === 'Uploaded' ? '#166534' : '#475569'"
+                              style="padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">
                             {{ getUploadedDocStatus(doc.documentTypeId) }}
                         </span>
                     </div>
-                    <div style="color: var(--da-muted); font-size: 13px;">
-                        <span *ngIf="doc.originalFileName || doc.storedFileName">{{ doc.originalFileName || doc.storedFileName }} - </span>
-                        <span *ngIf="doc.uploadedDate">uploaded {{ doc.uploadedDate | date:'yyyy-MM-dd' }}</span>
+                    <div style="color: var(--da-muted, #64748b); font-size: 12.5px;">
+                        <span *ngIf="doc.originalFileName || doc.storedFileName">{{ doc.originalFileName || doc.storedFileName }} · </span>
+                        <span *ngIf="doc.uploadedDate">Uploaded {{ doc.uploadedDate | date:'yyyy-MM-dd' }}</span>
                         <span *ngIf="!doc.originalFileName && !doc.storedFileName && !doc.uploadedDate">{{ doc.description || 'Student provided document.' }}</span>
                     </div>
                 </div>
-                <div style="display: flex; gap: 12px; align-items: center;">
-                    <div (click)="openDiscussionModal(doc.documentTypeId)" style="cursor: pointer; display: flex; align-items: center; gap: 6px; color: var(--da-muted); font-size: 13px; padding: 6px 12px; border-radius: 4px; background: white; border: 1px solid var(--da-border);">
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button type="button" class="btn btn-t" (click)="openDiscussionModal(doc.documentTypeId)" style="display: flex; align-items: center; gap: 6px;">
                         {{ getDiscussionCount(doc.documentTypeId) }} Remarks
-                    </div>
-                    <ng-container *ngIf="getUploadedDocStatus(doc.documentTypeId) === 'Uploaded'">
-                        <button type="button" class="btn btn-sm btn-faculties-outline btn-info-outline" (click)="previewDocument(doc.documentTypeId); $event.stopPropagation()">
-                            Preview
-                        </button>
-                    </ng-container>
-                </div>
-                        </div>
-            </div>
-        </section>
-
-            <!-- Workflow Action Bar (Sponsorship transition) -->
-                <div *ngIf="student.applicationStatusId === studentStatus.Awarded || student.applicationStatusId === studentStatus.SponsoringInProcess || student.applicationStatusId === studentStatus.Sponsored || student.applicationStatusId === studentStatus.SponsoringRejected"
-                    style="display: flex; justify-content: space-between; align-items: flex-start; padding: 20px 24px; background: var(--da-success-bg, #f0fdf4); border: 1px solid var(--da-success-border, #bbf7d0); border-left: 5px solid var(--da-success, #16a34a); border-radius: 6px; margin-bottom: 14px;">
-
-                    <!-- Content for Awarded -->
-                    <ng-container *ngIf="student.applicationStatusId === studentStatus.Awarded">
-                        <div style="display: flex; flex-direction: column; gap: 12px;">
-                            <div>
-                                <div
-                                    style="font-weight: 700; font-size: 15px; color: var(--da-text, #1e293b); margin-bottom: 4px;">
-                                    Application Review
-                                </div>
-                                <div
-                                    style="display: flex; align-items: center; gap: 6px; color: var(--da-success, #16a34a); font-weight: 600; font-size: 13.5px; margin-bottom: 8px;">
-                                    <!-- <span>âœ“ Awarding Completed</span> -->
-                                    <span>Awarding Completed</span>
-                                </div>
-                                <div style="color: var(--da-muted, #64748b); font-size: 12.5px;">
-                                    The application has been awarded successfully by the University.
-                                </div>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-                                <span style="font-weight: 600; font-size: 13px; color: var(--da-text, #1e293b);">
-                                    Next Step:
-                                </span>
-                                <span style="color: var(--da-text, #1e293b); font-size: 13px;">
-                                    Submit this application for Sponsorship Review.
-                                </span>
-                            </div>
-                        </div>
-                        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px; align-self: center;">
-                            <button type="button" class="btn btn-p" (click)="submitForSponsorshipReview()">
-                                Submit for Sponsorship Review
-                            </button>
-                        </div>
-                    </ng-container>
-
-                    <!-- Content for SponsoringInProcess -->
-                    <ng-container *ngIf="student.applicationStatusId === studentStatus.SponsoringInProcess">
-                        <div style="display: flex; flex-direction: column; gap: 12px;">
-                            <div>
-                                <div
-                                    style="font-weight: 700; font-size: 15px; color: var(--da-text, #1e293b); margin-bottom: 4px;">
-                                    Application Review</div>
-                                <div style="color: var(--da-muted, #64748b); font-size: 12.5px;">Review the awarded application and choose the appropriate sponsorship decision.</div>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-                                <span style="font-weight: 600; font-size: 13px; color: var(--da-text, #1e293b);">Current
-                                    Status:</span>
-                                <span class="chip {{ getStatusBadgeClass(student) }}" style="font-size: 11px;">
-                                    {{ student.applicationStatusName }}
-                                </span>
-                            </div>
-                        </div>
-                        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
-                            <span style="color: var(--da-muted, #64748b); font-size: 12px; font-weight: 500;">Available
-                                Actions</span>
-                            <div style="display: flex; gap: 12px;">
-                                <button type="button" class="btn btn-faculties-outline btn-danger-outline"
-                                    (click)="rejectSponsorship()">
-                                    Reject
-                                </button>
-                                <button type="button" class="btn btn-p" (click)="sponsor()">
-                                    Sponsor
-                                </button>
-                            </div>
-                        </div>
-                    </ng-container>
-
-                    <!-- Content for Sponsored -->
-                    <ng-container *ngIf="student.applicationStatusId === studentStatus.Sponsored">
-                        <div style="display: flex; flex-direction: column; gap: 12px;">
-                            <div>
-                                <div style="font-weight: 700; font-size: 15px; color: var(--da-text, #1e293b); margin-bottom: 4px;">Application Review</div>
-                                <div style="display: flex; align-items: center; gap: 6px; color: var(--da-success, #16a34a); font-weight: 600; font-size: 13.5px; margin-bottom: 8px; margin-top: 4px;">
-                                    <!-- <span>âœ“ Sponsorship Completed</span> -->
-                                    <span>Sponsorship Completed</span>
-                                </div>
-                                <div style="color: var(--da-muted, #64748b); font-size: 12.5px;">This application has been successfully approved for sponsorship.<br>The student is now officially sponsored under the Direct Aid scholarship program.</div>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-                                <span style="font-weight: 600; font-size: 13px; color: var(--da-text, #1e293b);">Current Status:</span>
-                                <span class="chip {{ getStatusBadgeClass(student) }}" style="font-size: 11px;">
-                                    {{ student.applicationStatusName }}
-                                </span>
-                            </div>
-                        </div>
-                        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px; align-self: center;">
-                            <span style="color: var(--da-muted, #64748b); font-size: 12px; font-weight: 500; margin-bottom: 4px;">Workflow Complete</span>
-                            <div style="color: var(--da-text, #1e293b); font-size: 12.5px; font-weight: 500; padding: 6px 12px; background: var(--da-surface-2, #f8fafc); border-radius: 4px; border: 1px solid var(--da-border, #e2e8f0);">
-                                No further action required.
-                            </div>
-                        </div>
-                    </ng-container>
-
-                    <!-- Content for Sponsoring Rejected -->
-                    <ng-container *ngIf="student.applicationStatusId === studentStatus.SponsoringRejected">
-                        <div style="display: flex; flex-direction: column; gap: 12px;">
-                            <div>
-                                <div style="font-weight: 700; font-size: 15px; color: var(--da-text, #1e293b); margin-bottom: 4px;">Application Review</div>
-                                <div style="display: flex; align-items: center; gap: 6px; color: var(--da-danger, #dc2626); font-weight: 600; font-size: 13.5px; margin-bottom: 8px; margin-top: 4px;">
-                                    <!-- <span>âœ• Sponsorship Rejected</span> -->
-                                    <span>Sponsorship Rejected</span>
-                                </div>
-                                <div style="color: var(--da-muted, #64748b); font-size: 12.5px;">The sponsorship request has been rejected by the Direct Aid Committee.</div>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-                                <span style="font-weight: 600; font-size: 13px; color: var(--da-text, #1e293b);">Current Status:</span>
-                                <span class="chip {{ getStatusBadgeClass(student) }}" style="font-size: 11px;">
-                                    {{ student.applicationStatusName }}
-                                </span>
-                            </div>
-                        </div>
-                        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px; align-self: center;">
-                            <span style="color: var(--da-muted, #64748b); font-size: 12px; font-weight: 500; margin-bottom: 4px;">Workflow Complete</span>
-                            <div style="color: var(--da-text, #1e293b); font-size: 12.5px; font-weight: 500; padding: 6px 12px; background: var(--da-surface-2, #f8fafc); border-radius: 4px; border: 1px solid var(--da-border, #e2e8f0);">
-                                No further action available.
-                            </div>
-                        </div>
-                    </ng-container>
-
-                </div>
-
-            <section class="form-section sponsorship-assignment-section" *ngIf="student.applicationId">
-                <div class="form-section-head">
-                    <div class="form-section-num">DA</div>
-                    <div>
-                        <div class="form-section-title">DA Pool Sponsorship Assignments</div>
-                        <div class="form-section-sub">Category assignments and the sponsorship types currently permitted by the Sponsorship Matrix.</div>
-                    </div>
-                    <div class="form-section-spacer"></div>
-                    <button type="button" class="btn btn-p"
-                        [disabled]="isLoadingSponsorshipCategories || sponsorshipCategories.length === 0"
-                        (click)="openSponsorshipAssignmentModal()">
-                        Assign Category
+                    </button>
+                    <button *ngIf="getUploadedDocStatus(doc.documentTypeId) === 'Uploaded'" type="button" class="btn btn-g" style="padding: 5px 12px; font-size: 12px;" (click)="previewDocument(doc.documentTypeId)">
+                        Preview
                     </button>
                 </div>
-                <div class="form-section-body" style="display: block;">
-                    <div class="sponsorship-assignment-hint">
-                        The category shown is the selected Sponsorship Matrix category. This student record has no linked sponsorship category, so the selection does not verify eligibility.
-                    </div>
-                    <div *ngIf="isLoadingSponsorshipAssignments" class="sponsorship-assignment-state" role="status">
-                        Loading sponsorship assignments…
-                    </div>
-                    <div *ngIf="isLoadingSponsorshipOptions" class="sponsorship-assignment-state" role="status">
-                        Loading permitted sponsorship types…
-                    </div>
-                    <div *ngIf="isLoadingSponsorshipCategories" class="sponsorship-assignment-state" role="status">
-                        Loading sponsorship categories…
-                    </div>
-                    <div *ngIf="!isLoadingSponsorshipCategories && sponsorshipCategories.length === 0"
-                        class="sponsorship-assignment-state">
-                        No active sponsorship categories are available.
-                    </div>
-                    <div *ngIf="!isLoadingSponsorshipAssignments && sponsorshipAssignmentsError"
-                        class="sponsorship-assignment-state sponsorship-assignment-error" role="alert">
-                        {{ sponsorshipAssignmentsError }}
-                    </div>
-                    <div *ngIf="!isLoadingSponsorshipAssignments && !sponsorshipAssignmentsError && sponsorshipAssignments.length === 0"
-                        class="sponsorship-assignment-state">
-                        No DA Pool sponsorship category is assigned to this application.
-                    </div>
-                    <div *ngFor="let assignment of sponsorshipAssignments"
-                        class="sponsorship-assignment-row">
-                        <div class="sponsorship-assignment-details">
-                            <div class="sponsorship-assignment-title">{{ assignment.categoryName }}</div>
-                            <div class="sponsorship-assignment-meta">
-                                Assigned {{ assignment.assignedDate | date:'mediumDate' }}
-                                <span *ngIf="assignment.remarks"> · {{ assignment.remarks }}</span>
-                            </div>
-                            <div class="sponsorship-assignment-meta" *ngIf="assignment.permittedSponsorshipTypes?.length">
-                                Permitted:
-                                <span *ngFor="let type of assignment.permittedSponsorshipTypes; let last = last">
-                                    {{ type.sponsorshipName }} ({{ getSponsorshipFrequencyLabel(type.frequencyType) }})<span *ngIf="!last">, </span>
-                                </span>
-                            </div>
-                        </div>
-                        <span class="sponsorship-assignment-status" [class.inactive]="!assignment.isActive">
-                            {{ assignment.isActive ? 'Active' : 'Inactive' }}
-                        </span>
-                        <button *ngIf="assignment.isActive" type="button" class="btn btn-faculties-outline btn-danger-outline"
-                            [disabled]="deactivatingAssignmentId !== null || isLoadingSponsorshipCategories"
-                            (click)="editSponsorshipAssignment(assignment)">
-                            Edit
-                        </button>
-                        <button *ngIf="assignment.isActive" type="button" class="btn btn-faculties-outline btn-danger-outline"
-                            [disabled]="deactivatingAssignmentId !== null"
-                            (click)="deactivateSponsorshipAssignment(assignment)">
-                            {{ deactivatingAssignmentId === assignment.assignmentId ? 'Deactivating…' : 'Deactivate' }}
-                        </button>
-                    </div>
-                </div>
-            </section>
-
-            <div *ngIf="isSponsorshipAssignmentModalOpen" class="sponsorship-assignment-backdrop" role="presentation">
-                <section class="sponsorship-assignment-modal" role="dialog" aria-modal="true"
-                    aria-labelledby="sponsorship-assignment-title">
-                    <header class="sponsorship-assignment-modal-header">
-                        <div>
-                            <h2 id="sponsorship-assignment-title">{{ editingSponsorshipAssignmentId ? 'Edit DA Pool Sponsorship' : 'Assign DA Pool Sponsorship' }}</h2>
-                            <p>Assigning a category permits every active sponsorship type configured for it in the Sponsorship Matrix. The selected category is not verified student eligibility.</p>
-                        </div>
-                        <button type="button" class="sponsorship-assignment-close" aria-label="Close"
-                            [disabled]="isSavingSponsorshipAssignment" (click)="closeSponsorshipAssignmentModal()">×</button>
-                    </header>
-                    <div class="sponsorship-assignment-modal-body">
-                        <label id="sponsorshipCategoryLabel" class="field-label">Student sponsorship category</label>
-                        <div class="da-select sponsorship-category-dropdown"
-                            [class.da-select-open]="isSponsorshipCategoryDropdownOpen"
-                            [class.is-disabled]="isSavingSponsorshipAssignment || isLoadingSponsorshipCategories || sponsorshipCategories.length === 0">
-                            <div id="sponsorshipCategory" class="da-select-control" role="combobox"
-                                [attr.tabindex]="isSavingSponsorshipAssignment || isLoadingSponsorshipCategories || sponsorshipCategories.length === 0 ? -1 : 0"
-                                aria-labelledby="sponsorshipCategoryLabel" aria-required="true"
-                                aria-haspopup="listbox" aria-controls="sponsorship-category-options"
-                                [attr.aria-expanded]="isSponsorshipCategoryDropdownOpen"
-                                [attr.aria-disabled]="isSavingSponsorshipAssignment || isLoadingSponsorshipCategories || sponsorshipCategories.length === 0"
-                                [attr.aria-activedescendant]="isSponsorshipCategoryDropdownOpen && sponsorshipCategories.length ? 'sponsorship-category-option-' + activeSponsorshipCategoryOptionIndex : null"
-                                (click)="toggleSponsorshipCategoryDropdown($event)"
-                                (keydown)="handleSponsorshipCategoryDropdownKeydown($event)">
-                                <span class="da-select-value">{{ getSelectedSponsorshipCategoryName() || 'Select a category' }}</span>
-                                <i class="fas da-select-arrow" [ngClass]="isSponsorshipCategoryDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'" aria-hidden="true"></i>
-                            </div>
-                            <div id="sponsorship-category-options" class="da-select-menu" role="listbox"
-                                *ngIf="isSponsorshipCategoryDropdownOpen">
-                                <div *ngFor="let category of sponsorshipCategories; let i = index"
-                                    class="da-select-option" role="option"
-                                    [id]="'sponsorship-category-option-' + i"
-                                    [class.selected]="selectedSponsorshipCategoryId === category.studentCategoryId"
-                                    [class.keyboard-active]="isSponsorshipCategoryDropdownOpen && activeSponsorshipCategoryOptionIndex === i"
-                                    [attr.aria-selected]="selectedSponsorshipCategoryId === category.studentCategoryId"
-                                    (mouseenter)="activeSponsorshipCategoryOptionIndex = i"
-                                    (click)="selectSponsorshipCategory(category.studentCategoryId)">
-                                    {{ category.categoryName }}
-                                </div>
-                            </div>
-                        </div>
-                        <div *ngIf="sponsorshipOptionsError" class="sponsorship-assignment-state sponsorship-assignment-error" role="alert">
-                            {{ sponsorshipOptionsError }}
-                        </div>
-                        <div *ngIf="isLoadingSponsorshipOptions" class="sponsorship-assignment-state" role="status">
-                            Loading active sponsorship types for this category…
-                        </div>
-                        <div *ngIf="selectedSponsorshipCategoryId && !isLoadingSponsorshipOptions && !sponsorshipOptionsError && sponsorshipAssignmentOptions.length === 0"
-                            class="sponsorship-assignment-hint">
-                            No active sponsorship types are configured for this category.
-                        </div>
-                        <div *ngIf="selectedSponsorshipCategoryId && !isLoadingSponsorshipOptions && !sponsorshipOptionsError && sponsorshipAssignmentOptions.length > 0"
-                            class="sponsorship-assignment-permitted-types" aria-live="polite">
-                            <div class="field-label">All currently permitted sponsorship types</div>
-                            <ul>
-                                <li *ngFor="let option of sponsorshipAssignmentOptions">
-                                    {{ option.sponsorshipName }} — {{ getSponsorshipFrequencyLabel(option.frequencyType) }}
-                                </li>
-                            </ul>
-                        </div>
-                        <label class="field-label" for="sponsorshipAssignmentRemarks">Remarks (optional)</label>
-                        <textarea id="sponsorshipAssignmentRemarks" class="field-input" rows="3" maxlength="500"
-                            [(ngModel)]="sponsorshipAssignmentRemarks" name="sponsorshipAssignmentRemarks"
-                            [disabled]="isSavingSponsorshipAssignment"
-                            placeholder="Add a note for this assignment"></textarea>
-                        <div class="sponsorship-assignment-char-count">{{ sponsorshipAssignmentRemarks.length }}/500</div>
-                    </div>
-                    <footer class="sponsorship-assignment-modal-footer">
-                        <button type="button" class="btn btn-faculties-outline"
-                            [disabled]="isSavingSponsorshipAssignment" (click)="closeSponsorshipAssignmentModal()">Cancel</button>
-                        <button type="button" class="btn btn-p"
-                            [disabled]="!selectedSponsorshipCategoryId || isLoadingSponsorshipOptions || sponsorshipOptionsError || sponsorshipAssignmentOptions.length === 0 || isSavingSponsorshipAssignment"
-                            (click)="saveSponsorshipAssignment()">
-                            {{ isSavingSponsorshipAssignment ? 'Saving…' : editingSponsorshipAssignmentId ? 'Save Changes' : 'Save Assignment' }}
-                        </button>
-                    </footer>
-                </section>
             </div>
-
-            <!-- Discussion Modal -->
-            <div *ngIf="isDiscussionModalOpen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
-                <div class="card" style="width: 800px; max-width: 90%; background: white; padding: 24px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
-                    <h3 style="margin: 0 0 16px 0; font-size: 18px;">Document Discussion</h3>
-                    <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px; color: var(--da-text);">Coordinator Remark</label>
-                    <textarea class="field-input" rows="4" style="min-height: 80px; resize: vertical; background: var(--da-surface-2); cursor: not-allowed; margin-bottom: 16px; width: 100%; padding: 8px; border-radius: 4px; border: 1px solid var(--da-border);" placeholder="No remarks entered." [ngModel]="currentDiscussionRemark" name="docRemark" readonly disabled></textarea>
-                    
-                    <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px; color: var(--da-text);">University Remark</label>
-                    <textarea class="field-input" rows="4" style="min-height: 80px; resize: vertical; width: 100%; padding: 8px; border-radius: 4px; border: 1px solid var(--da-border);" placeholder="Enter remarks for this document..." [(ngModel)]="universityDiscussionRemark" name="universityRemark"></textarea>
-                    
-                    <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px;">
-                        <button type="button" class="btn btn-faculties-outline" (click)="closeDiscussionModal()">Cancel</button>
-                        <button type="button" class="btn btn-p" (click)="saveUniversityRemark()">Save</button>
-                    </div>
-                </div>
-            </div>
-
-        <!-- 4. Personal Information -->
-        <section class="form-section">
-            <div class="form-section-head" style="cursor: default;">
-                <div class="form-section-num">3</div>
-                <div>
-                    <div class="form-section-title">Basic Information</div>
-                    <div class="form-section-sub">Student's personal profile and demographic information.</div>
-                </div>
-                <div class="form-section-spacer"></div>
-            </div>
-            <div class="form-section-body" style="display: block;">
-                <div class="form-grid form-grid-2">
-                    <div class="field">
-                        <label class="field-label">FIRST NAME *</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.firstName || '-' }}</div>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">SECOND NAME</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.secondName || '-' }}</div>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">THIRD NAME</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.thirdName || '-' }}</div>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">LAST NAME (FAMILY) *</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.lastName || '-' }}</div>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">MOTHER'S NAME</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.motherName || '-' }}</div>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">DATE OF BIRTH</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.dateOfBirth ? (student.dateOfBirth | date:'mediumDate') : '-' }}</div>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">NATIONALITY *</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.nationality || '-' }}</div>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">RESIDENCE COUNTRY</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.countryOfResidence || '-' }}</div>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">TRIBE / CLAN</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.tribeName || '-' }}</div>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">RELIGION</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.religionName || '-' }}</div>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">GENDER *</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.genderName || '-' }}</div>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">IS ORPHAN?</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.isDirectAidOrphan ? 'Yes' : 'No' }}</div>
-                    </div>
-                    <div class="field" *ngIf="student.isDirectAidOrphan">
-                        <label class="field-label">ORPHAN NUMBER</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.orphanNumber || '-' }}</div>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">TRIBE NAME</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.tribeName || '-' }}</div>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">FROM DA SCHOOL?</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.fromDaSchool ? 'Yes' : 'No' }}</div>
-                    </div>
-                    <div class="field" *ngIf="student.fromDaSchool">
-                        <label class="field-label">DA STUDENT CODE</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.daStudentCode || '-' }}</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 5. Contact Information -->
-        <section class="form-section">
-            <div class="form-section-head" style="cursor: default;">
-                <div class="form-section-num">4</div>
-                <div>
-                    <div class="form-section-title">Contact Information</div>
-                    <div class="form-section-sub">Student's contact and residential information.</div>
-                </div>
-                <div class="form-section-spacer"></div>
-            </div>
-            <div class="form-section-body" style="display: block;">
-                <div class="form-grid form-grid-2">
-                    <div class="field">
-                        <label class="field-label">PHONE NUMBER</label>
-                        <div class="field-input num-ltr" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.phoneNumber || '-' }}</div>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">EMAIL ADDRESS</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.emailAddress || '-' }}</div>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">CITY</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.city || '-' }}</div>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">VILLAGE</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.village || '-' }}</div>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">BLOCK</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.block || '-' }}</div>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">STREET</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.street || '-' }}</div>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">HOUSE</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.house || '-' }}</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 6. Academic Information -->
-        <section class="form-section">
-            <div class="form-section-head" style="cursor: default;">
-                <div class="form-section-num">5</div>
-                <div>
-                    <div class="form-section-title">Academic Information & Scores</div>
-                    <div class="form-section-sub">Academic background and qualification information.</div>
-                </div>
-                <div class="form-section-spacer"></div>
-            </div>
-            <div class="form-section-body" style="display: block;">
-                <div class="form-grid form-grid-2">
-                    <div class="field" style="grid-column: 1 / -1;">
-                        <label class="field-label">SCHOOL NAME</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.schoolName || '-' }}</div>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">HIGH SCHOOL SPECIALIZATION</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.hsSpecialization || '-' }}</div>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">TANZANIAN STUDENT COMBINATION</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.tanzanianStudentCombination || '-' }}</div>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">TOTAL SCORE</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.highSchoolTotalScore !== undefined && student.highSchoolTotalScore !== null ? student.highSchoolTotalScore : '-' }}</div>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">MAX SCORE</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.highSchoolMaxScore !== undefined && student.highSchoolMaxScore !== null ? student.highSchoolMaxScore : '-' }}</div>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">RELATIVE GRADE / PERCENTAGE</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.highSchoolRelativeGradeOrPercentage !== undefined && student.highSchoolRelativeGradeOrPercentage !== null ? student.highSchoolRelativeGradeOrPercentage : '-' }}</div>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">ENGLISH SCORE</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.englishScore !== undefined && student.englishScore !== null ? student.englishScore : '-' }}</div>
-                    </div>
-                    
-                    <!-- Transfer Student Info -->
-                    <div class="field" style="grid-column: 1 / -1; margin-top: 16px;">
-                        <h4 style="margin: 0; font-size: 14px; font-weight: 600; color: var(--da-primary);">Transfer Student Information</h4>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">TRANSFER INSTITUTION</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.transferInstitution || '-' }}</div>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">TRANSFER PROGRAM</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.transferProgram || '-' }}</div>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">INSTITUTION TYPE</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.transferInstitutionType || '-' }}</div>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">TRANSFER CREDITS</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.transferCredits !== undefined && student.transferCredits !== null ? student.transferCredits : '-' }}</div>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">LAST SEMESTER END</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.transferLastSemEnd ? (student.transferLastSemEnd | date:'mediumDate') : '-' }}</div>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">TRANSFER GPA</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.transferGpa !== undefined && student.transferGpa !== null ? student.transferGpa : '-' }}</div>
-                    </div>
-                    
-                    <!-- Recommendation Info -->
-                    <div class="field" style="grid-column: 1 / -1; margin-top: 16px;">
-                        <h4 style="margin: 0; font-size: 14px; font-weight: 600; color: var(--da-primary);">Recommendation</h4>
-                    </div>
-                    <div class="field" style="grid-column: 1 / -1;">
-                        <label class="field-label">RECOMMENDATION LETTER NOTES</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.recommendationLetterNotes || '-' }}</div>
-                    </div>
-                    <div class="field" style="grid-column: 1 / -1;" *ngIf="student.recommendationLetterPath">
-                        <label class="field-label">RECOMMENDATION LETTER PATH</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.recommendationLetterPath }}</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 7. Behavioral & Social Evaluation -->
-        <section class="form-section">
-            <div class="form-section-head" style="cursor: default;">
-                <div class="form-section-num">6</div>
-                <div>
-                    <div class="form-section-title">Behavioral & Social Evaluation</div>
-                    <div class="form-section-sub">Coordinator's assessment of the student.</div>
-                </div>
-                <div class="form-section-spacer"></div>
-            </div>
-            <div class="form-section-body" style="display: block;">
-                <div class="form-grid form-grid-2">
-                    <div class="field">
-                        <label class="field-label">FINANCIAL NEED</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc);">{{ student.financialNeedStatusName || '-' }}</div>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">SELF-RELIANCE LEVEL</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc);">{{ student.selfRelianceLevelName || '-' }}</div>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">MOTIVATION LEVEL</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc);">{{ student.motivationLevelName || '-' }}</div>
-                    </div>
-                    <div class="field">
-                        <label class="field-label">FUTURE GOALS ALIGNMENT</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc);">{{ student.futureGoalsLevelName || '-' }}</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-                <!-- 8. Timeline / History -->
-        <section class="form-section">
-            <div class="form-section-head" style="cursor: default;">
-                <div class="form-section-num">7</div>
-                <div>
-                    <div class="form-section-title">Student History</div>
-                    <div class="form-section-sub">Student application history and status changes.</div>
-                </div>
-                <div class="form-section-spacer"></div>
-            </div>
-            <div class="form-section-body" style="display: block;">
-            <!--
-              OLD STUDENT HISTORY DESIGN
-              Kept for reference/rollback.
-              DO NOT DELETE.
-            -->
-            <!--
-            <div *ngIf="!studentHistory || studentHistory.length === 0" class="student-history-empty" style="padding: 16px; text-align: center; color: var(--da-muted);">
-                No activity has been recorded for this student yet.
-            </div>
-
-            <div *ngIf="studentHistory && studentHistory.length > 0" class="student-history" style="position: relative; padding-left: 20px; margin-top: 16px;">
-                <div class="student-history-line" style="position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--da-border);"></div>
-                
-                <div *ngFor="let item of studentHistory" class="student-history-item" style="position: relative; margin-bottom: 20px;">
-                    <div class="student-history-icon" style="position: absolute; left: -26px; top: 0; width: 14px; height: 14px; border-radius: 50%; background: white; border: 2px solid var(--da-primary);"></div>
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; padding-left: 12px;">
-                        <div>
-                            <strong class="student-history-title" style="display: block; font-size: 15px; color: var(--da-text);">{{ item.title }}</strong>
-                            <div *ngIf="item.description" class="student-history-description" style="color: var(--da-muted); font-size: 13.5px; margin-top: 4px;">{{ item.description }}</div>
-                        </div>
-                        <div class="student-history-time" style="text-align: right; color: var(--da-muted); font-size: 12.5px;">
-                            <strong class="student-history-date" style="display: block;">{{ item.createdDate | date:'dd MMM yyyy' }}</strong>
-                            <span>{{ item.createdDate | date:'hh:mm a' }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            -->
-
-            <!-- NEW STUDENT HISTORY DESIGN -->
-            <div *ngIf="!studentHistory || studentHistory.length === 0" class="student-history-empty" style="padding: 16px; text-align: center; color: var(--da-muted);">
-                No activity has been recorded for this student yet.
-            </div>
-
-            <div *ngIf="studentHistory && studentHistory.length > 0" class="student-history" style="position: relative; padding-left: 32px; margin-top: 16px; padding-bottom: 8px;">
-                <div class="student-history-line" style="position: absolute; left: 11px; top: 14px; bottom: 24px; width: 2px; background: var(--da-border, #e2e8f0);"></div>
-                
-                <div *ngFor="let item of studentHistory" class="student-history-item" style="position: relative; margin-bottom: 24px;">
-                    <div class="student-history-icon" style="position: absolute; left: -32px; top: 0px; width: 24px; height: 24px; border-radius: 50%; background: white; border: 2px solid var(--da-border, #e2e8f0); display: flex; align-items: center; justify-content: center;">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--da-primary, #16a34a)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <polyline points="12 6 12 12 16 14"></polyline>
-                        </svg>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; width: 100%;">
-                        <div style="flex: 1; min-width: 250px;">
-                            <div class="student-history-title" style="font-size: 14.5px; font-weight: 600; color: var(--da-text, #1e293b); margin-bottom: 4px;">{{ item.title }}</div>
-                            <div *ngIf="item.description" class="student-history-description" style="color: var(--da-muted, #64748b); font-size: 13.5px; line-height: 1.4;">{{ item.description }}</div>
-                        </div>
-                        <div class="student-history-time" style="text-align: right; color: var(--da-muted, #64748b); font-size: 13px; white-space: nowrap;">
-                            <div class="student-history-date" style="color: var(--da-text, #1e293b); font-weight: 500;">{{ item.createdDate | date:'dd MMM yyyy' }}</div>
-                            <div style="margin-top: 2px;">{{ item.createdDate | date:'hh:mm a' }}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-                    </div>
-        </section>
-
-        <!-- Form Actions (Sticky Footer) -->
-        <div class="sticky-footer" style="display: flex; gap: 12px; align-items: center; justify-content: flex-end;">
-
-            <!-- Workflow Buttons (TODOs) -->
-
-
-
         </div>
 
+        <!-- Program Load & Cost (Immediately below Submitted Documents) -->
+        <div class="card" style="padding: 18px 20px; margin-bottom: 14px; background: #fff; border: 1px solid var(--da-border, #e2e8f0); border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px;">
+                <div>
+                    <div class="sd-section-title" style="margin: 0 0 4px 0;">Program Load &amp; Cost</div>
+                    <div style="font-size: 12.5px; color: var(--da-muted, #64748b);">Derived from program cost items and courses credits.</div>
+                </div>
+                <button *ngIf="programCosts.length > 0" type="button" class="btn btn-basic-data" style="font-size: 12px; padding: 5px 12px; display: inline-flex; align-items: center; gap: 6px;" (click)="openFullCostModal()">
+                    <i class="fas fa-file-invoice-dollar" aria-hidden="true"></i> Full Cost
+                </button>
+            </div>
+
+            <!-- Loading State -->
+            <div *ngIf="isProgramLoading" style="padding: 24px; text-align: center; color: var(--da-muted, #64748b); font-size: 13px;">
+                Loading program cost and credit configuration…
+            </div>
+
+            <!-- Not Configured State -->
+            <div *ngIf="!isProgramLoading && !hasCostConfiguration && totalCourseCredits === 0"
+                 style="padding: 24px; text-align: center; border: 1px dashed var(--da-border, #e2e8f0); border-radius: 6px; color: var(--da-muted, #64748b); font-size: 13px;">
+                Program load and cost have not been configured for this program.
+            </div>
+
+            <!-- Program Load & Cost Content -->
+            <div *ngIf="!isProgramLoading && (hasCostConfiguration || totalCourseCredits > 0)">
+                <!-- 6 Metric KPI Cards -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 14px;">
+                    <!-- 1. Grand Program Cost -->
+                    <div class="card" style="padding: 14px 16px; background: #ffffff; border: 1px solid var(--da-border, #e2e8f0); border-radius: 8px;">
+                        <div style="font-size: 11px; font-weight: 700; color: var(--da-muted, #64748b); text-transform: uppercase; letter-spacing: 0.3px;">Grand Program Cost</div>
+                        <div class="num-ltr" style="font-size: 18px; font-weight: 700; color: var(--da-text, #1e293b); margin-top: 4px;">
+                            <ng-container *ngIf="hasCostConfiguration">{{ grandRecurringCostFormatted }} {{ programCurrency }}</ng-container>
+                            <ng-container *ngIf="!hasCostConfiguration">-</ng-container>
+                        </div>
+                        <div style="font-size: 11.5px; color: var(--da-muted, #64748b); margin-top: 2px;">
+                            Recurring × {{ programSemestersCount }} sem{{ programSemestersCount === 1 ? '' : 's' }}
+                        </div>
+                    </div>
+
+                    <!-- 2. One-Time Items -->
+                    <div class="card" style="padding: 14px 16px; background: #ffffff; border: 1px solid var(--da-border, #e2e8f0); border-radius: 8px;">
+                        <div style="font-size: 11px; font-weight: 700; color: var(--da-muted, #64748b); text-transform: uppercase; letter-spacing: 0.3px;">One-Time Items</div>
+                        <div class="num-ltr" style="font-size: 18px; font-weight: 700; color: var(--da-text, #1e293b); margin-top: 4px;">
+                            <ng-container *ngIf="hasCostConfiguration">{{ oneTimeCostFormatted }} {{ programCurrency }}</ng-container>
+                            <ng-container *ngIf="!hasCostConfiguration">-</ng-container>
+                        </div>
+                        <div style="font-size: 11.5px; color: var(--da-muted, #64748b); margin-top: 2px;">
+                            {{ oneTimeItemsCount }} one-time item{{ oneTimeItemsCount === 1 ? '' : 's' }}
+                        </div>
+                    </div>
+
+                    <!-- 3. Grand Total Program Cost -->
+                    <div class="card" style="padding: 14px 16px; background: var(--da-green-50, #f0fdf4); border: 1px solid #BBF7D0; border-radius: 8px;">
+                        <div style="font-size: 11px; font-weight: 700; color: var(--da-green-800, #166534); text-transform: uppercase; letter-spacing: 0.3px;">Grand Total Program Cost</div>
+                        <div class="num-ltr" style="font-size: 18px; font-weight: 700; color: var(--da-green-800, #166534); margin-top: 4px;">
+                            <ng-container *ngIf="hasCostConfiguration">{{ grandTotalCostFormatted }} {{ programCurrency }}</ng-container>
+                            <ng-container *ngIf="!hasCostConfiguration">-</ng-container>
+                        </div>
+                        <div style="font-size: 11.5px; color: var(--da-green-800, #166534); opacity: 0.85; margin-top: 2px;">
+                            Total program cost
+                        </div>
+                    </div>
+
+                    <!-- 4. Cost per Semester -->
+                    <div class="card" style="padding: 14px 16px; background: #ffffff; border: 1px solid var(--da-border, #e2e8f0); border-radius: 8px;">
+                        <div style="font-size: 11px; font-weight: 700; color: var(--da-muted, #64748b); text-transform: uppercase; letter-spacing: 0.3px;">Cost per Semester</div>
+                        <div class="num-ltr" style="font-size: 18px; font-weight: 700; color: var(--da-text, #1e293b); margin-top: 4px;">
+                            <ng-container *ngIf="hasCostConfiguration && programSemestersCount > 0">{{ costPerSemesterFormatted }} {{ programCurrency }}</ng-container>
+                            <ng-container *ngIf="!hasCostConfiguration || programSemestersCount === 0">-</ng-container>
+                        </div>
+                        <div style="font-size: 11.5px; color: var(--da-muted, #64748b); margin-top: 2px;">
+                            Grand total ÷ {{ programSemestersCount }} sem{{ programSemestersCount === 1 ? '' : 's' }}
+                        </div>
+                    </div>
+
+                    <!-- 5. Total Course Credits -->
+                    <div class="card" style="padding: 14px 16px; background: #ffffff; border: 1px solid var(--da-border, #e2e8f0); border-radius: 8px;">
+                        <div style="font-size: 11px; font-weight: 700; color: var(--da-muted, #64748b); text-transform: uppercase; letter-spacing: 0.3px;">Total Course Credits</div>
+                        <div class="num-ltr" style="font-size: 18px; font-weight: 700; color: var(--da-text, #1e293b); margin-top: 4px;">
+                            <ng-container *ngIf="totalCourseCredits > 0">{{ totalCourseCredits }} cr</ng-container>
+                            <ng-container *ngIf="totalCourseCredits === 0">-</ng-container>
+                        </div>
+                        <div style="font-size: 11.5px; color: var(--da-muted, #64748b); margin-top: 2px;">
+                            {{ totalCoursesCount > 0 ? (totalCoursesCount + ' courses across program') : 'Configured required credits' }}
+                        </div>
+                    </div>
+
+                    <!-- 6. Cost per Credit -->
+                    <div class="card" style="padding: 14px 16px; background: #ffffff; border: 1px solid var(--da-border, #e2e8f0); border-radius: 8px;">
+                        <div style="font-size: 11px; font-weight: 700; color: var(--da-muted, #64748b); text-transform: uppercase; letter-spacing: 0.3px;">Cost per Credit</div>
+                        <div class="num-ltr" style="font-size: 18px; font-weight: 700; color: var(--da-text, #1e293b); margin-top: 4px;">
+                            <ng-container *ngIf="hasCostConfiguration && totalCourseCredits > 0">{{ costPerCreditFormatted }} {{ programCurrency }}</ng-container>
+                            <ng-container *ngIf="!hasCostConfiguration || totalCourseCredits === 0">-</ng-container>
+                        </div>
+                        <div style="font-size: 11.5px; color: var(--da-muted, #64748b); margin-top: 2px;">
+                            Grand total ÷ {{ totalCourseCredits }} cr
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cost Summary Details Panel (Matching Program Details & Prototype) -->
+                <div id="cost-summary" style="background: var(--da-green-50, #f0fdf4); border: 1px solid rgba(44, 153, 66, 0.2); border-radius: 8px; padding: 14px 18px; font-size: 13px;">
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 4px 0;">
+                        <span style="color: var(--da-muted, #64748b);">Grand program cost <span style="opacity: 0.75;">(recurring × <span class="num-ltr">{{ programSemestersCount }}</span> semesters)</span></span>
+                        <span class="num-ltr" style="font-weight: 600; font-family: var(--da-mono, ui-monospace, Menlo, monospace);">{{ hasCostConfiguration ? (grandRecurringCostFormatted + ' ' + programCurrency) : '-' }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 4px 0;">
+                        <span style="color: var(--da-muted, #64748b);">One-time items</span>
+                        <span class="num-ltr" style="font-weight: 600; font-family: var(--da-mono, ui-monospace, Menlo, monospace);">{{ hasCostConfiguration ? (oneTimeCostFormatted + ' ' + programCurrency) : '-' }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 10px 0 4px; margin-top: 6px; border-top: 2px solid rgba(44, 153, 66, 0.25); font-size: 15px; font-weight: 700; color: var(--da-green-800, #166534);">
+                        <span>Grand total program cost</span>
+                        <span class="num-ltr" style="font-family: var(--da-mono, ui-monospace, Menlo, monospace);">{{ hasCostConfiguration ? (grandTotalCostFormatted + ' ' + programCurrency) : '-' }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 4px 0;">
+                        <span style="color: var(--da-muted, #64748b);">Cost per semester <span style="opacity: 0.75;">(grand total ÷ <span class="num-ltr">{{ programSemestersCount }}</span> semesters)</span></span>
+                        <span class="num-ltr" style="font-weight: 600; font-family: var(--da-mono, ui-monospace, Menlo, monospace);">{{ (hasCostConfiguration && programSemestersCount > 0) ? (costPerSemesterFormatted + ' ' + programCurrency) : '-' }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 4px 0;">
+                        <span style="color: var(--da-muted, #64748b);">Total course credits</span>
+                        <span class="num-ltr" style="font-weight: 600; font-family: var(--da-mono, ui-monospace, Menlo, monospace);">{{ totalCourseCredits > 0 ? (totalCourseCredits + ' cr') : '-' }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 8px 0 2px; margin-top: 4px; border-top: 1px dashed rgba(44, 153, 66, 0.25); font-weight: 700;">
+                        <span style="color: var(--da-text, #1e293b);">Cost per credit</span>
+                        <span class="num-ltr" style="font-family: var(--da-mono, ui-monospace, Menlo, monospace);">{{ (hasCostConfiguration && totalCourseCredits > 0) ? (costPerCreditFormatted + ' ' + programCurrency) : '-' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 9. DA Pool Sponsorship Assignments (Preserved) -->
+        <!-- <div class="card" *ngIf="student.applicationId" style="padding: 18px 20px; margin-bottom: 14px; background: #fff; border: 1px solid var(--da-border, #e2e8f0); border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
+                <div>
+                    <div class="sd-section-title" style="margin: 0 0 4px 0;">DA Pool Sponsorship Assignments</div>
+                    <div style="font-size: 12.5px; color: var(--da-muted, #64748b);">Category assignments and permitted sponsorship types from the Sponsorship Matrix.</div>
+                </div>
+                <button type="button" class="btn btn-g"
+                    [disabled]="isLoadingSponsorshipCategories || sponsorshipCategories.length === 0"
+                    (click)="openSponsorshipAssignmentModal()">
+                    Assign Category
+                </button>
+            </div>
+
+            <div *ngIf="isLoadingSponsorshipAssignments" class="sponsorship-assignment-state" role="status">
+                Loading sponsorship assignments…
+            </div>
+            <div *ngIf="!isLoadingSponsorshipAssignments && sponsorshipAssignments.length === 0" class="sponsorship-assignment-state">
+                No DA Pool sponsorship category is assigned to this application.
+            </div>
+            <div *ngFor="let assignment of sponsorshipAssignments" class="sponsorship-assignment-row">
+                <div class="sponsorship-assignment-details">
+                    <div class="sponsorship-assignment-title">{{ assignment.categoryName }}</div>
+                    <div class="sponsorship-assignment-meta">
+                        Assigned {{ assignment.assignedDate | date:'mediumDate' }}
+                        <span *ngIf="assignment.remarks"> · {{ assignment.remarks }}</span>
+                    </div>
+                    <div class="sponsorship-assignment-meta" *ngIf="assignment.permittedSponsorshipTypes?.length">
+                        Permitted:
+                        <span *ngFor="let type of assignment.permittedSponsorshipTypes; let last = last">
+                            {{ type.sponsorshipName }} ({{ getSponsorshipFrequencyLabel(type.frequencyType) }})<span *ngIf="!last">, </span>
+                        </span>
+                    </div>
+                </div>
+                <span class="sponsorship-assignment-status" [class.inactive]="!assignment.isActive">
+                    {{ assignment.isActive ? 'Active' : 'Inactive' }}
+                </span>
+                <button *ngIf="assignment.isActive" type="button" class="btn btn-t"
+                    [disabled]="deactivatingAssignmentId !== null || isLoadingSponsorshipCategories"
+                    (click)="editSponsorshipAssignment(assignment)">
+                    Edit
+                </button>
+                <button *ngIf="assignment.isActive" type="button" class="btn btn-t" style="color: var(--da-danger, #dc2626);"
+                    [disabled]="deactivatingAssignmentId !== null"
+                    (click)="deactivateSponsorshipAssignment(assignment)">
+                    {{ deactivatingAssignmentId === assignment.assignmentId ? 'Deactivating…' : 'Deactivate' }}
+                </button>
+            </div>
+        </div> -->
+
+        <!-- 10. Log history matching prototype .log-timeline -->
+        <div class="card" style="padding: 18px 20px; background: #fff; border: 1px solid var(--da-border, #e2e8f0); border-radius: 8px;">
+            <div class="sd-section-title">Log history</div>
+            <div *ngIf="!studentHistory || studentHistory.length === 0" style="padding: 20px; text-align: center; color: var(--da-muted, #64748b); font-size: 12.5px;">
+                No activity has been recorded for this student yet.
+            </div>
+            <ol *ngIf="studentHistory && studentHistory.length > 0" class="log-timeline" id="log-timeline">
+                <li *ngFor="let item of studentHistory" class="done">
+                    <div class="log-date">{{ item.createdDate | date:'dd MMM yyyy, hh:mm a' }}</div>
+                    <div class="log-event">{{ item.title }}</div>
+                    <div class="log-meta" *ngIf="item.description">{{ item.description }}</div>
+                </li>
+            </ol>
+        </div>
+
+    </div>
+</div>
+
+<!-- Sponsorship assignment modal (Shared for DA Pool & Donor-Sponsored) -->
+<div *ngIf="isSponsorshipAssignmentModalOpen" class="sponsorship-assignment-backdrop" role="presentation">
+    <section class="sponsorship-assignment-modal" role="dialog" aria-modal="true" aria-labelledby="sponsorship-assignment-title">
+        <header class="sponsorship-assignment-modal-header">
+            <div>
+                <h2 id="sponsorship-assignment-title">
+                    {{ editingSponsorshipAssignmentId ? (sponsorshipChannel === 'donor' ? 'Edit Donor Sponsorship' : 'Edit DA Pool Sponsorship') : (sponsorshipChannel === 'donor' ? 'Mark as Donor-Sponsored' : 'Assign DA Pool Sponsorship') }}
+                </h2>
+                <p>
+                    {{ sponsorshipChannel === 'donor' ? 'Select a sponsorship category and record the donor details.' : 'Assigning a category permits active sponsorship types configured in the Sponsorship Matrix.' }}
+                </p>
+            </div>
+            <button type="button" class="sponsorship-assignment-close" aria-label="Close"
+                [disabled]="isSavingSponsorshipAssignment" (click)="closeSponsorshipAssignmentModal()">×</button>
+        </header>
+        <div class="sponsorship-assignment-modal-body">
+            <label id="sponsorshipCategoryLabel" class="field-label" style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--da-muted);">Student sponsorship category</label>
+            <div class="da-select sponsorship-category-dropdown"
+                [class.da-select-open]="isSponsorshipCategoryDropdownOpen"
+                [class.is-disabled]="isSavingSponsorshipAssignment || isLoadingSponsorshipCategories || sponsorshipCategories.length === 0">
+                <div id="sponsorshipCategory" class="da-select-control" role="combobox"
+                    [attr.tabindex]="isSavingSponsorshipAssignment || isLoadingSponsorshipCategories || sponsorshipCategories.length === 0 ? -1 : 0"
+                    (click)="toggleSponsorshipCategoryDropdown($event)"
+                    (keydown)="handleSponsorshipCategoryDropdownKeydown($event)">
+                    <span class="da-select-value">{{ getSelectedSponsorshipCategoryName() || 'Select a category' }}</span>
+                    <i class="fas da-select-arrow" [ngClass]="isSponsorshipCategoryDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'" aria-hidden="true"></i>
+                </div>
+                <div id="sponsorship-category-options" class="da-select-menu" role="listbox" *ngIf="isSponsorshipCategoryDropdownOpen">
+                    <div *ngFor="let category of sponsorshipCategories; let i = index"
+                        class="da-select-option" role="option"
+                        [class.selected]="selectedSponsorshipCategoryId === category.studentCategoryId"
+                        (click)="selectSponsorshipCategory(category.studentCategoryId!)">
+                        {{ category.categoryName }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Donor-Sponsored Additional Fields (Visible only for Donor flow) -->
+            <div *ngIf="sponsorshipChannel === 'donor'" style="margin-top: 14px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                <div>
+                    <label class="field-label" for="sponsorDonorName" style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--da-muted);">Donor Name</label>
+                    <input type="text" id="sponsorDonorName" class="field-input" [(ngModel)]="donorName" name="sponsorDonorName" [disabled]="isSavingSponsorshipAssignment" placeholder="e.g. Donor X Trust" style="width: 100%; box-sizing: border-box; height: 34px; padding: 6px 12px; font-size: 13px; border: 1px solid var(--da-border, #e2e8f0); border-radius: 6px;" />
+                </div>
+                <div>
+                    <label class="field-label" for="sponsorDonorCode" style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--da-muted);">Donor Code / Reference</label>
+                    <input type="text" id="sponsorDonorCode" class="field-input num-ltr" [(ngModel)]="donorCode" name="sponsorDonorCode" [disabled]="isSavingSponsorshipAssignment" placeholder="e.g. D-014" style="width: 100%; box-sizing: border-box; height: 34px; padding: 6px 12px; font-size: 13px; border: 1px solid var(--da-border, #e2e8f0); border-radius: 6px;" />
+                </div>
+            </div>
+
+            <div *ngIf="selectedSponsorshipCategoryId && !isLoadingSponsorshipOptions && sponsorshipAssignmentOptions.length > 0"
+                class="sponsorship-assignment-permitted-types">
+                <div class="field-label" style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--da-muted);">Permitted sponsorship types</div>
+                <ul>
+                    <li *ngFor="let option of sponsorshipAssignmentOptions">
+                        {{ option.sponsorshipName }} — {{ getSponsorshipFrequencyLabel(option.frequencyType) }}
+                    </li>
+                </ul>
+            </div>
+            <label class="field-label" for="sponsorshipAssignmentRemarks" style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--da-muted); margin-top: 8px;">Remarks (optional)</label>
+            <textarea id="sponsorshipAssignmentRemarks" class="field-input" rows="3" maxlength="500"
+                [(ngModel)]="sponsorshipAssignmentRemarks" name="sponsorshipAssignmentRemarks"
+                [disabled]="isSavingSponsorshipAssignment"
+                placeholder="Add a note for this assignment" style="width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid var(--da-border); border-radius: 6px;"></textarea>
+        </div>
+        <footer class="sponsorship-assignment-modal-footer">
+            <button type="button" class="btn btn-t" [disabled]="isSavingSponsorshipAssignment" (click)="closeSponsorshipAssignmentModal()">Cancel</button>
+            <button type="button" class="btn btn-g"
+                [disabled]="!selectedSponsorshipCategoryId || (sponsorshipChannel === 'donor' && (!donorName?.trim() || !donorCode?.trim())) || (sponsorshipChannel === 'pool' && (isLoadingSponsorshipOptions || sponsorshipAssignmentOptions.length === 0)) || isSavingSponsorshipAssignment"
+                (click)="saveSponsorshipAssignment()">
+                {{ isSavingSponsorshipAssignment ? 'Saving…' : editingSponsorshipAssignmentId ? 'Save Changes' : (sponsorshipChannel === 'donor' ? 'Confirm' : 'Save Assignment') }}
+            </button>
+        </footer>
+    </section>
+</div>
+
+<!-- Document Discussion Modal (Preserved) -->
+<div *ngIf="isDiscussionModalOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1200; padding: 16px;">
+    <div class="card" style="width: 700px; max-width: 100%; background: white; padding: 24px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15);">
+        <h3 style="margin: 0 0 16px 0; font-size: 17px; font-weight: 700;">Document Discussion</h3>
+        <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 12px; color: var(--da-text);">Coordinator Remark</label>
+        <textarea class="field-input" rows="3" style="width: 100%; resize: vertical; background: var(--da-surface-2, #f8fafc); cursor: not-allowed; margin-bottom: 14px; box-sizing: border-box; padding: 8px; border: 1px solid var(--da-border); border-radius: 4px;" placeholder="No remarks entered." [ngModel]="currentDiscussionRemark" name="docRemark" readonly disabled></textarea>
+
+        <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 12px; color: var(--da-text);">Committee Remark</label>
+        <textarea class="field-input" rows="3" style="width: 100%; resize: vertical; box-sizing: border-box; padding: 8px; border: 1px solid var(--da-border); border-radius: 4px;" placeholder="Enter remarks for this document..." [(ngModel)]="universityDiscussionRemark" name="universityRemark"></textarea>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
+            <button type="button" class="btn btn-t" (click)="closeDiscussionModal()">Cancel</button>
+            <button type="button" class="btn btn-g" (click)="saveUniversityRemark()">Save</button>
+        </div>
+    </div>
+</div>
+
+<!-- Full Cost Details Modal -->
+<div *ngIf="isFullCostModalOpen" class="da-modal-backdrop" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); display: flex; align-items: center; justify-content: center; z-index: 1200; padding: 20px;" (click)="closeFullCostModal()">
+    <div class="da-modal-card" style="width: 720px; max-width: 100%; background: #ffffff; border-radius: 8px; box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18); overflow: hidden; display: flex; flex-direction: column; max-height: 90vh;" (click)="$event.stopPropagation()">
+        <!-- Modal Header -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 18px 22px; border-bottom: 1px solid var(--da-border, #e2e8f0);">
+            <div>
+                <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: var(--da-text, #1e293b);">Full Program Cost Breakdown</h3>
+                <p style="margin: 4px 0 0; color: var(--da-muted, #64748b); font-size: 13px;">
+                    {{ student?.programName || program?.programName }} · <span class="num-ltr">{{ programSemestersCount }}</span> semesters · Currency: <strong>{{ programCurrency }}</strong>
+                </p>
+            </div>
+            <button type="button" class="btn btn-t" style="font-size: 22px; line-height: 1; padding: 2px 8px; border: 0; cursor: pointer; color: var(--da-muted);" (click)="closeFullCostModal()">&times;</button>
+        </div>
+
+        <!-- Modal Body -->
+        <div style="padding: 20px 22px; overflow-y: auto; flex: 1;">
+            <!-- Cost items list -->
+            <div style="margin-bottom: 18px;">
+                <h4 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; color: var(--da-muted, #64748b);">
+                    Configured Cost Items
+                </h4>
+
+                <div *ngIf="programCosts.length === 0" style="padding: 18px; text-align: center; border: 1px dashed var(--da-border, #e2e8f0); border-radius: 6px; color: var(--da-muted, #64748b); font-size: 13px;">
+                    No cost items configured for this program.
+                </div>
+
+                <table *ngIf="programCosts.length > 0" class="table" style="width: 100%; border-collapse: collapse; font-size: 13px; border: 1px solid var(--da-border, #e2e8f0); border-radius: 6px; overflow: hidden;">
+                    <thead>
+                        <tr style="background: var(--da-surface-2, #f8fafc); border-bottom: 1px solid var(--da-border, #e2e8f0); text-align: left;">
+                            <th style="padding: 10px 14px; font-size: 11px; text-transform: uppercase; color: var(--da-muted, #64748b); font-weight: 700;">Cost Item Name</th>
+                            <th style="padding: 10px 14px; font-size: 11px; text-transform: uppercase; color: var(--da-muted, #64748b); font-weight: 700;">Billing Type</th>
+                            <th style="padding: 10px 14px; font-size: 11px; text-transform: uppercase; color: var(--da-muted, #64748b); font-weight: 700; text-align: right;">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of programCosts" style="border-bottom: 1px solid var(--da-border, #e2e8f0);">
+                            <td style="padding: 10px 14px; font-weight: 600; color: var(--da-black, #1e293b);">
+                                {{ item.sponsorshipTypeName || 'Cost Item' }}
+                            </td>
+                            <td style="padding: 10px 14px;">
+                                <span class="badge" [ngStyle]="{
+                                    'background': item.frequencyTypeId === 1 ? '#dbeafe' : 'var(--da-green-50, #f0fdf4)',
+                                    'color': item.frequencyTypeId === 1 ? '#1e40af' : 'var(--da-green-800, #166534)'
+                                }">
+                                    {{ item.frequencyTypeId === 1 ? 'One-time' : 'Recurring (Semester)' }}
+                                </span>
+                            </td>
+                            <td style="padding: 10px 14px; text-align: right; font-weight: 600;" class="num-ltr">
+                                {{ formatCostAmount(item.amount) }} {{ programCurrency }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Detailed Calculations Summary -->
+            <div>
+                <h4 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; color: var(--da-muted, #64748b);">
+                    Cost Calculations &amp; Load Summary
+                </h4>
+                <div style="border: 1px solid var(--da-border, #e2e8f0); border-radius: 8px; padding: 14px 18px; background: var(--da-surface, #FAFAFA); font-size: 13px;">
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0;">
+                        <span style="color: var(--da-muted, #64748b);">Recurring cost per semester</span>
+                        <span class="num-ltr" style="font-weight: 600;">{{ recurringPerSemesterFormatted }} {{ programCurrency }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0;">
+                        <span style="color: var(--da-muted, #64748b);">Total recurring cost across all semesters <span style="opacity: 0.75;">({{ recurringPerSemesterFormatted }} × <span class="num-ltr">{{ programSemestersCount }}</span> semesters)</span></span>
+                        <span class="num-ltr" style="font-weight: 600;">{{ grandRecurringCostFormatted }} {{ programCurrency }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0;">
+                        <span style="color: var(--da-muted, #64748b);">Total one-time cost</span>
+                        <span class="num-ltr" style="font-weight: 600;">{{ oneTimeCostFormatted }} {{ programCurrency }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 12px 0 8px; margin-top: 6px; border-top: 2px solid var(--da-border, #e2e8f0); font-size: 15px; font-weight: 700; color: var(--da-green-800, #166534);">
+                        <span>Grand total program cost</span>
+                        <span class="num-ltr">{{ grandTotalCostFormatted }} {{ programCurrency }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0;">
+                        <span style="color: var(--da-muted, #64748b);">Cost per semester <span style="opacity: 0.75;">({{ grandTotalCostFormatted }} ÷ <span class="num-ltr">{{ programSemestersCount }}</span> semesters)</span></span>
+                        <span class="num-ltr" style="font-weight: 600;">{{ costPerSemesterFormatted }} {{ programCurrency }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0;">
+                        <span style="color: var(--da-muted, #64748b);">Total course credits</span>
+                        <span class="num-ltr" style="font-weight: 600;">{{ totalCourseCredits > 0 ? (totalCourseCredits + ' cr') : '-' }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 10px 0 4px; margin-top: 4px; border-top: 1px dashed var(--da-border, #e2e8f0); font-weight: 700;">
+                        <span>Cost per credit <span style="opacity: 0.75; font-weight: 400; font-size: 12px;">({{ grandTotalCostFormatted }} ÷ {{ totalCourseCredits }} cr)</span></span>
+                        <span class="num-ltr">{{ costPerCreditFormatted }} {{ programCurrency }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div style="display: flex; justify-content: flex-end; padding: 14px 22px; border-top: 1px solid var(--da-border, #e2e8f0); background: var(--da-surface-2, #f8fafc);">
+            <button type="button" class="btn btn-basic-data" (click)="closeFullCostModal()">Close</button>
+        </div>
     </div>
 </div>

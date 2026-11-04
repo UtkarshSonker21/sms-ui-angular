@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { ApiEndpoints } from '../../constants/api-endpoints';
 import { ApiResponse } from '../../models/common/response/api-response.model';
 import {
+  AssignDonorSponsorshipRequest,
   CreateSponsorshipAssignmentRequest,
   SponsorshipAssignment,
   SponsorshipAssignmentOption
@@ -27,6 +28,13 @@ export class SponsorshipAssignmentService {
   create(applicationId: number, request: CreateSponsorshipAssignmentRequest) {
     return this.api.post<ApiResponse<SponsorshipAssignment>>(
       ApiEndpoints.Ngo.SponsorshipAssignments.Create(applicationId),
+      request
+    );
+  }
+
+  assignDonor(applicationId: number, request: AssignDonorSponsorshipRequest) {
+    return this.api.post<ApiResponse<SponsorshipAssignment>>(
+      ApiEndpoints.Ngo.SponsorshipAssignments.AssignDonor(applicationId),
       request
     );
   }

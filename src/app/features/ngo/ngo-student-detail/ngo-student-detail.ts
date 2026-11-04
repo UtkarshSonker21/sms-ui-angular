@@ -16,10 +16,18 @@ import { StudentCategoryService } from '../../../core/services/ngo/student-categ
 import { StudentCategoryFilter } from '../../../core/models/ngo/student-category/student-category-filter.model';
 import { StudentCategoryRequest } from '../../../core/models/ngo/student-category/student-category.request.model';
 import {
+  AssignDonorSponsorshipRequest,
   CreateSponsorshipAssignmentRequest,
   SponsorshipAssignment,
   SponsorshipAssignmentOption
 } from '../../../core/models/ngo/sponsorshipMatrix/sponsorship-assignment.model';
+import { ProgramService } from '../../../core/services/university/programs.service';
+import { MasterCurrencyService } from '../../../core/services/superadmin/master-currency.service';
+import { ProgramRequest } from '../../../core/models/university/programs/program-request.model';
+import { ProgramCost } from '../../../core/models/university/programs/program-cost.model';
+import { ProgramCourse } from '../../../core/models/university/programs/program-course.model';
+import { MasterCurrencyFilter } from '../../../core/models/super-admin/master-currency/master-currency-filter.model';
+import { MasterCurrencyRequest } from '../../../core/models/super-admin/master-currency/master-currency-request.model';
 
 @Component({
   selector: 'app-ngo-student-detail',
@@ -37,6 +45,15 @@ export class NgoStudentDetail implements OnInit {
   private confirmDialog = inject(ConfirmDialogService);
   private sponsorshipAssignmentService = inject(SponsorshipAssignmentService);
   private studentCategoryService = inject(StudentCategoryService);
+  private programService = inject(ProgramService);
+  private masterCurrencyService = inject(MasterCurrencyService);
+
+  // Program Load & Cost state
+  program: ProgramRequest | null = null;
+  isProgramLoading = false;
+  programCurrency: string = 'SOS';
+  currencies: MasterCurrencyRequest[] = [];
+  isFullCostModalOpen = false;
 
   studentStatus = StudentStatusEnum;
 
@@ -44,6 +61,9 @@ export class NgoStudentDetail implements OnInit {
   student: StudentProgramApplication | null = null;
 
   photoError: boolean = false;
+
+  // Currency
+  selectedCurrency: 'KWD' | 'USD' | 'EUR' = 'KWD';
 
   // Placeholder for when timeline API is provided
   documents: StudentProgramDocument[] = [];
@@ -67,7 +87,12 @@ export class NgoStudentDetail implements OnInit {
   sponsorshipOptionsError = '';
   private sponsorshipOptionsRequestVersion = 0;
   
-  // Section toggle state (mirroring coordinator student edit)
+  // Sponsorship modal channel & donor fields
+  sponsorshipChannel: 'pool' | 'donor' = 'pool';
+  donorName: string = '';
+  donorCode: string = '';
+  
+  // Section toggle state
   activeSection: number = 1;
 
   ngOnInit(): void {
@@ -76,6 +101,62 @@ export class NgoStudentDetail implements OnInit {
       this.studentId = +idParam;
       this.loadStudentDetails();
     }
+  }
+
+  selectCurrency(currency: 'KWD' | 'USD' | 'EUR'): void {
+    this.selectedCurrency = currency;
+  }
+
+  scrollToBasicData(): void {
+    const el = document.getElementById('basic-info-section');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+
+  
+  getAssignedCategoryDisplay(): string {
+    if (this.student?.categoryName) return this.student.categoryName;
+    if (this.sponsorshipAssignments.length > 0) {
+      const active = this.sponsorshipAssignments.find(a => a.isActive) || this.sponsorshipAssignments[0];
+      return active.categoryName || '-';
+    }
+    return '-';
+  }
+
+  getSponsorshipSourceDisplay(): string {
+    if (this.student?.sponsorshipSource) {
+      if (this.student.sponsorshipSource === 'Donor' && this.student.donorName) {
+        return `Donor (${this.student.donorName})`;
+      }
+      return this.student.sponsorshipSource;
+    }
+    if (this.sponsorshipAssignments.length > 0) {
+      const active = this.sponsorshipAssignments.find(a => a.isActive) || this.sponsorshipAssignments[0];
+      if (active.donorName || active.donorCode) {
+        return active.donorName ? `Donor (${active.donorName})` : 'Donor';
+      }
+      return 'Direct Aid Pool';
+    }
+    return '-';
+  }
+
+  getDonorNameDisplay(): string {
+    if (this.student?.donorName) return this.student.donorName;
+    if (this.sponsorshipAssignments.length > 0) {
+      const active = this.sponsorshipAssignments.find(a => a.isActive) || this.sponsorshipAssignments[0];
+      return active.donorName || '';
+    }
+    return '';
+  }
+
+  getDonorCodeDisplay(): string {
+    if (this.student?.donorCode) return this.student.donorCode;
+    if (this.sponsorshipAssignments.length > 0) {
+      const active = this.sponsorshipAssignments.find(a => a.isActive) || this.sponsorshipAssignments[0];
+      return active.donorCode || '-';
+    }
+    return '-';
   }
 
   loadStudentDetails(): void {
@@ -98,6 +179,10 @@ export class NgoStudentDetail implements OnInit {
             this.loadDocuments(this.student.applicationId);
             this.loadSponsorshipAssignments(this.student.applicationId);
             this.loadSponsorshipCategories();
+          }
+
+          if (this.student.programId) {
+            this.loadProgramLoadAndCost(this.student.programId);
           }
         } else {
           this.notification.error(res.message || 'Failed to load student details.');
@@ -283,14 +368,17 @@ export class NgoStudentDetail implements OnInit {
     )?.categoryName || '';
   }
 
-  openSponsorshipAssignmentModal(): void {
+  openSponsorshipAssignmentModal(channel: 'pool' | 'donor' = 'pool'): void {
     if (this.isLoadingSponsorshipCategories || this.sponsorshipCategories.length === 0) return;
+    this.sponsorshipChannel = channel;
     this.editingSponsorshipAssignmentId = null;
     this.selectedSponsorshipCategoryId = null;
     this.isSponsorshipCategoryDropdownOpen = false;
     this.sponsorshipAssignmentOptions = [];
     this.sponsorshipOptionsError = '';
     this.sponsorshipAssignmentRemarks = '';
+    this.donorName = '';
+    this.donorCode = '';
     this.isSponsorshipAssignmentModalOpen = true;
   }
 
@@ -303,18 +391,72 @@ export class NgoStudentDetail implements OnInit {
     this.isSponsorshipCategoryDropdownOpen = false;
     this.sponsorshipAssignmentOptions = [];
     this.sponsorshipAssignmentRemarks = '';
+    this.donorName = '';
+    this.donorCode = '';
   }
 
   saveSponsorshipAssignment(): void {
     const applicationId = this.student?.applicationId;
-    if (!applicationId || !this.selectedSponsorshipCategoryId || this.isLoadingSponsorshipOptions
-      || this.sponsorshipOptionsError || this.sponsorshipAssignmentOptions.length === 0
-      || this.isSavingSponsorshipAssignment) return;
+    if (!applicationId) return;
 
-    const request: CreateSponsorshipAssignmentRequest = {
-      studentCategoryId: this.selectedSponsorshipCategoryId,
-      remarks: this.sponsorshipAssignmentRemarks.trim() || null
-    };
+    if (this.isSavingSponsorshipAssignment) return;
+
+    if (!this.selectedSponsorshipCategoryId) {
+      this.notification.warning('Please select a student sponsorship category.');
+      return;
+    }
+
+    if (this.sponsorshipChannel === 'donor') {
+      const trimmedDonorName = (this.donorName || '').trim();
+      const trimmedDonorCode = (this.donorCode || '').trim();
+
+      if (!trimmedDonorName) {
+        this.notification.warning('Please enter the donor name.');
+        return;
+      }
+
+      if (!trimmedDonorCode) {
+        this.notification.warning('Please enter the donor code / reference.');
+        return;
+      }
+
+      const donorRequest = new AssignDonorSponsorshipRequest();
+      donorRequest.applicationId = applicationId;
+      donorRequest.sponsorshipCategoryId = this.selectedSponsorshipCategoryId;
+      donorRequest.donorName = trimmedDonorName;
+      donorRequest.donorCode = trimmedDonorCode;
+      donorRequest.remarks = this.sponsorshipAssignmentRemarks?.trim() || null;
+
+      this.isSavingSponsorshipAssignment = true;
+      this.sponsorshipAssignmentService.assignDonor(applicationId, donorRequest).subscribe({
+        next: (res) => {
+          this.isSavingSponsorshipAssignment = false;
+          if (res.success) {
+            this.isSponsorshipAssignmentModalOpen = false;
+            this.editingSponsorshipAssignmentId = null;
+            this.notification.success(res.message || 'Donor sponsorship assignment saved successfully.');
+            this.loadStudentDetails();
+            this.loadSponsorshipAssignments(applicationId);
+          } else {
+            this.notification.error(res.message || 'Failed to save the donor sponsorship assignment.');
+          }
+        },
+        error: (error) => {
+          this.isSavingSponsorshipAssignment = false;
+          this.notification.handleBusinessError(error, 'Failed to save the donor sponsorship assignment.');
+        }
+      });
+      return;
+    }
+
+    if (this.isLoadingSponsorshipOptions || this.sponsorshipOptionsError
+      || this.sponsorshipAssignmentOptions.length === 0) {
+      return;
+    }
+
+    const request = new CreateSponsorshipAssignmentRequest();
+    request.studentCategoryId = this.selectedSponsorshipCategoryId;
+    request.remarks = this.sponsorshipAssignmentRemarks?.trim() || null;
 
     this.isSavingSponsorshipAssignment = true;
     const saveRequest = this.editingSponsorshipAssignmentId
@@ -328,6 +470,7 @@ export class NgoStudentDetail implements OnInit {
           this.isSponsorshipAssignmentModalOpen = false;
           this.editingSponsorshipAssignmentId = null;
           this.notification.success(res.message || 'DA Pool sponsorship assignment saved successfully.');
+          this.loadStudentDetails();
           this.loadSponsorshipAssignments(applicationId);
         } else {
           this.notification.error(res.message || 'Failed to save the sponsorship assignment.');
@@ -347,10 +490,13 @@ export class NgoStudentDetail implements OnInit {
       return;
     }
 
+    this.sponsorshipChannel = assignment.donorName ? 'donor' : 'pool';
     this.editingSponsorshipAssignmentId = assignment.assignmentId;
     this.selectedSponsorshipCategoryId = assignment.studentCategoryId;
     this.sponsorshipAssignmentRemarks = assignment.remarks || '';
     this.sponsorshipOptionsError = '';
+    this.donorName = assignment.donorName || '';
+    this.donorCode = assignment.donorCode || '';
     this.isSponsorshipAssignmentModalOpen = true;
     this.onSponsorshipCategoryChange(assignment.studentCategoryId);
   }
@@ -398,7 +544,6 @@ export class NgoStudentDetail implements OnInit {
   }
 
   loadDocuments(applicationId: number): void {
-    // Reusing the school module service for document fetching since it's the exact same logic.
     this.studentProgramService.getDocuments(applicationId).subscribe({
       next: (res) => {
         if (res.success && res.result) {
@@ -436,6 +581,54 @@ export class NgoStudentDetail implements OnInit {
       window.open(previewUrl, '_blank');
     } else {
       this.notification.info('Document preview is not available.');
+    }
+  }
+
+  getRecommendationDocumentUrl(): string {
+    const path = this.student?.recommendationLetterPath?.trim();
+    return HelperMethods.getFileUrl(path);
+  }
+
+  getRecommendationFileName(): string {
+    const path = this.student?.recommendationLetterPath?.trim();
+    if (!path) return '';
+    const parts = path.split(/[\/\\]/);
+    const fileName = parts[parts.length - 1];
+    return fileName || 'Recommendation Letter';
+  }
+
+  getDocumentIconClass(path?: string | null): string {
+    if (!path) return 'fas fa-file-alt text-muted';
+    const lower = path.toLowerCase();
+    if (lower.endsWith('.pdf')) return 'fas fa-file-pdf text-danger';
+    if (lower.endsWith('.png') || lower.endsWith('.jpg') || lower.endsWith('.jpeg') || lower.endsWith('.webp')) {
+      return 'fas fa-file-image text-green';
+    }
+    return 'fas fa-file-alt text-muted';
+  }
+
+  previewRecommendation(event?: Event): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    const rawPath = this.student?.recommendationLetterPath?.trim();
+    if (!rawPath) {
+      this.notification.info('Recommendation document is not available.');
+      return;
+    }
+
+    const previewUrl = this.getRecommendationDocumentUrl();
+    if (!previewUrl) {
+      this.notification.error('Invalid recommendation document path.');
+      return;
+    }
+
+    try {
+      window.open(previewUrl, '_blank');
+    } catch {
+      this.notification.error('Failed to open the recommendation document.');
     }
   }
 
@@ -490,10 +683,56 @@ export class NgoStudentDetail implements OnInit {
   }
 
   // --- Status Badge Helper ---
-  getStatusBadgeClass(student: StudentProgramApplication): string {
-    return this.studentStatusService.getBadgeClass(
-      student.applicationStatusId ?? StudentStatusEnum.Draft
-    );
+  getStatusBadgeClass(student: StudentProgramApplication | null): string {
+    if (!student) return 'st-process';
+    const st = student.applicationStatusId;
+    switch (st) {
+      case StudentStatusEnum.Awarded: return 'st-awarded';
+      case StudentStatusEnum.Sponsored: return 'st-sponsored';
+      case StudentStatusEnum.Registered: return 'st-registered';
+      case StudentStatusEnum.Graduated: return 'st-graduated';
+      case StudentStatusEnum.SponsoringRejected:
+      case StudentStatusEnum.AcceptanceRejected:
+        return 'st-rejected';
+      case StudentStatusEnum.AcceptanceInProcess:
+      case StudentStatusEnum.SponsoringInProcess:
+      case StudentStatusEnum.AwardingInProcess:
+        return 'st-process';
+      case StudentStatusEnum.Accepted:
+        return 'st-accepted';
+      default:
+        return 'st-process';
+    }
+  }
+
+  getJourneySteps(): { title: string; state: 'done' | 'cur' | 'rej' | 'future' }[] {
+    const statusId = this.student?.applicationStatusId;
+    if (statusId === StudentStatusEnum.AcceptanceRejected || statusId === StudentStatusEnum.SponsoringRejected) {
+      return [
+        { title: 'In Process', state: 'done' },
+        { title: 'Rejected', state: 'rej' }
+      ];
+    }
+
+    const stages = [
+      { id: StudentStatusEnum.AcceptanceInProcess, title: 'In Process' },
+      { id: StudentStatusEnum.Accepted, title: 'Accepted' },
+      { id: StudentStatusEnum.Awarded, title: 'Awarded' },
+      { id: StudentStatusEnum.Sponsored, title: 'Sponsored' },
+      { id: StudentStatusEnum.Registered, title: 'Registered' },
+      { id: StudentStatusEnum.Graduated, title: 'Graduated' },
+    ];
+
+    let currentIdx = stages.findIndex(s => s.id === statusId);
+    if (statusId === StudentStatusEnum.SponsoringInProcess) {
+      currentIdx = 2; // In awarding/sponsorship review
+    }
+    if (currentIdx === -1) currentIdx = 0;
+
+    return stages.map((s, idx) => ({
+      title: s.title,
+      state: idx < currentIdx ? 'done' : (idx === currentIdx ? 'cur' : 'future')
+    }));
   }
 
   getUploadedDocumentsCount(): number {
@@ -501,12 +740,16 @@ export class NgoStudentDetail implements OnInit {
   }
 
   private refreshApplicationWorkflow(): void {
-    this.activeSection = 3;
     this.loadStudentDetails();
+  }
+
+  markDonorSponsored(): void {
+    this.openSponsorshipAssignmentModal('donor');
   }
 
   submitForSponsorshipReview(): void {
     if (!this.student) return;
+    const targetApplicationId = this.student.applicationId || this.studentId;
 
     this.confirmDialog.confirm({
       title: 'Submit for Sponsorship Review?',
@@ -515,7 +758,7 @@ export class NgoStudentDetail implements OnInit {
       cancelText: 'Cancel'
     }).then(confirmed => {
       if (confirmed) {
-        this.studentProgramService.changeStatus(this.studentId, {
+        this.studentProgramService.changeStatus(targetApplicationId, {
           applicationStatusId: StudentStatusEnum.SponsoringInProcess,
           remarks: ''
         }).subscribe({
@@ -540,15 +783,17 @@ export class NgoStudentDetail implements OnInit {
 
   rejectSponsorship(): void {
     if (!this.student) return;
+    const targetApplicationId = this.student.applicationId || this.studentId;
 
     this.confirmDialog.confirm({
       title: 'Reject Sponsorship',
       message: 'Are you sure you want to reject this sponsorship application?',
       confirmText: 'Yes, Reject',
-      cancelText: 'Cancel'
+      cancelText: 'Cancel',
+      variant: 'danger'
     }).then(confirmed => {
       if (confirmed) {
-        this.studentProgramService.changeStatus(this.studentId, {
+        this.studentProgramService.changeStatus(targetApplicationId, {
           applicationStatusId: StudentStatusEnum.SponsoringRejected,
           remarks: ''
         }).subscribe({
@@ -573,15 +818,17 @@ export class NgoStudentDetail implements OnInit {
 
   sponsor(): void {
     if (!this.student) return;
+    const targetApplicationId = this.student.applicationId || this.studentId;
 
     this.confirmDialog.confirm({
       title: 'Approve Sponsorship',
       message: 'Are you sure you want to approve this sponsorship application?',
       confirmText: 'Yes, Approve',
-      cancelText: 'Cancel'
+      cancelText: 'Cancel',
+      variant: 'info'
     }).then(confirmed => {
       if (confirmed) {
-        this.studentProgramService.changeStatus(this.studentId, {
+        this.studentProgramService.changeStatus(targetApplicationId, {
           applicationStatusId: StudentStatusEnum.Sponsored,
           remarks: ''
         }).subscribe({
@@ -604,28 +851,176 @@ export class NgoStudentDetail implements OnInit {
     });
   }
 
-  // ==========================================
-  // TODO: Temporary UI placeholders.
-  // Replace with API properties later.
-  // ==========================================
-  applicationNumber = '2024-0847';
-  submittedDate: Date | null = new Date('2024-09-01');
-  minimumPercentage = '85%';
-  programDuration = '6 years';
+  // --- Program Load & Cost Calculations & Handlers ---
+  get programCosts(): ProgramCost[] {
+    return this.program?.costs || [];
+  }
 
-  motherName = '';
-  dateOfBirth: Date | null = null;
-  nationality = '';
-  countryOfResidence = '';
-  gender = '';
-  religion = '';
-  directAidOrphan = false;
-  orphanNumber = '';
+  get programCourses(): ProgramCourse[] {
+    return this.program?.courses || [];
+  }
 
-  phoneNumber = '';
-  email = '';
-  city = '';
-  village = '';
-  block = '';
-  street = '';
+  get programSemestersCount(): number {
+    return this.program?.numberOfSemesters || 0;
+  }
+
+  get hasCostConfiguration(): boolean {
+    return this.programCosts.length > 0;
+  }
+
+  get recurringCostsList(): ProgramCost[] {
+    return this.programCosts.filter(c => c.frequencyTypeId !== undefined && c.frequencyTypeId !== 1);
+  }
+
+  get oneTimeCostsList(): ProgramCost[] {
+    return this.programCosts.filter(c => c.frequencyTypeId !== undefined && c.frequencyTypeId === 1);
+  }
+
+  get oneTimeItemsCount(): number {
+    return this.oneTimeCostsList.length;
+  }
+
+  get recurringPerSemester(): number {
+    return this.recurringCostsList.reduce((sum, c) => sum + (Number(c.amount) || 0), 0);
+  }
+
+  // 1. Grand Program Cost (recurring cost items × total semesters)
+  get grandRecurringCost(): number {
+    return this.recurringPerSemester * this.programSemestersCount;
+  }
+
+  // 2. One-Time Items (sum of all one-time cost items)
+  get oneTimeTotal(): number {
+    return this.oneTimeCostsList.reduce((sum, c) => sum + (Number(c.amount) || 0), 0);
+  }
+
+  // 3. Grand Total Program Cost (recurring program cost + one-time items)
+  get grandTotalProgramCost(): number {
+    return this.grandRecurringCost + this.oneTimeTotal;
+  }
+
+  // 4. Cost per Semester (grand total ÷ total semesters)
+  get costPerSemester(): number {
+    if (this.programSemestersCount <= 0) return 0;
+    return this.grandTotalProgramCost / this.programSemestersCount;
+  }
+
+  // 5. Total Course Credits (sum of credits of all configured courses across the program)
+  get totalCoursesCredits(): number {
+    if (!this.programCourses || this.programCourses.length === 0) return 0;
+    return this.programCourses.reduce((sum, c) => sum + (Number(c.credits) || 0), 0);
+  }
+
+  get totalCourseCredits(): number {
+    return this.totalCoursesCredits > 0 ? this.totalCoursesCredits : (this.program?.creditsRequired || 0);
+  }
+
+  get totalCoursesCount(): number {
+    return this.programCourses.length;
+  }
+
+  // 6. Cost per Credit (grand total ÷ total course credits)
+  get costPerCredit(): number {
+    if (this.totalCourseCredits <= 0) return 0;
+    return this.grandTotalProgramCost / this.totalCourseCredits;
+  }
+
+  formatCostAmount(val: number): string {
+    if (val == null || isNaN(val) || !isFinite(val)) return '-';
+    return val.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
+  get grandRecurringCostFormatted(): string {
+    return this.formatCostAmount(this.grandRecurringCost);
+  }
+
+  get oneTimeCostFormatted(): string {
+    return this.formatCostAmount(this.oneTimeTotal);
+  }
+
+  get grandTotalCostFormatted(): string {
+    return this.formatCostAmount(this.grandTotalProgramCost);
+  }
+
+  get costPerSemesterFormatted(): string {
+    return this.formatCostAmount(this.costPerSemester);
+  }
+
+  get costPerCreditFormatted(): string {
+    return this.formatCostAmount(this.costPerCredit);
+  }
+
+  get recurringPerSemesterFormatted(): string {
+    return this.formatCostAmount(this.recurringPerSemester);
+  }
+
+  openFullCostModal(): void {
+    this.isFullCostModalOpen = true;
+  }
+
+  closeFullCostModal(): void {
+    this.isFullCostModalOpen = false;
+  }
+
+  loadProgramLoadAndCost(programId?: number): void {
+    if (!programId) {
+      this.program = null;
+      return;
+    }
+
+    this.isProgramLoading = true;
+
+    const curFilter = new MasterCurrencyFilter();
+    curFilter.pageNumber = 1;
+    curFilter.pageSize = 1000;
+    this.masterCurrencyService.getMasterCurrencies(curFilter).subscribe({
+      next: (cRes) => {
+        if (cRes.success && cRes.result?.items) {
+          this.currencies = cRes.result.items;
+          this.resolveProgramCurrency();
+        }
+      }
+    });
+
+    this.programService.getProgramById(programId).subscribe({
+      next: (res) => {
+        this.isProgramLoading = false;
+        if (res.success && res.result) {
+          this.program = res.result;
+          this.resolveProgramCurrency();
+        }
+      },
+      error: () => {
+        this.isProgramLoading = false;
+      }
+    });
+  }
+
+  resolveProgramCurrency(): void {
+    if (!this.student) return;
+    if (this.currencies && this.currencies.length > 0 && this.student.universityCountryId) {
+      const match = this.currencies.find(c => c.countryId === this.student?.universityCountryId);
+      if (match?.currencyCode) {
+        this.programCurrency = match.currencyCode;
+        return;
+      }
+    }
+    const country = (this.student.universityCountryName || '').toLowerCase();
+    if (country.includes('somalia')) {
+      this.programCurrency = 'SOS';
+      return;
+    }
+    if (country.includes('kuwait')) {
+      this.programCurrency = 'KWD';
+      return;
+    }
+    if (country.includes('kenya')) {
+      this.programCurrency = 'KES';
+      return;
+    }
+    this.programCurrency = 'SOS';
+  }
 }

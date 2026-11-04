@@ -131,4 +131,18 @@ export class StudentProgramApplication {
   recommendationLetterPath: string = '';
   recommendationLetterNotes: string = '';
 
+  // Sponsorship Assignment & Cost Details
+  sponsorshipCategoryId?: number;
+  sponsorshipCategoryName: string = '';
+  totalProgramCost?: number;
+  programCurrency: string = '';
+  sponsorshipSource: string = '';
+  donorName: string = '';
+  donorCode: string = '';
+
+  // Aliases for compatibility
+  studentCategoryId?: number;
+  categoryName: string = '';
+
+
 }

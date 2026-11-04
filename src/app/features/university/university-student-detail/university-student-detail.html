@@ -839,6 +839,9 @@ DO NOT DELETE.
                     <div class="form-section-sub">Applied program information.</div>
                 </div>
                 <div class="form-section-spacer"></div>
+                <button type="button" class="btn btn-faculties-outline btn-sm" style="display: inline-flex; align-items: center; gap: 6px;" (click)="openFullCostModal()">
+                    <i class="fas fa-file-invoice-dollar" aria-hidden="true"></i> Full Cost
+                </button>
             </div>
             <div class="form-section-body" style="display: block;">
 
@@ -1142,9 +1145,40 @@ DO NOT DELETE.
                         <label class="field-label">RECOMMENDATION LETTER NOTES</label>
                         <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.recommendationLetterNotes || '-' }}</div>
                     </div>
-                    <div class="field" style="grid-column: 1 / -1;" *ngIf="student.recommendationLetterPath">
-                        <label class="field-label">RECOMMENDATION LETTER PATH</label>
-                        <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-text); font-size: 14px;">{{ student.recommendationLetterPath }}</div>
+                    <div class="field" style="grid-column: 1 / -1;">
+                        <label class="field-label">RECOMMENDATION DOCUMENT</label>
+                        <ng-container *ngIf="student.recommendationLetterPath && student.recommendationLetterPath.trim(); else noRecommendationDoc">
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: var(--da-surface-2, #f8fafc); border: 1px solid var(--da-border, #e2e8f0); border-radius: 6px; margin-top: 4px; flex-wrap: wrap; gap: 10px;">
+                                <div>
+                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                        <a [href]="getRecommendationDocumentUrl()" target="_blank" rel="noopener noreferrer"
+                                           style="color: var(--da-text, #1e293b); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13.5px;"
+                                           title="Open recommendation letter">
+                                            <span>Recommendation Letter</span>
+                                            <i class="fas fa-external-link-alt" style="font-size: 11px; color: var(--da-muted, #64748b);"></i>
+                                        </a>
+                                        <span class="badge" style="background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">
+                                            Uploaded
+                                        </span>
+                                    </div>
+                                    <div style="color: var(--da-muted, #64748b); font-size: 12.5px; display: flex; align-items: center; gap: 6px;">
+                                        <i [class]="getDocumentIconClass(student.recommendationLetterPath)"></i>
+                                        <a [href]="getRecommendationDocumentUrl()" target="_blank" rel="noopener noreferrer"
+                                           style="color: var(--da-green, #16a34a); text-decoration: underline; font-size: 12.5px; word-break: break-all;">
+                                            {{ getRecommendationFileName() }}
+                                        </a>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <button type="button" class="btn btn-g" style="padding: 5px 12px; font-size: 12px;" (click)="previewRecommendation($event)">
+                                        Preview
+                                    </button>
+                                </div>
+                            </div>
+                        </ng-container>
+                        <ng-template #noRecommendationDoc>
+                            <div class="field-input" style="display: flex; align-items: center; min-height: 38px; background-color: var(--da-surface-2, #f8fafc); font-weight: 500; color: var(--da-muted); font-size: 14px;">-</div>
+                        </ng-template>
                     </div>
                 </div>
             </div>
@@ -1268,3 +1302,99 @@ DO NOT DELETE.
     </div>
 </div>
 
+
+<!-- Full Cost Details Modal -->
+<div *ngIf="isFullCostModalOpen" class="da-modal-backdrop" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); display: flex; align-items: center; justify-content: center; z-index: 1200; padding: 20px;" (click)="closeFullCostModal()">
+    <div class="da-modal-card" style="width: 720px; max-width: 100%; background: #ffffff; border-radius: 8px; box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18); overflow: hidden; display: flex; flex-direction: column; max-height: 90vh;" (click)="$event.stopPropagation()">
+        <!-- Modal Header -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 18px 22px; border-bottom: 1px solid var(--da-border, #e2e8f0);">
+            <div>
+                <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: var(--da-text, #1e293b);">Full Program Cost Breakdown</h3>
+                <p style="margin: 4px 0 0; color: var(--da-muted, #64748b); font-size: 13px;">
+                    {{ student?.programName || program?.programName }} · <span class="num-ltr">{{ programSemestersCount }}</span> semesters · Currency: <strong>{{ programCurrency }}</strong>
+                </p>
+            </div>
+            <button type="button" class="btn btn-t" style="font-size: 22px; line-height: 1; padding: 2px 8px; border: 0; cursor: pointer; color: var(--da-muted);" (click)="closeFullCostModal()">&times;</button>
+        </div>
+
+        <!-- Modal Body -->
+        <div style="padding: 20px 22px; overflow-y: auto; flex: 1;">
+            <!-- Cost items list -->
+            <div style="margin-bottom: 18px;">
+                <h4 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; color: var(--da-muted);">
+                    Configured Cost Items
+                </h4>
+
+                <div *ngIf="programCosts.length === 0" style="padding: 18px; text-align: center; border: 1px dashed var(--da-border); border-radius: 6px; color: var(--da-muted); font-size: 13px;">
+                    No cost items configured for this program.
+                </div>
+
+                <table *ngIf="programCosts.length > 0" class="table" style="width: 100%; border-collapse: collapse; font-size: 13px; border: 1px solid var(--da-border); border-radius: 6px; overflow: hidden;">
+                    <thead>
+                        <tr style="background: var(--da-surface-2, #f8fafc); border-bottom: 1px solid var(--da-border); text-align: left;">
+                            <th style="padding: 10px 14px; font-size: 11px; text-transform: uppercase; color: var(--da-muted); font-weight: 700;">Cost Item Name</th>
+                            <th style="padding: 10px 14px; font-size: 11px; text-transform: uppercase; color: var(--da-muted); font-weight: 700;">Billing Type</th>
+                            <th style="padding: 10px 14px; font-size: 11px; text-transform: uppercase; color: var(--da-muted); font-weight: 700; text-align: right;">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of programCosts" style="border-bottom: 1px solid var(--da-border);">
+                            <td style="padding: 10px 14px; font-weight: 600; color: var(--da-black, #1e293b);">
+                                {{ item.sponsorshipTypeName || 'Cost Item' }}
+                            </td>
+                            <td style="padding: 10px 14px;">
+                                <span class="badge" [ngStyle]="{
+                                    'background': item.frequencyTypeId === 1 ? '#dbeafe' : 'var(--da-green-50, #f0fdf4)',
+                                    'color': item.frequencyTypeId === 1 ? '#1e40af' : 'var(--da-green-800, #166534)'
+                                }">
+                                    {{ item.frequencyTypeId === 1 ? 'One-time' : 'Recurring (Semester)' }}
+                                </span>
+                            </td>
+                            <td style="padding: 10px 14px; text-align: right; font-weight: 600;" class="num-ltr">
+                                {{ formatAmount(item.amount) }} {{ programCurrency }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Detailed Calculations Summary -->
+            <div>
+                <h4 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; color: var(--da-muted);">
+                    Cost Calculations &amp; Load Summary
+                </h4>
+                <div style="border: 1px solid var(--da-border, #e2e8f0); border-radius: 8px; padding: 14px 18px; background: var(--da-surface, #FAFAFA); font-size: 13px;">
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 5px 0;">
+                        <span style="color: var(--da-muted, #64748b);">Grand program cost <span style="opacity: 0.75;">(recurring × <span class="num-ltr">{{ programSemestersCount }}</span> semesters)</span></span>
+                        <span class="num-ltr" style="font-weight: 600;">{{ grandRecurringCostFormatted }} {{ programCurrency }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 5px 0;">
+                        <span style="color: var(--da-muted, #64748b);">One-time items</span>
+                        <span class="num-ltr" style="font-weight: 600;">{{ oneTimeCostFormatted }} {{ programCurrency }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 10px 0 6px; margin-top: 6px; border-top: 2px solid var(--da-border, #e2e8f0); font-size: 15px; font-weight: 700; color: var(--da-green-800, #166534);">
+                        <span>Grand total program cost</span>
+                        <span class="num-ltr">{{ grandTotalCostFormatted }} {{ programCurrency }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 5px 0;">
+                        <span style="color: var(--da-muted, #64748b);">Cost per semester <span style="opacity: 0.75;">(grand total ÷ <span class="num-ltr">{{ programSemestersCount }}</span> semesters)</span></span>
+                        <span class="num-ltr" style="font-weight: 600;">{{ costPerSemesterFormatted }} {{ programCurrency }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 5px 0;">
+                        <span style="color: var(--da-muted, #64748b);">Total course credits</span>
+                        <span class="num-ltr" style="font-weight: 600;">{{ totalCourseCredits }} cr</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 8px 0 4px; margin-top: 4px; border-top: 1px dashed var(--da-border, #e2e8f0); font-weight: 700;">
+                        <span>Cost per credit</span>
+                        <span class="num-ltr">{{ costPerCreditFormatted }} {{ programCurrency }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div style="display: flex; justify-content: flex-end; padding: 14px 22px; border-top: 1px solid var(--da-border, #e2e8f0); background: var(--da-surface-2, #f8fafc);">
+            <button type="button" class="btn btn-faculties-outline" (click)="closeFullCostModal()">Close</button>
+        </div>
+    </div>
+</div>
