@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, HostListener } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { NotificationService } from '../../../core/services/common/notification.service';
 import { HelperMethods } from '../../../core/helpers/helper-methods';
@@ -44,6 +44,7 @@ export class UniversityStudents implements OnInit {
   private notification = inject(NotificationService);
   private studentStatusService = inject(StudentStatusService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   universityId: number = 0;
 
@@ -94,6 +95,12 @@ export class UniversityStudents implements OnInit {
   isPageSizeDropdownOpen = false;
 
   ngOnInit(): void {
+    const tabParam = this.route.snapshot.queryParams['tab'];
+    if (tabParam !== undefined && tabParam !== null) {
+      const numTab = +tabParam;
+      this.activeTab = isNaN(numTab) ? tabParam : numTab;
+      this.selectedStatus = isNaN(numTab) ? null : numTab;
+    }
     // this.universityId = this.currentUserProfileService.getCurrentUserProfile().universityId || 0;
     this.filter.pageNumber = 1;
     this.filter.pageSize = 25;
@@ -512,8 +519,8 @@ export class UniversityStudents implements OnInit {
     this.notification.info('Export functionality coming soon.');
   }
 
-  viewStudent(studentId: number): void {
-    const student = this.students.find(x => x.studentId === studentId);
+  viewStudent(applicationId: number): void {
+    const student = this.students.find(x => x.applicationId === applicationId);
     if (student) {
       if (student.applicationStatusId === StudentStatusEnum.Registered) {
         this.router.navigate(['/registered-student', student.applicationId]);

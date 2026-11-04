@@ -20,4 +20,5 @@ export class ProgramCourse {
 
   semesterNo: number = 1;
   semesterName: string = "";
+  isActive?: boolean;
 }

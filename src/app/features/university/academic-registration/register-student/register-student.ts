@@ -16,6 +16,7 @@ import { UniversityRegistrationWindowService } from '../../../../core/services/u
 import { UniversityRegistrationWindow } from '../../../../core/models/university/academic-registration/university-registration-window.model';
 import { NotificationService } from '../../../../core/services/common/notification.service';
 import { ConfirmDialogService } from '../../../../shared/components/confirm-dialog/confirm-dialog.service';
+import { HelperMethods } from '../../../../core/helpers/helper-methods';
 
 @Component({
   selector: 'app-register-student',
@@ -310,7 +311,9 @@ export class RegisterStudent implements OnInit {
       },
       error: (err) => {
         this.isSubmitting = false;
-        this.notification.handleBusinessError(err, 'Failed to register student.');
+        if (!this.notification.handleBusinessError(err)) {
+          this.notification.error(HelperMethods.getApiErrorMessage(err) || 'Failed to register student.');
+        }
       }
     });
   }

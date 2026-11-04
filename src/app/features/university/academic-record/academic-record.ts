@@ -2,7 +2,8 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ProgramRequest } from '../../../core/models/university/programs/program-request.model';
 
 import { NotificationService } from '../../../core/services/common/notification.service';
 import { StudentProgramService } from '../../../core/services/school/student-program.service';
@@ -16,11 +17,12 @@ import { AcademicHistoryModel, AcademicHistoryRegistrationModel } from '../../..
 import { AcademicProgressionResponseModel, AcademicRegistrationResultsModel, FinalizeAcademicResultsRequestModel, ProgressAcademicRegistrationRequestModel, SaveAcademicResultsRequestModel } from '../../../core/models/university/academic-registration/academic-results.model';
 import { ProgramCourseType } from '../../../core/enums/program-course-type.enum';
 import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
+import { SemesterResultsDialog } from '../semester-results-dialog/semester-results-dialog';
 
 @Component({
   selector: 'app-academic-record',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink, SemesterResultsDialog],
   templateUrl: './academic-record.html',
   styleUrls: ['./academic-record.scss', '../university-students/university-students.scss']
 })
@@ -36,6 +38,7 @@ export class AcademicRecord implements OnInit {
 
   applicationId: number = 0;
   student: StudentProgramApplication | null = null;
+  program: ProgramRequest | null = null;
   isLoading: boolean = true;
   studentLoadMessage = '';
   photoError: boolean = false;
@@ -87,6 +90,15 @@ export class AcademicRecord implements OnInit {
         if (res.success && res.result) {
           this.student = res.result;
           this.photoError = false;
+          if (this.student.programId) {
+            this.programService.getProgramById(this.student.programId).subscribe({
+              next: (pRes) => {
+                if (pRes?.success && pRes.result) {
+                  this.program = pRes.result;
+                }
+              }
+            });
+          }
           this.loadAcademicHistory();
         } else {
           this.studentLoadMessage = res.message || 'Failed to load student details.';
@@ -100,6 +112,188 @@ export class AcademicRecord implements OnInit {
           this.notification.error(this.studentLoadMessage);
       }
     });
+  }
+
+  get reversedRegistrations(): AcademicHistoryRegistrationModel[] {
+    if (!this.history?.registrations) return [];
+    return [...this.history.registrations].reverse();
+  }
+
+  get currentSemesterNo(): number {
+    if (this.results?.semesterNo) return this.results.semesterNo;
+    if (this.history?.registrations?.length) {
+      return Math.max(...this.history.registrations.map(r => r.semesterNo));
+    }
+    return 1;
+  }
+
+  get currentYear(): number {
+    return Math.max(1, Math.ceil(this.currentSemesterNo / 2));
+  }
+
+  get totalYears(): number | null {
+    if (this.program?.numberOfSemesters && this.program.numberOfSemesters > 0) {
+      return Math.max(1, Math.ceil(this.program.numberOfSemesters / 2));
+    }
+    return null;
+  }
+
+  get creditsRequired(): number | null {
+    return (this.program?.creditsRequired && this.program.creditsRequired > 0)
+      ? this.program.creditsRequired
+      : null;
+  }
+
+  get creditsEarned(): number {
+    const regs = this.history?.registrations || [];
+    let earned = 0;
+    for (const reg of regs) {
+      if (reg.semesterResult?.submissionStatus === 'Finalized') {
+        const passedCourses = (reg.courses || []).filter(c => c.isPassed === true);
+        earned += passedCourses.reduce((sum, c) => sum + (c.credits || 0), 0);
+      }
+    }
+    return earned;
+  }
+
+  get cumulativeGpa(): number | null {
+    const regs = this.history?.registrations || [];
+    const gradedRegistrations = regs.filter(r =>
+      r.semesterResult?.semesterGpa !== null && r.semesterResult?.semesterGpa !== undefined
+    );
+    if (gradedRegistrations.length === 0) return null;
+
+    let totalPoints = 0;
+    let totalCredits = 0;
+    for (const reg of gradedRegistrations) {
+      const semCredits = (reg.courses || []).reduce((sum, c) => sum + (c.credits || 0), 0) || 1;
+      totalPoints += (reg.semesterResult!.semesterGpa! * semCredits);
+      totalCredits += semCredits;
+    }
+    return totalCredits > 0 ? (totalPoints / totalCredits) : null;
+  }
+
+  get creditsSubText(): string {
+    const required = this.creditsRequired;
+    const yTotal = this.totalYears ? ` of ${this.totalYears}` : '';
+    if (required !== null && required !== undefined && required > 0) {
+      return `${this.creditsEarned} of ${required} credit hours · Year ${this.currentYear}${yTotal}`;
+    }
+    if (this.creditsEarned > 0) {
+      return `${this.creditsEarned} credit hours earned · Year ${this.currentYear}`;
+    }
+    return this.totalYears ? `Year ${this.currentYear} of ${this.totalYears}` : `Year ${this.currentYear}`;
+  }
+
+  // ═════ Update Status Modal (UI Only) ═════
+  isUpdateStatusModalOpen = false;
+  modalGpa: number | null = null;
+  modalNote: string = '';
+  modalCourseOutcomes = new Map<string, 'pass' | 'fail'>();
+
+  get activeRegistration(): AcademicHistoryRegistrationModel | null {
+    if (this.selectedAcademicRegistrationId && this.history?.registrations) {
+      const match = this.history.registrations.find(r => r.academicRegistrationId === this.selectedAcademicRegistrationId);
+      if (match) return match;
+    }
+    if (this.history?.registrations?.length) {
+      return this.history.registrations[this.history.registrations.length - 1];
+    }
+    return null;
+  }
+
+  get activeCourses(): any[] {
+    const activeReg = this.activeRegistration;
+    if (activeReg?.courses && activeReg.courses.length > 0) {
+      return activeReg.courses;
+    }
+    if (this.results?.courses && this.results.courses.length > 0) {
+      return this.results.courses;
+    }
+    return [];
+  }
+
+  get activeSemesterNo(): number {
+    return this.activeRegistration?.semesterNo || this.currentSemesterNo;
+  }
+
+  get activeSemesterName(): string {
+    return this.activeRegistration?.semesterName || `Semester ${this.activeSemesterNo}`;
+  }
+
+  get activeDatesRange(): string {
+    const reg = this.activeRegistration;
+    if (reg?.startDate && reg?.endDate) {
+      const d1 = new Date(reg.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      const d2 = new Date(reg.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      return `${d1} → ${d2}`;
+    }
+    return '';
+  }
+
+  get activeTermName(): string {
+    const reg = this.activeRegistration;
+    return `${reg?.termName || 'Term'}${reg?.academicYearName ? ' ' + reg.academicYearName : ''}`;
+  }
+
+  get nextSemesterNo(): number {
+    return this.activeSemesterNo + 1;
+  }
+
+  get nextSemesterName(): string {
+    return this.nextSemesterSchedule?.semesterName || `Semester ${this.nextSemesterNo}`;
+  }
+
+  get nextSemesterTermLabel(): string {
+    if (this.nextSemesterSchedule?.termName) {
+      return `${this.nextSemesterSchedule.termName}${this.nextSemesterSchedule.academicYearName ? ' ' + this.nextSemesterSchedule.academicYearName : ''}`;
+    }
+    return `Term ${this.nextSemesterNo}`;
+  }
+
+  get failedCoreCoursesList(): string {
+    const failedCore = this.activeCourses.filter(c => c.courseType === 1 && this.modalCourseOutcomes.get(c.courseCode) === 'fail');
+    return failedCore.map(c => c.courseName).join(', ');
+  }
+
+  get hasModalCoreFailed(): boolean {
+    return !!this.failedCoreCoursesList;
+  }
+
+  get modalSaveLabel(): string {
+    if (this.hasModalCoreFailed) {
+      return 'Send to Kafaat Committee';
+    }
+    return `Save & move to ${this.nextSemesterName}`;
+  }
+
+  openUpdateStatusModal(): void {
+    const activeReg = this.activeRegistration;
+    this.modalGpa = activeReg?.semesterResult?.semesterGpa ?? this.results?.semesterGpa ?? null;
+    this.modalNote = this.results?.internalNote ?? '';
+    this.modalCourseOutcomes.clear();
+    for (const c of this.activeCourses) {
+      if (c.isPassed === true) {
+        this.modalCourseOutcomes.set(c.courseCode, 'pass');
+      } else if (c.isPassed === false) {
+        this.modalCourseOutcomes.set(c.courseCode, 'fail');
+      }
+    }
+    this.isUpdateStatusModalOpen = true;
+  }
+
+  closeUpdateStatusModal(): void {
+    this.isUpdateStatusModalOpen = false;
+  }
+
+  setModalCourseResult(courseCode: string, result: 'pass' | 'fail'): void {
+    this.modalCourseOutcomes.set(courseCode, result);
+  }
+
+  markAllAsPass(): void {
+    for (const c of this.activeCourses) {
+      this.modalCourseOutcomes.set(c.courseCode, 'pass');
+    }
   }
 
   get canEditResults(): boolean {

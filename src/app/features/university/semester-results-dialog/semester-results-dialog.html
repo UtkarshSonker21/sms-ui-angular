@@ -1,0 +1,109 @@
+<div class="modal-backdrop" *ngIf="isOpen" (click)="onClose()">
+  <div class="modal-card sem-modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+
+    <div class="modal-head">
+      <div>
+        <div class="modal-title">{{ semesterName }} results</div>
+        <div class="modal-sub">Set Pass or Fail for every course and enter the semester GPA. The student then moves to the next step.</div>
+      </div>
+      <button type="button" class="modal-close" (click)="onClose()" aria-label="Close">&times;</button>
+    </div>
+
+    <div class="modal-body">
+
+      <!-- Meta Line with Mark all as Pass action -->
+      <div class="sem-meta-line">
+        <div>
+          {{ termName }}
+          <ng-container *ngIf="datesRange"> &middot; {{ datesRange }}</ng-container>
+        </div>
+        <button type="button" class="btn btn-t btn-sm" (click)="markAllAsPass()">
+          Mark all as Pass
+        </button>
+      </div>
+
+      <!-- Course Table with Pass/Fail Segmented Controls -->
+      <table class="table modal-table" *ngIf="courses && courses.length > 0">
+        <thead>
+          <tr>
+            <th style="width: 110px;">Type</th>
+            <th>Course</th>
+            <th class="num" style="width: 80px;">Credits</th>
+            <th style="width: 140px; text-align: center;">Result</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of courses">
+            <td>
+              <span class="course-type" [ngClass]="{
+                'core': c.courseType === 1 && !c.isRetake,
+                'elective': c.courseType !== 1 && !c.isRetake,
+                'retake': c.isRetake
+              }">
+                {{ c.isRetake ? 'Retake' : (c.courseType === 1 ? 'Core' : 'Elective') }}
+              </span>
+            </td>
+            <td>
+              <div class="fw-700">{{ c.courseName }}</div>
+              <div class="muted-cell num-ltr">{{ c.courseCode }}</div>
+            </td>
+            <td class="num">{{ c.credits }}</td>
+            <td style="text-align: center;">
+              <div class="seg" role="group" [attr.aria-label]="'Result for ' + c.courseName">
+                <button type="button" class="seg-opt"
+                        [class.on]="modalCourseOutcomes.get(c.courseCode) === 'pass'"
+                        (click)="setCourseResult(c.courseCode, 'pass')">
+                  Pass
+                </button>
+                <button type="button" class="seg-opt"
+                        [class.on]="modalCourseOutcomes.get(c.courseCode) === 'fail'"
+                        [class.fail]="modalCourseOutcomes.get(c.courseCode) === 'fail'"
+                        (click)="setCourseResult(c.courseCode, 'fail')">
+                  Fail
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div *ngIf="!courses || courses.length === 0" class="sem-empty">
+        No enrolled courses found for this semester.
+      </div>
+
+      <!-- Semester GPA & Optional Notes Inputs -->
+      <div class="sem-fields">
+        <div class="field">
+          <label class="field-label" for="sem-gpa">Semester GPA</label>
+          <input type="number" class="field-input num-ltr" id="sem-gpa"
+                 [(ngModel)]="modalGpa" min="0" max="4" step="0.01" placeholder="e.g. 3.45">
+        </div>
+        <div class="field grow">
+          <label class="field-label" for="sem-note">Note (optional)</label>
+          <input type="text" class="field-input" id="sem-note"
+                 [(ngModel)]="modalNote" maxlength="300" placeholder="Internal note for the record">
+        </div>
+      </div>
+
+      <!-- Next Semester Information Section -->
+      <div class="alert" *ngIf="hasCoreFailed">
+        <div>
+          <b>Core course failed:</b> {{ failedCoreCoursesList }}. {{ nextSemesterName }} needs Kafaat Committee approval. Saving sends a failing-core request to the committee.
+        </div>
+      </div>
+
+      <div class="alert info" *ngIf="!hasCoreFailed">
+        <div>
+          Next: the student is registered for <b>{{ nextSemesterName }}</b> ({{ nextSemesterTermLabel }}).
+        </div>
+      </div>
+
+    </div>
+
+    <div class="modal-foot">
+      <button type="button" class="btn btn-g" (click)="onClose()">Cancel</button>
+      <button type="button" class="btn btn-p" (click)="onSave()">{{ saveButtonLabel }}</button>
+    </div>
+
+  </div>
+</div>
