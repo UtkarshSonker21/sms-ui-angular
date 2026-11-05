@@ -266,14 +266,16 @@
                   <td class="num" style="text-align: center;">
                       {{ getCreditsToGraduation(student) }}
                   </td>
-                  <td class="credit-cell" style="text-align: center;">
+                  <td class="credit-cell">
                       <ng-container *ngIf="hasCreditProgress(student); else noCreditProgress">
-                          <div class="credit-bar" [ngClass]="getCreditProgressClass(student)" style="margin: 0 auto;">
-                              <div [style.width.%]="getCreditProgress(student)"></div>
-                          </div>
-                          <div class="credit-meta" style="justify-content: center; gap: 8px;">
-                              <span class="num">{{ getCreditProgress(student) }}%</span>
-                              <span>{{ student.creditsCompleted }} / {{ student.graduationCredits }}</span>
+                          <div class="credit-progress-wrapper">
+                              <div class="credit-bar" [ngClass]="getCreditProgressClass(student)">
+                                  <div [style.width.%]="getCreditProgress(student)"></div>
+                              </div>
+                              <div class="credit-meta">
+                                  <span class="num">{{ getCreditProgress(student) }}%</span>
+                                  <span class="credit-ratio">{{ student.creditsCompleted }} / {{ student.graduationCredits }}</span>
+                              </div>
                           </div>
                       </ng-container>
                       <ng-template #noCreditProgress><span class="text-muted">-</span></ng-template>

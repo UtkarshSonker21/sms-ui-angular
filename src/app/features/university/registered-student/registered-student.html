@@ -239,12 +239,14 @@
 <!-- ═════════ UPDATE STATUS DIALOG (SEMESTER RESULTS) ═════════ -->
 <app-semester-results-dialog
   [isOpen]="showStatusModal"
+  [isSaving]="isSavingResults"
   [student]="student"
   [registration]="currentRegistration"
-  [courses]="currentRegistration?.courses || []"
+  [courses]="modalCourses.length > 0 ? modalCourses : (currentRegistration?.courses || [])"
   [nextSemesterSchedule]="nextSemesterSchedule"
-  [currentGpa]="currentRegistration?.semesterResult?.semesterGpa ?? null"
-  [initialNote]="''"
+  [currentGpa]="modalGpa !== null ? modalGpa : (currentRegistration?.semesterResult?.semesterGpa ?? null)"
+  [initialNote]="modalNote"
+  [expectedUpdatedOn]="modalExpectedUpdatedOn"
   (close)="closeStatusModal()"
-  (save)="closeStatusModal()">
+  (save)="handleSaveResults($event)">
 </app-semester-results-dialog>

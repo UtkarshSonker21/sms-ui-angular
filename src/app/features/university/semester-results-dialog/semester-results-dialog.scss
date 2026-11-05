@@ -308,6 +308,14 @@
     border-inline-start-color: var(--da-info, #3b82f6);
     color: #1e40af;
   }
+
+  &.danger {
+    background: #fef2f2;
+    border-inline-start-color: #ef4444;
+    color: #991b1b;
+    margin-top: 0;
+    margin-bottom: 14px;
+  }
 }
 
 /* Button styles */
@@ -349,6 +357,13 @@
 .btn-sm {
   padding: 4px 10px;
   font-size: 11.5px;
+}
+
+.btn:disabled,
+.modal-close:disabled,
+.seg-opt:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 @media (max-width: 768px) {

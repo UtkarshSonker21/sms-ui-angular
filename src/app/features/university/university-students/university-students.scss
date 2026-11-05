@@ -317,7 +317,7 @@
   background: var(--da-border, #e5e7eb);
   border-radius: 100px;
   overflow: hidden;
-  min-width: 100px;
+  width: 100%;
 
   > div {
     height: 100%;
@@ -336,19 +336,37 @@
 }
 
 .credit-cell {
-  min-width: 120px;
+  min-width: 130px;
+  text-align: center;
+
+  .credit-progress-wrapper {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 150px;
+    margin: 0 auto;
+  }
 
   .credit-meta {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    width: 100%;
     margin-top: 4px;
     font-size: 11px;
     color: var(--da-muted, #6b7280);
+    line-height: 1.2;
 
     .num {
       color: var(--da-text-2, #374151);
       font-weight: 700;
+      text-align: left;
+    }
+
+    .credit-ratio {
+      color: var(--da-muted, #6b7280);
+      font-weight: 500;
+      text-align: right;
     }
   }
 }

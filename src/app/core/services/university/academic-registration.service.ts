@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
 import { ApiEndpoints } from '../../constants/api-endpoints';
 import { ApiResponse } from '../../models/common/response/api-response.model';
 import { PagedResult } from '../../models/common/response/paged-result.model';
@@ -101,6 +101,90 @@ export class AcademicRegistrationService {
             ApiEndpoints.University.AcademicRegistration.ImportResults,
             form
         );
+    }
+
+
+    async saveFinalizeAndProgress(
+        academicRegistrationId: number,
+        model: SaveAcademicResultsRequestModel,
+        allowProgression: boolean
+    ): Promise<{
+        saveSummary: AcademicResultsSaveSummaryModel;
+        finalized: AcademicRegistrationResultsModel;
+        progression?: AcademicProgressionResponseModel;
+    }> {
+        // If expectedUpdatedOn was not supplied in model (e.g. caller passed null), check if a draft already exists on the server to obtain the current concurrency token
+        let effectiveExpectedUpdatedOn = model.expectedUpdatedOn;
+        if (effectiveExpectedUpdatedOn === null || effectiveExpectedUpdatedOn === undefined) {
+            const currentCheck = await firstValueFrom(this.getResults(academicRegistrationId));
+            if (currentCheck.success && currentCheck.result?.expectedUpdatedOn) {
+                effectiveExpectedUpdatedOn = currentCheck.result.expectedUpdatedOn;
+            }
+        }
+
+        const effectiveModel: SaveAcademicResultsRequestModel = {
+            ...model,
+            expectedUpdatedOn: effectiveExpectedUpdatedOn
+        };
+
+        // 1. Save draft results
+        const saveRes = await firstValueFrom(this.saveResults(academicRegistrationId, effectiveModel));
+        if (!saveRes.success || !saveRes.result) {
+            throw new Error(saveRes.message || 'Failed to save draft results.');
+        }
+
+        // 2. Fetch latest concurrency token after save
+        const resultsRes = await firstValueFrom(this.getResults(academicRegistrationId));
+        if (!resultsRes.success || !resultsRes.result) {
+            throw new Error(resultsRes.message || 'Failed to fetch updated registration state.');
+        }
+
+        const finalizeToken = resultsRes.result.expectedUpdatedOn ?? saveRes.result.expectedUpdatedOn ?? null;
+
+        // 3. Finalize results
+        const finalizeRes = await firstValueFrom(this.finalizeResults(academicRegistrationId, {
+            expectedUpdatedOn: finalizeToken
+        }));
+        if (!finalizeRes.success || !finalizeRes.result) {
+            throw new Error(finalizeRes.message || 'Failed to finalize semester results.');
+        }
+
+        // 4. Progress to next semester if eligible
+        if (!allowProgression) {
+            return {
+                saveSummary: saveRes.result,
+                finalized: finalizeRes.result
+            };
+        }
+
+        let progRes = await firstValueFrom(this.progressToNextSemester(academicRegistrationId, {
+            confirmedRegistrationRestrictionCodes: []
+        }));
+
+        if (!progRes.success || !progRes.result) {
+            throw new Error(progRes.message || 'Failed to progress to the next semester.');
+        }
+
+        const resObj: any = progRes.result;
+        const isConfirmationRequired = resObj?.confirmationRequired ?? resObj?.ConfirmationRequired ?? false;
+        const warnings: any[] = resObj?.warnings ?? resObj?.Warnings ?? [];
+
+        if (isConfirmationRequired && warnings.length > 0) {
+            const confirmedCodes = warnings.map((w: any) => w.code || w.Code);
+            progRes = await firstValueFrom(this.progressToNextSemester(academicRegistrationId, {
+                confirmedRegistrationRestrictionCodes: confirmedCodes
+            }));
+
+            if (!progRes.success || !progRes.result) {
+                throw new Error(progRes.message || 'Failed to confirm progression restrictions.');
+            }
+        }
+
+        return {
+            saveSummary: saveRes.result,
+            finalized: finalizeRes.result,
+            progression: progRes.result
+        };
     }
 
 }

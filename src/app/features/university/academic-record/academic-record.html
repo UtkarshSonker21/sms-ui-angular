@@ -180,14 +180,16 @@
   <!-- ═════════ UPDATE STATUS DIALOG (SEMESTER RESULTS) ═════════ -->
   <app-semester-results-dialog
     [isOpen]="isUpdateStatusModalOpen"
+    [isSaving]="isSavingModalResults"
     [student]="student"
     [registration]="activeRegistration"
-    [courses]="activeCourses"
+    [courses]="modalCourses.length > 0 ? modalCourses : activeCourses"
     [nextSemesterSchedule]="nextSemesterSchedule"
-    [currentGpa]="results?.semesterGpa ?? activeRegistration?.semesterResult?.semesterGpa ?? null"
-    [initialNote]="results?.internalNote ?? ''"
+    [currentGpa]="modalGpa !== null ? modalGpa : (results?.semesterGpa ?? activeRegistration?.semesterResult?.semesterGpa ?? null)"
+    [initialNote]="modalNote"
+    [expectedUpdatedOn]="modalExpectedUpdatedOn"
     (close)="closeUpdateStatusModal()"
-    (save)="closeUpdateStatusModal()">
+    (save)="handleModalSaveResults($event)">
   </app-semester-results-dialog>
 
 </div>

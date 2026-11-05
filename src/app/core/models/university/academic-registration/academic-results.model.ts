@@ -76,6 +76,7 @@ export interface AcademicResultsSaveSummaryModel {
   courseResultsAlreadyPresent: number;
   semesterResultCreated: boolean;
   submissionStatus: string;
+  expectedUpdatedOn?: string | null;
 }
 
 export interface AcademicResultsImportRowModel {

@@ -6,10 +6,15 @@
         <div class="modal-title">{{ semesterName }} results</div>
         <div class="modal-sub">Set Pass or Fail for every course and enter the semester GPA. The student then moves to the next step.</div>
       </div>
-      <button type="button" class="modal-close" (click)="onClose()" aria-label="Close">&times;</button>
+      <button type="button" class="modal-close" (click)="onClose()" [disabled]="isSaving" aria-label="Close">&times;</button>
     </div>
 
     <div class="modal-body">
+
+      <!-- Validation Error Alert -->
+      <div class="alert danger" *ngIf="validationError">
+        <div>{{ validationError }}</div>
+      </div>
 
       <!-- Meta Line with Mark all as Pass action -->
       <div class="sem-meta-line">
@@ -17,7 +22,7 @@
           {{ termName }}
           <ng-container *ngIf="datesRange"> &middot; {{ datesRange }}</ng-container>
         </div>
-        <button type="button" class="btn btn-t btn-sm" (click)="markAllAsPass()">
+        <button type="button" class="btn btn-t btn-sm" (click)="markAllAsPass()" [disabled]="isSaving">
           Mark all as Pass
         </button>
       </div>
@@ -52,12 +57,14 @@
               <div class="seg" role="group" [attr.aria-label]="'Result for ' + c.courseName">
                 <button type="button" class="seg-opt"
                         [class.on]="modalCourseOutcomes.get(c.courseCode) === 'pass'"
+                        [disabled]="isSaving"
                         (click)="setCourseResult(c.courseCode, 'pass')">
                   Pass
                 </button>
                 <button type="button" class="seg-opt"
                         [class.on]="modalCourseOutcomes.get(c.courseCode) === 'fail'"
                         [class.fail]="modalCourseOutcomes.get(c.courseCode) === 'fail'"
+                        [disabled]="isSaving"
                         (click)="setCourseResult(c.courseCode, 'fail')">
                   Fail
                 </button>
@@ -76,12 +83,14 @@
         <div class="field">
           <label class="field-label" for="sem-gpa">Semester GPA</label>
           <input type="number" class="field-input num-ltr" id="sem-gpa"
-                 [(ngModel)]="modalGpa" min="0" max="4" step="0.01" placeholder="e.g. 3.45">
+                 [(ngModel)]="modalGpa" (input)="validationError = ''" [disabled]="isSaving"
+                 min="0" max="4" step="0.01" placeholder="e.g. 3.45">
         </div>
         <div class="field grow">
           <label class="field-label" for="sem-note">Note (optional)</label>
           <input type="text" class="field-input" id="sem-note"
-                 [(ngModel)]="modalNote" maxlength="300" placeholder="Internal note for the record">
+                 [(ngModel)]="modalNote" (input)="validationError = ''" [disabled]="isSaving"
+                 maxlength="300" placeholder="Internal note for the record">
         </div>
       </div>
 
@@ -101,8 +110,11 @@
     </div>
 
     <div class="modal-foot">
-      <button type="button" class="btn btn-g" (click)="onClose()">Cancel</button>
-      <button type="button" class="btn btn-p" (click)="onSave()">{{ saveButtonLabel }}</button>
+      <button type="button" class="btn btn-g" (click)="onClose()" [disabled]="isSaving">Cancel</button>
+      <button type="button" class="btn btn-p" (click)="onSave()" [disabled]="isSaving">
+        <i class="fas fa-spinner fa-spin" *ngIf="isSaving" style="margin-right: 6px;"></i>
+        {{ saveButtonLabel }}
+      </button>
     </div>
 
   </div>

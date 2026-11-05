@@ -17,7 +17,7 @@ import { AcademicHistoryModel, AcademicHistoryRegistrationModel } from '../../..
 import { AcademicProgressionResponseModel, AcademicRegistrationResultsModel, FinalizeAcademicResultsRequestModel, ProgressAcademicRegistrationRequestModel, SaveAcademicResultsRequestModel } from '../../../core/models/university/academic-registration/academic-results.model';
 import { ProgramCourseType } from '../../../core/enums/program-course-type.enum';
 import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
-import { SemesterResultsDialog } from '../semester-results-dialog/semester-results-dialog';
+import { SemesterResultsDialog, SemesterResultsSaveEvent } from '../semester-results-dialog/semester-results-dialog';
 
 @Component({
   selector: 'app-academic-record',
@@ -138,6 +138,12 @@ export class AcademicRecord implements OnInit {
     return null;
   }
 
+  get totalProgramSemesters(): number | null {
+    return (this.program?.numberOfSemesters && this.program.numberOfSemesters > 0)
+      ? this.program.numberOfSemesters
+      : null;
+  }
+
   get creditsRequired(): number | null {
     return (this.program?.creditsRequired && this.program.creditsRequired > 0)
       ? this.program.creditsRequired
@@ -187,6 +193,9 @@ export class AcademicRecord implements OnInit {
 
   // ═════ Update Status Modal (UI Only) ═════
   isUpdateStatusModalOpen = false;
+  isSavingModalResults = false;
+  modalExpectedUpdatedOn: string | null = null;
+  modalCourses: any[] = [];
   modalGpa: number | null = null;
   modalNote: string = '';
   modalCourseOutcomes = new Map<string, 'pass' | 'fail'>();
@@ -268,22 +277,122 @@ export class AcademicRecord implements OnInit {
   }
 
   openUpdateStatusModal(): void {
-    const activeReg = this.activeRegistration;
-    this.modalGpa = activeReg?.semesterResult?.semesterGpa ?? this.results?.semesterGpa ?? null;
-    this.modalNote = this.results?.internalNote ?? '';
-    this.modalCourseOutcomes.clear();
-    for (const c of this.activeCourses) {
-      if (c.isPassed === true) {
-        this.modalCourseOutcomes.set(c.courseCode, 'pass');
-      } else if (c.isPassed === false) {
-        this.modalCourseOutcomes.set(c.courseCode, 'fail');
-      }
+    const regId = this.activeRegistration?.academicRegistrationId;
+    if (!regId) {
+      const activeReg = this.activeRegistration;
+      this.modalGpa = activeReg?.semesterResult?.semesterGpa ?? this.results?.semesterGpa ?? null;
+      this.modalNote = this.results?.internalNote ?? '';
+      this.modalExpectedUpdatedOn = this.results?.expectedUpdatedOn ?? activeReg?.semesterResult?.updatedOn ?? null;
+      this.modalCourses = this.activeCourses;
+      this.isUpdateStatusModalOpen = true;
+      return;
     }
-    this.isUpdateStatusModalOpen = true;
+
+    this.academicRegistrationService.getResults(regId).subscribe({
+      next: (res) => {
+        if (res.success && res.result) {
+          const r = res.result;
+          this.results = r;
+          this.modalExpectedUpdatedOn = r.expectedUpdatedOn;
+          this.modalGpa = r.semesterGpa;
+          this.modalNote = r.internalNote || '';
+          this.modalCourses = r.courses && r.courses.length > 0 ? r.courses : this.activeCourses;
+          this.loadSemesterSchedule(r);
+        } else {
+          this.modalExpectedUpdatedOn = this.results?.expectedUpdatedOn ?? this.activeRegistration?.semesterResult?.updatedOn ?? null;
+          this.modalGpa = this.results?.semesterGpa ?? this.activeRegistration?.semesterResult?.semesterGpa ?? null;
+          this.modalNote = this.results?.internalNote ?? '';
+          this.modalCourses = this.activeCourses;
+        }
+        this.isUpdateStatusModalOpen = true;
+      },
+      error: () => {
+        this.modalExpectedUpdatedOn = this.results?.expectedUpdatedOn ?? this.activeRegistration?.semesterResult?.updatedOn ?? null;
+        this.modalGpa = this.results?.semesterGpa ?? this.activeRegistration?.semesterResult?.semesterGpa ?? null;
+        this.modalNote = this.results?.internalNote ?? '';
+        this.modalCourses = this.activeCourses;
+        this.isUpdateStatusModalOpen = true;
+      }
+    });
   }
 
   closeUpdateStatusModal(): void {
+    if (this.isSavingModalResults) return;
     this.isUpdateStatusModalOpen = false;
+  }
+
+  async handleModalSaveResults(event: SemesterResultsSaveEvent): Promise<void> {
+    const regId = event.academicRegistrationId || this.activeRegistration?.academicRegistrationId;
+    if (!regId) {
+      this.notification.error('No active academic registration found to save.');
+      return;
+    }
+
+    this.isSavingModalResults = true;
+    const requestModel: SaveAcademicResultsRequestModel = {
+      semesterGpa: event.gpa,
+      internalNote: event.note || null,
+      expectedUpdatedOn: event.expectedUpdatedOn,
+      courseResults: event.courseResults
+    };
+
+    const currentSemNo = event.semesterNo || this.activeRegistration?.semesterNo || this.results?.semesterNo || 1;
+    const maxSemesters = this.totalProgramSemesters || this.program?.numberOfSemesters || 6;
+    const hasNextSemester = currentSemNo < maxSemesters;
+    const allowProgression = !event.hasCoreFailed && (!!this.nextSemesterSchedule || hasNextSemester);
+
+    try {
+      const result = await this.academicRegistrationService.saveFinalizeAndProgress(
+        regId,
+        requestModel,
+        allowProgression
+      );
+
+      this.isSavingModalResults = false;
+      this.closeUpdateStatusModal();
+
+      if (event.hasCoreFailed) {
+        this.notification.success(
+          'Semester results finalized. A failing-core case has been submitted for Committee review.'
+        );
+        this.loadAcademicHistory(regId);
+      } else if (result.progression) {
+        const prog: any = result.progression;
+        const nextRegId = prog.academicRegistrationId || prog.AcademicRegistrationId;
+        const nextName = prog.nextSemesterName || prog.NextSemesterName || `Semester ${prog.nextSemesterNo || prog.NextSemesterNo || currentSemNo + 1}`;
+        this.notification.success(
+          `Results finalized and student registered for ${nextName} successfully.`
+        );
+        this.loadAcademicHistory(nextRegId);
+      } else {
+        this.notification.success('Semester results saved and finalized successfully.');
+        this.loadAcademicHistory(regId);
+      }
+    } catch (error: any) {
+      this.isSavingModalResults = false;
+      const message = this.apiErrorMessage(error, 'Failed to save academic results.');
+
+      if (error?.status === 409) {
+        this.notification.warning(`${message} Reloading the latest saved results from server...`);
+        this.academicRegistrationService.getResults(regId).subscribe({
+          next: (res) => {
+            if (res.success && res.result) {
+              const r = res.result;
+              this.results = r;
+              this.modalExpectedUpdatedOn = r.expectedUpdatedOn;
+              this.modalGpa = r.semesterGpa;
+              this.modalNote = r.internalNote || '';
+              this.modalCourses = r.courses && r.courses.length > 0 ? r.courses : this.activeCourses;
+            }
+          }
+        });
+        return;
+      }
+
+      if (!this.notification.handleBusinessError(error, message)) {
+        this.notification.error(message);
+      }
+    }
   }
 
   setModalCourseResult(courseCode: string, result: 'pass' | 'fail'): void {
@@ -330,7 +439,7 @@ export class AcademicRecord implements OnInit {
       !this.isProgressingRegistration &&
       this.results.programSemesterId !== null &&
       this.results.courses.length > 0 &&
-      this.results.courses.every(course => course.isPassed === true) &&
+      !this.results.courses.some(course => course.courseType === ProgramCourseType.Core && course.isPassed === false) &&
       !!this.semesterSchedule &&
       this.semesterSchedule.programSemesterId === this.results.programSemesterId &&
       !!this.nextSemesterSchedule &&
@@ -371,9 +480,9 @@ export class AcademicRecord implements OnInit {
           this.historyState = 'loaded';
           if (preferredRegistrationId && res.result.registrations.some(x => x.academicRegistrationId === preferredRegistrationId)) {
             this.selectAcademicRegistration(preferredRegistrationId);
-          } else if (res.result.registrations.length === 1) {
-            this.selectAcademicRegistration(res.result.registrations[0].academicRegistrationId);
-          } else if (res.result.registrations.length === 0) {
+          } else if (res.result.registrations.length > 0) {
+            this.selectAcademicRegistration(res.result.registrations[res.result.registrations.length - 1].academicRegistrationId);
+          } else {
             this.resultsState = 'idle';
           }
           return;

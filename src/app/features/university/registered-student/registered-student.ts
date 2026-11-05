@@ -20,7 +20,8 @@ import { SponsorshipAssignment } from '../../../core/models/ngo/sponsorshipMatri
 import { ProgramService } from '../../../core/services/university/programs.service';
 import { ProgramRequest } from '../../../core/models/university/programs/program-request.model';
 import { ProgramSemester } from '../../../core/models/university/programs/program-semester.model';
-import { SemesterResultsDialog } from '../semester-results-dialog/semester-results-dialog';
+import { SemesterResultsDialog, SemesterResultsSaveEvent } from '../semester-results-dialog/semester-results-dialog';
+import { SaveAcademicResultsRequestModel } from '../../../core/models/university/academic-registration/academic-results.model';
 
 @Component({
   selector: 'app-registered-student',
@@ -54,6 +55,12 @@ export class RegisteredStudent implements OnInit {
 
   // Status Update Modal
   showStatusModal: boolean = false;
+  isSavingResults: boolean = false;
+  modalExpectedUpdatedOn: string | null = null;
+  modalGpa: number | null = null;
+  modalNote: string = '';
+  modalCourses: any[] = [];
+  isLoadingModalResults: boolean = false;
   selectedStatusAction: string = 'Graduated';
   statusNotes: string = '';
 
@@ -384,10 +391,118 @@ export class RegisteredStudent implements OnInit {
   // --- Status Modal Actions ---
 
   openStatusModal(): void {
-    this.showStatusModal = true;
+    const regId = this.currentRegistration?.academicRegistrationId;
+    if (!regId) {
+      this.modalExpectedUpdatedOn = null;
+      this.modalGpa = null;
+      this.modalNote = '';
+      this.modalCourses = [];
+      this.showStatusModal = true;
+      return;
+    }
+
+    this.isLoadingModalResults = true;
+    this.academicRegistrationService.getResults(regId).subscribe({
+      next: (res) => {
+        this.isLoadingModalResults = false;
+        if (res.success && res.result) {
+          const r = res.result;
+          this.modalExpectedUpdatedOn = r.expectedUpdatedOn;
+          this.modalGpa = r.semesterGpa;
+          this.modalNote = r.internalNote || '';
+          this.modalCourses = r.courses && r.courses.length > 0 ? r.courses : (this.currentRegistration?.courses || []);
+        } else {
+          this.modalExpectedUpdatedOn = this.currentRegistration?.semesterResult?.updatedOn ?? null;
+          this.modalGpa = this.currentRegistration?.semesterResult?.semesterGpa ?? null;
+          this.modalNote = '';
+          this.modalCourses = this.currentRegistration?.courses || [];
+        }
+        this.showStatusModal = true;
+      },
+      error: () => {
+        this.isLoadingModalResults = false;
+        this.modalExpectedUpdatedOn = this.currentRegistration?.semesterResult?.updatedOn ?? null;
+        this.modalGpa = this.currentRegistration?.semesterResult?.semesterGpa ?? null;
+        this.modalNote = '';
+        this.modalCourses = this.currentRegistration?.courses || [];
+        this.showStatusModal = true;
+      }
+    });
   }
 
   closeStatusModal(): void {
+    if (this.isSavingResults) return;
     this.showStatusModal = false;
+  }
+
+  async handleSaveResults(event: SemesterResultsSaveEvent): Promise<void> {
+    const regId = event.academicRegistrationId || this.currentRegistration?.academicRegistrationId;
+    if (!regId) {
+      this.notification.error('No active academic registration found to save.');
+      return;
+    }
+
+    this.isSavingResults = true;
+    const requestModel: SaveAcademicResultsRequestModel = {
+      semesterGpa: event.gpa,
+      internalNote: event.note || null,
+      expectedUpdatedOn: event.expectedUpdatedOn,
+      courseResults: event.courseResults
+    };
+
+    const currentSemNo = event.semesterNo || this.currentSemesterNo || 1;
+    const maxSemesters = this.totalProgramSemesters || this.program?.numberOfSemesters || 6;
+    const hasNextSemester = currentSemNo < maxSemesters;
+    const allowProgression = !event.hasCoreFailed && (!!this.nextSemesterSchedule || hasNextSemester);
+
+    try {
+      const result = await this.academicRegistrationService.saveFinalizeAndProgress(
+        regId,
+        requestModel,
+        allowProgression
+      );
+
+      this.isSavingResults = false;
+      this.closeStatusModal();
+
+      if (event.hasCoreFailed) {
+        this.notification.success(
+          'Semester results finalized. A failing-core case has been submitted for Committee review.'
+        );
+      } else if (result.progression) {
+        const prog: any = result.progression;
+        const nextName = prog.nextSemesterName || prog.NextSemesterName || `Semester ${prog.nextSemesterNo || prog.NextSemesterNo || currentSemNo + 1}`;
+        this.notification.success(
+          `Results finalized and student registered for ${nextName} successfully.`
+        );
+      } else {
+        this.notification.success('Semester results saved and finalized successfully.');
+      }
+
+      this.loadStudentDetails();
+    } catch (error: any) {
+      this.isSavingResults = false;
+      const message = error?.error?.message || error?.message || 'Failed to save academic results.';
+
+      if (error?.status === 409) {
+        this.notification.warning(`${message} Reloading the latest saved results from server...`);
+        this.academicRegistrationService.getResults(regId).subscribe({
+          next: (res) => {
+            if (res.success && res.result) {
+              const r = res.result;
+              this.modalExpectedUpdatedOn = r.expectedUpdatedOn;
+              this.modalGpa = r.semesterGpa;
+              this.modalNote = r.internalNote || '';
+              this.modalCourses = r.courses && r.courses.length > 0 ? r.courses : (this.currentRegistration?.courses || []);
+            }
+          }
+        });
+        return;
+      }
+
+      if (!this.notification.handleBusinessError(error, message)) {
+        this.notification.error(message);
+      }
+    }
   }
 }
