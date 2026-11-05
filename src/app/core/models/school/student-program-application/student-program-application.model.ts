@@ -144,5 +144,14 @@ export class StudentProgramApplication {
   studentCategoryId?: number;
   categoryName: string = '';
 
+  // Academic Progress for Registered Students
+  currentSemesterNo?: number;
+  currentSemesterStatus?: string;
+  semestersCompleted?: number;
+  totalSemesters?: number;
+  creditsCompleted?: number;
+  graduationCredits?: number;
+  currentSemesterCredits?: number;
+  registrationDate?: Date;
 
 }

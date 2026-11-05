@@ -76,6 +76,10 @@ export class UniversityStudents implements OnInit {
   activeTab: number | string = 'all';
   studentStatus = StudentStatusEnum;
 
+  get isRegisteredTab(): boolean {
+    return +this.activeTab === this.studentStatus.Registered || this.selectedStatus === this.studentStatus.Registered;
+  }
+
   // Filter
   filter: StudentProgramApplicationFilter = new StudentProgramApplicationFilter();
 
@@ -434,6 +438,7 @@ export class UniversityStudents implements OnInit {
         break;
       case StudentStatusEnum.Registered:
         label = 'Registered Date';
+        dateField = 'registrationDate';
         break;
       case StudentStatusEnum.AcceptanceInProcess:
         label = 'Acceptance in Process Date';
@@ -467,9 +472,10 @@ export class UniversityStudents implements OnInit {
         break;
     }
 
+    const dateVal = (student as any)[dateField] ?? student.actionDate;
     return {
       label: label,
-      date: (student as any)[dateField]
+      date: dateVal
     };
   }
 
@@ -528,6 +534,51 @@ export class UniversityStudents implements OnInit {
         this.router.navigate(['/university-student-details', student.applicationId]);
       }
     }
+  }
+
+  getInitials(student: StudentProgramApplication): string {
+    if (!student.fullName) return student.studentCode ? student.studentCode.substring(0, 2).toUpperCase() : '?';
+    const parts = student.fullName.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return parts[0].substring(0, 2).toUpperCase();
+  }
+
+  hasCreditProgress(student: StudentProgramApplication): boolean {
+    return student.graduationCredits !== null && student.graduationCredits !== undefined && student.graduationCredits > 0 &&
+           student.creditsCompleted !== null && student.creditsCompleted !== undefined;
+  }
+
+  getCreditProgress(student: StudentProgramApplication): number {
+    if (!this.hasCreditProgress(student)) return 0;
+    return Math.min(100, Math.round(((student.creditsCompleted || 0) / student.graduationCredits!) * 100));
+  }
+
+  getCreditProgressClass(student: StudentProgramApplication): string {
+    const pct = this.getCreditProgress(student);
+    if (pct < 20) return 'danger';
+    if (pct < 50) return 'warn';
+    return '';
+  }
+
+  getCreditsRemaining(student: StudentProgramApplication): string | number {
+    if (student.currentSemesterCredits !== null && student.currentSemesterCredits !== undefined && student.currentSemesterCredits > 0) {
+      return student.currentSemesterCredits;
+    }
+    if (student.graduationCredits !== null && student.graduationCredits !== undefined &&
+        student.creditsCompleted !== null && student.creditsCompleted !== undefined) {
+      return Math.max(0, student.graduationCredits - student.creditsCompleted);
+    }
+    return '-';
+  }
+
+  getCreditsToGraduation(student: StudentProgramApplication): string | number {
+    if (student.graduationCredits !== null && student.graduationCredits !== undefined &&
+        student.creditsCompleted !== null && student.creditsCompleted !== undefined) {
+      return Math.max(0, student.graduationCredits - student.creditsCompleted);
+    }
+    return '-';
   }
 
   photoErrors = new Set<number>();
