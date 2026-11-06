@@ -10,6 +10,7 @@ import { StudentProgramService } from '../../../core/services/school/student-pro
 import { StudentStatusService } from '../../../core/services/common/student-status.service';
 import { StudentProgramDocument } from '../../../core/models/school/student-program-application/student-program-document.model';
 import { StudentProgramApplication } from '../../../core/models/school/student-program-application/student-program-application.model';
+import { StudentHistory } from '../../../core/models/school/student-program-application/student-history.model';
 import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
 import { ProgramService } from '../../../core/services/university/programs.service';
 import { MasterCurrencyService } from '../../../core/services/superadmin/master-currency.service';
@@ -292,6 +293,7 @@ export class UniversityStudentDetail implements OnInit {
   // Placeholder for when timeline API is provided
   documents: StudentProgramDocument[] = [];
   studentHistory: any[] = [];
+  isLoadingHistory: boolean = false;
 
   // Section toggle state (mirroring coordinator student edit)
   activeSection: number = 1;
@@ -333,7 +335,8 @@ export class UniversityStudentDetail implements OnInit {
             this.loadProgramLoadAndCost(this.student.programId);
           }
 
-          this.loadHistory();
+          const targetStudentId = this.student.studentId || this.studentId;
+          this.loadHistory(targetStudentId);
 
           return;
         }
@@ -354,18 +357,54 @@ export class UniversityStudentDetail implements OnInit {
     return HelperMethods.getFileUrl(path);
   }
 
-  loadHistory(): void {
-    if (!this.studentId) return;
-    this.studentProgramService.getHistory(this.studentId).subscribe({
+  loadHistory(studentId?: number): void {
+    const targetStudentId = studentId || this.student?.studentId || this.studentId;
+    if (!targetStudentId) return;
+
+    this.isLoadingHistory = true;
+    this.studentProgramService.getHistory(targetStudentId).subscribe({
       next: (res) => {
-        if (res.success && res.result && res.result.length > 0) {
-          this.studentHistory = res.result;
-        }
+        this.isLoadingHistory = false;
+        const rawHistory = (res?.success && Array.isArray(res.result)) ? res.result : [];
+        this.buildTimeline(rawHistory);
       },
       error: () => {
-        // Fallback simple history already set from actionDate if available
+        this.isLoadingHistory = false;
+        this.buildTimeline([]);
       }
     });
+  }
+
+  private buildTimeline(backendHistory: StudentHistory[]): void {
+    const items: any[] = [];
+
+    for (const h of backendHistory) {
+      const isRej = /reject|denied|fail/i.test(h.title || '') || /reject|denied|fail/i.test(h.description || '');
+      items.push({
+        ...h,
+        title: h.title,
+        description: h.description,
+        createdDate: h.createdDate,
+        state: isRej ? 'rej' : 'done'
+      });
+    }
+
+    if (items.length === 0 && this.student?.actionDate) {
+      items.push({
+        title: 'Status Updated',
+        description: `Status changed to ${this.student.applicationStatusName}`,
+        createdDate: this.student.actionDate,
+        state: 'done'
+      });
+    }
+
+    items.sort((a, b) => {
+      const timeA = a.createdDate ? new Date(a.createdDate).getTime() : 0;
+      const timeB = b.createdDate ? new Date(b.createdDate).getTime() : 0;
+      return timeB - timeA;
+    });
+
+    this.studentHistory = items;
   }
 
   loadDocuments(applicationId: number): void {

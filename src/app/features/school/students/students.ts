@@ -192,7 +192,8 @@ export class Students implements OnInit {
   isApplyModalOpen = false;
   selectedApplyProgram: CandidateProgram | null = null;
 
-  studentHistory: (StudentHistory & { icon?: string; color?: string })[] = [];
+  studentHistory: (StudentHistory & { icon?: string; color?: string; state?: string })[] = [];
+  isLoadingHistory: boolean = false;
 
   ngOnInit(): void {
     this.student.fromDaSchool = false;
@@ -460,6 +461,9 @@ export class Students implements OnInit {
           this.uniqueUniversities = [...new Set(this.candidatePrograms.map(p => p.universityName).filter(u => u))];
 
           this.filterCandidatePrograms();
+          if (this.student?.studentId) {
+            this.loadStudentHistory(this.student.studentId);
+          }
 
           const activeApp = this.candidatePrograms.find(p => p.applicationId && p.applicationStatus !== undefined);
           if (activeApp && activeApp.applicationId) {
@@ -1059,15 +1063,83 @@ export class Students implements OnInit {
   }
 
   loadStudentHistory(studentId: number): void {
-    this.studentProgramService.getHistory(studentId).subscribe({
+    const targetStudentId = studentId || this.student?.studentId;
+    if (!targetStudentId) return;
+
+    this.isLoadingHistory = true;
+    this.studentProgramService.getHistory(targetStudentId).subscribe({
       next: (res) => {
-        if (res.success && res.result) {
-          this.studentHistory = res.result.map(item => ({
-            ...item,
-            icon: this.getHistoryIcon(item.title),
-            color: this.getHistoryColor(item.title)
-          }));
+        this.isLoadingHistory = false;
+        if (res.success && Array.isArray(res.result)) {
+          const rawHistory = res.result;
+          const items: (StudentHistory & { icon?: string; color?: string; state?: string })[] = [];
+
+          for (const h of rawHistory) {
+            const isRej = /reject|denied|fail/i.test(h.title || '') || /reject|denied|fail/i.test(h.description || '');
+            items.push({
+              ...h,
+              icon: this.getHistoryIcon(h.title),
+              color: this.getHistoryColor(h.title),
+              state: isRej ? 'rej' : 'done'
+            });
+          }
+
+          const activeApp = this.candidatePrograms?.find(
+            p => p.applicationId && p.applicationStatus !== undefined
+          );
+          if (
+            activeApp &&
+            activeApp.applicationStatus !== StudentStatusEnum.Draft
+          ) {
+            const statusName = activeApp.applicationStatusName || 'Application Submitted';
+            const alreadyHasStatus = items.some(
+              i =>
+                (i.title || '').toLowerCase().includes(statusName.toLowerCase()) ||
+                (i.title || '').toLowerCase().includes('submitted')
+            );
+            if (!alreadyHasStatus) {
+              items.push({
+                studentHistoryId: 0,
+                studentId: targetStudentId,
+                applicationId: activeApp.applicationId,
+                title: statusName === 'Acceptance In Process' ? 'Application Submitted' : statusName,
+                description: `Application status changed to ${statusName}`,
+                createdDate: (this.student?.updatedDate || this.student?.createdDate || new Date()) as any,
+                historyType: activeApp.applicationStatus,
+                createdBy: 0,
+                icon: this.getHistoryIcon(statusName),
+                color: this.getHistoryColor(statusName),
+                state: 'done'
+              });
+            }
+          }
+
+          if (items.length === 0 && this.student?.createdDate) {
+            items.push({
+              studentHistoryId: 0,
+              studentId: targetStudentId,
+              title: 'Student Profile Created',
+              description: 'Student registration record created',
+              createdDate: this.student.createdDate as any,
+              historyType: 0,
+              createdBy: 0,
+              icon: this.getHistoryIcon('Student Profile Created'),
+              color: this.getHistoryColor('Student Profile Created'),
+              state: 'done'
+            });
+          }
+
+          items.sort((a, b) => {
+            const timeA = a.createdDate ? new Date(a.createdDate).getTime() : 0;
+            const timeB = b.createdDate ? new Date(b.createdDate).getTime() : 0;
+            return timeB - timeA;
+          });
+
+          this.studentHistory = items;
         }
+      },
+      error: () => {
+        this.isLoadingHistory = false;
       }
     });
   }

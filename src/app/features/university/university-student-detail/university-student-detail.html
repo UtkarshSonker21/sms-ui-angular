@@ -1257,16 +1257,20 @@ DO NOT DELETE.
             -->
 
             <!-- NEW STUDENT HISTORY DESIGN -->
-            <div *ngIf="!studentHistory || studentHistory.length === 0" class="student-history-empty" style="padding: 16px; text-align: center; color: var(--da-muted);">
+            <div *ngIf="isLoadingHistory" class="student-history-empty" style="padding: 16px; text-align: center; color: var(--da-muted);">
+                Loading history...
+            </div>
+
+            <div *ngIf="!isLoadingHistory && (!studentHistory || studentHistory.length === 0)" class="student-history-empty" style="padding: 16px; text-align: center; color: var(--da-muted);">
                 No activity has been recorded for this student yet.
             </div>
 
-            <div *ngIf="studentHistory && studentHistory.length > 0" class="student-history" style="position: relative; padding-left: 32px; margin-top: 16px; padding-bottom: 8px;">
+            <div *ngIf="!isLoadingHistory && studentHistory && studentHistory.length > 0" class="student-history" style="position: relative; padding-left: 32px; margin-top: 16px; padding-bottom: 8px;">
                 <div class="student-history-line" style="position: absolute; left: 11px; top: 14px; bottom: 24px; width: 2px; background: var(--da-border, #e2e8f0);"></div>
                 
                 <div *ngFor="let item of studentHistory" class="student-history-item" style="position: relative; margin-bottom: 24px;">
-                    <div class="student-history-icon" style="position: absolute; left: -32px; top: 0px; width: 24px; height: 24px; border-radius: 50%; background: white; border: 2px solid var(--da-border, #e2e8f0); display: flex; align-items: center; justify-content: center;">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--da-primary, #16a34a)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <div class="student-history-icon" [style.border-color]="item.state === 'rej' ? '#ef4444' : 'var(--da-border, #e2e8f0)'" style="position: absolute; left: -32px; top: 0px; width: 24px; height: 24px; border-radius: 50%; background: white; border: 2px solid var(--da-border, #e2e8f0); display: flex; align-items: center; justify-content: center;">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" [attr.stroke]="item.state === 'rej' ? '#ef4444' : 'var(--da-primary, #16a34a)'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="10"></circle>
                             <polyline points="12 6 12 12 16 14"></polyline>
                         </svg>
