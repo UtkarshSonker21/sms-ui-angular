@@ -1,4 +1,4 @@
-<div class="courses-page" data-lang="en">
+﻿<div class="courses-page" data-lang="en">
     <!-- Header matching prototype -->
     <div class="page-head">
         <div>
@@ -27,7 +27,7 @@
                 <button type="button" [class.active]="selectedCurrency === 'EUR'" (click)="selectCurrency('EUR')">EUR</button>
             </div>
             <button type="button" class="btn btn-basic-data" (click)="scrollToBasicData()">Basic data</button>
-            <button type="button" class="btn btn-g" (click)="goBack()">← Back to list</button>
+            <button type="button" class="btn btn-g" (click)="goBack()" style="display: inline-flex; align-items: center; gap: 6px;"><i class="fas fa-arrow-left" aria-hidden="true"></i> Back to list</button>
         </div>
     </div>
 
@@ -41,7 +41,7 @@
                     <span class="dot"></span>
                     <span>{{ step.title }}</span>
                 </div>
-                <span class="journey-sep" *ngIf="!last">›</span>
+                <span class="journey-sep" [class.done]="step.state === 'done'" *ngIf="!last">&rsaquo;</span>
             </ng-container>
         </div>
 
@@ -58,11 +58,11 @@
                     </div>
                 </div>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-                    <button type="button" class="btn btn-g" (click)="openSponsorshipAssignmentModal('pool')">
-                        → Mark as Sponsored (DA pool)
+                    <button type="button" class="btn btn-g" (click)="openSponsorshipAssignmentModal('pool')" style="display: inline-flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-arrow-right" aria-hidden="true"></i> Mark as Sponsored (DA pool)
                     </button>
-                    <button type="button" class="btn btn-donor-outline" (click)="markDonorSponsored()">
-                        → Mark as Donor-Sponsored
+                    <button type="button" class="btn btn-donor-outline" (click)="markDonorSponsored()" style="display: inline-flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-arrow-right" aria-hidden="true"></i> Mark as Donor-Sponsored
                     </button>
                 </div>
             </div>
@@ -365,7 +365,7 @@
                         </span>
                     </div>
                     <div style="color: var(--da-muted, #64748b); font-size: 12.5px;">
-                        <span *ngIf="doc.originalFileName || doc.storedFileName">{{ doc.originalFileName || doc.storedFileName }} · </span>
+                        <span *ngIf="doc.originalFileName || doc.storedFileName">{{ doc.originalFileName || doc.storedFileName }} &middot; </span>
                         <span *ngIf="doc.uploadedDate">Uploaded {{ doc.uploadedDate | date:'yyyy-MM-dd' }}</span>
                         <span *ngIf="!doc.originalFileName && !doc.storedFileName && !doc.uploadedDate">{{ doc.description || 'Student provided document.' }}</span>
                     </div>
@@ -378,6 +378,20 @@
                         Preview
                     </button>
                 </div>
+            </div>
+        </div>
+
+        <!-- Academic record · courses & results (Card 9) -->
+        <div class="card" style="padding: 18px 20px; margin-bottom: 14px; background: #fff; border: 1px solid var(--da-border, #e2e8f0); border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div>
+                    <div class="sd-section-title" style="margin: 0 0 4px 0;">Academic record &middot; courses &amp; results</div>
+                    <div style="font-size: 12.5px; color: var(--da-muted, #64748b);">Complete history of each semester: term, enrolled courses, results and GPA.</div>
+                </div>
+                <button *ngIf="canViewAcademicRecord" type="button" class="btn btn-g" (click)="viewAcademicRecord()"
+                        style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; padding: 6px 14px;">
+                    <i class="fas fa-graduation-cap" aria-hidden="true"></i> View Academic Record <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                </button>
             </div>
         </div>
 
@@ -395,7 +409,7 @@
 
             <!-- Loading State -->
             <div *ngIf="isProgramLoading" style="padding: 24px; text-align: center; color: var(--da-muted, #64748b); font-size: 13px;">
-                Loading program cost and credit configuration…
+                Loading program cost and credit configuration...
             </div>
 
             <!-- Not Configured State -->
@@ -416,7 +430,7 @@
                             <ng-container *ngIf="!hasCostConfiguration">-</ng-container>
                         </div>
                         <div style="font-size: 11.5px; color: var(--da-muted, #64748b); margin-top: 2px;">
-                            Recurring × {{ programSemestersCount }} sem{{ programSemestersCount === 1 ? '' : 's' }}
+                            Recurring &times; {{ programSemestersCount }} sem{{ programSemestersCount === 1 ? '' : 's' }}
                         </div>
                     </div>
 
@@ -452,7 +466,7 @@
                             <ng-container *ngIf="!hasCostConfiguration || programSemestersCount === 0">-</ng-container>
                         </div>
                         <div style="font-size: 11.5px; color: var(--da-muted, #64748b); margin-top: 2px;">
-                            Grand total ÷ {{ programSemestersCount }} sem{{ programSemestersCount === 1 ? '' : 's' }}
+                            Grand total &divide; {{ programSemestersCount }} sem{{ programSemestersCount === 1 ? '' : 's' }}
                         </div>
                     </div>
 
@@ -476,7 +490,7 @@
                             <ng-container *ngIf="!hasCostConfiguration || totalCourseCredits === 0">-</ng-container>
                         </div>
                         <div style="font-size: 11.5px; color: var(--da-muted, #64748b); margin-top: 2px;">
-                            Grand total ÷ {{ totalCourseCredits }} cr
+                            Grand total &divide; {{ totalCourseCredits }} cr
                         </div>
                     </div>
                 </div>
@@ -484,7 +498,7 @@
                 <!-- Cost Summary Details Panel (Matching Program Details & Prototype) -->
                 <div id="cost-summary" style="background: var(--da-green-50, #f0fdf4); border: 1px solid rgba(44, 153, 66, 0.2); border-radius: 8px; padding: 14px 18px; font-size: 13px;">
                     <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 4px 0;">
-                        <span style="color: var(--da-muted, #64748b);">Grand program cost <span style="opacity: 0.75;">(recurring × <span class="num-ltr">{{ programSemestersCount }}</span> semesters)</span></span>
+                        <span style="color: var(--da-muted, #64748b);">Grand program cost <span style="opacity: 0.75;">(recurring &times; <span class="num-ltr">{{ programSemestersCount }}</span> semesters)</span></span>
                         <span class="num-ltr" style="font-weight: 600; font-family: var(--da-mono, ui-monospace, Menlo, monospace);">{{ hasCostConfiguration ? (grandRecurringCostFormatted + ' ' + programCurrency) : '-' }}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 4px 0;">
@@ -496,7 +510,7 @@
                         <span class="num-ltr" style="font-family: var(--da-mono, ui-monospace, Menlo, monospace);">{{ hasCostConfiguration ? (grandTotalCostFormatted + ' ' + programCurrency) : '-' }}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 4px 0;">
-                        <span style="color: var(--da-muted, #64748b);">Cost per semester <span style="opacity: 0.75;">(grand total ÷ <span class="num-ltr">{{ programSemestersCount }}</span> semesters)</span></span>
+                        <span style="color: var(--da-muted, #64748b);">Cost per semester <span style="opacity: 0.75;">(grand total &divide; <span class="num-ltr">{{ programSemestersCount }}</span> semesters)</span></span>
                         <span class="num-ltr" style="font-weight: 600; font-family: var(--da-mono, ui-monospace, Menlo, monospace);">{{ (hasCostConfiguration && programSemestersCount > 0) ? (costPerSemesterFormatted + ' ' + programCurrency) : '-' }}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 4px 0;">
@@ -526,7 +540,7 @@
             </div>
 
             <div *ngIf="isLoadingSponsorshipAssignments" class="sponsorship-assignment-state" role="status">
-                Loading sponsorship assignments…
+                Loading sponsorship assignments...
             </div>
             <div *ngIf="!isLoadingSponsorshipAssignments && sponsorshipAssignments.length === 0" class="sponsorship-assignment-state">
                 No DA Pool sponsorship category is assigned to this application.
@@ -536,7 +550,7 @@
                     <div class="sponsorship-assignment-title">{{ assignment.categoryName }}</div>
                     <div class="sponsorship-assignment-meta">
                         Assigned {{ assignment.assignedDate | date:'mediumDate' }}
-                        <span *ngIf="assignment.remarks"> · {{ assignment.remarks }}</span>
+                        <span *ngIf="assignment.remarks"> &middot; {{ assignment.remarks }}</span>
                     </div>
                     <div class="sponsorship-assignment-meta" *ngIf="assignment.permittedSponsorshipTypes?.length">
                         Permitted:
@@ -556,20 +570,23 @@
                 <button *ngIf="assignment.isActive" type="button" class="btn btn-t" style="color: var(--da-danger, #dc2626);"
                     [disabled]="deactivatingAssignmentId !== null"
                     (click)="deactivateSponsorshipAssignment(assignment)">
-                    {{ deactivatingAssignmentId === assignment.assignmentId ? 'Deactivating…' : 'Deactivate' }}
+                    {{ deactivatingAssignmentId === assignment.assignmentId ? 'Deactivating...' : 'Deactivate' }}
                 </button>
             </div>
         </div> -->
 
         <!-- 10. Log history matching prototype .log-timeline -->
         <div class="card" style="padding: 18px 20px; background: #fff; border: 1px solid var(--da-border, #e2e8f0); border-radius: 8px;">
-            <div class="sd-section-title">Log history</div>
-            <div *ngIf="!studentHistory || studentHistory.length === 0" style="padding: 20px; text-align: center; color: var(--da-muted, #64748b); font-size: 12.5px;">
+            <div class="sd-section-title" style="margin: 0 0 12px 0;">Log history</div>
+            <div *ngIf="isLoadingHistory" class="log-empty">
+                Loading log history...
+            </div>
+            <div *ngIf="!isLoadingHistory && (!studentHistory || studentHistory.length === 0)" class="log-empty">
                 No activity has been recorded for this student yet.
             </div>
-            <ol *ngIf="studentHistory && studentHistory.length > 0" class="log-timeline" id="log-timeline">
-                <li *ngFor="let item of studentHistory" class="done">
-                    <div class="log-date">{{ item.createdDate | date:'dd MMM yyyy, hh:mm a' }}</div>
+            <ol *ngIf="!isLoadingHistory && studentHistory && studentHistory.length > 0" class="log-timeline" id="log-timeline">
+                <li *ngFor="let item of studentHistory" [ngClass]="item.state || 'done'">
+                    <div class="log-date">{{ item.createdDate ? (item.createdDate | date:'dd MMM yyyy, hh:mm a') : '-' }}</div>
                     <div class="log-event">{{ item.title }}</div>
                     <div class="log-meta" *ngIf="item.description">{{ item.description }}</div>
                 </li>
@@ -592,7 +609,7 @@
                 </p>
             </div>
             <button type="button" class="sponsorship-assignment-close" aria-label="Close"
-                [disabled]="isSavingSponsorshipAssignment" (click)="closeSponsorshipAssignmentModal()">×</button>
+                [disabled]="isSavingSponsorshipAssignment" (click)="closeSponsorshipAssignmentModal()">&times;</button>
         </header>
         <div class="sponsorship-assignment-modal-body">
             <label id="sponsorshipCategoryLabel" class="field-label" style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--da-muted);">Student sponsorship category</label>
@@ -633,7 +650,7 @@
                 <div class="field-label" style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--da-muted);">Permitted sponsorship types</div>
                 <ul>
                     <li *ngFor="let option of sponsorshipAssignmentOptions">
-                        {{ option.sponsorshipName }} — {{ getSponsorshipFrequencyLabel(option.frequencyType) }}
+                        {{ option.sponsorshipName }} &mdash; {{ getSponsorshipFrequencyLabel(option.frequencyType) }}
                     </li>
                 </ul>
             </div>
@@ -648,7 +665,7 @@
             <button type="button" class="btn btn-g"
                 [disabled]="!selectedSponsorshipCategoryId || (sponsorshipChannel === 'donor' && (!donorName?.trim() || !donorCode?.trim())) || (sponsorshipChannel === 'pool' && (isLoadingSponsorshipOptions || sponsorshipAssignmentOptions.length === 0)) || isSavingSponsorshipAssignment"
                 (click)="saveSponsorshipAssignment()">
-                {{ isSavingSponsorshipAssignment ? 'Saving…' : editingSponsorshipAssignmentId ? 'Save Changes' : (sponsorshipChannel === 'donor' ? 'Confirm' : 'Save Assignment') }}
+                {{ isSavingSponsorshipAssignment ? 'Saving...' : editingSponsorshipAssignmentId ? 'Save Changes' : (sponsorshipChannel === 'donor' ? 'Confirm' : 'Save Assignment') }}
             </button>
         </footer>
     </section>
@@ -678,7 +695,7 @@
             <div>
                 <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: var(--da-text, #1e293b);">Full Program Cost Breakdown</h3>
                 <p style="margin: 4px 0 0; color: var(--da-muted, #64748b); font-size: 13px;">
-                    {{ student?.programName || program?.programName }} · <span class="num-ltr">{{ programSemestersCount }}</span> semesters · Currency: <strong>{{ programCurrency }}</strong>
+                    {{ student?.programName || program?.programName }} &middot; <span class="num-ltr">{{ programSemestersCount }}</span> semesters &middot; Currency: <strong>{{ programCurrency }}</strong>
                 </p>
             </div>
             <button type="button" class="btn btn-t" style="font-size: 22px; line-height: 1; padding: 2px 8px; border: 0; cursor: pointer; color: var(--da-muted);" (click)="closeFullCostModal()">&times;</button>
@@ -736,7 +753,7 @@
                         <span class="num-ltr" style="font-weight: 600;">{{ recurringPerSemesterFormatted }} {{ programCurrency }}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0;">
-                        <span style="color: var(--da-muted, #64748b);">Total recurring cost across all semesters <span style="opacity: 0.75;">({{ recurringPerSemesterFormatted }} × <span class="num-ltr">{{ programSemestersCount }}</span> semesters)</span></span>
+                        <span style="color: var(--da-muted, #64748b);">Total recurring cost across all semesters <span style="opacity: 0.75;">({{ recurringPerSemesterFormatted }} &times; <span class="num-ltr">{{ programSemestersCount }}</span> semesters)</span></span>
                         <span class="num-ltr" style="font-weight: 600;">{{ grandRecurringCostFormatted }} {{ programCurrency }}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0;">
@@ -748,7 +765,7 @@
                         <span class="num-ltr">{{ grandTotalCostFormatted }} {{ programCurrency }}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0;">
-                        <span style="color: var(--da-muted, #64748b);">Cost per semester <span style="opacity: 0.75;">({{ grandTotalCostFormatted }} ÷ <span class="num-ltr">{{ programSemestersCount }}</span> semesters)</span></span>
+                        <span style="color: var(--da-muted, #64748b);">Cost per semester <span style="opacity: 0.75;">({{ grandTotalCostFormatted }} &divide; <span class="num-ltr">{{ programSemestersCount }}</span> semesters)</span></span>
                         <span class="num-ltr" style="font-weight: 600;">{{ costPerSemesterFormatted }} {{ programCurrency }}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0;">
@@ -756,7 +773,7 @@
                         <span class="num-ltr" style="font-weight: 600;">{{ totalCourseCredits > 0 ? (totalCourseCredits + ' cr') : '-' }}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 10px 0 4px; margin-top: 4px; border-top: 1px dashed var(--da-border, #e2e8f0); font-weight: 700;">
-                        <span>Cost per credit <span style="opacity: 0.75; font-weight: 400; font-size: 12px;">({{ grandTotalCostFormatted }} ÷ {{ totalCourseCredits }} cr)</span></span>
+                        <span>Cost per credit <span style="opacity: 0.75; font-weight: 400; font-size: 12px;">({{ grandTotalCostFormatted }} &divide; {{ totalCourseCredits }} cr)</span></span>
                         <span class="num-ltr">{{ costPerCreditFormatted }} {{ programCurrency }}</span>
                     </div>
                 </div>

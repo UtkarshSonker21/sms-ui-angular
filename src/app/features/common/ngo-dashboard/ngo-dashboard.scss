@@ -279,3 +279,85 @@
 .fw-semibold {
   font-weight: 600 !important;
 }
+
+
+/* Failing-Core Approval Cases Card */
+.failing-cases-list {
+  display: flex;
+  flex-direction: column;
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+.failing-case-item {
+  padding: 14px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid var(--da-border, #e2e8f0);
+  }
+
+  &:first-child {
+    padding-top: 0;
+  }
+
+  &:last-child {
+    padding-bottom: 0;
+  }
+}
+
+.failing-case-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.failing-case-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.case-student-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--da-black, #0f172a);
+}
+
+.case-id {
+  font-weight: 600;
+  color: var(--da-muted, #64748b);
+}
+
+.case-meta {
+  font-size: 12px;
+  color: var(--da-muted, #64748b);
+  line-height: 1.4;
+}
+
+.case-failed-course {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--da-gold-700, #a16207);
+  margin-top: 4px;
+}
+
+.failing-case-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+
+  .btn {
+    padding: 4px 10px;
+    font-size: 12px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}

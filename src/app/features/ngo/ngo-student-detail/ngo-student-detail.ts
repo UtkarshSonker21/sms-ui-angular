@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit, inject } from '@angular/core';
+﻿import { Component, HostListener, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -9,6 +9,7 @@ import { HelperMethods } from '../../../core/helpers/helper-methods';
 import { StudentProgramService } from '../../../core/services/school/student-program.service';
 import { StudentStatusService } from '../../../core/services/common/student-status.service';
 import { StudentProgramDocument } from '../../../core/models/school/student-program-application/student-program-document.model';
+import { StudentHistory } from '../../../core/models/school/student-program-application/student-history.model';
 import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
 import { StudentProgramApplication } from '../../../core/models/school/student-program-application/student-program-application.model';
 import { SponsorshipAssignmentService } from '../../../core/services/ngo/sponsorship-assignment.service';
@@ -28,6 +29,8 @@ import { ProgramCost } from '../../../core/models/university/programs/program-co
 import { ProgramCourse } from '../../../core/models/university/programs/program-course.model';
 import { MasterCurrencyFilter } from '../../../core/models/super-admin/master-currency/master-currency-filter.model';
 import { MasterCurrencyRequest } from '../../../core/models/super-admin/master-currency/master-currency-request.model';
+import { CurrentUserProfileService } from '../../../core/services/common/current-user-profile.service';
+import { StaffType } from '../../../core/enums/staff-type.enum';
 
 @Component({
   selector: 'app-ngo-student-detail',
@@ -47,6 +50,21 @@ export class NgoStudentDetail implements OnInit {
   private studentCategoryService = inject(StudentCategoryService);
   private programService = inject(ProgramService);
   private masterCurrencyService = inject(MasterCurrencyService);
+  private userProfileService = inject(CurrentUserProfileService);
+
+  get canViewAcademicRecord(): boolean {
+    const profile = this.userProfileService.getCurrentUserProfile();
+    return profile?.staffType === StaffType.Ngo ||
+           profile?.staffType === StaffType.SuperAdmin ||
+           profile?.staffType === StaffType.University;
+  }
+
+  viewAcademicRecord(): void {
+    const targetId = this.student?.applicationId || this.studentId;
+    if (targetId) {
+      this.router.navigate(['/registered-student', targetId, 'academic-record']);
+    }
+  }
 
   // Program Load & Cost state
   program: ProgramRequest | null = null;
@@ -68,6 +86,7 @@ export class NgoStudentDetail implements OnInit {
   // Placeholder for when timeline API is provided
   documents: StudentProgramDocument[] = [];
   studentHistory: any[] = [];
+  isLoadingHistory: boolean = false;
 
   sponsorshipAssignments: SponsorshipAssignment[] = [];
   sponsorshipCategories: StudentCategoryRequest[] = [];
@@ -86,12 +105,12 @@ export class NgoStudentDetail implements OnInit {
   sponsorshipAssignmentsError = '';
   sponsorshipOptionsError = '';
   private sponsorshipOptionsRequestVersion = 0;
-  
+
   // Sponsorship modal channel & donor fields
   sponsorshipChannel: 'pool' | 'donor' = 'pool';
   donorName: string = '';
   donorCode: string = '';
-  
+
   // Section toggle state
   activeSection: number = 1;
 
@@ -114,7 +133,7 @@ export class NgoStudentDetail implements OnInit {
     }
   }
 
-  
+
   getAssignedCategoryDisplay(): string {
     if (this.student?.categoryName) return this.student.categoryName;
     if (this.sponsorshipAssignments.length > 0) {
@@ -165,15 +184,9 @@ export class NgoStudentDetail implements OnInit {
         if (res.success && res.result) {
           this.student = res.result;
           this.photoError = false;
-          
-          // Fallback simple timeline for now using actionDate
-          if (this.student.actionDate) {
-            this.studentHistory = [{
-              title: 'Status Updated',
-              description: `Status changed to ${this.student.applicationStatusName}`,
-              createdDate: this.student.actionDate
-            }];
-          }
+
+          const targetStudentId = this.student.studentId || this.studentId;
+          this.loadHistory(targetStudentId);
 
           if (this.student.applicationId) {
             this.loadDocuments(this.student.applicationId);
@@ -667,7 +680,7 @@ export class NgoStudentDetail implements OnInit {
 
   saveUniversityRemark(): void {
     if (!this.currentDiscussionDocTypeId) return;
-    
+
     let existingDoc = this.documents.find(d => d.documentTypeId === this.currentDiscussionDocTypeId);
     if (existingDoc) {
       existingDoc.universityRemark = this.universityDiscussionRemark;
@@ -677,7 +690,7 @@ export class NgoStudentDetail implements OnInit {
          universityRemark: this.universityDiscussionRemark
       } as any);
     }
-    
+
     this.notification.success('University remark saved successfully.');
     this.closeDiscussionModal();
   }
@@ -733,6 +746,55 @@ export class NgoStudentDetail implements OnInit {
       title: s.title,
       state: idx < currentIdx ? 'done' : (idx === currentIdx ? 'cur' : 'future')
     }));
+  }
+
+  loadHistory(studentId?: number): void {
+    const targetStudentId = studentId || this.student?.studentId || this.studentId;
+    if (!targetStudentId) return;
+
+    this.isLoadingHistory = true;
+    this.studentProgramService.getHistory(targetStudentId).subscribe({
+      next: (res) => {
+        this.isLoadingHistory = false;
+        const rawHistory = (res?.success && Array.isArray(res.result)) ? res.result : [];
+        this.buildTimeline(rawHistory);
+      },
+      error: () => {
+        this.isLoadingHistory = false;
+        this.buildTimeline([]);
+      }
+    });
+  }
+
+  private buildTimeline(backendHistory: StudentHistory[]): void {
+    const items: { title: string; description?: string; createdDate?: Date | string; state: 'done' | 'rej' }[] = [];
+
+    for (const h of backendHistory) {
+      const isRej = /reject|denied|fail/i.test(h.title || '') || /reject|denied|fail/i.test(h.description || '');
+      items.push({
+        title: h.title,
+        description: h.description,
+        createdDate: h.createdDate,
+        state: isRej ? 'rej' : 'done'
+      });
+    }
+
+    if (items.length === 0 && this.student?.actionDate) {
+      items.push({
+        title: 'Status Updated',
+        description: `Status changed to ${this.student.applicationStatusName}`,
+        createdDate: this.student.actionDate,
+        state: 'done'
+      });
+    }
+
+    items.sort((a, b) => {
+      const timeA = a.createdDate ? new Date(a.createdDate).getTime() : 0;
+      const timeB = b.createdDate ? new Date(b.createdDate).getTime() : 0;
+      return timeB - timeA;
+    });
+
+    this.studentHistory = items;
   }
 
   getUploadedDocumentsCount(): number {
@@ -884,7 +946,7 @@ export class NgoStudentDetail implements OnInit {
     return this.recurringCostsList.reduce((sum, c) => sum + (Number(c.amount) || 0), 0);
   }
 
-  // 1. Grand Program Cost (recurring cost items × total semesters)
+  // 1. Grand Program Cost (recurring cost items Ã— total semesters)
   get grandRecurringCost(): number {
     return this.recurringPerSemester * this.programSemestersCount;
   }
@@ -899,7 +961,7 @@ export class NgoStudentDetail implements OnInit {
     return this.grandRecurringCost + this.oneTimeTotal;
   }
 
-  // 4. Cost per Semester (grand total ÷ total semesters)
+  // 4. Cost per Semester (grand total Ã· total semesters)
   get costPerSemester(): number {
     if (this.programSemestersCount <= 0) return 0;
     return this.grandTotalProgramCost / this.programSemestersCount;
@@ -919,7 +981,7 @@ export class NgoStudentDetail implements OnInit {
     return this.programCourses.length;
   }
 
-  // 6. Cost per Credit (grand total ÷ total course credits)
+  // 6. Cost per Credit (grand total Ã· total course credits)
   get costPerCredit(): number {
     if (this.totalCourseCredits <= 0) return 0;
     return this.grandTotalProgramCost / this.totalCourseCredits;

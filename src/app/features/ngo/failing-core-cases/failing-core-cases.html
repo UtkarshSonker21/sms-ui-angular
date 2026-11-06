@@ -42,94 +42,38 @@
     <div class="case-table-wrap">
       <table class="table cases-table">
         <thead>
-          <tr><th>Student</th><th>Program</th><th>Semester</th><th>Failed Core Course(s)</th><th>Submitted</th><th>Status</th><th class="view-column">View</th></tr>
+          <tr>
+            <th>Student</th>
+            <th>Program</th>
+            <th>Semester</th>
+            <th>Category</th>
+            <th>Failed Core Course(s)</th>
+            <th>Submitted</th>
+            <th>Status</th>
+            <th class="view-column">View</th>
+          </tr>
         </thead>
         <tbody>
-          <tr *ngIf="dataState === 'loading'"><td colspan="7" class="case-state">Loading failing-core cases…</td></tr>
-          <tr *ngIf="dataState === 'error'"><td colspan="7" class="case-state case-state-error" role="alert">{{ listError }}</td></tr>
-          <tr *ngIf="dataState === 'empty'"><td colspan="7" class="case-state">No cases match the selected status.</td></tr>
-          <tr *ngFor="let item of filteredCases" [class.selected-case-row]="selectedCase?.id === item.id">
+          <tr *ngIf="dataState === 'loading'"><td colspan="8" class="case-state">Loading failing-core cases…</td></tr>
+          <tr *ngIf="dataState === 'error'"><td colspan="8" class="case-state case-state-error" role="alert">{{ listError }}</td></tr>
+          <tr *ngIf="dataState === 'empty'"><td colspan="8" class="case-state">No cases match the selected status.</td></tr>
+          <tr *ngFor="let item of filteredCases">
             <td><div class="student-name">{{ item.studentName }}</div><div class="case-secondary">{{ item.studentCode }}</div></td>
             <td><div>{{ item.programName }}</div><div class="case-secondary">{{ item.universityName }}</div></td>
-            <td>Semester {{ item.semesterNo }}<div class="case-secondary" *ngIf="item.semesterName">{{ item.semesterName }}</div></td>
+            <td>Semester {{ item.semesterNo }}</td>
+            <td><span class="cat-pill" [class.has-cat]="getCategory(item) !== '—'">{{ getCategory(item) }}</span></td>
             <td><span *ngFor="let course of item.failedCoreCourses; let last = last">{{ course.courseName }}<span *ngIf="!last">, </span></span></td>
             <td>{{ item.submittedOn | date:'yyyy/MM/dd' }}</td>
-            <td><span class="case-status" [ngClass]="'status-' + item.status.toLowerCase()">{{ statusLabel(item.status) }}</span></td>
-            <td class="view-column"><button type="button" class="btn btn-g case-view" (click)="openCase(item)">View</button></td>
+            <td>
+              <span class="chip" [ngClass]="getStatusChipClass(item.status)">
+                <span class="dot-icon" [ngStyle]="{'background-color': getStatusDotColor(item.status)}"></span>
+                {{ statusLabel(item.status) }}
+              </span>
+            </td>
+            <td class="view-column"><button type="button" class="btn btn-g case-view" (click)="viewCase(item.id)">View</button></td>
           </tr>
         </tbody>
       </table>
-    </div>
-  </section>
-
-  <section *ngIf="selectedCase" class="card case-detail" aria-labelledby="case-detail-title">
-    <div class="card-head detail-head">
-      <div>
-        <h3 class="card-title" id="case-detail-title">Failing-core Case Details</h3>
-        <p class="card-sub">{{ selectedCase.studentName }} · {{ selectedCase.programName }} · Semester {{ selectedCase.semesterNo }}</p>
-      </div>
-      <button type="button" class="icon-btn" aria-label="Close case details" (click)="closeCase()">×</button>
-    </div>
-
-    <div *ngIf="detailLoading" class="detail-state">Loading case details…</div>
-    <div *ngIf="detailError" class="detail-alert" role="alert">{{ detailError }}</div>
-    <div *ngIf="successMessage" class="detail-success" role="status">{{ successMessage }}</div>
-
-    <div *ngIf="!detailLoading" class="case-detail-body">
-      <dl class="case-facts">
-        <div><dt>Student ID</dt><dd>{{ selectedCase.studentCode }}</dd></div>
-        <div><dt>University</dt><dd>{{ selectedCase.universityName }}</dd></div>
-        <div><dt>Submitted</dt><dd>{{ selectedCase.submittedOn | date:'yyyy/MM/dd HH:mm' }}</dd></div>
-        <div><dt>Status</dt><dd><span class="case-status" [ngClass]="'status-' + selectedCase.status.toLowerCase()">{{ statusLabel(selectedCase.status) }}</span></dd></div>
-        <div *ngIf="selectedCase.termName || selectedCase.academicYearName"><dt>Academic term</dt><dd>{{ selectedCase.termName || '—' }} · {{ selectedCase.academicYearName || '—' }}</dd></div>
-        <div *ngIf="selectedCase.semesterStartDate || selectedCase.semesterEndDate"><dt>Semester dates</dt><dd>{{ selectedCase.semesterStartDate | date:'yyyy/MM/dd' }} – {{ selectedCase.semesterEndDate | date:'yyyy/MM/dd' }}</dd></div>
-        <div *ngIf="selectedCase.semesterGpa !== undefined"><dt>Semester GPA</dt><dd>{{ selectedCase.semesterGpa === null ? '—' : (selectedCase.semesterGpa | number:'1.2-2') }}</dd></div>
-      </dl>
-
-      <h4 class="detail-section-title">Failed core courses</h4>
-      <div class="failed-course-list">
-        <article class="failed-course" *ngFor="let course of selectedCase.failedCoreCourses">
-          <div><strong>{{ course.courseName }}</strong><span class="case-secondary">{{ course.courseCode }}</span></div>
-          <span>{{ course.credits }} credits</span>
-        </article>
-      </div>
-
-      <div *ngIf="selectedCase.semesterCourses?.length">
-        <h4 class="detail-section-title">Semester course outcomes</h4>
-        <div class="case-table-wrap">
-          <table class="table detail-courses-table">
-            <thead><tr><th>Type</th><th>Course</th><th>Credits</th><th>Outcome</th></tr></thead>
-            <tbody>
-              <tr *ngFor="let course of selectedCase.semesterCourses">
-                <td>{{ course.isRetake ? 'Re-take · ' : '' }}{{ course.courseType }}</td>
-                <td>{{ course.courseName }}<div class="case-secondary">{{ course.courseCode }}</div></td>
-                <td>{{ course.credits }}</td>
-                <td>{{ course.isPassed === null ? 'Pending' : course.isPassed ? 'Pass' : 'Fail' }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div *ngIf="selectedCase.status === 'Pending'" class="decision-form">
-        <label for="committee-comment">Committee comment <span class="required-mark">*</span></label>
-        <textarea id="committee-comment" class="field-input" rows="4" maxlength="2000" [(ngModel)]="decisionComment"
-          [disabled]="isSavingDecision" placeholder="Enter the reason for the decision."></textarea>
-        <div class="comment-hint">{{ decisionComment.length }}/2000 characters. A comment is required.</div>
-        <div class="decision-actions">
-          <button type="button" class="btn btn-danger-custom" [disabled]="isSavingDecision || !decisionComment.trim()"
-            (click)="recordDecision('Denied')">{{ isSavingDecision ? 'Saving…' : 'Continuation denied' }}</button>
-          <button type="button" class="btn btn-g" [disabled]="isSavingDecision || !decisionComment.trim()"
-            (click)="recordDecision('Approved')">{{ isSavingDecision ? 'Saving…' : 'Continuation approved' }}</button>
-        </div>
-      </div>
-
-      <div *ngIf="selectedCase.status !== 'Pending'" class="decision-record">
-        <h4 class="detail-section-title">Committee decision</h4>
-        <p>{{ selectedCase.decisionComment }}</p>
-        <div class="case-secondary">Recorded {{ selectedCase.decisionOn | date:'yyyy/MM/dd HH:mm' }}</div>
-        <p class="case-secondary" *ngIf="selectedCase.status === 'Approved'">The University may continue through its existing semester registration workflow, including its registration-window checks.</p>
-      </div>
     </div>
   </section>
 </main>

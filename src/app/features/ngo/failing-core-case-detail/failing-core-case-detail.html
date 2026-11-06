@@ -1,0 +1,531 @@
+<div class="courses-page" data-lang="en">
+
+  <!-- A. Page Header (Matching NGO Student Details & Prototype) -->
+  <div class="page-head">
+    <div>
+      <div class="crumb">
+        <a href="javascript:void(0)" (click)="goBack()">Dashboard</a> <span class="sep">/</span>
+        <a href="javascript:void(0)" (click)="goBack()">Failing-core Cases</a> <span class="sep">/</span>
+        <span>Details</span>
+      </div>
+      <h1 class="page-title" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+        <span id="fc-student-name">{{ caseDetail?.studentName || student?.fullName || 'Failing-core Case Details' }}</span>
+        <span *ngIf="caseDetail?.studentCode || student?.studentCode" class="num-ltr" id="fc-student-id" style="color: var(--da-muted, #64748b); font-weight: 500; font-size: 14px;">
+          {{ caseDetail?.studentCode || student?.studentCode }}
+        </span>
+        <span *ngIf="caseDetail" class="st-badge sd-header-chip {{ getStatusBadgeClass(caseDetail.status) }}" id="fc-status-chip">
+          {{ getStatusLabel(caseDetail.status) }}
+        </span>
+      </h1>
+      <div class="page-sub" id="fc-sub" *ngIf="caseDetail">
+        <span>{{ caseDetail.programName }}</span> &middot;
+        <span>{{ caseDetail.universityName }}</span> &middot;
+        <span>Semester {{ caseDetail.semesterNo }}</span> &middot;
+        Submitted <span class="num-ltr">{{ caseDetail.submittedOn | date:'yyyy/MM/dd HH:mm' }}</span>
+      </div>
+    </div>
+    <div class="page-actions">
+      <div class="cur-pills" role="tablist" aria-label="Currency">
+        <button type="button" [class.active]="selectedCurrency === 'KWD'" (click)="selectCurrency('KWD')">KWD</button>
+        <button type="button" [class.active]="selectedCurrency === 'USD'" (click)="selectCurrency('USD')">USD</button>
+        <button type="button" [class.active]="selectedCurrency === 'EUR'" (click)="selectCurrency('EUR')">EUR</button>
+      </div>
+      <button type="button" class="btn btn-basic-data" id="open-basic-btn" (click)="scrollToBasicData()">
+        Basic Data
+      </button>
+      <button type="button" class="btn btn-g" id="open-log-btn" (click)="scrollToLogHistory()">
+        Log History
+      </button>
+      <button type="button" class="btn btn-g" (click)="goBack()" style="display: inline-flex; align-items: center; gap: 6px;">
+        <i class="fas fa-arrow-left" aria-hidden="true"></i> Back to list
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="card state-card">
+    <div class="spinner-wrap">
+      <div class="spinner-border text-primary" role="status"></div>
+      <p>Loading failing-core case details...</p>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!isLoading && loadError" class="card state-card error-card">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>
+    </svg>
+    <h3>Case Not Found</h3>
+    <p>{{ loadError }}</p>
+    <div style="display: flex; gap: 10px; margin-top: 14px;">
+      <button type="button" class="btn btn-p" (click)="loadCaseDetails(caseId)">Retry</button>
+      <button type="button" class="btn btn-g" (click)="goBack()">Return to List</button>
+    </div>
+  </div>
+
+  <!-- Main Content When Loaded -->
+  <div *ngIf="!isLoading && caseDetail" style="display: flex; flex-direction: column; flex: 1; padding-bottom: 32px;">
+
+    <!-- B. Student Lifecycle Stepper (Matching NGO Student Details) -->
+    <div class="journey-bar" id="sd-journey">
+      <ng-container *ngFor="let step of getJourneySteps(); let last = last">
+        <div class="journey-step {{ step.state }}">
+          <span class="dot"></span>
+          <span>{{ step.title }}</span>
+        </div>
+        <span class="journey-sep" [class.done]="step.state === 'done'" *ngIf="!last">&rsaquo;</span>
+      </ng-container>
+    </div>
+
+    <!-- Historical Decision Banner for Approved / Denied Cases -->
+    <div *ngIf="caseDetail.status === 'Approved'" class="decision-banner accepted">
+      <b>Continuation Approved by Committee</b>
+      <div *ngIf="caseDetail.decisionComment" class="db-comment">"{{ caseDetail.decisionComment }}"</div>
+      <div class="db-meta">
+        Decision recorded on {{ caseDetail.decisionOn | date:'yyyy/MM/dd HH:mm' }}.
+        The University may continue through its existing semester registration workflow, including its registration-window checks. The failed core course will be scheduled as a re-take.
+      </div>
+    </div>
+
+    <div *ngIf="caseDetail.status === 'Denied'" class="decision-banner rejected">
+      <b>Continuation Denied by Committee</b>
+      <div *ngIf="caseDetail.decisionComment" class="db-comment">"{{ caseDetail.decisionComment }}"</div>
+      <div class="db-meta">
+        Decision recorded on {{ caseDetail.decisionOn | date:'yyyy/MM/dd HH:mm' }}.
+        Continuation has been denied by the Direct Aid Committee. Further semester registration is blocked for this program.
+      </div>
+    </div>
+
+    <!-- C. Student Basic Information (2-Column .ro-grid matching NGO Student Details & Prototype) -->
+    <div class="card" id="basic-info-section" style="padding: 18px 20px; margin-bottom: 14px; background: #fff; border: 1px solid var(--da-border, #e2e8f0); border-radius: 8px; scroll-margin-top: 24px;">
+      <div class="sd-section-title">Student basic information</div>
+      <div class="ro-grid">
+        <div class="ro-field">
+          <label>First Name</label>
+          <div class="ro-value">{{ student?.firstName || (caseDetail.studentName ? caseDetail.studentName.split(' ')[0] : '-') }}</div>
+        </div>
+        <div class="ro-field">
+          <label>Second Name</label>
+          <div class="ro-value">{{ student?.secondName || '-' }}</div>
+        </div>
+        <div class="ro-field">
+          <label>Third Name</label>
+          <div class="ro-value">{{ student?.thirdName || '-' }}</div>
+        </div>
+        <div class="ro-field">
+          <label>Last Name (Family)</label>
+          <div class="ro-value">{{ student?.lastName || '-' }}</div>
+        </div>
+        <div class="ro-divider"></div>
+        <div class="ro-field">
+          <label>Mother's Name</label>
+          <div class="ro-value">{{ student?.motherName || '-' }}</div>
+        </div>
+        <div class="ro-field">
+          <label>Date of Birth</label>
+          <div class="ro-value num-ltr">{{ student?.dateOfBirth ? (student.dateOfBirth | date:'yyyy/MM/dd') : '-' }}</div>
+        </div>
+        <div class="ro-field">
+          <label>Gender</label>
+          <div class="ro-value">{{ student?.genderName || '-' }}</div>
+        </div>
+        <div class="ro-field">
+          <label>Nationality</label>
+          <div class="ro-value">{{ student?.nationality || '-' }}</div>
+        </div>
+        <div class="ro-divider"></div>
+        <div class="ro-field">
+          <label>Country of Residence</label>
+          <div class="ro-value">{{ student?.countryOfResidence || '-' }}</div>
+        </div>
+        <div class="ro-field">
+          <label>Tribe / Clan</label>
+          <div class="ro-value">{{ student?.tribeName || '-' }}</div>
+        </div>
+        <div class="ro-field">
+          <label>Religion</label>
+          <div class="ro-value">{{ student?.religionName || '-' }}</div>
+        </div>
+        <div class="ro-field">
+          <label>Direct Aid Orphan?</label>
+          <div class="ro-value">{{ student ? (student.isDirectAidOrphan ? ('Yes (' + (student.orphanNumber || '-') + ')') : 'No') : '-' }}</div>
+        </div>
+      </div>
+      <div style="margin-top: 10px; font-size: 11px; color: var(--da-muted, #64748b);">
+        Sensitive fields are processed per DA student data-handling policy.
+      </div>
+    </div>
+
+    <!-- D. Contact Information (Matching NGO Student Details) -->
+    <div class="card" style="padding: 18px 20px; margin-bottom: 14px; background: #fff; border: 1px solid var(--da-border, #e2e8f0); border-radius: 8px;">
+      <div class="sd-section-title">Contact information</div>
+      <div class="ro-grid">
+        <div class="ro-field">
+          <label>Phone Number</label>
+          <div class="ro-value num-ltr">{{ student?.phoneNumber || '-' }}</div>
+        </div>
+        <div class="ro-field">
+          <label>Email Address</label>
+          <div class="ro-value">{{ student?.emailAddress || '-' }}</div>
+        </div>
+        <div class="ro-field">
+          <label>City</label>
+          <div class="ro-value">{{ student?.city || '-' }}</div>
+        </div>
+        <div class="ro-field">
+          <label>Village / District</label>
+          <div class="ro-value">{{ student?.village || '-' }}</div>
+        </div>
+        <div class="ro-field">
+          <label>Block</label>
+          <div class="ro-value">{{ student?.block || '-' }}</div>
+        </div>
+        <div class="ro-field">
+          <label>Street</label>
+          <div class="ro-value">{{ student?.street || '-' }}</div>
+        </div>
+        <div class="ro-field">
+          <label>House</label>
+          <div class="ro-value">{{ student?.house || '-' }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 1: Education Background -->
+    <div class="card" style="padding: 18px 20px; margin-bottom: 14px; background: #fff; border: 1px solid var(--da-border, #e2e8f0); border-radius: 8px;">
+      <div class="sd-section-title">Education background</div>
+      <div class="ro-grid">
+        <div class="ro-field">
+          <label>From a Direct Aid School?</label>
+          <div class="ro-value">{{ student?.fromDaSchool === true ? 'Yes' : (student?.fromDaSchool === false ? 'No' : '-') }}</div>
+        </div>
+        <div class="ro-field">
+          <label>Direct Aid Student Code</label>
+          <div class="ro-value num-ltr">{{ student?.daStudentCode || '-' }}</div>
+        </div>
+        <div class="ro-field">
+          <label>School</label>
+          <div class="ro-value">{{ student?.schoolName || '-' }}</div>
+        </div>
+        <div class="ro-field">
+          <label>High School Specialization</label>
+          <div class="ro-value">{{ student?.hsSpecialization || '-' }}</div>
+        </div>
+        <div class="ro-field">
+          <label>Student's Total Score (%)</label>
+          <div class="ro-value num-ltr">{{ getStudentScore() }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2: Sponsorship & Program -->
+    <div class="card" style="padding: 18px 20px; margin-bottom: 14px; background: #fff; border: 1px solid var(--da-border, #e2e8f0); border-radius: 8px;">
+      <div class="sd-section-title">Sponsorship &amp; program</div>
+      <div class="ro-grid">
+        <div class="ro-field">
+          <label>Country</label>
+          <div class="ro-value">{{ student?.universityCountryName || '-' }}</div>
+        </div>
+        <div class="ro-field">
+          <label>University</label>
+          <div class="ro-value">{{ caseDetail.universityName || student?.universityName || '-' }}</div>
+        </div>
+        <div class="ro-field">
+          <label>College</label>
+          <div class="ro-value">{{ student?.facultyName || '-' }}</div>
+        </div>
+        <div class="ro-field">
+          <label>Program</label>
+          <div class="ro-value">{{ caseDetail.programName || student?.programName || '-' }}</div>
+        </div>
+        <div class="ro-divider"></div>
+        <div class="ro-field">
+          <label>Assigned Student Category</label>
+          <div class="ro-value">{{ student?.categoryName || student?.sponsorshipCategoryName || '-' }}</div>
+        </div>
+        <div class="ro-field">
+          <label>Student Status</label>
+          <div class="ro-value">
+            <span class="st-badge {{ getStudentStatusBadgeClass() }}">
+              {{ getStudentStatusLabel() }}
+            </span>
+          </div>
+        </div>
+        <div class="ro-field">
+          <label>Sponsorship Source</label>
+          <div class="ro-value">{{ student?.sponsorshipSource || 'Direct Aid general pool' }}</div>
+        </div>
+        <div class="ro-field">
+          <label>Donor Reference</label>
+          <div class="ro-value num-ltr">{{ getDonorReference() }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Failed Core Course(s) Requiring Approval -->
+    <div class="card" style="padding: 18px 20px; margin-bottom: 14px; background: #fff; border: 1px solid var(--da-border, #e2e8f0); border-radius: 8px;">
+      <div class="sd-section-title">FAILED CORE COURSE(S) REQUIRING APPROVAL</div>
+      <div class="fc-failed-pills" *ngIf="failedCoreCourses.length; else noFailedCourses">
+        <span class="fc-failed-pill" *ngFor="let course of failedCoreCourses">
+          {{ getFailedCoursePillLabel(course) }}
+        </span>
+      </div>
+      <ng-template #noFailedCourses>
+        <div class="empty-failed-courses">No failed core courses recorded.</div>
+      </ng-template>
+      <div class="form-hint" style="margin-top: 10px; font-size: 12px; color: var(--da-muted, #64748b); line-height: 1.5;">
+        Per the Kafaat spec, failing a core course requires committee approval before the next semester can be registered.
+      </div>
+    </div>
+
+    <!-- G. Semester Course Outcomes -->
+    <div class="card" style="padding: 18px 20px; margin-bottom: 14px; background: #fff; border: 1px solid var(--da-border, #e2e8f0); border-radius: 8px;">
+      <div class="sd-section-title">Semester course outcomes</div>
+      <div style="font-size: 12.5px; color: var(--da-muted, #64748b); margin-bottom: 12px; line-height: 1.5;">
+        Complete semester course outcome list for Semester {{ caseDetail.semesterNo }}.
+      </div>
+      <div class="table-responsive" *ngIf="caseDetail.semesterCourses?.length; else noSemesterCourses">
+        <table class="table courses-table">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Course Code</th>
+              <th>Course Name</th>
+              <th>Credits</th>
+              <th>Outcome</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let course of caseDetail.semesterCourses" [class.row-failed]="course.isPassed === false">
+              <td>
+                <span class="chip" [ngClass]="course.courseType === 'Core' ? 'chip-pending' : 'chip-draft'">
+                  {{ course.isRetake ? 'Re-take &middot; ' : '' }}{{ course.courseType }}
+                </span>
+              </td>
+              <td class="num-ltr fw-semibold">{{ course.courseCode }}</td>
+              <td class="course-name-cell">{{ course.courseName }}</td>
+              <td class="num-ltr">{{ course.credits }}</td>
+              <td>
+                <span class="st-badge {{ getOutcomeBadgeClass(course.isPassed) }}">
+                  {{ getOutcomeText(course.isPassed) }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <ng-template #noSemesterCourses>
+        <div style="padding: 24px 16px; text-align: center; color: var(--da-muted, #64748b); font-size: 13px;">
+          No semester course outcomes recorded for this registration.
+        </div>
+      </ng-template>
+    </div>
+
+
+    <!-- Academic record · courses & results (Matching NGO Student Details) -->
+    <div class="card academic-record-card" style="padding: 18px 20px; margin-bottom: 14px; background: #fff; border: 1px solid var(--da-border, #e2e8f0); border-radius: 8px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <div>
+          <div class="sd-section-title" style="margin: 0 0 4px 0;">Academic record &middot; courses &amp; results</div>
+          <div style="font-size: 12.5px; color: var(--da-muted, #64748b);">Complete history of each semester: term, enrolled courses, results and GPA.</div>
+        </div>
+        <button type="button" class="btn btn-g btn-view-academic" (click)="viewAcademicRecord()"
+                style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; padding: 6px 14px;">
+          <i class="fas fa-graduation-cap" aria-hidden="true"></i> View Academic Record <i class="fas fa-arrow-right" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Program Information (Matching Prototype & Program Overview) -->
+    <div class="card" style="padding: 18px 20px; margin-bottom: 14px; background: #fff; border: 1px solid var(--da-border, #e2e8f0); border-radius: 8px;">
+      <div style="margin-bottom: 14px;">
+        <div class="sd-section-title" style="margin: 0 0 4px 0;">Program Information</div>
+        <div style="font-size: 12.5px; color: var(--da-muted, #64748b);">Read-only snapshot of this program's accredited details.</div>
+      </div>
+
+      <div *ngIf="isProgramLoading" style="padding: 20px; text-align: center; color: var(--da-muted, #64748b); font-size: 13px;">
+        Loading program information...
+      </div>
+
+      <div *ngIf="!isProgramLoading">
+        <div class="ro-grid">
+          <div class="ro-field">
+            <label>Faculty</label>
+            <div class="ro-value">{{ program?.facultyName || student?.facultyName || '-' }}</div>
+          </div>
+          <div class="ro-field">
+            <label>Program Name</label>
+            <div class="ro-value">{{ program?.programName || caseDetail.programName || student?.programName || '-' }}</div>
+          </div>
+          <div class="ro-field">
+            <label>Program Code</label>
+            <div class="ro-value num-ltr">{{ program?.programCode || student?.programCode || '-' }}</div>
+          </div>
+          <div class="ro-field">
+            <label>Number of Semesters</label>
+            <div class="ro-value num-ltr">{{ programSemestersCount > 0 ? (programSemestersCount + ' sem.') : '-' }}</div>
+          </div>
+          <div class="ro-field">
+            <label>Credits Required for Graduation</label>
+            <div class="ro-value num-ltr">{{ (program?.creditsRequired || totalCourseCredits) ? ((program?.creditsRequired || totalCourseCredits) + ' cr') : '-' }}</div>
+          </div>
+          <div class="ro-field">
+            <label>Allowed Student Seats</label>
+            <div class="ro-value num-ltr">{{ program?.allowedStudentSeats ? (program.allowedStudentSeats + ' seats') : '-' }}</div>
+          </div>
+          <div class="ro-field">
+            <label>Minimum Acceptance High School Rate</label>
+            <div class="ro-value num-ltr">{{ program?.minAcceptanceRate != null ? (program.minAcceptanceRate + '%') : '-' }}</div>
+          </div>
+          <div class="ro-field">
+            <label>High School Division</label>
+            <div class="ro-value">
+              <ng-container *ngIf="highSchoolDivisionsList.length; else defaultHsDiv">
+                <span class="ro-chip" *ngFor="let div of highSchoolDivisionsList">{{ div }}</span>
+              </ng-container>
+              <ng-template #defaultHsDiv>
+                <span>{{ student?.hsSpecialization || '-' }}</span>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+
+        <!-- Program Load & Cost Subsection -->
+        <div class="ro-divider" style="margin-top: 14px; margin-bottom: 14px;"></div>
+        <div style="margin-bottom: 12px;">
+          <div style="font-size: 11px; font-weight: 700; color: var(--da-muted, #64748b); text-transform: uppercase; letter-spacing: 0.4px;">
+            Program load &amp; cost <span style="text-transform: none; font-weight: 500; color: var(--da-muted, #64748b); letter-spacing: 0;">- derived from cost items and courses credits</span>
+          </div>
+        </div>
+
+        <div class="cost-summary-box">
+          <div class="cost-summary-row">
+            <span class="cost-label">
+              Grand program cost <span class="cost-subnote">(recurring &times; {{ programSemestersCount || 0 }} semesters)</span>
+            </span>
+            <span class="cost-value num-ltr">
+              {{ hasCostConfiguration ? (grandRecurringCostFormatted + ' ' + selectedCurrency) : '-' }}
+            </span>
+          </div>
+
+          <div class="cost-summary-row">
+            <span class="cost-label">One-time items</span>
+            <span class="cost-value num-ltr">
+              {{ hasCostConfiguration ? (oneTimeCostFormatted + ' ' + selectedCurrency) : '-' }}
+            </span>
+          </div>
+
+          <div class="cost-summary-total">
+            <span>Grand total program cost</span>
+            <span class="num-ltr">
+              {{ hasCostConfiguration ? (grandTotalCostFormatted + ' ' + selectedCurrency) : '-' }}
+            </span>
+          </div>
+
+          <div class="cost-summary-row">
+            <span class="cost-label">
+              Cost per semester <span class="cost-subnote">(grand total &divide; {{ programSemestersCount || 0 }} semesters)</span>
+            </span>
+            <span class="cost-value num-ltr">
+              {{ (hasCostConfiguration && programSemestersCount > 0) ? (costPerSemesterFormatted + ' ' + selectedCurrency) : '-' }}
+            </span>
+          </div>
+
+          <div class="cost-summary-row">
+            <span class="cost-label">Total course credits</span>
+            <span class="cost-value num-ltr">
+              {{ totalCourseCredits > 0 ? (totalCourseCredits + ' cr') : '-' }}
+            </span>
+          </div>
+
+          <div class="cost-summary-credit">
+            <span>Cost per credit</span>
+            <span class="num-ltr">
+              {{ (hasCostConfiguration && totalCourseCredits > 0) ? (costPerCreditFormatted + ' ' + selectedCurrency) : '-' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Log History (Matching Prototype & NGO Student Details) -->
+    <div class="card" id="fc-log-history-section" style="padding: 18px 20px; margin-bottom: 14px; background: #fff; border: 1px solid var(--da-border, #e2e8f0); border-radius: 8px; scroll-margin-top: 24px;">
+      <div class="sd-section-title" style="margin: 0 0 12px 0;">Log history</div>
+      <div *ngIf="isLoadingHistory" class="log-empty">
+        Loading log history...
+      </div>
+      <div *ngIf="!isLoadingHistory && (!historyTimeline || historyTimeline.length === 0)" class="log-empty">
+        No activity has been recorded for this student yet.
+      </div>
+      <ol *ngIf="!isLoadingHistory && historyTimeline && historyTimeline.length > 0" class="log-timeline">
+        <li *ngFor="let item of historyTimeline" [ngClass]="item.state || 'done'">
+          <div class="log-date">{{ item.createdDate ? (item.createdDate | date:'dd MMM yyyy, hh:mm a') : '-' }}</div>
+          <div class="log-event">{{ item.title }}</div>
+          <div class="log-meta" *ngIf="item.description">{{ item.description }}</div>
+        </li>
+      </ol>
+    </div>
+
+    <!-- ======================================================
+         Decision Section (Matching School Accreditation Detail)
+         ====================================================== -->
+    <div class="pd-decision-card">
+      <div class="client-section-title">Committee decision</div>
+
+      <div class="pd-decision-grid">
+
+        <!-- Status Dropdown -->
+        <div class="field" (click)="$event.stopPropagation()">
+          <label class="field-label">Status</label>
+          <div class="multi-select" [class.open]="isStatusDropdownOpen" [class.disabled]="caseDetail.status !== 'Pending'" id="status-dropdown-filter"
+               (click)="toggleStatusDropdown($event)" tabindex="0" style="width: 100%;">
+            <div class="ms-display has-selection" style="padding: 0;">
+              <span>{{ getDecisionStatusLabel(selectedDecisionStatus) }}</span>
+            </div>
+            <svg class="ms-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+            <div class="ms-panel" *ngIf="isStatusDropdownOpen"
+                 style="display: block; max-height: 200px; overflow-y: auto; z-index: 100; top: calc(100% + 4px);"
+                 (click)="$event.stopPropagation()">
+              <div class="ms-option" [class.checked]="selectedDecisionStatus === 'Pending'"
+                 (click)="selectStatus('Pending'); $event.stopPropagation()">
+                <span>Pending</span>
+              </div>
+              <div class="ms-option" [class.checked]="selectedDecisionStatus === 'Approved'"
+                 (click)="selectStatus('Approved'); $event.stopPropagation()">
+                <span>Continuation approved</span>
+              </div>
+              <div class="ms-option" [class.checked]="selectedDecisionStatus === 'Denied'"
+                 (click)="selectStatus('Denied'); $event.stopPropagation()">
+                <span>Continuation denied</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Committee Comment -->
+        <div class="field">
+          <label class="field-label">Committee comment</label>
+          <textarea class="field-input" rows="3"
+                    [(ngModel)]="decisionComment"
+                    [disabled]="isSavingDecision || (caseDetail.status !== 'Pending')"
+                    placeholder="Reason for the decision or internal note..."></textarea>
+        </div>
+
+      </div>
+
+      <div class="pd-foot">
+        <button class="btn btn-p" type="button" (click)="updateDecision()"
+                [disabled]="isSavingDecision || (caseDetail.status !== 'Pending')"
+                style="background: var(--da-green) !important; height: 36px; padding: 0 20px; border-radius: 4px; font-weight: 600; color: white;">
+          <span *ngIf="isSavingDecision" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+          Update
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

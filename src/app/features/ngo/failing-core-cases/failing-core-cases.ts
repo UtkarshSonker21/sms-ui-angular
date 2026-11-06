@@ -2,7 +2,11 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
+import { ActivatedRoute, Router } from '@angular/router';
+import { forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { FailingCoreCaseService } from '../../../core/services/ngo/failing-core-case.service';
+import { StudentProgramService } from '../../../core/services/school/student-program.service';
 import {
   FailingCoreCaseModel,
   FailingCoreCaseStatus
@@ -20,6 +24,9 @@ type CaseDataState = 'loading' | 'error' | 'empty' | 'ready';
 })
 export class FailingCoreCases implements OnInit {
   private readonly casesApi = inject(FailingCoreCaseService);
+  private readonly studentProgramService = inject(StudentProgramService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   readonly tabs: { id: CaseTab; label: string }[] = [
     { id: 'all', label: 'All' },
@@ -31,15 +38,15 @@ export class FailingCoreCases implements OnInit {
   cases: FailingCoreCaseModel[] = [];
   activeTab: CaseTab = 'all';
   dataState: CaseDataState = 'loading';
-  selectedCase: FailingCoreCaseModel | null = null;
-  detailLoading = false;
-  detailError = '';
   listError = '';
-  decisionComment = '';
-  isSavingDecision = false;
-  successMessage = '';
+  readonly categoryMap = new Map<number, string>();
 
   ngOnInit(): void {
+    const directCaseId = Number(this.route.snapshot.queryParams['caseId']);
+    if (Number.isSafeInteger(directCaseId) && directCaseId > 0) {
+      this.router.navigate(['/failing-core-cases', directCaseId], { replaceUrl: true });
+      return;
+    }
     this.loadCases();
   }
 
@@ -77,10 +84,7 @@ export class FailingCoreCases implements OnInit {
         }
         this.cases = response.result;
         this.dataState = this.filteredCases.length ? 'ready' : 'empty';
-        if (this.selectedCase) {
-          const updatedCase = this.cases.find(item => item.id === this.selectedCase?.id);
-          if (updatedCase) this.selectedCase = updatedCase;
-        }
+        this.loadCategoriesForCases(this.cases);
       },
       error: error => {
         this.dataState = 'error';
@@ -89,80 +93,76 @@ export class FailingCoreCases implements OnInit {
     });
   }
 
-  openCase(item: FailingCoreCaseModel): void {
-    this.selectedCase = item;
-    this.detailLoading = true;
-    this.detailError = '';
-    this.successMessage = '';
-    this.decisionComment = '';
-    this.casesApi.getById(item.id).subscribe({
-      next: response => {
-        if (this.selectedCase?.id !== item.id) return;
-        this.detailLoading = false;
-        if (!response.success || !response.result) {
-          this.detailError = response.message || 'Case details could not be loaded.';
-          return;
+  private loadCategoriesForCases(cases: FailingCoreCaseModel[]): void {
+    const appIdsToFetch = Array.from(
+      new Set(
+        cases
+          .filter(c => !c.categoryName && c.applicationId && !this.categoryMap.has(c.applicationId))
+          .map(c => c.applicationId)
+      )
+    );
+
+    if (appIdsToFetch.length === 0) return;
+
+    forkJoin(
+      appIdsToFetch.map(appId =>
+        this.studentProgramService.getById(appId).pipe(
+          map(res => ({
+            appId,
+            categoryName: res?.success && res.result ? (res.result.categoryName || res.result.sponsorshipCategoryName || '') : ''
+          })),
+          catchError(() => of({ appId, categoryName: '' }))
+        )
+      )
+    ).subscribe(results => {
+      for (const item of results) {
+        if (item.categoryName) {
+          this.categoryMap.set(item.appId, item.categoryName);
         }
-        this.selectedCase = response.result;
-      },
-      error: error => {
-        if (this.selectedCase?.id !== item.id) return;
-        this.detailLoading = false;
-        this.detailError = this.errorMessage(error, 'Case details could not be loaded.');
       }
     });
   }
 
-  closeCase(): void {
-    this.selectedCase = null;
-    this.decisionComment = '';
-    this.detailError = '';
-    this.successMessage = '';
+  getCategory(item: FailingCoreCaseModel): string {
+    if (item.categoryName) return item.categoryName;
+    if (item.applicationId && this.categoryMap.has(item.applicationId)) {
+      return this.categoryMap.get(item.applicationId) || '—';
+    }
+    return '—';
   }
 
-  recordDecision(status: Extract<FailingCoreCaseStatus, 'Approved' | 'Denied'>): void {
-    const current = this.selectedCase;
-    const comment = this.decisionComment.trim();
-    if (!current || current.status !== 'Pending' || this.isSavingDecision) return;
-    if (!comment) {
-      this.detailError = 'A committee comment is required before saving the decision.';
-      return;
-    }
-    if (comment.length > 2000) {
-      this.detailError = 'The committee comment cannot exceed 2,000 characters.';
-      return;
-    }
-
-    this.isSavingDecision = true;
-    this.detailError = '';
-    this.successMessage = '';
-    this.casesApi.recordDecision(current.id, {
-      status,
-      comment,
-      expectedRowVersion: current.rowVersion
-    }).subscribe({
-      next: response => {
-        this.isSavingDecision = false;
-        if (!response.success || !response.result) {
-          this.detailError = response.message || 'The decision could not be saved.';
-          return;
-        }
-        this.selectedCase = response.result;
-        this.cases = this.cases.map(item => item.id === response.result!.id ? response.result! : item);
-        this.dataState = this.filteredCases.length ? 'ready' : 'empty';
-        this.successMessage = 'Committee decision recorded successfully.';
-      },
-      error: error => {
-        this.isSavingDecision = false;
-        this.detailError = this.errorMessage(error, 'The decision could not be saved. Reload the case before retrying.');
-      }
-    });
+  viewCase(id: number): void {
+    this.router.navigate(['/failing-core-cases', id]);
   }
 
   statusLabel(status: FailingCoreCaseStatus): string {
     if (status === 'Approved') return 'Continuation approved';
     if (status === 'Denied') return 'Continuation denied';
     return 'Pending';
+  }
+
+  getStatusChipClass(status: FailingCoreCaseStatus): string {
+    switch (status) {
+      case 'Approved':
+        return 'chip-sponsored';
+      case 'Denied':
+        return 'chip-rejected';
+      case 'Pending':
+      default:
+        return 'chip-pending';
+    }
+  }
+
+  getStatusDotColor(status: FailingCoreCaseStatus): string {
+    switch (status) {
+      case 'Approved':
+        return 'var(--da-green)';
+      case 'Denied':
+        return 'var(--da-danger)';
+      case 'Pending':
+      default:
+        return 'var(--da-gold)';
+    }
   }
 
   private errorMessage(error: unknown, fallback: string): string {

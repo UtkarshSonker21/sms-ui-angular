@@ -157,6 +157,10 @@
 }
 .journey-sep {
   color: var(--da-border, #e2e8f0);
+
+  &.done {
+    color: var(--da-green, #16a34a);
+  }
 }
 
 /* Buttons */

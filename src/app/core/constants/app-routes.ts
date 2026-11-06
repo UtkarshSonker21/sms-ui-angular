@@ -70,6 +70,8 @@ export const AppRoutes = {
     UniversityAccreditationDetail: 'university-accreditation-detail',
     SchoolAccreditation: 'school-accreditation',
     SchoolAccreditationDetail: 'school-accreditation-detail',
+    FailingCoreCases: 'failing-core-cases',
+    FailingCoreCaseDetail: 'failing-core-cases',
   },
 
   SuperAdmin: {

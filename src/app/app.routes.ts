@@ -47,6 +47,7 @@ import { MarketingAdministrativeFee } from './features/ngo/marketing-administrat
 import { AcademicRegistration } from './features/university/academic-registration/academic-registration';
 import { RegisterStudent } from './features/university/academic-registration/register-student/register-student';
 import { FailingCoreCases } from './features/ngo/failing-core-cases/failing-core-cases';
+import { FailingCoreCaseDetail } from './features/ngo/failing-core-case-detail/failing-core-case-detail';
 import { PanelUsers } from './features/ngo/panel-users/panel-users';
 import { UniversityCoordinators } from './features/ngo/university-coordinators/university-coordinators';
 import { SchoolCoordinators } from './features/ngo/school-coordinators/school-coordinators';
@@ -239,6 +240,10 @@ export const routes: Routes = [
             {
                 path: 'failing-core-cases',
                 component: FailingCoreCases
+            },
+            {
+                path: 'failing-core-cases/:id',
+                component: FailingCoreCaseDetail
             },
             {
                 path: 'ngo-students',

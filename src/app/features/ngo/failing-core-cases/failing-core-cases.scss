@@ -54,8 +54,18 @@
 }
 
 .cases-table {
-  min-width: 760px;
+  min-width: 860px;
   margin-bottom: 0;
+}
+
+.cat-pill {
+  display: inline-block;
+  font-size: 13px;
+  color: var(--da-text-1);
+
+  &.has-cat {
+    font-weight: 500;
+  }
 }
 
 .cases-table .view-column {
@@ -85,30 +95,41 @@
   font-size: 12px;
 }
 
-.case-status {
+/* Status Badge (matching University Accreditation page) */
+.chip {
   display: inline-flex;
   align-items: center;
-  border: 1px solid var(--da-border);
-  border-radius: 999px;
-  padding: 4px 9px;
-  color: var(--da-text-1);
-  font-size: 12px;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
   white-space: nowrap;
 }
 
-.status-pending {
-  border-color: var(--da-gold);
-  color: var(--da-gold);
+.chip-pending {
+  background: var(--da-gold-50, #fef9c3);
+  color: var(--da-gold-700, #a16207);
 }
 
-.status-approved {
-  border-color: var(--da-green);
-  color: var(--da-green);
+.chip-sponsored,
+.chip-approved {
+  background: var(--da-green-50, #f0fdf4);
+  color: var(--da-green-800, #166534);
 }
 
-.status-denied {
-  border-color: var(--da-danger);
-  color: var(--da-danger);
+.chip-rejected,
+.chip-denied {
+  background: var(--da-danger-50, #fdecea);
+  color: #991b1b;
+}
+
+.dot-icon {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
 }
 
 .case-detail {

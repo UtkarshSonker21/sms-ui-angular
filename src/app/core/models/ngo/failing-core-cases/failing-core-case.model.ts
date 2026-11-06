@@ -16,6 +16,7 @@ export interface FailingCoreCaseModel {
   studentId: number;
   studentCode: string;
   studentName: string;
+  categoryName?: string | null;
   universityId: number;
   universityName: string;
   programId: number;

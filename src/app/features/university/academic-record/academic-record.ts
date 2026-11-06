@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+﻿import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
@@ -18,6 +18,8 @@ import { AcademicProgressionResponseModel, AcademicRegistrationResultsModel, Fin
 import { ProgramCourseType } from '../../../core/enums/program-course-type.enum';
 import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
 import { SemesterResultsDialog, SemesterResultsSaveEvent } from '../semester-results-dialog/semester-results-dialog';
+import { CurrentUserProfileService } from '../../../core/services/common/current-user-profile.service';
+import { StaffType } from '../../../core/enums/staff-type.enum';
 
 @Component({
   selector: 'app-academic-record',
@@ -35,7 +37,9 @@ export class AcademicRecord implements OnInit {
   private academicRegistrationService = inject(AcademicRegistrationService);
   private confirmDialog = inject(ConfirmDialogService);
   private programService = inject(ProgramService);
+  private userProfileService = inject(CurrentUserProfileService);
 
+  isNgoUser: boolean = false;
   applicationId: number = 0;
   student: StudentProgramApplication | null = null;
   program: ProgramRequest | null = null;
@@ -70,6 +74,11 @@ export class AcademicRecord implements OnInit {
   } | null = null;
 
   ngOnInit(): void {
+    const profile = this.userProfileService.getCurrentUserProfile();
+    if (profile && profile.staffType === StaffType.Ngo) {
+      this.isNgoUser = true;
+    }
+
     const idParam = this.route.snapshot.paramMap.get('id');
     const applicationId = Number(idParam);
     if (Number.isSafeInteger(applicationId) && applicationId > 0) {
@@ -89,6 +98,9 @@ export class AcademicRecord implements OnInit {
         this.isLoading = false;
         if (res.success && res.result) {
           this.student = res.result;
+          if (this.student.applicationId && this.student.applicationId > 0) {
+            this.applicationId = this.student.applicationId;
+          }
           this.photoError = false;
           if (this.student.programId) {
             this.programService.getProgramById(this.student.programId).subscribe({
@@ -150,11 +162,17 @@ export class AcademicRecord implements OnInit {
       : null;
   }
 
+  isRegistrationCompleted(reg: AcademicHistoryRegistrationModel | null | undefined): boolean {
+    if (!reg) return false;
+    const st = (reg.semesterResult?.submissionStatus || '').toLowerCase();
+    return st === 'finalized' || st === 'submitted';
+  }
+
   get creditsEarned(): number {
     const regs = this.history?.registrations || [];
     let earned = 0;
     for (const reg of regs) {
-      if (reg.semesterResult?.submissionStatus === 'Finalized') {
+      if (this.isRegistrationCompleted(reg)) {
         const passedCourses = (reg.courses || []).filter(c => c.isPassed === true);
         earned += passedCourses.reduce((sum, c) => sum + (c.credits || 0), 0);
       }
@@ -165,18 +183,23 @@ export class AcademicRecord implements OnInit {
   get cumulativeGpa(): number | null {
     const regs = this.history?.registrations || [];
     const gradedRegistrations = regs.filter(r =>
-      r.semesterResult?.semesterGpa !== null && r.semesterResult?.semesterGpa !== undefined
+      this.isRegistrationCompleted(r) &&
+      typeof r.semesterResult?.semesterGpa === 'number' &&
+      !isNaN(r.semesterResult.semesterGpa)
     );
     if (gradedRegistrations.length === 0) return null;
 
     let totalPoints = 0;
     let totalCredits = 0;
     for (const reg of gradedRegistrations) {
+      const gpa = reg.semesterResult!.semesterGpa!;
       const semCredits = (reg.courses || []).reduce((sum, c) => sum + (c.credits || 0), 0) || 1;
-      totalPoints += (reg.semesterResult!.semesterGpa! * semCredits);
+      totalPoints += (gpa * semCredits);
       totalCredits += semCredits;
     }
-    return totalCredits > 0 ? (totalPoints / totalCredits) : null;
+    if (totalCredits <= 0) return null;
+    const result = totalPoints / totalCredits;
+    return isNaN(result) ? null : result;
   }
 
   get creditsSubText(): string {
@@ -191,7 +214,7 @@ export class AcademicRecord implements OnInit {
     return this.totalYears ? `Year ${this.currentYear} of ${this.totalYears}` : `Year ${this.currentYear}`;
   }
 
-  // ═════ Update Status Modal (UI Only) ═════
+  // ==================== Update Status Modal (UI Only) ====================
   isUpdateStatusModalOpen = false;
   isSavingModalResults = false;
   modalExpectedUpdatedOn: string | null = null;
@@ -235,7 +258,7 @@ export class AcademicRecord implements OnInit {
     if (reg?.startDate && reg?.endDate) {
       const d1 = new Date(reg.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
       const d2 = new Date(reg.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-      return `${d1} → ${d2}`;
+      return `${d1} -> ${d2}`;
     }
     return '';
   }
@@ -277,6 +300,7 @@ export class AcademicRecord implements OnInit {
   }
 
   openUpdateStatusModal(): void {
+    if (this.isNgoUser) return;
     const regId = this.activeRegistration?.academicRegistrationId;
     if (!regId) {
       const activeReg = this.activeRegistration;
@@ -944,10 +968,19 @@ export class AcademicRecord implements OnInit {
   }
 
   goBack(): void {
-    if (this.applicationId) {
+    const targetId = this.student?.studentId || this.applicationId;
+    if (targetId) {
+      if (this.isNgoUser) {
+        this.router.navigate(['/ngo-student-details', targetId]);
+      } else {
         this.router.navigate(['/registered-student', this.applicationId]);
+      }
     } else {
+      if (this.isNgoUser) {
+        this.router.navigate(['/ngo-students']);
+      } else {
         this.router.navigate(['/university-students']);
+      }
     }
   }
 

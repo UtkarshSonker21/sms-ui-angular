@@ -15,6 +15,7 @@ import { MasterSchoolFilter } from '../../../core/models/school/master-school/ma
 import { MasterCountryService } from '../../../core/services/superadmin/master-country.service';
 import { MasterCountryFilter } from '../../../core/models/super-admin/master-country/master-country-filter.model';
 import { FailingCoreCaseService } from '../../../core/services/ngo/failing-core-case.service';
+import { FailingCoreCaseModel } from '../../../core/models/ngo/failing-core-cases/failing-core-case.model';
 import { StudentService } from '../../../core/services/school/student.service';
 import { StudntFilter } from '../../../core/models/school/students/student-filter.model';
 
@@ -54,6 +55,9 @@ export class NgoDashboard implements OnInit {
   accreditedUniversitiesCount: number | null = null;
   failingCoreCasesCount: number | null = null;
   sponsoredStudentsCount: number | null = null;
+
+  failingCoreCases: FailingCoreCaseModel[] = [];
+  isLoadingFailingCoreCases = false;
 
   private readonly programService = inject(ProgramService);
   private readonly uniService = inject(MasterUniversityService);
@@ -182,14 +186,22 @@ export class NgoDashboard implements OnInit {
   }
 
   loadFailingCoreCasesCount(): void {
+    this.isLoadingFailingCoreCases = true;
     this.failingCoreCaseService.getAll().subscribe({
       next: (res) => {
-        this.failingCoreCasesCount = res?.success && Array.isArray(res.result)
-          ? res.result.filter(item => item.status === 'Pending').length
-          : null;
+        this.isLoadingFailingCoreCases = false;
+        if (res?.success && Array.isArray(res.result)) {
+          this.failingCoreCases = res.result;
+          this.failingCoreCasesCount = res.result.filter(item => item.status === 'Pending').length;
+        } else {
+          this.failingCoreCases = [];
+          this.failingCoreCasesCount = null;
+        }
         this.updateKpiAvailability('failingCoreCases', this.failingCoreCasesCount);
       },
       error: () => {
+        this.isLoadingFailingCoreCases = false;
+        this.failingCoreCases = [];
         this.failingCoreCasesCount = null;
         this.updateKpiAvailability('failingCoreCases', null);
       }
@@ -214,6 +226,48 @@ export class NgoDashboard implements OnInit {
         this.updateKpiAvailability('sponsoredStudents', null);
       }
     });
+  }
+
+  get displayedFailingCoreCases(): FailingCoreCaseModel[] {
+    if (!this.failingCoreCases || this.failingCoreCases.length === 0) {
+      return [];
+    }
+    const pending = this.failingCoreCases.filter(c => c.status === 'Pending');
+    const nonPending = this.failingCoreCases.filter(c => c.status !== 'Pending');
+    return [...pending, ...nonPending].slice(0, 5);
+  }
+
+  getFailedCoursesText(item: FailingCoreCaseModel): string {
+    if (!item.failedCoreCourses || item.failedCoreCourses.length === 0) {
+      return 'Core course failure';
+    }
+    return item.failedCoreCourses.map(c => `${c.courseName} (core)`).join(', ');
+  }
+
+  getCaseStatusChipClass(status: string): string {
+    switch (status) {
+      case 'Pending':
+        return 'chip-pending';
+      case 'Approved':
+        return 'chip-sponsored';
+      case 'Denied':
+        return 'chip-rejected';
+      default:
+        return 'chip-pending';
+    }
+  }
+
+  getCaseStatusLabel(status: string): string {
+    switch (status) {
+      case 'Pending':
+        return 'Under review';
+      case 'Approved':
+        return 'Approved';
+      case 'Denied':
+        return 'Denied';
+      default:
+        return status || 'Under review';
+    }
   }
 
   private readTotalCount(value: unknown): number | null {
@@ -274,6 +328,30 @@ export class NgoDashboard implements OnInit {
 
   viewAllPrograms(): void {
     this.router.navigate(['/', AppRoutes.Ngo.ProgramAccreditation]);
+  }
+
+  viewAllFailingCoreCases(): void {
+    this.router.navigate(['/failing-core-cases']);
+  }
+
+  viewTranscript(caseId: number | undefined): void {
+    if (caseId) {
+      this.router.navigate(['/failing-core-cases', caseId]);
+    } else {
+      this.router.navigate(['/failing-core-cases']);
+    }
+  }
+
+  approveContinuation(caseId: number | undefined): void {
+    this.reviewFailingCoreCase(caseId);
+  }
+
+  reviewFailingCoreCase(caseId: number | undefined): void {
+    if (caseId) {
+      this.router.navigate(['/failing-core-cases', caseId]);
+    } else {
+      this.router.navigate(['/failing-core-cases']);
+    }
   }
 
   reviewUniversity(id: number | undefined): void {

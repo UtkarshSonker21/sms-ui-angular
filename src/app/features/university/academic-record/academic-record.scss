@@ -205,6 +205,28 @@
   tr:hover td {
     background: var(--da-surface-2, #f8fafc);
   }
+
+  tr.course-row-failed {
+    td {
+      background: #fef2f2;
+    }
+
+    &:hover td {
+      background: #fee2e2;
+    }
+
+    .course-name,
+    .fw-700 {
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .course-code,
+    .muted-cell {
+      font-weight: 600;
+      color: #334155;
+    }
+  }
 }
 
 .course-type {
@@ -469,24 +491,20 @@
   white-space: nowrap;
 }
 
-.chip-registered {
+.chip-registered,
+.chip-pass {
   background: #dcfce7;
   color: var(--da-green-700, #15803d);
+  border: 1px solid #bbf7d0;
+  font-weight: 600;
 }
 
-.chip-rejected {
-  background: var(--da-danger-50, #fef2f2);
-  color: #991b1b;
-}
-
-.chip-pass {
-  background: var(--da-green-50, #f0fdf4);
-  color: var(--da-green-800, #166534);
-}
-
+.chip-rejected,
 .chip-fail {
-  background: var(--da-danger-50, #fef2f2);
+  background: #fee2e2;
   color: #991b1b;
+  border: 1px solid #fecaca;
+  font-weight: 600;
 }
 
 .num-ltr {

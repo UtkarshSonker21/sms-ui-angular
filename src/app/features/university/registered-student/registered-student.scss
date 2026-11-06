@@ -299,6 +299,28 @@
   tr:last-child td {
     border-bottom: none;
   }
+
+  tr.course-row-failed {
+    td {
+      background: #fef2f2;
+    }
+
+    &:hover td {
+      background: #fee2e2;
+    }
+
+    .course-name,
+    .fw-700 {
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .course-code,
+    .muted-cell {
+      font-weight: 600;
+      color: #334155;
+    }
+  }
 }
 
 .course-type {

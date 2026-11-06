@@ -20,6 +20,7 @@ import { MasterCountryRequest } from '../../../core/models/super-admin/master-co
 import { MasterUniversityRequest } from '../../../core/models/university/master-university/university-registration.model';
 import { StudentCategoryRequest } from '../../../core/models/ngo/student-category/student-category.request.model';
 import { AccreditationStatus } from '../../../core/enums/accreditation-status.enum';
+import { StaffType } from '../../../core/enums/staff-type.enum';
 import { StudentStatusEnum } from '../../../core/enums/student-application-status.enum';
 import { StudentStatusService } from '../../../core/services/common/student-status.service';
 import { COMMITTEE_STATUS_IDS } from '../../../core/constants/student-status.config';
@@ -557,11 +558,16 @@ export class NgoStudents implements OnInit {
   }
 
   viewStudent(student: StudentProgramApplication): void {
-    const targetId = student.applicationId || student.studentId;
-    if (student.applicationStatusId === StudentStatusEnum.Registered) {
-      this.router.navigate(['/registered-student', targetId]);
+    const studentId = student.studentId || student.applicationId;
+    const profile = this.currentUserProfileService.getCurrentUserProfile();
+    const isNgo = !profile || profile.staffType === StaffType.Ngo || profile.staffType === StaffType.SuperAdmin;
+
+    if (isNgo) {
+      this.router.navigate(['/ngo-student-details', studentId]);
+    } else if (student.applicationStatusId === StudentStatusEnum.Registered) {
+      this.router.navigate(['/registered-student', student.applicationId || studentId]);
     } else {
-      this.router.navigate(['/ngo-student-details', targetId]);
+      this.router.navigate(['/ngo-student-details', studentId]);
     }
   }
 

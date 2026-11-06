@@ -68,6 +68,11 @@ export class RegisteredStudent implements OnInit {
     const profile = this.userProfileService.getCurrentUserProfile();
     if (profile && profile.staffType === StaffType.Ngo) {
       this.isNgoUser = true;
+      const idParam = this.route.snapshot.paramMap.get('id');
+      if (idParam) {
+        this.router.navigate(['/ngo-student-details', idParam]);
+        return;
+      }
     }
 
     const idParam = this.route.snapshot.paramMap.get('id');

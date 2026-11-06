@@ -18,7 +18,7 @@
     </div>
   </div>
 
-  <!-- 3. Middle Section: Programs (Left) & Failing-core Approval Cases (Right) -->
+  <!-- 3. Middle Section: Programs (Left) & Failing-Core Approval Cases (Right) -->
   <div class="dashboard-content">
     
     <!-- Left Column: Programs Pending Accreditation -->
@@ -66,19 +66,65 @@
       </div>
     </div>
 
-    <!-- Right Column: Failing-core Approval Cases -->
+    <!-- Right Column: Failing-Core Approval Cases -->
     <div class="card activity-card">
       <div class="card-head">
         <div>
-          <h2 class="card-title text-danger">Failing-core Approval Cases</h2>
-          <div class="card-sub">Urgent attention required.</div>
+          <h2 class="card-title">Failing-Core Approval Cases</h2>
+          <div class="card-sub">Need committee approval to continue sponsorship</div>
         </div>
+        <a class="view-all-link" (click)="viewAllFailingCoreCases()">View all &rarr;</a>
       </div>
       <div class="card-body">
-        <div class="empty-state">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-          <p>No failing-core approval cases.</p>
+        <div class="failing-cases-list" *ngIf="displayedFailingCoreCases.length; else noFailingCoreCases">
+          <div class="failing-case-item" *ngFor="let item of displayedFailingCoreCases">
+            <div class="failing-case-header">
+              <div class="failing-case-info">
+                <div class="case-student-title">
+                  {{ item.studentName }}
+                  <span class="case-id" *ngIf="item.studentCode">· ID {{ item.studentCode }}</span>
+                </div>
+                <div class="case-meta">
+                  {{ item.programName }} · Semester {{ item.semesterNo }} · {{ item.universityName }}
+                </div>
+                <div class="case-failed-course">
+                  Failed: {{ getFailedCoursesText(item) }}
+                </div>
+              </div>
+              <span class="chip" [ngClass]="getCaseStatusChipClass(item.status)">
+                {{ getCaseStatusLabel(item.status) }}
+              </span>
+            </div>
+            <div class="failing-case-actions">
+              <button
+                type="button"
+                class="btn btn-g btn-sm"
+                (click)="viewTranscript(item.id)">
+                View transcript
+              </button>
+              <button
+                *ngIf="item.status === 'Pending'"
+                type="button"
+                class="btn btn-p btn-sm"
+                (click)="approveContinuation(item.id)">
+                Approve continuation
+              </button>
+              <button
+                *ngIf="item.status !== 'Pending'"
+                type="button"
+                class="btn btn-g btn-sm"
+                (click)="reviewFailingCoreCase(item.id)">
+                Review
+              </button>
+            </div>
+          </div>
         </div>
+        <ng-template #noFailingCoreCases>
+          <div class="empty-state">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            <p>No failing-core approval cases.</p>
+          </div>
+        </ng-template>
       </div>
     </div>
 
@@ -186,4 +232,3 @@
   </div>
 
 </div>
-

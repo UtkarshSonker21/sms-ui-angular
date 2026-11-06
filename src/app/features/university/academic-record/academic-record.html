@@ -10,19 +10,21 @@
     <p>{{ studentLoadMessage || 'Student details could not be loaded.' }}</p>
     <div style="margin-top: 16px; display: flex; gap: 10px; justify-content: center;">
       <button *ngIf="applicationId" class="btn btn-p" type="button" (click)="loadStudentDetails()">Retry</button>
-      <button class="btn btn-g" type="button" (click)="goBack()">&larr; Back to Students</button>
+      <button class="btn btn-g" type="button" (click)="goBack()" style="display: inline-flex; align-items: center; gap: 6px;">
+        <i class="fas fa-arrow-left" aria-hidden="true"></i> Back to Students
+      </button>
     </div>
   </div>
 </div>
 
 <div *ngIf="!isLoading && student" class="academic-record-page" data-lang="en">
 
-  <!-- ═════════ PAGE HEADER ═════════ -->
+  <!-- ==================== PAGE HEADER ==================== -->
   <div class="page-head">
     <div>
       <div class="crumb">
-        <a routerLink="/university-students">Dashboard</a> <span class="sep">/</span>
-        <a routerLink="/university-students">Students</a> <span class="sep">/</span>
+        <a [routerLink]="isNgoUser ? '/ngo-dashboard' : '/university-students'">Dashboard</a> <span class="sep">/</span>
+        <a [routerLink]="isNgoUser ? '/ngo-students' : '/university-students'">Students</a> <span class="sep">/</span>
         <a href="javascript:void(0)" (click)="goBack()">{{ student.fullName }}</a> <span class="sep">/</span>
         <span>Academic Record</span>
       </div>
@@ -30,10 +32,10 @@
       <div class="page-sub">Complete history of each semester: term, courses, results and GPA.</div>
     </div>
     <div class="page-actions" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-      <button class="btn btn-g" type="button" (click)="goBack()">
-        &larr; Back to Student Profile
+      <button class="btn btn-g" type="button" (click)="goBack()" style="display: inline-flex; align-items: center; gap: 6px;">
+        <i class="fas fa-arrow-left" aria-hidden="true"></i> Back to Student Profile
       </button>
-      <button class="btn btn-p" type="button" (click)="openUpdateStatusModal()">
+      <button *ngIf="!isNgoUser" class="btn btn-p" type="button" (click)="openUpdateStatusModal()">
         Update Status
       </button>
     </div>
@@ -41,7 +43,7 @@
 
   <div class="profile-container">
 
-    <!-- ═════════ STUDENT PROFILE HEAD ═════════ -->
+    <!-- ==================== STUDENT PROFILE HEAD ==================== -->
     <div class="profile-head">
       <div class="profile-av">
         <img *ngIf="student.photoPath && !photoError" [src]="getPhotoUrl(student.photoPath)" (error)="handlePhotoError()" alt="Student photo">
@@ -51,26 +53,26 @@
         <div class="profile-name">{{ student.fullName }}</div>
         <div class="profile-meta">
           <span><b>ID:</b> <span class="num-ltr">{{ student.studentCode || student.studentId }}</span></span>
-          <span><b>Faculty:</b> {{ student.facultyName || '—' }}</span>
-          <span><b>Program:</b> {{ student.programName || '—' }} <span *ngIf="student.programCode" class="num-ltr">&middot; {{ student.programCode }}</span></span>
+          <span><b>Faculty:</b> {{ student.facultyName || '-' }}</span>
+          <span><b>Program:</b> {{ student.programName || '-' }} <span *ngIf="student.programCode" class="num-ltr">&middot; {{ student.programCode }}</span></span>
           <span><b>Status:</b> <span class="chip {{ getBadgeClass() }}">{{ getStatusName() }}</span></span>
         </div>
       </div>
       <div class="gpa-badge">
         <div class="gpa-l">CUMULATIVE GPA</div>
-        <div class="gpa-v">{{ cumulativeGpa !== null ? (cumulativeGpa | number:'1.2-2') : '—' }}</div>
+        <div class="gpa-v">{{ cumulativeGpa !== null ? (cumulativeGpa | number:'1.2-2') : '-' }}</div>
         <div class="gpa-sub">{{ creditsSubText }}</div>
       </div>
     </div>
 
-    <!-- ═════════ SEMESTERS LIST ═════════ -->
+    <!-- ==================== SEMESTERS LIST ==================== -->
     <div class="semesters-list">
 
       <!-- Loading State -->
       <div *ngIf="historyState === 'loading'" class="as-sem" role="status">
         <div class="sem-empty">
           <div class="spinner" style="margin: 0 auto 12px;"></div>
-          Loading academic history…
+          Loading academic history...
         </div>
       </div>
 
@@ -112,16 +114,16 @@
                   {{ reg.startDate | date:'MMM d, yyyy' }} &rarr; {{ reg.endDate | date:'MMM d, yyyy' }} &middot;
                 </ng-container>
                 {{ reg.termName || 'Term' }} {{ reg.academicYearName || '' }} &middot;
-                <span [style.font-weight]="reg.semesterResult?.submissionStatus === 'Finalized' ? '700' : '500'">
-                  {{ reg.semesterResult?.submissionStatus === 'Finalized' ? 'Completed' : 'In Progress' }}
+                <span [style.font-weight]="isRegistrationCompleted(reg) ? '700' : '500'">
+                  {{ isRegistrationCompleted(reg) ? 'Completed' : 'In Progress' }}
                 </span>
               </div>
             </div>
             <div>
-              <div *ngIf="reg.semesterResult?.submissionStatus === 'Finalized'" class="as-gpa-pill">
-                {{ reg.semesterResult?.semesterGpa !== null && reg.semesterResult?.semesterGpa !== undefined ? (reg.semesterResult?.semesterGpa | number:'1.2-2') : '—' }}
+              <div *ngIf="isRegistrationCompleted(reg)" class="as-gpa-pill">
+                {{ reg.semesterResult?.semesterGpa !== null && reg.semesterResult?.semesterGpa !== undefined ? (reg.semesterResult?.semesterGpa | number:'1.2-2') : '-' }}
               </div>
-              <div *ngIf="reg.semesterResult?.submissionStatus !== 'Finalized'" class="as-gpa-pill pending">
+              <div *ngIf="!isRegistrationCompleted(reg)" class="as-gpa-pill pending">
                 &mdash; / Pending Results
               </div>
             </div>
@@ -134,11 +136,11 @@
                 <th style="width: 110px;">Type</th>
                 <th>Course</th>
                 <th class="num" style="width: 80px;">Credits</th>
-                <th style="width: 110px; text-align: center;">{{ reg.semesterResult?.submissionStatus === 'Finalized' ? 'Result' : 'Status' }}</th>
+                <th style="width: 110px; text-align: center;">{{ isRegistrationCompleted(reg) ? 'Result' : 'Status' }}</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let c of reg.courses">
+              <tr *ngFor="let c of reg.courses" [class.course-row-failed]="isRegistrationCompleted(reg) && c.isPassed === false">
                 <td>
                   <span class="course-type" [ngClass]="{
                     'core': c.courseType === 1 && !c.isRetake,
@@ -149,16 +151,16 @@
                   </span>
                 </td>
                 <td>
-                  <div class="fw-700">{{ c.courseName }}</div>
-                  <div class="muted-cell num-ltr">{{ c.courseCode }}</div>
+                  <div class="fw-700 course-name">{{ c.courseName }}</div>
+                  <div class="muted-cell num-ltr course-code">{{ c.courseCode }}</div>
                 </td>
                 <td class="num">{{ c.credits }}</td>
                 <td style="text-align: center;">
-                  <span *ngIf="reg.semesterResult?.submissionStatus === 'Finalized'" class="chip"
-                        [ngClass]="c.isPassed ? 'chip-registered' : 'chip-rejected'">
+                  <span *ngIf="isRegistrationCompleted(reg)" class="chip"
+                        [ngClass]="c.isPassed ? 'chip-pass' : 'chip-fail'">
                     {{ c.isPassed ? 'Pass' : 'Fail' }}
                   </span>
-                  <span *ngIf="reg.semesterResult?.submissionStatus !== 'Finalized'" class="chip chip-registered">
+                  <span *ngIf="!isRegistrationCompleted(reg)" class="chip chip-registered">
                     Registered
                   </span>
                 </td>
@@ -177,7 +179,7 @@
 
   </div>
 
-  <!-- ═════════ UPDATE STATUS DIALOG (SEMESTER RESULTS) ═════════ -->
+  <!-- ==================== UPDATE STATUS DIALOG (SEMESTER RESULTS) ==================== -->
   <app-semester-results-dialog
     [isOpen]="isUpdateStatusModalOpen"
     [isSaving]="isSavingModalResults"
