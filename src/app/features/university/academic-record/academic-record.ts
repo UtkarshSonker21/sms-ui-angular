@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
@@ -349,6 +349,11 @@ export class AcademicRecord implements OnInit {
     const regId = event.academicRegistrationId || this.activeRegistration?.academicRegistrationId;
     if (!regId) {
       this.notification.error('No active academic registration found to save.');
+      return;
+    }
+
+    if (event.gpa === null || event.gpa === undefined || isNaN(event.gpa) || event.gpa < 0 || event.gpa > 4) {
+      this.notification.error('Enter the semester GPA (0.00 – 4.00).');
       return;
     }
 
@@ -800,8 +805,10 @@ export class AcademicRecord implements OnInit {
       return 'Select Pass or Fail for every enrolled course.';
 
     const gpa = this.results.semesterGpa;
-    if (gpa !== null && (!Number.isFinite(gpa) || gpa < 0 || gpa > 4 ||
-      Math.abs(gpa * 100 - Math.round(gpa * 100)) > 0.0000001))
+    if (gpa === null || gpa === undefined || (gpa as any) === '' || !Number.isFinite(gpa))
+      return 'Enter the semester GPA (0.00 – 4.00).';
+    if (gpa < 0 || gpa > 4 ||
+      Math.abs(gpa * 100 - Math.round(gpa * 100)) > 0.0000001)
       return 'Semester GPA must be between 0.00 and 4.00 with no more than two decimal places.';
     if ((this.results.internalNote?.length ?? 0) > 1000)
       return 'The semester note cannot exceed 1,000 characters.';

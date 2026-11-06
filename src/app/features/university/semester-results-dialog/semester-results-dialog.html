@@ -81,10 +81,12 @@
       <!-- Semester GPA & Optional Notes Inputs -->
       <div class="sem-fields">
         <div class="field">
-          <label class="field-label" for="sem-gpa">Semester GPA</label>
+          <label class="field-label required-label" for="sem-gpa">Semester GPA <span class="req">*</span></label>
           <input type="number" class="field-input num-ltr" id="sem-gpa"
-                 [(ngModel)]="modalGpa" (input)="validationError = ''" [disabled]="isSaving"
+                 [class.is-invalid]="!!gpaError"
+                 [(ngModel)]="modalGpa" (ngModelChange)="onGpaInput()" (input)="onGpaInput()" [disabled]="isSaving"
                  min="0" max="4" step="0.01" placeholder="e.g. 3.45">
+          <div class="field-error" *ngIf="gpaError">{{ gpaError }}</div>
         </div>
         <div class="field grow">
           <label class="field-label" for="sem-note">Note (optional)</label>

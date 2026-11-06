@@ -43,6 +43,7 @@ export class SemesterResultsDialog implements OnChanges {
   modalExpectedUpdatedOn: string | null = null;
   modalCourseOutcomes = new Map<string, 'pass' | 'fail'>();
   validationError = '';
+  gpaError = '';
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['isOpen'] && this.isOpen) {
@@ -56,6 +57,7 @@ export class SemesterResultsDialog implements OnChanges {
     this.modalExpectedUpdatedOn = this.expectedUpdatedOn ?? this.registration?.semesterResult?.updatedOn ?? null;
     this.modalCourseOutcomes.clear();
     this.validationError = '';
+    this.gpaError = '';
 
     const courseList = this.courses || [];
     for (const c of courseList) {
@@ -134,6 +136,16 @@ export class SemesterResultsDialog implements OnChanges {
     this.validationError = '';
   }
 
+  onGpaInput(): void {
+    this.validationError = '';
+    if (this.modalGpa !== null && this.modalGpa !== undefined && (this.modalGpa as any) !== '') {
+      const gpaNum = Number(this.modalGpa);
+      if (!isNaN(gpaNum) && gpaNum >= 0 && gpaNum <= 4) {
+        this.gpaError = '';
+      }
+    }
+  }
+
   onClose(): void {
     if (this.isSaving) return;
     this.close.emit();
@@ -142,6 +154,7 @@ export class SemesterResultsDialog implements OnChanges {
   onSave(): void {
     if (this.isSaving) return;
     this.validationError = '';
+    this.gpaError = '';
 
     const courseList = this.courses || [];
     if (courseList.length === 0) {
@@ -155,8 +168,19 @@ export class SemesterResultsDialog implements OnChanges {
       return;
     }
 
-    if (this.modalGpa !== null && this.modalGpa !== undefined && (isNaN(this.modalGpa) || this.modalGpa < 0 || this.modalGpa > 4 || Math.abs(this.modalGpa * 100 - Math.round(this.modalGpa * 100)) > 0.0000001)) {
-      this.validationError = 'Semester GPA must be between 0.00 and 4.00 with at most two decimal places.';
+    if (this.modalGpa === null || this.modalGpa === undefined || (this.modalGpa as any) === '' || isNaN(Number(this.modalGpa))) {
+      this.gpaError = 'Enter the semester GPA (0.00 – 4.00).';
+      return;
+    }
+
+    const gpaNum = Number(this.modalGpa);
+    if (gpaNum < 0 || gpaNum > 4) {
+      this.gpaError = 'Enter the semester GPA (0.00 – 4.00).';
+      return;
+    }
+
+    if (Math.abs(gpaNum * 100 - Math.round(gpaNum * 100)) > 0.0000001) {
+      this.gpaError = 'Semester GPA must have no more than two decimal places (0.00 – 4.00).';
       return;
     }
 
@@ -176,7 +200,7 @@ export class SemesterResultsDialog implements OnChanges {
       academicRegistrationId: regId,
       semesterNo: this.semesterNo,
       expectedUpdatedOn: this.modalExpectedUpdatedOn,
-      gpa: this.modalGpa !== null && this.modalGpa !== undefined && !isNaN(this.modalGpa) ? Number(this.modalGpa) : null,
+      gpa: gpaNum,
       note: (this.modalNote || '').trim(),
       courseResults,
       outcomes: this.modalCourseOutcomes,

@@ -447,6 +447,11 @@ export class RegisteredStudent implements OnInit {
       return;
     }
 
+    if (event.gpa === null || event.gpa === undefined || isNaN(event.gpa) || event.gpa < 0 || event.gpa > 4) {
+      this.notification.error('Enter the semester GPA (0.00 – 4.00).');
+      return;
+    }
+
     this.isSavingResults = true;
     const requestModel: SaveAcademicResultsRequestModel = {
       semesterGpa: event.gpa,
