@@ -38,7 +38,7 @@ export class ForgotPassword {
     this.submitted = true;
     this.isBusy = true;
 
-    this.authService.forgotUsername(this.userIdentifier).subscribe({
+    this.authService.forgotPassword(this.userIdentifier).subscribe({
       next: response => {
         this.isBusy = false;
 
